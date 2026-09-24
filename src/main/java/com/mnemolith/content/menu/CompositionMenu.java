@@ -74,7 +74,10 @@ public class CompositionMenu extends AbstractContainerMenu {
         if (id != ImprintConstants.COMPOSE_BUTTON_ID || !(player instanceof ServerPlayer serverPlayer)) {
             return false;
         }
-        if (!(serverPlayer.level() instanceof ServerLevel level) || !this.boundToBlock) {
+        if (serverPlayer.containerMenu != this || serverPlayer.isRemoved() || serverPlayer.hasDisconnected()) {
+            return false;
+        }
+        if (!(serverPlayer.level() instanceof ServerLevel level) || !this.boundToBlock || !this.stillValid(serverPlayer)) {
             return false;
         }
         ComposeResult result = Composition.compose(level, this.blockPos, serverPlayer, this.container);

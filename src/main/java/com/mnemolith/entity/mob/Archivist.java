@@ -39,6 +39,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -183,10 +184,22 @@ public class Archivist extends MemoryMob {
         return container.removeItem(best, 1);
     }
 
+    /** Prefers the open container so both viewers lose the same slip, then the player's own inventory. */
     private static ItemStack takeSlip(AbstractContainerMenu menu) {
+        ItemStack shared = takeFromMenu(menu, false);
+        if (!shared.isEmpty()) {
+            return shared;
+        }
+        return takeFromMenu(menu, true);
+    }
+
+    private static ItemStack takeFromMenu(AbstractContainerMenu menu, boolean playerInventory) {
         Slot best = null;
         int bestWeight = -1;
         for (Slot slot : menu.slots) {
+            if ((slot.container instanceof Inventory) != playerInventory) {
+                continue;
+            }
             int weight = ImprintSlips.weight(slot.getItem());
             if (weight > bestWeight) {
                 bestWeight = weight;

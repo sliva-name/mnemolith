@@ -143,6 +143,11 @@ public final class ImprintEvents {
     }
 
     @SubscribeEvent
+    public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        PressureSync.forget(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
