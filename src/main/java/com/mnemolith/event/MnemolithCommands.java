@@ -16,6 +16,7 @@ import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.ChunkState;
 import com.mnemolith.world.LoadedChunkMemory;
+import com.mnemolith.worldgen.ModFeatures;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -28,6 +29,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -35,7 +37,7 @@ import net.minecraft.world.phys.Vec3;
 
 import com.mojang.brigadier.context.CommandContext;
 
-/** {@code /mnemolith inspect}, {@code smoke}, {@code spawn}, and {@code mobs}. */
+/** {@code /mnemolith inspect}, {@code smoke}, {@code spawn}, {@code mobs}, and {@code worldgen}. */
 public final class MnemolithCommands {
     private static final double SMOKE_FALL_DISTANCE = 5.0D;
 
@@ -161,5 +163,21 @@ public final class MnemolithCommands {
         boolean reportedReplicant = replicantOk;
         source.sendSuccess(() -> Component.translatable("mnemolith.command.mobs", reportedStrider, reportedStole, reportedReplicant), true);
         return (striderOk ? 1 : 0) + (stole ? 1 : 0) + (replicantOk ? 1 : 0);
+    }
+
+    public static int worldgen(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerLevel level = source.getLevel();
+        BlockPos pos = BlockPos.containing(source.getPosition());
+        RandomSource random = level.getRandom();
+        boolean vein = ModFeatures.ARCHIVAL_VEIN.get().placeVein(level, pos.below(8), random, true);
+        boolean pocket = ModFeatures.MUTE_POCKET.get().placePocket(level, pos, random, true);
+        LevelChunk chunk = level.getChunkAt(pos.below(4));
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        boolean muted = memory != null && memory.hasMuteStone();
+        int strata = memory == null ? 0 : memory.strataCount();
+        Mnemolith.LOGGER.info("Mnemolith worldgen vein={} pocket={} muted={} strata={}", vein, pocket, muted, strata);
+        source.sendSuccess(() -> Component.translatable("mnemolith.command.worldgen", vein, pocket, muted, strata), true);
+        return (vein ? 1 : 0) + (pocket ? 1 : 0);
     }
 }

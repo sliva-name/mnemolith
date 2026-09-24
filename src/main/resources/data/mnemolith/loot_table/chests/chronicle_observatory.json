@@ -1,0 +1,73 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 3.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archival_tablet",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:composition_reel",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:chronicle_lens",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:extraction_needle",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:mute_stone",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:imprint_slip",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "silence",
+                  "intensity": 2,
+                  "origin": [0, 64, 0],
+                  "context_hash": 1,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:imprint_slip",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "player",
+                  "intensity": 2,
+                  "origin": [0, 64, 0],
+                  "context_hash": 2,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ package com.mnemolith.content;
 import java.util.function.UnaryOperator;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.content.block.ArchivalStratumBlock;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
 import com.mnemolith.content.block.ResonatorTrapBlock;
@@ -28,6 +29,10 @@ public final class ModBlocks {
             "resonator_trap",
             ResonatorTrapBlock::new,
             trapProperties());
+    public static final DeferredBlock<ArchivalStratumBlock> ARCHIVAL_STRATUM = BLOCKS.registerBlock(
+            "archival_stratum",
+            ArchivalStratumBlock::new,
+            stratumProperties());
 
     private ModBlocks() {}
 
@@ -41,5 +46,9 @@ public final class ModBlocks {
 
     private static UnaryOperator<BlockBehaviour.Properties> trapProperties() {
         return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 6.0F).sound(SoundType.METAL);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> stratumProperties() {
+        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(3.0F, 6.0F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops();
     }
 }

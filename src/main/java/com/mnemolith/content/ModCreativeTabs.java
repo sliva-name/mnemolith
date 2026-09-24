@@ -22,6 +22,8 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.IMPRINT_SLIP.get());
                 output.accept(ModItems.COMPOSITION_REEL.get());
                 output.accept(ModItems.MUTE_STONE.get());
+                output.accept(ModItems.ARCHIVAL_STRATUM.get());
+                output.accept(ModItems.ARCHIVAL_TABLET.get());
                 output.accept(ModItems.RESONATOR_TRAP.get());
                 output.accept(ModItems.ARCHIVIST_BAIT.get());
                 output.accept(ModItems.CATALOG_FRAGMENT.get());

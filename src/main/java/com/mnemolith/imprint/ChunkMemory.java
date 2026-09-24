@@ -24,21 +24,25 @@ public final class ChunkMemory {
             Codec.LONG.fieldOf("last_write").forGetter(ChunkMemory::lastWriteGameTime),
             Codec.INT.fieldOf("pressure").forGetter(ChunkMemory::cachedPressure),
             Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
-            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy)
+            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
+            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
+            Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
     private final List<BlockPos> resonators = new ArrayList<>();
+    private final List<BlockPos> strata = new ArrayList<>();
     private boolean fractured;
     private boolean archival;
+    private boolean observatory;
     private long lastWriteGameTime;
     private int cachedPressure;
     private int instability;
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -48,6 +52,8 @@ public final class ChunkMemory {
         memory.cachedPressure = cachedPressure;
         memory.instability = instability;
         memory.resonators.addAll(resonators);
+        memory.strata.addAll(strata);
+        memory.observatory = observatory;
         return memory;
     }
 
@@ -55,8 +61,10 @@ public final class ChunkMemory {
         return this.imprints.isEmpty()
                 && this.muteStones.isEmpty()
                 && this.resonators.isEmpty()
+                && this.strata.isEmpty()
                 && !this.fractured
                 && !this.archival
+                && !this.observatory
                 && this.instability == 0;
     }
 
@@ -196,6 +204,34 @@ public final class ChunkMemory {
 
     public boolean removeResonator(BlockPos pos) {
         return this.resonators.remove(pos);
+    }
+
+    public List<BlockPos> strataCopy() {
+        return List.copyOf(this.strata);
+    }
+
+    public int strataCount() {
+        return this.strata.size();
+    }
+
+    public boolean noteStratum(BlockPos pos) {
+        if (this.strata.contains(pos) || this.strata.size() >= ImprintConstants.ABSOLUTE_LIST_CAP) {
+            return false;
+        }
+        this.strata.add(pos.immutable());
+        return true;
+    }
+
+    public boolean forgetStratum(BlockPos pos) {
+        return this.strata.remove(pos);
+    }
+
+    public boolean observatory() {
+        return this.observatory;
+    }
+
+    public void setObservatory(boolean observatory) {
+        this.observatory = observatory;
     }
 
     public List<ImprintTag> tags() {

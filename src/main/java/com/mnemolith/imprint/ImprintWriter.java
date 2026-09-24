@@ -91,7 +91,7 @@ public final class ImprintWriter {
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory == null || memory.imprintCount() == 0) {
-            return Optional.empty();
+            return memory != null ? thisOrNeighbors(level, pos, player, memory) : Optional.empty();
         }
         Optional<Imprint> removed = memory.removeHighest();
         if (removed.isEmpty()) {
@@ -110,6 +110,50 @@ public final class ImprintWriter {
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
         return removed;
+    }
+
+    private static Optional<Imprint> thisOrNeighbors(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, ChunkMemory origin) {
+        if (origin.strataCount() <= 0 || player == null) {
+            return Optional.empty();
+        }
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+                int chunkX = (pos.getX() >> 4) + dx;
+                int chunkZ = (pos.getZ() >> 4) + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                BlockPos neighbor = new BlockPos(chunkX << 4, pos.getY(), chunkZ << 4);
+                LevelChunk chunk = level.getChunkAt(neighbor);
+                ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+                if (memory == null || memory.imprintCount() == 0) {
+                    continue;
+                }
+                Optional<Imprint> removed = memory.removeHighest();
+                if (removed.isEmpty()) {
+                    continue;
+                }
+                memory.setArchival(true);
+                MemoryPressure.recompute(chunk, memory);
+                giveSlip(level, neighbor, player, removed.get());
+                Mnemolith.LOGGER.info("Mnemolith extract reach at {},{},{}", neighbor.getX(), neighbor.getY(), neighbor.getZ());
+                return removed;
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static void giveSlip(ServerLevel level, BlockPos pos, ServerPlayer player, Imprint imprint) {
+        ItemStack slip = new ItemStack(ModItems.IMPRINT_SLIP.get());
+        slip.set(ModDataComponents.IMPRINT_CAST.get(), ImprintCast.from(imprint));
+        if (!player.getInventory().add(slip)) {
+            player.drop(slip, false);
+        }
+        level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
+        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
     }
 
     public static int intensityFor(ImprintTag tag) {

@@ -40,6 +40,20 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_STRIDER_MIN_PRESSURE;
     public static final ModConfigSpec.IntValue ARCHIVIST_MIN_PRESSURE;
     public static final ModConfigSpec.IntValue REPLICANT_MIN_PRESSURE;
+    public static final ModConfigSpec.BooleanValue ARCHIVAL_VEINS_ENABLED;
+    public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_CHANCE;
+    public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_MIN_Y;
+    public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_MAX_Y;
+    public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_SIZE;
+    public static final ModConfigSpec.IntValue ARCHIVAL_BLEED;
+    public static final ModConfigSpec.IntValue ARCHIVAL_BLEED_CAP;
+    public static final ModConfigSpec.BooleanValue MUTE_POCKETS_ENABLED;
+    public static final ModConfigSpec.IntValue MUTE_POCKET_CHANCE;
+    public static final ModConfigSpec.IntValue MUTE_POCKET_MIN_Y;
+    public static final ModConfigSpec.IntValue MUTE_POCKET_MAX_Y;
+    public static final ModConfigSpec.BooleanValue OBSERVATORY_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVIST_OBSERVATORY_BIAS;
+    public static final ModConfigSpec.BooleanValue STRIDER_PATH_BIAS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -75,15 +89,72 @@ public final class CommonConfig {
                 .translation("mnemolith.configuration.worldGen")
                 .push("worldGen");
         STRUCTURES_ENABLED = builder
-                .comment("Whether Mnemolith structures may generate.")
+                .comment("Whether the chronicle observatory may generate. Veins and mute pockets have their own toggles.")
                 .translation("mnemolith.configuration.structuresEnabled")
                 .worldRestart()
                 .define("structuresEnabled", true);
         STRUCTURE_SPACING = builder
-                .comment("Target spacing, in chunks, between Mnemolith structures.")
+                .comment("Documented spacing, in chunks, of the chronicle observatory. The structure set json uses 40 and a separation of 16. Editing this number does not move structures.")
                 .translation("mnemolith.configuration.structureSpacing")
                 .worldRestart()
-                .defineInRange("structureSpacing", 32, 8, 256);
+                .defineInRange("structureSpacing", 40, 8, 256);
+        ARCHIVAL_VEINS_ENABLED = builder
+                .comment("Whether archival veins may generate. The biome modifier uses #minecraft:is_overworld. The Y range keeps them underground.")
+                .translation("mnemolith.configuration.archivalVeinsEnabled")
+                .define("archivalVeinsEnabled", true);
+        ARCHIVAL_VEIN_CHANCE = builder
+                .comment("Chance, out of 100, that a chunk attempts an archival vein.")
+                .translation("mnemolith.configuration.archivalVeinChance")
+                .defineInRange("archivalVeinChance", 12, 0, 100);
+        ARCHIVAL_VEIN_MIN_Y = builder
+                .comment("Lowest Y of an archival vein.")
+                .translation("mnemolith.configuration.archivalVeinMinY")
+                .defineInRange("archivalVeinMinY", -48, -64, 320);
+        ARCHIVAL_VEIN_MAX_Y = builder
+                .comment("Highest Y of an archival vein.")
+                .translation("mnemolith.configuration.archivalVeinMaxY")
+                .defineInRange("archivalVeinMaxY", 32, -64, 320);
+        ARCHIVAL_VEIN_SIZE = builder
+                .comment("Length, in blocks, of one archival vein.")
+                .translation("mnemolith.configuration.archivalVeinSize")
+                .defineInRange("archivalVeinSize", 7, 3, 16);
+        ARCHIVAL_BLEED = builder
+                .comment("Pressure added per archival stratum block when the chunk's pressure is scored.")
+                .translation("mnemolith.configuration.archivalBleed")
+                .defineInRange("archivalBleed", 1, 0, 20);
+        ARCHIVAL_BLEED_CAP = builder
+                .comment("Most stratum blocks that contribute pressure in one chunk.")
+                .translation("mnemolith.configuration.archivalBleedCap")
+                .defineInRange("archivalBleedCap", 6, 0, 64);
+        MUTE_POCKETS_ENABLED = builder
+                .comment("Whether mute pockets may generate. Placed mute stone uses the same write suppression as a crafted mute stone.")
+                .translation("mnemolith.configuration.mutePocketsEnabled")
+                .define("mutePocketsEnabled", true);
+        MUTE_POCKET_CHANCE = builder
+                .comment("Chance, out of 100, that a chunk attempts a mute pocket.")
+                .translation("mnemolith.configuration.mutePocketChance")
+                .defineInRange("mutePocketChance", 2, 0, 100);
+        MUTE_POCKET_MIN_Y = builder
+                .comment("Lowest Y of a mute pocket.")
+                .translation("mnemolith.configuration.mutePocketMinY")
+                .defineInRange("mutePocketMinY", -32, -64, 320);
+        MUTE_POCKET_MAX_Y = builder
+                .comment("Highest Y of a mute pocket.")
+                .translation("mnemolith.configuration.mutePocketMaxY")
+                .defineInRange("mutePocketMaxY", 48, -64, 320);
+        OBSERVATORY_ENABLED = builder
+                .comment("Whether chronicle observatories may generate. Also requires structuresEnabled.")
+                .translation("mnemolith.configuration.observatoryEnabled")
+                .worldRestart()
+                .define("observatoryEnabled", true);
+        ARCHIVIST_OBSERVATORY_BIAS = builder
+                .comment("Whether an archivist's natural pressure gate is lower in and near an observatory chunk.")
+                .translation("mnemolith.configuration.archivistObservatoryBias")
+                .define("archivistObservatoryBias", true);
+        STRIDER_PATH_BIAS = builder
+                .comment("Whether an echo strider's natural pressure gate is lower in a chunk that already holds a path imprint.")
+                .translation("mnemolith.configuration.striderPathBias")
+                .define("striderPathBias", true);
         builder.pop();
 
         builder.comment("Player-facing memory rules for writing, extraction, and composition.")

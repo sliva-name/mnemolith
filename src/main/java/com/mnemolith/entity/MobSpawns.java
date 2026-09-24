@@ -5,7 +5,10 @@ import com.mnemolith.entity.mob.Archivist;
 import com.mnemolith.entity.mob.EchoStrider;
 import com.mnemolith.entity.mob.MomentReplicant;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.Imprint;
+import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.world.LoadedChunkMemory;
+import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -29,6 +32,26 @@ public final class MobSpawns {
                 || reason == EntitySpawnReason.EVENT;
     }
 
+    public static boolean allowStrider(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
+        if (level instanceof ServerLevel server && LoadedChunkMemory.isMuted(server, pos)) {
+            return false;
+        }
+        int min = MobTuning.striderMinPressure();
+        if (WorldgenTuning.striderPathBias() && hasPath(level, pos)) {
+            min = Math.max(0, min - WorldgenTuning.PATH_RELIEF);
+        }
+        return allowNatural(level, pos, random, MobTuning.striderEnabled(), MobTuning.striderWeight(), min);
+    }
+
+    public static boolean allowArchivist(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
+        int min = MobTuning.archivistMinPressure();
+        if (WorldgenTuning.archivistObservatoryBias() && level instanceof ServerLevel server
+                && LoadedChunkMemory.observatoryNearby(server, pos, WorldgenTuning.OBSERVATORY_CHUNK_RADIUS)) {
+            min = Math.max(0, min - WorldgenTuning.OBSERVATORY_RELIEF);
+        }
+        return allowNatural(level, pos, random, MobTuning.archivistEnabled(), MobTuning.archivistWeight(), min);
+    }
+
     public static boolean allowNatural(ServerLevelAccessor level, BlockPos pos, RandomSource random, boolean enabled, int weight, int minPressure) {
         if (!enabled || weight <= 0 || random.nextInt(100) >= weight) {
             return false;
@@ -40,6 +63,22 @@ public final class MobSpawns {
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         int pressure = memory == null ? 0 : memory.cachedPressure();
         return pressure >= minPressure;
+    }
+
+    private static boolean hasPath(ServerLevelAccessor level, BlockPos pos) {
+        if (!(level instanceof ServerLevel server)) {
+            return false;
+        }
+        ChunkMemory memory = LoadedChunkMemory.existing(server.getChunkAt(pos));
+        if (memory == null) {
+            return false;
+        }
+        for (Imprint imprint : memory.imprintsCopy()) {
+            if (imprint.tag() == ImprintTag.PATH) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void trySpawnReplicant(ServerLevel level, BlockPos pos) {
