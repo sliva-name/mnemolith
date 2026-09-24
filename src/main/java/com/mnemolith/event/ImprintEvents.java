@@ -9,6 +9,7 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModBlocks;
 import com.mnemolith.entity.ModEffects;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
@@ -125,6 +126,9 @@ public final class ImprintEvents {
         }
         if (event.getEntity() instanceof Player player) {
             writeBuild(level, event.getPos(), event.getPlacedBlock(), player);
+            if (player instanceof ServerPlayer serverPlayer && event.getPlacedBlock().getBlock() == ModBlocks.MUTE_STONE.get()) {
+                DiscoveryNotes.noteMute(serverPlayer);
+            }
         } else {
             writeBuild(level, event.getPos(), event.getPlacedBlock(), null);
         }

@@ -8,13 +8,23 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
-/** Chunk attachment. Not synced: the lens asks for a pressure snapshot instead. */
+/**
+ * Chunk memory stays on the server. Discovery is saved on the player and synced only to that player.
+ */
 public final class ModAttachments {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Mnemolith.MOD_ID);
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChunkMemory>> CHUNK_MEMORY = ATTACHMENT_TYPES.register(
             "chunk_memory",
             () -> AttachmentType.builder(ChunkMemory::new).serialize(ChunkMemory.CODEC, memory -> !memory.isEmpty()).build());
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Discovery>> DISCOVERY = ATTACHMENT_TYPES.register(
+            "discovery",
+            () -> AttachmentType.builder(Discovery::new)
+                    .serialize(Discovery.CODEC, discovery -> !discovery.isEmpty())
+                    .copyOnDeath()
+                    .sync((holder, player) -> holder == player, Discovery.STREAM_CODEC)
+                    .build());
 
     private ModAttachments() {}
 

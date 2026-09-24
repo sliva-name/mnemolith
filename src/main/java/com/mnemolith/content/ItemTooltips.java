@@ -27,6 +27,8 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
             } else if (stack.getItem() == ModItems.ARCHIVAL_TABLET.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
+            } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {
+                builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
             }
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.IMPRINT_CAST, (stack, context, display, player, flag, builder) -> {

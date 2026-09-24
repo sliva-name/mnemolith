@@ -8,12 +8,12 @@ import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
+import com.mnemolith.world.ChunkState;
 import com.mnemolith.world.LoadedChunkMemory;
 import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -39,8 +39,6 @@ public final class PressureSync {
             radius += 1;
         }
         List<ChunkPressure> chunks = new ArrayList<>();
-        int here = 0;
-        PressureBand hereBand = PressureBand.CALM;
         int hinted = 0;
         BlockPos playerPos = player.blockPosition();
         for (int dx = -radius; dx <= radius; dx++) {
@@ -54,12 +52,11 @@ public final class PressureSync {
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
                 int pressure = memory == null ? 0 : memory.cachedPressure();
                 PressureBand band = MemoryPressure.band(pressure);
-                if (dx == 0 && dz == 0) {
-                    here = pressure;
-                    hereBand = band;
-                }
                 if (chunks.size() < ImprintConstants.LENS_CHUNK_LIMIT) {
-                    chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal()));
+                    BlockPos sample = new BlockPos((chunkX << 4) + 8, playerPos.getY(), (chunkZ << 4) + 8);
+                    boolean muted = LoadedChunkMemory.isMuted(level, sample);
+                    ChunkState state = LoadedChunkMemory.stateOf(memory, muted);
+                    chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), state.ordinal()));
                 }
                 if (memory != null && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
                     for (BlockPos mark : memory.strataCopy()) {
@@ -73,7 +70,6 @@ public final class PressureSync {
             }
         }
         PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
-        player.sendOverlayMessage(Component.translatable("mnemolith.message.pressure", Component.translatable(hereBand.translationKey()), here));
     }
 
     public static boolean holdsLens(ServerPlayer player) {

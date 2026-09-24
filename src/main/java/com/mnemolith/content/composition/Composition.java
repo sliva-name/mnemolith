@@ -12,6 +12,8 @@ import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.data.ImprintCast;
 import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.entity.ModEffects;
+import com.mnemolith.Mnemolith;
+import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
@@ -43,12 +45,12 @@ public final class Composition {
         return Optional.empty();
     }
 
-    public static boolean compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container) {
+    public static ComposeResult compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container) {
         if (!CommonConfig.COMPOSITION_ENABLED.get()) {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable("mnemolith.message.compose_disabled"));
             }
-            return false;
+            return finish(ComposeResult.DISABLED, -1);
         }
         List<Integer> slots = new ArrayList<>();
         List<ImprintTag> tags = new ArrayList<>();
@@ -59,7 +61,7 @@ public final class Composition {
             }
             ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
             if (stack.getItem() != ModItems.IMPRINT_SLIP.get() || cast == null) {
-                return fail(level, pos, player, container);
+                return fail(level, pos, player, container, tags);
             }
             slots.add(slot);
             tags.add(cast.tag());
@@ -68,11 +70,16 @@ public final class Composition {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable("mnemolith.message.compose_empty"));
             }
-            return false;
+            return finish(ComposeResult.EMPTY, -1);
+        }
+        if (player != null) {
+            for (ImprintTag tag : tags) {
+                DiscoveryNotes.noteTag(player, tag);
+            }
         }
         Optional<CompositionFormula> formula = match(tags);
         if (formula.isEmpty()) {
-            return fail(level, pos, player, container);
+            return fail(level, pos, player, container, tags);
         }
         for (int slot : slots) {
             container.removeItem(slot, 1);
@@ -81,12 +88,13 @@ public final class Composition {
         level.playSound(null, pos, ModSounds.COMPOSE_SUCCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.3D, 0.4D, 0.0D);
         if (player != null) {
+            DiscoveryNotes.noteFormula(player, formula.get().ordinal());
             player.sendSystemMessage(Component.translatable("mnemolith.message.composed", Component.translatable(formula.get().translationKey())));
         }
-        return true;
+        return finish(ComposeResult.SUCCESS, formula.get().ordinal());
     }
 
-    private static boolean fail(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container) {
+    private static ComposeResult fail(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container, List<ImprintTag> tags) {
         for (int slot = 0; slot < container.getContainerSize(); slot++) {
             ItemStack stack = container.getItem(slot);
             if (!stack.isEmpty()) {
@@ -99,9 +107,17 @@ public final class Composition {
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         level.sendParticles(ParticleTypes.ANGRY_VILLAGER, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.3D, 0.3D, 0.3D, 0.0D);
         if (player != null) {
+            for (ImprintTag tag : tags) {
+                DiscoveryNotes.noteTag(player, tag);
+            }
             player.sendSystemMessage(Component.translatable("mnemolith.message.compose_fail"));
         }
-        return false;
+        return finish(ComposeResult.FAIL, -1);
+    }
+
+    private static ComposeResult finish(int status, int formulaOrdinal) {
+        Mnemolith.LOGGER.info("Mnemolith compose status={} formula={}", status, formulaOrdinal);
+        return new ComposeResult(status, formulaOrdinal);
     }
 
     private static void apply(@Nullable ServerPlayer player, CompositionFormula formula) {

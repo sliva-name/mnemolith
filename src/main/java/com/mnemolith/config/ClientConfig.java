@@ -13,6 +13,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.DoubleValue MEMORY_AUDIO_VOLUME;
     public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
     public static final ModConfigSpec.IntValue LENS_POLL_INTERVAL;
+    public static final ModConfigSpec.BooleanValue LENS_OVERLAY;
+    public static final ModConfigSpec.DoubleValue OVERLAY_OPACITY;
+    public static final ModConfigSpec.BooleanValue SHOW_NUMERIC_PRESSURE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -45,6 +48,18 @@ public final class ClientConfig {
                 .comment("Ticks between chronicle lens pressure requests.")
                 .translation("mnemolith.configuration.lensPollInterval")
                 .defineInRange("lensPollInterval", 20, 1, 200);
+        LENS_OVERLAY = builder
+                .comment("Whether the chronicle lens draws the pressure pill above the hotbar.")
+                .translation("mnemolith.configuration.lensOverlay")
+                .define("lensOverlay", true);
+        OVERLAY_OPACITY = builder
+                .comment("Opacity, from 0.2 to 1.0, of the lens pressure pill. The band name stays readable.")
+                .translation("mnemolith.configuration.overlayOpacity")
+                .defineInRange("overlayOpacity", 0.85D, 0.2D, 1.0D);
+        SHOW_NUMERIC_PRESSURE = builder
+                .comment("Whether the lens pill includes the numeric pressure beside the band name.")
+                .translation("mnemolith.configuration.showNumericPressure")
+                .define("showNumericPressure", true);
         builder.pop();
 
         SPEC = builder.build();

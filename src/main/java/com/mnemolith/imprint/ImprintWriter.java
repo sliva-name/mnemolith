@@ -106,6 +106,7 @@ public final class ImprintWriter {
             if (!player.getInventory().add(slip)) {
                 player.drop(slip, false);
             }
+            DiscoveryNotes.noteTag(player, imprint.tag());
         }
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
@@ -152,6 +153,7 @@ public final class ImprintWriter {
         if (!player.getInventory().add(slip)) {
             player.drop(slip, false);
         }
+        DiscoveryNotes.noteTag(player, imprint.tag());
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
     }

@@ -2,6 +2,7 @@ package com.mnemolith;
 
 import com.mnemolith.client.audio.ClientAudio;
 import com.mnemolith.client.gui.ClientScreens;
+import com.mnemolith.client.gui.LensOverlay;
 import com.mnemolith.client.network.ClientPayloads;
 import com.mnemolith.client.particle.ClientParticles;
 import com.mnemolith.client.render.ClientRender;
@@ -31,6 +32,7 @@ public final class MnemolithClient {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modEventBus.addListener(ClientScreens::registerMenus);
+        modEventBus.addListener(LensOverlay::register);
         modEventBus.addListener(ClientPayloads::register);
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);

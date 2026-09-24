@@ -16,6 +16,7 @@ public final class ModNetwork {
     private static void onRegister(RegisterPayloadHandlersEvent event) {
         event.registrar("1")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
-                .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC);
+                .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
+                .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC);
     }
 }

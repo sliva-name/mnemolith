@@ -57,6 +57,9 @@ public final class PressureClient {
             return;
         }
         if (!holdsLens(player)) {
+            snapshot = List.of();
+            lastChimeBand = -1;
+            ticksUntilPoll = 0;
             return;
         }
         if (ticksUntilPoll > 0) {
@@ -67,9 +70,20 @@ public final class PressureClient {
         ClientPacketDistributor.sendToServer(new RequestPressurePayload());
     }
 
-    private static boolean holdsLens(LocalPlayer player) {
+    public static boolean holdsLens(LocalPlayer player) {
         return player.getMainHandItem().getItem() == ModItems.CHRONICLE_LENS.get()
                 || player.getOffhandItem().getItem() == ModItems.CHRONICLE_LENS.get();
+    }
+
+    public static ChunkPressure origin(LocalPlayer player) {
+        int chunkX = player.blockPosition().getX() >> 4;
+        int chunkZ = player.blockPosition().getZ() >> 4;
+        for (ChunkPressure chunk : snapshot) {
+            if (chunk.chunkX() == chunkX && chunk.chunkZ() == chunkZ) {
+                return chunk;
+            }
+        }
+        return null;
     }
 
     public static List<ChunkPressure> snapshot() {

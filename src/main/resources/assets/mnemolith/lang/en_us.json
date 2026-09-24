@@ -1,13 +1,11 @@
 {
   "mnemolith.configuration.title": "Mnemolith",
-
   "mnemolith.configuration.section.mnemolith.common.toml": "Common",
   "mnemolith.configuration.section.mnemolith.common.toml.title": "Common",
   "mnemolith.configuration.section.mnemolith.client.toml": "Client",
   "mnemolith.configuration.section.mnemolith.client.toml.title": "Client",
   "mnemolith.configuration.section.mnemolith.server.toml": "Server",
   "mnemolith.configuration.section.mnemolith.server.toml.title": "Server",
-
   "mnemolith.configuration.difficulty": "Difficulty",
   "mnemolith.configuration.difficulty.button": "Difficulty",
   "mnemolith.configuration.spawnRates": "Spawn Rates",
@@ -20,7 +18,6 @@
   "mnemolith.configuration.server.button": "Server",
   "mnemolith.configuration.visuals": "Visuals",
   "mnemolith.configuration.visuals.button": "Visuals",
-
   "mnemolith.configuration.recollectionStormThreshold": "Recollection Storm Threshold",
   "mnemolith.configuration.recollectionStormThreshold.tooltip": "Multiplier applied to memory-pressure thresholds before a recollection storm can start.",
   "mnemolith.configuration.pressureSoftCap": "Pressure Soft Cap",
@@ -65,14 +62,12 @@
   "mnemolith.configuration.compositionEnabled.tooltip": "Whether players may compose extracted imprints.",
   "mnemolith.configuration.maxImprintsPerChunk": "Max Imprints Per Chunk",
   "mnemolith.configuration.maxImprintsPerChunk.tooltip": "Maximum imprints stored on a single chunk.",
-
   "mnemolith.configuration.allowRecollectionStorms": "Allow Recollection Storms",
   "mnemolith.configuration.allowRecollectionStorms.tooltip": "Whether recollection storms are allowed to start.",
   "mnemolith.configuration.maxStormsPerDimension": "Max Storms Per Dimension",
   "mnemolith.configuration.maxStormsPerDimension.tooltip": "Maximum recollection storms active in one dimension at once.",
   "mnemolith.configuration.logPressureChanges": "Log Pressure Changes",
   "mnemolith.configuration.logPressureChanges.tooltip": "Whether pressure changes are written to the server log.",
-
   "mnemolith.configuration.imprintParticles": "Imprint Particles",
   "mnemolith.configuration.imprintParticles.tooltip": "Whether imprint particles are shown.",
   "mnemolith.configuration.pressureVignette": "Pressure Vignette",
@@ -111,7 +106,6 @@
   "mnemolith.configuration.fractureThreshold.tooltip": "Pressure at which a chunk fractures. Fracture is logged and can spawn a moment replicant.",
   "mnemolith.configuration.muteRadiusChunks": "Mute Radius",
   "mnemolith.configuration.muteRadiusChunks.tooltip": "Chebyshev radius, in chunks, where a mute stone blocks imprint writes. 0 is the stone's own chunk.",
-
   "mnemolith.configuration.mobs": "Mobs",
   "mnemolith.configuration.mobs.button": "Mobs",
   "mnemolith.configuration.echoStriderEnabled": "Echo Strider",
@@ -140,10 +134,9 @@
   "mnemolith.configuration.archivistMinPressure.tooltip": "Minimum cached pressure before an archivist can spawn naturally.",
   "mnemolith.configuration.replicantMinPressure": "Replicant Minimum Pressure",
   "mnemolith.configuration.replicantMinPressure.tooltip": "Minimum cached pressure before a moment replicant can spawn naturally.",
-
   "itemGroup.mnemolith": "Mnemolith",
   "item.mnemolith.chronicle_lens": "Chronicle Lens",
-  "item.mnemolith.chronicle_lens.hint": "Hold to read memory pressure. Near archival strata the read reaches one chunk farther, and the stone glows. Sneak and use to blind moment replicants.",
+  "item.mnemolith.chronicle_lens.hint": "Hold to read memory pressure as a pill above the hotbar. Sneak for the chunk state. Near archival strata the read reaches one chunk farther, and the stone glows. Sneak and use to blind moment replicants.",
   "item.mnemolith.extraction_needle": "Extraction Needle",
   "item.mnemolith.extraction_needle.hint": "Use on a block to pull the strongest imprint into a slip. In a stratum chunk, an empty read also checks the neighbor chunks.",
   "item.mnemolith.imprint_slip": "Imprint Slip",
@@ -153,11 +146,9 @@
   "block.mnemolith.composition_reel": "Composition Reel",
   "container.mnemolith.composition_reel": "Composition Reel",
   "mnemolith.gui.compose": "Compose",
-
   "effect.mnemolith.unrecorded": "Unrecorded",
   "effect.mnemolith.fire_trail": "Fire Trail",
   "effect.mnemolith.landing_burst": "Landing Burst",
-
   "mnemolith.tag.fire": "Fire",
   "mnemolith.tag.fall": "Fall",
   "mnemolith.tag.death": "Death",
@@ -167,17 +158,14 @@
   "mnemolith.tag.player": "Player",
   "mnemolith.tag.redstone": "Redstone",
   "mnemolith.tag.path": "Path",
-
   "mnemolith.band.calm": "Calm",
   "mnemolith.band.saturated": "Saturated",
   "mnemolith.band.overloaded": "Overloaded",
   "mnemolith.band.fracture": "Fracture",
-
   "mnemolith.formula.unrecorded": "Unrecorded",
   "mnemolith.formula.fire_trail": "Fire Trail",
   "mnemolith.formula.landing_burst": "Landing Burst",
   "mnemolith.formula.bait": "Archivist Bait",
-
   "mnemolith.message.pressure": "Memory: %s (%s)",
   "mnemolith.message.extracted": "Extracted %s (%s)",
   "mnemolith.message.extract_empty": "This chunk has no imprint to extract.",
@@ -192,7 +180,6 @@
   "mnemolith.command.mobs": "Mobs strider %s archivistStole %s replicant %s",
   "mnemolith.command.worldgen": "Worldgen vein %s pocket %s muted %s strata %s",
   "mnemolith.message.stolen": "An archivist took your %s slip.",
-
   "entity.mnemolith.echo_strider": "Echo Strider",
   "entity.mnemolith.archivist": "Archivist",
   "entity.mnemolith.moment_replicant": "Moment Replicant",
@@ -208,7 +195,6 @@
   "block.mnemolith.archival_stratum": "Archival Stratum",
   "item.mnemolith.archival_tablet": "Archival Tablet",
   "item.mnemolith.archival_tablet.hint": "Silence and a player, composed, become bait. A vein of this stone bleeds a little pressure and lets the lens read farther.",
-
   "pack.mnemolith.description": "Mnemolith memory resources",
   "subtitles.mnemolith.imprint_write": "Imprint writes",
   "subtitles.mnemolith.extract": "Imprint extracted",
@@ -226,5 +212,39 @@
   "subtitles.mnemolith.replicant_hurt": "Moment replicant hurt",
   "subtitles.mnemolith.replicant_death": "Moment replicant collapses",
   "subtitles.mnemolith.replicant_telegraph": "Moment replicant telegraphs",
-  "subtitles.mnemolith.replicant_blind": "Chronicle lens flashes"
+  "subtitles.mnemolith.replicant_blind": "Chronicle lens flashes",
+  "mnemolith.configuration.catalogEnabled": "Catalog Enabled",
+  "mnemolith.configuration.catalogEnabled.tooltip": "Whether a catalog fragment opens the discovery catalog.",
+  "mnemolith.configuration.discoveryHints": "Discovery Hints",
+  "mnemolith.configuration.discoveryHints.tooltip": "Whether the catalog and reel may show how many stable patterns are still unread. Unread patterns stay hidden.",
+  "mnemolith.configuration.lensOverlay": "Lens Overlay",
+  "mnemolith.configuration.lensOverlay.tooltip": "Whether the chronicle lens draws the pressure pill above the hotbar.",
+  "mnemolith.configuration.overlayOpacity": "Overlay Opacity",
+  "mnemolith.configuration.overlayOpacity.tooltip": "Opacity, from 0.2 to 1.0, of the lens pressure pill. The band name stays readable.",
+  "mnemolith.configuration.showNumericPressure": "Show Numeric Pressure",
+  "mnemolith.configuration.showNumericPressure.tooltip": "Whether the lens pill includes the numeric pressure beside the band name.",
+  "mnemolith.gui.done": "Done",
+  "mnemolith.gui.catalog": "Discovery Catalog",
+  "mnemolith.gui.catalog_empty": "Extract an imprint. The catalog keeps only what you have learned.",
+  "mnemolith.gui.catalog_tags": "Learned tags",
+  "mnemolith.gui.catalog_formulas": "Stable patterns",
+  "mnemolith.gui.catalog_no_formula": "No stable pattern yet.",
+  "mnemolith.gui.catalog_remaining": "Patterns still unread: %s",
+  "mnemolith.gui.compose_idle": "Place slips, then compose.",
+  "mnemolith.gui.compose_success": "Composed %s",
+  "mnemolith.gui.compose_fail": "The slips refuse to hold together.",
+  "mnemolith.gui.compose_empty": "The reel is empty.",
+  "mnemolith.gui.compose_disabled": "Composition is disabled.",
+  "mnemolith.gui.compose_unknown": "?",
+  "mnemolith.gui.compose_no_pattern": "No learned pattern yet.",
+  "mnemolith.gui.lens_waiting": "Reading",
+  "mnemolith.gui.lens_pressure": "%s %s",
+  "mnemolith.state.normal": "Clear",
+  "mnemolith.state.muted": "Muted",
+  "mnemolith.state.archival": "Archival",
+  "mnemolith.state.fractured": "Fractured",
+  "mnemolith.message.mute_first": "Mute stone. This chunk will not take new imprints.",
+  "mnemolith.message.observatory_first": "Chronicle observatory. The reel here still answers to the same formulas.",
+  "mnemolith.message.catalog_disabled": "The catalog is closed.",
+  "item.mnemolith.catalog_fragment.hint": "Use to open the tags and patterns you have already learned."
 }

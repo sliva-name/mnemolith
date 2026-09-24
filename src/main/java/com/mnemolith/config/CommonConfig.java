@@ -27,6 +27,8 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
     public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
     public static final ModConfigSpec.IntValue MUTE_RADIUS_CHUNKS;
+    public static final ModConfigSpec.BooleanValue CATALOG_ENABLED;
+    public static final ModConfigSpec.BooleanValue DISCOVERY_HINTS;
     public static final ModConfigSpec.BooleanValue ECHO_STRIDER_ENABLED;
     public static final ModConfigSpec.BooleanValue ARCHIVIST_ENABLED;
     public static final ModConfigSpec.BooleanValue MOMENT_REPLICANT_ENABLED;
@@ -220,6 +222,14 @@ public final class CommonConfig {
                 .comment("Chebyshev radius, in chunks, of loaded chunks where a mute stone blocks imprint writes. 0 is the stone's own chunk.")
                 .translation("mnemolith.configuration.muteRadiusChunks")
                 .defineInRange("muteRadiusChunks", 0, 0, 2);
+        CATALOG_ENABLED = builder
+                .comment("Whether a catalog fragment opens the discovery catalog.")
+                .translation("mnemolith.configuration.catalogEnabled")
+                .define("catalogEnabled", true);
+        DISCOVERY_HINTS = builder
+                .comment("Whether the catalog and reel may show how many stable patterns are still unread. They never list an unread pattern.")
+                .translation("mnemolith.configuration.discoveryHints")
+                .define("discoveryHints", true);
         builder.pop();
 
         builder.comment("Spawn gates, damage, and the archivist steal cooldown. Eggs and /mnemolith spawn ignore the weight and pressure gates.")
