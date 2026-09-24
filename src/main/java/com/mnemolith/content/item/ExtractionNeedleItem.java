@@ -26,10 +26,18 @@ public class ExtractionNeedleItem extends Item {
         if (!(context.getPlayer() instanceof ServerPlayer player)) {
             return InteractionResult.PASS;
         }
+        int cooldown = CommonConfig.EXTRACTION_COOLDOWN_TICKS.get();
+        if (cooldown > 0 && player.getCooldowns().isOnCooldown(context.getItemInHand())) {
+            player.sendSystemMessage(Component.translatable("mnemolith.message.extract_cooldown"));
+            return InteractionResult.FAIL;
+        }
         Optional<Imprint> extracted = ImprintWriter.extract(level, context.getClickedPos(), player);
         if (extracted.isEmpty()) {
             player.sendSystemMessage(Component.translatable("mnemolith.message.extract_empty"));
             return InteractionResult.FAIL;
+        }
+        if (cooldown > 0) {
+            player.getCooldowns().addCooldown(context.getItemInHand(), cooldown);
         }
         int cost = CommonConfig.EXTRACTION_DURABILITY_COST.get();
         if (cost > 0) {

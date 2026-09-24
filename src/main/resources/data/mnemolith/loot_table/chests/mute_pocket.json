@@ -11,6 +11,11 @@
         },
         {
           "type": "minecraft:item",
+          "name": "mnemolith:extraction_needle",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
           "name": "mnemolith:imprint_slip",
           "weight": 2,
           "functions": [

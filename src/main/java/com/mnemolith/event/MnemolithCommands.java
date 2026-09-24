@@ -106,7 +106,8 @@ public final class MnemolithCommands {
         }
         composePair(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
 
-        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} muted={} writeBlocked={} compose={}", pressure, muted, writeBlocked, compose);
+        PressureBand smokeBand = MemoryPressure.band(pressure);
+        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} band={} muted={} writeBlocked={} compose={}", pressure, smokeBand, muted, writeBlocked, compose);
         int reported = compose;
         boolean reportedMuted = muted;
         boolean reportedBlocked = writeBlocked;

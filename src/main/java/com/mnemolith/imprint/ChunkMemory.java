@@ -39,6 +39,7 @@ public final class ChunkMemory {
     private long lastWriteGameTime;
     private int cachedPressure;
     private int instability;
+    private long lastCoolGameTime;
 
     public ChunkMemory() {}
 
@@ -121,6 +122,55 @@ public final class ChunkMemory {
             return;
         }
         this.instability = Math.min(cap, this.instability + amount);
+    }
+
+    public int coolInstability(int amount) {
+        if (amount <= 0 || this.instability <= 0) {
+            return 0;
+        }
+        int removed = Math.min(amount, this.instability);
+        this.instability -= removed;
+        return removed;
+    }
+
+    /**
+     * Drops the oldest build, redstone, or path imprint that has aged past {@code fadeTicks}.
+     * Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.
+     */
+    public boolean fadeQuiet(long now, int fadeTicks) {
+        if (fadeTicks <= 0 || this.imprints.isEmpty()) {
+            return false;
+        }
+        int oldest = -1;
+        long oldestTime = Long.MAX_VALUE;
+        for (int index = 0; index < this.imprints.size(); index++) {
+            Imprint imprint = this.imprints.get(index);
+            if (!isQuiet(imprint.tag()) || now - imprint.writtenAt() < fadeTicks) {
+                continue;
+            }
+            if (imprint.writtenAt() < oldestTime) {
+                oldestTime = imprint.writtenAt();
+                oldest = index;
+            }
+        }
+        if (oldest < 0) {
+            return false;
+        }
+        this.imprints.remove(oldest);
+        return true;
+    }
+
+    /** One cool pulse per chunk per game tick, even if several players stand in it. Not saved. */
+    public boolean markCoolPulse(long gameTime) {
+        if (this.lastCoolGameTime == gameTime) {
+            return false;
+        }
+        this.lastCoolGameTime = gameTime;
+        return true;
+    }
+
+    private static boolean isQuiet(ImprintTag tag) {
+        return tag == ImprintTag.BUILD || tag == ImprintTag.REDSTONE || tag == ImprintTag.PATH;
     }
 
     public boolean acceptsThrottledWrite(long gameTime, int debounceTicks) {

@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 8**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, and a shared art pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
+This repository is **Phase 9**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, and a balance pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
 
 | | |
 | --- | --- |
@@ -27,8 +27,10 @@ The mod has no required dependencies beyond Minecraft and NeoForge.
 
 ## Gameplay
 
+A fresh world should show a first imprint within the first minute of walking, and a first slip plus one successful compose inside about **10–20 minutes** of ordinary play. Walking writes a path imprint about every 12 blocks. The first place or break writes a build imprint after the chunk's write pause (4 seconds between build and redstone writes). A death or a creeper reaches the saturated band. Building a base, by itself, stays calm. Numbers and the reason for each default are in [docs/balance.md](docs/balance.md).
+
 1. Deaths, explosions, long falls, and block changes write **imprints** on the chunk where they happened. Build and redstone writes are throttled. An unwitnessed death also writes silence. Placing a **mute stone** writes silence, then blocks further writes in its chunk.
-2. Each chunk's **memory pressure** is intensity times tag weight, plus instability from a failed composition, clamped by the soft cap. Bands are calm, saturated, overloaded, and fracture. Fracture is logged. It does not start a storm.
+2. Each chunk's **memory pressure** is the strongest copy of each tag, plus a small share of repeats, plus instability from a failed composition, clamped by the soft cap. Instability cools while you stand in the chunk. Old build, redstone, and path imprints fade. Loud imprints stay until you extract them. Bands are calm, saturated, overloaded, and fracture. Fracture is logged. It does not start a storm.
 3. Hold a **chronicle lens** to see a pressure pill above the hotbar: the band name, and the number unless you turn that off. Sneak to add the chunk state (clear, muted, archival, or fractured). Saturated chunks nearby still shimmer. Put the lens away and the pill is gone.
 4. Use an **extraction needle** on a block in that chunk. The strongest imprint becomes an **imprint slip**, and that tag is added to your catalog.
 5. Put slips in a **composition reel** and press Compose. Learned patterns show as tag icons. Unread ones stay a question mark, or stay hidden if discovery hints are off. Success and failure are written on the screen. The server decides the result.
@@ -36,12 +38,12 @@ The mod has no required dependencies beyond Minecraft and NeoForge.
 
 | Slips | Result |
 | --- | --- |
-| Death + silence | Unrecorded. Mobs lose you as a target for a short time |
-| Fire + build | Fire trail, brief fire resistance, and snow underfoot melts |
-| Fall + player | The next hard landing is softened once |
+| Death + silence | Unrecorded, 15 seconds. Mobs lose you as a target |
+| Fire + build | Fire trail for 12 seconds, fire resistance, and a small speed bonus. Snow underfoot melts |
+| Fall + player | For 20 seconds, the next hard landing is softened once |
 | Silence + player | Archivist bait. Drop it to freeze an archivist |
 
-A wrong pair damages one slip, spikes pressure in the reel's chunk, and can spawn a moment replicant. Recipes use amethyst, glass, copper, iron, sticks, paper, a crafting table, ink, cobblestone, and redstone. Items are on the Mnemolith creative tab.
+A wrong pair damages one slip and spikes pressure in the reel's chunk. A moment replicant is asked only if that chunk is then overloaded or fractured. A mistake on a quiet chunk does not call one. Recipes use amethyst, glass, copper, iron, sticks, paper, a crafting table, ink, cobblestone, and redstone. Items are on the Mnemolith creative tab. The needle costs 2 durability per extract and rests for one second.
 
 Three mobs spawn in the overworld only where the chunk is loud enough, and from eggs or `/mnemolith spawn`:
 
@@ -55,9 +57,9 @@ Three generated places use that loop. They are sparse, and each one can be turne
 
 | Place | Where | What it changes |
 | --- | --- | --- |
-| Archival vein | Underground stone, about 12% of overworld chunks, Y −48 to 32 | Archival stratum adds a small pressure bleed (default 1 each, at most 6) and, while you hold the lens, a wider read plus a few particles on the vein |
-| Mute pocket | A small buried room, about 2% of chunks | Mute stone lining. Imprint writes in that chunk stop. Echo striders do not naturally spawn there. Some pockets have a chest |
-| Chronicle observatory | A ruined platform on forest, hill, taiga, jungle, mountain, plains, meadow, savanna, desert, or snowy ground. About one every 40 chunks, 16 chunks apart | A composition reel, a crafting table, and a chest with a lens, a needle, slips, and an archival tablet. Archivists are a little more willing to spawn nearby |
+| Archival vein | Underground stone, about 8% of overworld chunks, Y −48 to 32 | Archival stratum adds a small pressure bleed (default 1 each, at most 6) and, while you hold the lens, a wider read plus a few particles on the vein |
+| Mute pocket | A small buried room, about 4% of chunks | Mute stone lining. Imprint writes in that chunk stop. Echo striders do not naturally spawn there. Some pockets have a chest, sometimes with a needle |
+| Chronicle observatory | A ruined platform on forest, hill, taiga, jungle, mountain, plains, meadow, savanna, desert, or snowy ground. About one every 32 chunks, 12 chunks apart | A composition reel, a crafting table, and a chest that always has a lens or a needle, plus a tablet, mute stone, or teaching slips. Archivists spawn nearby only once the chunk is loud |
 
 `/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith mobs` spawns all three and makes the archivist steal once. `/mnemolith worldgen` force-places a vein and a mute pocket at your feet. `/locate structure mnemolith:chronicle_observatory` finds an observatory.
 
@@ -75,7 +77,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (32 chunks, separation 12 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost and cooldown, instability decay, quiet fade, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Multiplayer
 
@@ -158,7 +160,7 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 8**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти и общий художественный проход для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. Полноэкранного шейдера разлома, нового биома и Шрама нет.
+Это **фаза 9**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти, общий художественный проход и настройка баланса для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. Полноэкранного шейдера разлома, нового биома и Шрама нет.
 
 ### Оформление
 
@@ -175,11 +177,13 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 ### Игра
 
-Смерть, взрыв, долгое падение и установка или разрушение блока оставляют **отпечаток** на чанке. **Глушащий камень** после записи тишины запрещает новые отпечатки в своём чанке и прогоняет эхо-странника. **Хроникальная линза** показывает плашку давления над панелью быстрого доступа; крадитесь, чтобы увидеть состояние чанка, и используйте её, чтобы ослепить репликанта момента. Без линзы плашки нет. **Игла извлечения** забирает сильнейший отпечаток в **бланк** и записывает метку в каталог. **Барабан составления** принимает четыре формулы: смерть и тишина (незаписанный), огонь и стройка (огненный след), падение и игрок (всплеск приземления), тишина и игрок (приманка архивариуса). Изученные узоры видны значками меток, неизвестные остаются вопросом. Неверная пара портит один бланк, поднимает давление и может призвать репликанта. **Фрагмент каталога** открывает только то, что вы уже узнали. Разлом пишется в журнал и не начинает бурю.
+На новом мире первый отпечаток появляется в первую минуту ходьбы, а первый бланк и одно удачное составление — примерно за **10–20 минут** обычной игры. Стройка сама по себе оставляет чанк спокойным. Смерть или крипер доводят его до насыщения. Числа и причины — в [docs/balance.md](docs/balance.md).
 
-Эхо-странник ходит по вашему пути и делает рывок в перегруженном чанке. Архивариус забирает один бланк из открытого сундука, из руки или с земли. Резонаторная ловушка и приманка его останавливают. Репликант момента копирует удар, прыжок, установку блока или использование предмета.
+Смерть, взрыв, долгое падение и установка или разрушение блока оставляют **отпечаток** на чанке. **Глушащий камень** после записи тишины запрещает новые отпечатки в своём чанке и прогоняет эхо-странника. **Хроникальная линза** показывает плашку давления над панелью быстрого доступа; крадитесь, чтобы увидеть состояние чанка, и используйте её, чтобы ослепить репликанта момента. Без линзы плашки нет. **Игла извлечения** забирает сильнейший отпечаток в **бланк** и записывает метку в каталог. Между извлечениями она отдыхает секунду и тратит 2 прочности. **Барабан составления** принимает четыре формулы: смерть и тишина (незаписанный, 15 секунд), огонь и стройка (огненный след, 12 секунд), падение и игрок (всплеск приземления, 20 секунд), тишина и игрок (приманка архивариуса). Изученные узоры видны значками меток, неизвестные остаются вопросом. Неверная пара портит один бланк и поднимает давление. Репликант призывается, только если чанк после этого перегружен или в разломе. Нестабильность остывает, пока вы стоите в чанке. Старые отпечатки стройки, редстоуна и пути затухают. **Фрагмент каталога** открывает только то, что вы уже узнали. Разлом пишется в журнал и не начинает бурю.
 
-Под землёй встречается **архивная жила**: пласт чуть поднимает давление и, пока в руке линза, расширяет чтение. **Глухой карман** выложен глушащим камнем и не принимает новые отпечатки. **Хроникальная обсерватория** — редкая руина с барабаном составления и сундуком (линза, игла, бланки, архивная табличка). Обсерватории стоят примерно раз в 40 чанков. Шахт и нового биома нет.
+Эхо-странник ходит по вашему пути и делает рывок в перегруженном чанке. Архивариус появляется в перегруженном чанке и забирает один бланк из открытого сундука, из руки или с земли. Резонаторная ловушка и приманка его останавливают. Репликант момента копирует удар, прыжок, установку блока или использование предмета после более длинного телеграфа.
+
+Под землёй встречается **архивная жила** (около 8% чанков): пласт чуть поднимает давление и, пока в руке линза, расширяет чтение. **Глухой карман** (около 4% чанков) выложен глушащим камнем и не принимает новые отпечатки. **Хроникальная обсерватория** — руина с барабаном составления и сундуком, в котором всегда есть линза или игла. Обсерватории стоят примерно раз в 32 чанка, с разделением 12. Шахт и нового биома нет.
 
 `/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
 

@@ -137,21 +137,26 @@ public final class ImprintEvents {
 
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
-        if (!(event.getLevel() instanceof ServerLevel) || !(event.getChunk() instanceof LevelChunk chunk)) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
         }
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory != null) {
+            memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());
             MemoryPressure.recompute(chunk, memory);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !player.hasEffect(ModEffects.FIRE_TRAIL)) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
             return;
         }
-        if (player.tickCount % ImprintConstants.FIRE_TRAIL_INTERVAL_TICKS != 0 || !(player.level() instanceof ServerLevel level)) {
+        coolPressure(level, player);
+        if (!player.hasEffect(ModEffects.FIRE_TRAIL)) {
+            return;
+        }
+        if (player.tickCount % ImprintConstants.FIRE_TRAIL_INTERVAL_TICKS != 0) {
             return;
         }
         level.sendParticles(ParticleTypes.FLAME, player.getX(), player.getY(), player.getZ(), 2, 0.2D, 0.05D, 0.2D, 0.01D);
@@ -176,6 +181,32 @@ public final class ImprintEvents {
         if (next != null && next.hasEffect(ModEffects.UNRECORDED)) {
             event.setNewAboutToBeSetTarget(null);
         }
+    }
+
+    private static void coolPressure(ServerLevel level, ServerPlayer player) {
+        int interval = CommonConfig.INSTABILITY_DECAY_TICKS.get();
+        if (interval <= 0 || level.getGameTime() % interval != 0) {
+            return;
+        }
+        LevelChunk chunk = level.getChunkAt(player.blockPosition());
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        if (memory == null || !memory.markCoolPulse(level.getGameTime())) {
+            return;
+        }
+        boolean changed = memory.coolInstability(CommonConfig.INSTABILITY_DECAY.get()) > 0;
+        if (memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get())) {
+            changed = true;
+        }
+        if (!changed) {
+            return;
+        }
+        MemoryPressure.recompute(chunk, memory);
+        Mnemolith.LOGGER.info(
+                "Mnemolith pressure cool chunk {} {} pressure={} instability={}",
+                chunk.getPos().x(),
+                chunk.getPos().z(),
+                memory.cachedPressure(),
+                memory.instability());
     }
 
     private static void writeBuild(ServerLevel level, BlockPos pos, BlockState state, Player player) {

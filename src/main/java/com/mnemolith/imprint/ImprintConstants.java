@@ -24,13 +24,13 @@ public final class ImprintConstants {
     public static final int NEEDLE_DURABILITY = 64;
     public static final int SLIP_STACK_SIZE = 16;
 
-    public static final int UNRECORDED_DURATION_TICKS = 200;
-    public static final int FIRE_TRAIL_DURATION_TICKS = 160;
-    public static final int LANDING_BURST_DURATION_TICKS = 600;
+    public static final int UNRECORDED_DURATION_TICKS = 300;
+    public static final int FIRE_TRAIL_DURATION_TICKS = 240;
+    public static final int LANDING_BURST_DURATION_TICKS = 400;
     public static final int FIRE_TRAIL_INTERVAL_TICKS = 10;
     public static final double LANDING_BURST_MIN_DISTANCE = 2.0D;
-    public static final float LANDING_BURST_DAMAGE_MULTIPLIER = 0.2F;
-    public static final double FIRE_TRAIL_SPEED_BONUS = 0.08D;
+    public static final float LANDING_BURST_DAMAGE_MULTIPLIER = 0.35F;
+    public static final double FIRE_TRAIL_SPEED_BONUS = 0.04D;
 
     /** Blocks. An unwitnessed death inside this distance of a player does not gain the silence tag. */
     public static final double WITNESS_RANGE = 32.0D;

@@ -2,27 +2,27 @@
   "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": 3.0,
+      "rolls": 1.0,
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "mnemolith:archival_tablet",
-          "weight": 8
-        },
-        {
-          "type": "minecraft:item",
-          "name": "mnemolith:composition_reel",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
           "name": "mnemolith:chronicle_lens",
-          "weight": 2
+          "weight": 1
         },
         {
           "type": "minecraft:item",
           "name": "mnemolith:extraction_needle",
-          "weight": 3
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 2.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archival_tablet",
+          "weight": 6
         },
         {
           "type": "minecraft:item",
@@ -31,8 +31,13 @@
         },
         {
           "type": "minecraft:item",
+          "name": "mnemolith:composition_reel",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
           "name": "mnemolith:imprint_slip",
-          "weight": 5,
+          "weight": 4,
           "functions": [
             {
               "function": "minecraft:set_components",
@@ -51,7 +56,7 @@
         {
           "type": "minecraft:item",
           "name": "mnemolith:imprint_slip",
-          "weight": 5,
+          "weight": 4,
           "functions": [
             {
               "function": "minecraft:set_components",
