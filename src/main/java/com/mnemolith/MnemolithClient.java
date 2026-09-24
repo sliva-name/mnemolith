@@ -2,6 +2,8 @@ package com.mnemolith;
 
 import com.mnemolith.client.audio.ClientAudio;
 import com.mnemolith.client.gui.ClientScreens;
+import com.mnemolith.client.gui.FieldGuideClient;
+import com.mnemolith.client.gui.GuiArt;
 import com.mnemolith.client.gui.LensOverlay;
 import com.mnemolith.client.network.ClientPayloads;
 import com.mnemolith.client.particle.ClientParticles;
@@ -38,6 +40,7 @@ public final class MnemolithClient {
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(FieldGuideClient::onRightClick);
     }
 
     @SubscribeEvent
@@ -49,5 +52,12 @@ public final class MnemolithClient {
             ClientScreens.init();
         });
         Mnemolith.LOGGER.info("Mnemolith client setup; imprintParticles={}", ClientConfig.IMPRINT_PARTICLES.get());
+        Mnemolith.LOGGER.info(
+                "Mnemolith gui contrast glyph={} shadow={} panel={} accent={} fail={}",
+                Integer.toHexString(GuiArt.BONE),
+                Integer.toHexString(GuiArt.SHADOW),
+                Integer.toHexString(GuiArt.INK),
+                Integer.toHexString(GuiArt.VERDIGRIS),
+                Integer.toHexString(GuiArt.FAIL));
     }
 }

@@ -49,14 +49,15 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         for (Slot slot : this.menu.slots) {
             GuiArt.slot(graphics, slot.x - 1, slot.y - 1);
         }
-        super.extractLabels(graphics, mouseX, mouseY);
+        GuiArt.label(graphics, this.font, this.title, this.titleLabelX, this.titleLabelY, GuiArt.BONE);
+        GuiArt.label(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, GuiArt.BONE);
         Component status = this.statusLine();
         int color = switch (this.menu.status()) {
             case ComposeResult.SUCCESS -> GuiArt.VERDIGRIS;
             case ComposeResult.FAIL, ComposeResult.DISABLED -> GuiArt.FAIL;
-            default -> GuiArt.INK;
+            default -> GuiArt.BONE;
         };
-        graphics.textWithWordWrap(this.font, status, 8, 74, this.imageWidth - 16, color);
+        GuiArt.paragraph(graphics, this.font, status, 8, 74, this.imageWidth - 16, color);
         this.drawSilhouettes(graphics);
     }
 
@@ -75,7 +76,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         boolean hints = CommonConfig.DISCOVERY_HINTS.get();
         int known = Integer.bitCount(mask & ((1 << Discovery.FORMULA_COUNT) - 1));
         if (!hints && known == 0) {
-            graphics.text(this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, 100, GuiArt.INK, false);
+            GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, 100, GuiArt.BONE);
             return;
         }
         int x = 8;
@@ -88,8 +89,8 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
                     iconX += 16;
                 }
             } else if (hints) {
-                graphics.fill(x, 100, x + 34, 114, 0xFF1C244A);
-                graphics.text(this.font, Component.translatable("mnemolith.gui.compose_unknown"), x + 13, 103, GuiArt.BONE, false);
+                graphics.fill(x, 100, x + 34, 114, GuiArt.CHIP);
+                GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_unknown"), x + 13, 103, GuiArt.BONE);
             }
             x += 42;
         }

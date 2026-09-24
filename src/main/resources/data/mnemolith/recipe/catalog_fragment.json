@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "minecraft:paper",
+    "A": "minecraft:amethyst_shard",
+    "I": "minecraft:ink_sac"
+  },
+  "pattern": [
+    "P",
+    "A",
+    "I"
+  ],
+  "result": {
+    "id": "mnemolith:catalog_fragment"
+  }
+}

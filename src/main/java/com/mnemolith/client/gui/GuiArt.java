@@ -3,25 +3,52 @@ package com.mnemolith.client.gui;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.imprint.ImprintTag;
 
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-/** Archival panel, slot, and tag icons. Drawn with the GUI texture pipeline. */
+/**
+ * Archival panel, slot, and tag icons. Drawn with the GUI texture pipeline.
+ * Glyphs on the panel are bone or a light accent. The shadow is darker than the panel and is not the glyph color.
+ */
 public final class GuiArt {
     public static final Identifier PANEL = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/gui/panel.png");
     public static final Identifier SLOT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/gui/slot.png");
     public static final Identifier TAGS = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/gui/tags.png");
 
+    /** Panel fill. Not a glyph color. */
     public static final int INK = 0xFF1C244A;
+    /** Light glyph on the dark panel. */
     public static final int BONE = 0xFFE6DCC8;
-    public static final int VERDIGRIS = 0xFF1F6B5C;
-    public static final int FAIL = 0xFF8C2F2F;
+    /** Drop shadow. Darker than {@link #INK}, not {@code #000000}, and not equal to {@link #BONE}. */
+    public static final int SHADOW = 0xFF070B18;
+    /** Light verdigris glyph. The pigment {@code #3E8E7E} is too close to the panel for small text. */
+    public static final int VERDIGRIS = 0xFF8ED9C8;
+    /** Light ember glyph for a failed compose. */
+    public static final int FAIL = 0xFFFFB089;
+    /** Chip behind an unread formula. Darker than the panel so bone text stays separated. */
+    public static final int CHIP = 0xFF101628;
 
     private static final int BORDER = 4;
     private static final int PANEL_SIZE = 32;
 
     private GuiArt() {}
+
+    /**
+     * Light glyph, then a softer shadow one pixel down and right.
+     * The font shadow flag stays off: that shadow is near-black and disappears into the panel when the glyph is dark.
+     */
+    public static void label(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color) {
+        graphics.text(font, text, x + 1, y + 1, SHADOW, false);
+        graphics.text(font, text, x, y, color, false);
+    }
+
+    public static void paragraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color) {
+        graphics.textWithWordWrap(font, text, x + 1, y + 1, width, SHADOW, false);
+        graphics.textWithWordWrap(font, text, x, y, width, color, false);
+    }
 
     public static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         int border = BORDER;

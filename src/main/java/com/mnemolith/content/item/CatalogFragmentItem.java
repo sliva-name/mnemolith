@@ -29,8 +29,13 @@ public class CatalogFragmentItem extends Item {
             serverPlayer.sendOverlayMessage(Component.translatable("mnemolith.message.catalog_disabled"));
             return InteractionResult.FAIL;
         }
-        Discovery discovery = serverPlayer.getData(ModAttachments.DISCOVERY.get());
-        PacketDistributor.sendToPlayer(serverPlayer, new OpenCatalogPayload(discovery.tags(), discovery.formulas()));
+        PacketDistributor.sendToPlayer(serverPlayer, payloadFor(serverPlayer));
         return InteractionResult.SUCCESS;
+    }
+
+    /** The bits the catalog screen is allowed to draw. Undiscovered tags and formulas stay clear. */
+    public static OpenCatalogPayload payloadFor(ServerPlayer player) {
+        Discovery discovery = player.getData(ModAttachments.DISCOVERY.get());
+        return new OpenCatalogPayload(discovery.tags(), discovery.formulas());
     }
 }
