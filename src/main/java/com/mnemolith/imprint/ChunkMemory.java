@@ -23,11 +23,13 @@ public final class ChunkMemory {
             Codec.BOOL.fieldOf("archival").forGetter(ChunkMemory::archival),
             Codec.LONG.fieldOf("last_write").forGetter(ChunkMemory::lastWriteGameTime),
             Codec.INT.fieldOf("pressure").forGetter(ChunkMemory::cachedPressure),
-            Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability)
+            Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
+            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
+    private final List<BlockPos> resonators = new ArrayList<>();
     private boolean fractured;
     private boolean archival;
     private long lastWriteGameTime;
@@ -36,7 +38,7 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -45,12 +47,14 @@ public final class ChunkMemory {
         memory.lastWriteGameTime = lastWriteGameTime;
         memory.cachedPressure = cachedPressure;
         memory.instability = instability;
+        memory.resonators.addAll(resonators);
         return memory;
     }
 
     public boolean isEmpty() {
         return this.imprints.isEmpty()
                 && this.muteStones.isEmpty()
+                && this.resonators.isEmpty()
                 && !this.fractured
                 && !this.archival
                 && this.instability == 0;
@@ -169,6 +173,29 @@ public final class ChunkMemory {
 
     public boolean removeMuteStone(BlockPos pos) {
         return this.muteStones.remove(pos);
+    }
+
+    public List<BlockPos> resonatorsCopy() {
+        return List.copyOf(this.resonators);
+    }
+
+    public boolean hasResonator() {
+        return !this.resonators.isEmpty();
+    }
+
+    public boolean addResonator(BlockPos pos) {
+        if (this.resonators.size() >= ImprintConstants.ABSOLUTE_LIST_CAP) {
+            return false;
+        }
+        if (this.resonators.contains(pos)) {
+            return false;
+        }
+        this.resonators.add(pos.immutable());
+        return true;
+    }
+
+    public boolean removeResonator(BlockPos pos) {
+        return this.resonators.remove(pos);
     }
 
     public List<ImprintTag> tags() {

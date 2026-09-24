@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mnemolith:block/resonator_trap"
+    }
+  }
+}

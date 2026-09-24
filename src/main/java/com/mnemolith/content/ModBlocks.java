@@ -5,6 +5,7 @@ import java.util.function.UnaryOperator;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
+import com.mnemolith.content.block.ResonatorTrapBlock;
 
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -23,6 +24,10 @@ public final class ModBlocks {
             "composition_reel",
             CompositionReelBlock::new,
             reelProperties());
+    public static final DeferredBlock<ResonatorTrapBlock> RESONATOR_TRAP = BLOCKS.registerBlock(
+            "resonator_trap",
+            ResonatorTrapBlock::new,
+            trapProperties());
 
     private ModBlocks() {}
 
@@ -32,5 +37,9 @@ public final class ModBlocks {
 
     private static UnaryOperator<BlockBehaviour.Properties> reelProperties() {
         return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 3.0F).sound(SoundType.AMETHYST);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> trapProperties() {
+        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 6.0F).sound(SoundType.METAL);
     }
 }

@@ -22,6 +22,14 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.IMPRINT_SLIP.get());
                 output.accept(ModItems.COMPOSITION_REEL.get());
                 output.accept(ModItems.MUTE_STONE.get());
+                output.accept(ModItems.RESONATOR_TRAP.get());
+                output.accept(ModItems.ARCHIVIST_BAIT.get());
+                output.accept(ModItems.CATALOG_FRAGMENT.get());
+                output.accept(ModItems.ARCHIVIST_HUSK.get());
+                output.accept(ModItems.UNSTABLE_SLIP.get());
+                output.accept(ModItems.ECHO_STRIDER_SPAWN_EGG.get());
+                output.accept(ModItems.ARCHIVIST_SPAWN_EGG.get());
+                output.accept(ModItems.MOMENT_REPLICANT_SPAWN_EGG.get());
             })
             .withTabsBefore(CreativeModeTabs.TOOLS_AND_UTILITIES)
             .build());

@@ -16,6 +16,7 @@ public final class ImprintConstants {
     public static final int PLAYER_INTENSITY = 2;
     public static final int BUILD_INTENSITY = 1;
     public static final int REDSTONE_INTENSITY = 1;
+    public static final int PATH_INTENSITY = 1;
 
     /** Codec and mute-list ceiling. Gameplay uses {@code gameplay.maxImprintsPerChunk}, which cannot exceed this. */
     public static final int ABSOLUTE_LIST_CAP = 64;

@@ -73,6 +73,48 @@ public final class LoadedChunkMemory {
         }
     }
 
+    public static void addResonator(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.addResonator(pos)) {
+            chunk.markUnsaved();
+        }
+    }
+
+    public static void removeResonator(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = existing(chunk);
+        if (memory != null && memory.removeResonator(pos)) {
+            chunk.markUnsaved();
+        }
+    }
+
+    /** Loaded chunks in a one-chunk ring. Range is a few blocks, so the ring is enough. */
+    public static boolean resonatorNearby(ServerLevel level, BlockPos pos, double range) {
+        double rangeSqr = range * range;
+        int originX = pos.getX() >> 4;
+        int originZ = pos.getZ() >> 4;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                int chunkX = originX + dx;
+                int chunkZ = originZ + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
+                if (memory == null) {
+                    continue;
+                }
+                for (BlockPos resonator : memory.resonatorsCopy()) {
+                    if (resonator.distSqr(pos) <= rangeSqr) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static ChunkState stateOf(ChunkMemory memory, boolean muted) {
         if (memory != null && memory.fractured()) {
             return ChunkState.FRACTURED;

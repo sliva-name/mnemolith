@@ -34,5 +34,57 @@
         "name": "minecraft:block.beacon.deactivate"
       }
     ]
+  },
+  "strider_ambient": {
+    "subtitle": "subtitles.mnemolith.strider_ambient",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.ambient" }]
+  },
+  "strider_hurt": {
+    "subtitle": "subtitles.mnemolith.strider_hurt",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.hurt" }]
+  },
+  "strider_death": {
+    "subtitle": "subtitles.mnemolith.strider_death",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.death" }]
+  },
+  "strider_charge": {
+    "subtitle": "subtitles.mnemolith.strider_charge",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.teleport" }]
+  },
+  "archivist_ambient": {
+    "subtitle": "subtitles.mnemolith.archivist_ambient",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.ambient_without_item" }]
+  },
+  "archivist_hurt": {
+    "subtitle": "subtitles.mnemolith.archivist_hurt",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.hurt" }]
+  },
+  "archivist_death": {
+    "subtitle": "subtitles.mnemolith.archivist_death",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.death" }]
+  },
+  "archivist_steal": {
+    "subtitle": "subtitles.mnemolith.archivist_steal",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.item_taken" }]
+  },
+  "replicant_ambient": {
+    "subtitle": "subtitles.mnemolith.replicant_ambient",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.ambient" }]
+  },
+  "replicant_hurt": {
+    "subtitle": "subtitles.mnemolith.replicant_hurt",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.hurt" }]
+  },
+  "replicant_death": {
+    "subtitle": "subtitles.mnemolith.replicant_death",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.death" }]
+  },
+  "replicant_telegraph": {
+    "subtitle": "subtitles.mnemolith.replicant_telegraph",
+    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.charge" }]
+  },
+  "replicant_blind": {
+    "subtitle": "subtitles.mnemolith.replicant_blind",
+    "sounds": [{ "type": "event", "name": "minecraft:item.spyglass.use" }]
   }
 }

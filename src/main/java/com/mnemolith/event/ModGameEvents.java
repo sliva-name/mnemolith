@@ -30,6 +30,14 @@ public final class ModGameEvents {
                 .then(Commands.literal("inspect").executes(MnemolithCommands::inspect))
                 .then(Commands.literal("smoke")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
-                        .executes(MnemolithCommands::smoke)));
+                        .executes(MnemolithCommands::smoke))
+                .then(Commands.literal("spawn")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .then(Commands.literal("echo_strider").executes(context -> MnemolithCommands.spawn(context, "echo_strider")))
+                        .then(Commands.literal("archivist").executes(context -> MnemolithCommands.spawn(context, "archivist")))
+                        .then(Commands.literal("moment_replicant").executes(context -> MnemolithCommands.spawn(context, "moment_replicant"))))
+                .then(Commands.literal("mobs")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(MnemolithCommands::mobs)));
     }
 }

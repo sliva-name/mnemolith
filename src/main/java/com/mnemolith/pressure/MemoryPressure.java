@@ -3,10 +3,14 @@ package com.mnemolith.pressure;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.config.ServerConfig;
+import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.Imprint;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /** Pressure is the clamped sum of imprint contributions plus instability. Recomputed when memory changes or a chunk loads. */
 public final class MemoryPressure {
@@ -50,6 +54,12 @@ public final class MemoryPressure {
                     chunk.getPos().x(),
                     chunk.getPos().z(),
                     next);
+            if (chunk.getLevel() instanceof ServerLevel server) {
+                int x = chunk.getPos().getMiddleBlockX();
+                int z = chunk.getPos().getMiddleBlockZ();
+                int y = server.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                MobSpawns.trySpawnReplicant(server, new BlockPos(x, y, z));
+            }
         } else if (ServerConfig.LOG_PRESSURE_CHANGES.get() && previousBand != nextBand) {
             Mnemolith.LOGGER.info(
                     "Mnemolith pressure chunk {} {} {} -> {} ({})",

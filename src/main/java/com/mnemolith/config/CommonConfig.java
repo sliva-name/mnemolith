@@ -27,6 +27,19 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
     public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
     public static final ModConfigSpec.IntValue MUTE_RADIUS_CHUNKS;
+    public static final ModConfigSpec.BooleanValue ECHO_STRIDER_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVIST_ENABLED;
+    public static final ModConfigSpec.BooleanValue MOMENT_REPLICANT_ENABLED;
+    public static final ModConfigSpec.DoubleValue ECHO_STRIDER_DAMAGE;
+    public static final ModConfigSpec.DoubleValue ARCHIVIST_DAMAGE;
+    public static final ModConfigSpec.DoubleValue REPLICANT_DAMAGE;
+    public static final ModConfigSpec.IntValue ARCHIVIST_STEAL_COOLDOWN;
+    public static final ModConfigSpec.IntValue ECHO_STRIDER_SPAWN_WEIGHT;
+    public static final ModConfigSpec.IntValue ARCHIVIST_SPAWN_WEIGHT;
+    public static final ModConfigSpec.IntValue REPLICANT_SPAWN_WEIGHT;
+    public static final ModConfigSpec.IntValue ECHO_STRIDER_MIN_PRESSURE;
+    public static final ModConfigSpec.IntValue ARCHIVIST_MIN_PRESSURE;
+    public static final ModConfigSpec.IntValue REPLICANT_MIN_PRESSURE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -129,13 +142,70 @@ public final class CommonConfig {
                 .translation("mnemolith.configuration.overloadedThreshold")
                 .defineInRange("overloadedThreshold", 50, 1, 10_000);
         FRACTURE_THRESHOLD = builder
-                .comment("Pressure at which a chunk fractures. Fracture is a status and a log line.")
+                .comment("Pressure at which a chunk fractures. Fracture is logged and can spawn a moment replicant.")
                 .translation("mnemolith.configuration.fractureThreshold")
                 .defineInRange("fractureThreshold", 80, 1, 10_000);
         MUTE_RADIUS_CHUNKS = builder
                 .comment("Chebyshev radius, in chunks, of loaded chunks where a mute stone blocks imprint writes. 0 is the stone's own chunk.")
                 .translation("mnemolith.configuration.muteRadiusChunks")
                 .defineInRange("muteRadiusChunks", 0, 0, 2);
+        builder.pop();
+
+        builder.comment("Spawn gates, damage, and the archivist steal cooldown. Eggs and /mnemolith spawn ignore the weight and pressure gates.")
+                .translation("mnemolith.configuration.mobs")
+                .push("mobs");
+        ECHO_STRIDER_ENABLED = builder
+                .comment("Whether echo striders may spawn from pressure and whether their AI runs.")
+                .translation("mnemolith.configuration.echoStriderEnabled")
+                .define("echoStriderEnabled", true);
+        ARCHIVIST_ENABLED = builder
+                .comment("Whether archivists may spawn from pressure and whether they steal slips.")
+                .translation("mnemolith.configuration.archivistEnabled")
+                .define("archivistEnabled", true);
+        MOMENT_REPLICANT_ENABLED = builder
+                .comment("Whether moment replicants may spawn from fracture, composition failure, or pressure.")
+                .translation("mnemolith.configuration.momentReplicantEnabled")
+                .define("momentReplicantEnabled", true);
+        ECHO_STRIDER_DAMAGE = builder
+                .comment("Attack damage of an echo strider charge.")
+                .translation("mnemolith.configuration.echoStriderDamage")
+                .defineInRange("echoStriderDamage", 4.0D, 0.0D, 40.0D);
+        ARCHIVIST_DAMAGE = builder
+                .comment("Attack damage of an archivist. Theft is the threat; this is only a shove.")
+                .translation("mnemolith.configuration.archivistDamage")
+                .defineInRange("archivistDamage", 2.0D, 0.0D, 40.0D);
+        REPLICANT_DAMAGE = builder
+                .comment("Attack damage when a moment replicant copies a melee hit.")
+                .translation("mnemolith.configuration.replicantDamage")
+                .defineInRange("replicantDamage", 5.0D, 0.0D, 40.0D);
+        ARCHIVIST_STEAL_COOLDOWN = builder
+                .comment("Ticks an archivist waits after a successful theft before it can steal again.")
+                .translation("mnemolith.configuration.archivistStealCooldown")
+                .defineInRange("archivistStealCooldown", 200, 20, 20_000);
+        ECHO_STRIDER_SPAWN_WEIGHT = builder
+                .comment("Chance, out of 100, that a natural echo strider spawn attempt is kept. 0 disables natural spawns.")
+                .translation("mnemolith.configuration.echoStriderSpawnWeight")
+                .defineInRange("echoStriderSpawnWeight", 50, 0, 100);
+        ARCHIVIST_SPAWN_WEIGHT = builder
+                .comment("Chance, out of 100, that a natural archivist spawn attempt is kept. 0 disables natural spawns.")
+                .translation("mnemolith.configuration.archivistSpawnWeight")
+                .defineInRange("archivistSpawnWeight", 40, 0, 100);
+        REPLICANT_SPAWN_WEIGHT = builder
+                .comment("Chance, out of 100, that a natural moment replicant spawn attempt is kept. 0 disables natural spawns.")
+                .translation("mnemolith.configuration.replicantSpawnWeight")
+                .defineInRange("replicantSpawnWeight", 20, 0, 100);
+        ECHO_STRIDER_MIN_PRESSURE = builder
+                .comment("Minimum cached pressure before an echo strider can spawn naturally. Defaults to the saturated band.")
+                .translation("mnemolith.configuration.echoStriderMinPressure")
+                .defineInRange("echoStriderMinPressure", 20, 0, 10_000);
+        ARCHIVIST_MIN_PRESSURE = builder
+                .comment("Minimum cached pressure before an archivist can spawn naturally. Defaults to the saturated band.")
+                .translation("mnemolith.configuration.archivistMinPressure")
+                .defineInRange("archivistMinPressure", 20, 0, 10_000);
+        REPLICANT_MIN_PRESSURE = builder
+                .comment("Minimum cached pressure before a moment replicant can spawn naturally. Defaults to the fracture band.")
+                .translation("mnemolith.configuration.replicantMinPressure")
+                .defineInRange("replicantMinPressure", 80, 0, 10_000);
         builder.pop();
 
         SPEC = builder.build();
