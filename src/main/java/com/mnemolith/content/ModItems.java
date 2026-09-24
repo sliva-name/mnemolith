@@ -3,6 +3,7 @@ package com.mnemolith.content;
 import java.util.function.UnaryOperator;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.content.item.CatalogFragmentItem;
 import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.content.item.ExtractionNeedleItem;
 import com.mnemolith.content.item.ImprintSlipItem;
@@ -30,7 +31,10 @@ public final class ModItems {
             ImprintSlipItem::new,
             slip());
     public static final DeferredItem<Item> ARCHIVIST_BAIT = ITEMS.registerItem("archivist_bait", Item::new, stackTo(16));
-    public static final DeferredItem<Item> CATALOG_FRAGMENT = ITEMS.registerItem("catalog_fragment", Item::new, stackTo(64));
+    public static final DeferredItem<CatalogFragmentItem> CATALOG_FRAGMENT = ITEMS.registerItem(
+            "catalog_fragment",
+            CatalogFragmentItem::new,
+            stackTo(64));
     public static final DeferredItem<Item> ARCHIVIST_HUSK = ITEMS.registerItem("archivist_husk", Item::new, stackTo(64));
     public static final DeferredItem<Item> UNSTABLE_SLIP = ITEMS.registerItem("unstable_slip", Item::new, stackTo(16));
     public static final DeferredItem<Item> ARCHIVAL_TABLET = ITEMS.registerItem("archival_tablet", Item::new, stackTo(16));

@@ -157,7 +157,7 @@ public class Archivist extends MemoryMob {
         level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 1.1F);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 8, 0.3D, 0.4D, 0.3D, 0.2D);
         if (player != null && cast != null) {
-            player.sendSystemMessage(Component.translatable("mnemolith.message.stolen", Component.translatable(cast.tag().translationKey())));
+            player.sendOverlayMessage(Component.translatable("mnemolith.message.stolen", Component.translatable(cast.tag().translationKey())));
         }
     }
 

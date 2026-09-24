@@ -2,9 +2,13 @@ package com.mnemolith.content.block;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.DiscoveryNotes;
+import com.mnemolith.world.LoadedChunkMemory;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -34,9 +38,13 @@ public class CompositionReelBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof CompositionReelBlockEntity reel) {
+                ChunkMemory memory = LoadedChunkMemory.existing(serverLevel.getChunkAt(pos));
+                if (memory != null && memory.observatory()) {
+                    DiscoveryNotes.noteObservatory(serverPlayer);
+                }
                 serverPlayer.openMenu(reel);
             }
         }

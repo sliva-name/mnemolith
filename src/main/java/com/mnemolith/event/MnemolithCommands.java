@@ -118,7 +118,7 @@ public final class MnemolithCommands {
         SimpleContainer container = new SimpleContainer(3);
         container.setItem(0, ImprintSlips.of(first, pos));
         container.setItem(1, ImprintSlips.of(second, pos));
-        return Composition.compose(level, pos, player, container);
+        return Composition.compose(level, pos, player, container).success();
     }
 
     public static int spawn(CommandContext<CommandSourceStack> context, String name) {

@@ -1,13 +1,11 @@
 {
   "mnemolith.configuration.title": "Мнемолит",
-
   "mnemolith.configuration.section.mnemolith.common.toml": "Общие",
   "mnemolith.configuration.section.mnemolith.common.toml.title": "Общие",
   "mnemolith.configuration.section.mnemolith.client.toml": "Клиент",
   "mnemolith.configuration.section.mnemolith.client.toml.title": "Клиент",
   "mnemolith.configuration.section.mnemolith.server.toml": "Сервер",
   "mnemolith.configuration.section.mnemolith.server.toml.title": "Сервер",
-
   "mnemolith.configuration.difficulty": "Сложность",
   "mnemolith.configuration.difficulty.button": "Сложность",
   "mnemolith.configuration.spawnRates": "Частота появления",
@@ -20,7 +18,6 @@
   "mnemolith.configuration.server.button": "Сервер",
   "mnemolith.configuration.visuals": "Отображение",
   "mnemolith.configuration.visuals.button": "Отображение",
-
   "mnemolith.configuration.recollectionStormThreshold": "Порог бури воспоминаний",
   "mnemolith.configuration.recollectionStormThreshold.tooltip": "Множитель порогов давления памяти, после которых может начаться буря воспоминаний.",
   "mnemolith.configuration.pressureSoftCap": "Мягкий предел давления",
@@ -65,14 +62,12 @@
   "mnemolith.configuration.compositionEnabled.tooltip": "Могут ли игроки составлять извлечённые отпечатки.",
   "mnemolith.configuration.maxImprintsPerChunk": "Максимум отпечатков на чанк",
   "mnemolith.configuration.maxImprintsPerChunk.tooltip": "Сколько отпечатков может хранить один чанк.",
-
   "mnemolith.configuration.allowRecollectionStorms": "Разрешить бури воспоминаний",
   "mnemolith.configuration.allowRecollectionStorms.tooltip": "Могут ли начинаться бури воспоминаний.",
   "mnemolith.configuration.maxStormsPerDimension": "Максимум бурь в измерении",
   "mnemolith.configuration.maxStormsPerDimension.tooltip": "Сколько бурь воспоминаний может идти в одном измерении одновременно.",
   "mnemolith.configuration.logPressureChanges": "Журнал давления",
   "mnemolith.configuration.logPressureChanges.tooltip": "Записывать ли изменения давления в журнал сервера.",
-
   "mnemolith.configuration.imprintParticles": "Частицы отпечатков",
   "mnemolith.configuration.imprintParticles.tooltip": "Показывать ли частицы отпечатков.",
   "mnemolith.configuration.pressureVignette": "Виньетка давления",
@@ -111,7 +106,6 @@
   "mnemolith.configuration.fractureThreshold.tooltip": "Давление, при котором чанк получает разлом. Разлом пишется в журнал и может призвать репликанта момента.",
   "mnemolith.configuration.muteRadiusChunks": "Радиус глушения",
   "mnemolith.configuration.muteRadiusChunks.tooltip": "Радиус Чебышёва в чанках, где глушащий камень запрещает запись. 0 — только свой чанк.",
-
   "mnemolith.configuration.mobs": "Мобы",
   "mnemolith.configuration.mobs.button": "Мобы",
   "mnemolith.configuration.echoStriderEnabled": "Эхо-странник",
@@ -140,10 +134,9 @@
   "mnemolith.configuration.archivistMinPressure.tooltip": "Минимальное давление чанка для естественного появления архивариуса.",
   "mnemolith.configuration.replicantMinPressure": "Минимальное давление репликанта",
   "mnemolith.configuration.replicantMinPressure.tooltip": "Минимальное давление чанка для естественного появления репликанта момента.",
-
   "itemGroup.mnemolith": "Мнемолит",
   "item.mnemolith.chronicle_lens": "Хроникальная линза",
-  "item.mnemolith.chronicle_lens.hint": "Держите, чтобы читать давление. Рядом с архивным пластом чтение достаёт на чанк дальше, и камень светится. Крадитесь и используйте, чтобы ослепить репликантов момента.",
+  "item.mnemolith.chronicle_lens.hint": "Держите, чтобы читать давление плашкой над панелью быстрого доступа. Крадитесь, чтобы увидеть состояние чанка. Рядом с архивным пластом чтение достаёт на чанк дальше, и камень светится. Крадитесь и используйте, чтобы ослепить репликантов момента.",
   "item.mnemolith.extraction_needle": "Игла извлечения",
   "item.mnemolith.extraction_needle.hint": "Используйте на блоке, чтобы вытянуть сильнейший отпечаток в бланк. В чанке с пластом пустое чтение проверяет соседние чанки.",
   "item.mnemolith.imprint_slip": "Бланк отпечатка",
@@ -153,11 +146,9 @@
   "block.mnemolith.composition_reel": "Барабан составления",
   "container.mnemolith.composition_reel": "Барабан составления",
   "mnemolith.gui.compose": "Составить",
-
   "effect.mnemolith.unrecorded": "Незаписанный",
   "effect.mnemolith.fire_trail": "Огненный след",
   "effect.mnemolith.landing_burst": "Всплеск приземления",
-
   "mnemolith.tag.fire": "Огонь",
   "mnemolith.tag.fall": "Падение",
   "mnemolith.tag.death": "Смерть",
@@ -167,17 +158,14 @@
   "mnemolith.tag.player": "Игрок",
   "mnemolith.tag.redstone": "Редстоун",
   "mnemolith.tag.path": "Путь",
-
   "mnemolith.band.calm": "Покой",
   "mnemolith.band.saturated": "Насыщение",
   "mnemolith.band.overloaded": "Перегрузка",
   "mnemolith.band.fracture": "Разлом",
-
   "mnemolith.formula.unrecorded": "Незаписанный",
   "mnemolith.formula.fire_trail": "Огненный след",
   "mnemolith.formula.landing_burst": "Всплеск приземления",
   "mnemolith.formula.bait": "Приманка архивариуса",
-
   "mnemolith.message.pressure": "Память: %s (%s)",
   "mnemolith.message.extracted": "Извлечено: %s (%s)",
   "mnemolith.message.extract_empty": "В этом чанке нечего извлекать.",
@@ -192,7 +180,6 @@
   "mnemolith.command.mobs": "Мобы: странник %s кража %s репликант %s",
   "mnemolith.command.worldgen": "Мир: жила %s карман %s глушение %s пласт %s",
   "mnemolith.message.stolen": "Архивариус забрал бланк: %s.",
-
   "entity.mnemolith.echo_strider": "Эхо-странник",
   "entity.mnemolith.archivist": "Архивариус",
   "entity.mnemolith.moment_replicant": "Репликант момента",
@@ -208,7 +195,6 @@
   "block.mnemolith.archival_stratum": "Архивный пласт",
   "item.mnemolith.archival_tablet": "Архивная табличка",
   "item.mnemolith.archival_tablet.hint": "Тишина и игрок, составленные вместе, становятся приманкой. Жила этого камня чуть поднимает давление и расширяет чтение линзы.",
-
   "pack.mnemolith.description": "Ресурсы памяти Мнемолита",
   "subtitles.mnemolith.imprint_write": "Запись отпечатка",
   "subtitles.mnemolith.extract": "Извлечение отпечатка",
@@ -226,5 +212,39 @@
   "subtitles.mnemolith.replicant_hurt": "Репликант момента ранен",
   "subtitles.mnemolith.replicant_death": "Репликант момента рушится",
   "subtitles.mnemolith.replicant_telegraph": "Репликант момента предупреждает",
-  "subtitles.mnemolith.replicant_blind": "Хроникальная линза вспыхивает"
+  "subtitles.mnemolith.replicant_blind": "Хроникальная линза вспыхивает",
+  "mnemolith.configuration.catalogEnabled": "Каталог включён",
+  "mnemolith.configuration.catalogEnabled.tooltip": "Открывает ли фрагмент каталога каталог открытий.",
+  "mnemolith.configuration.discoveryHints": "Подсказки открытий",
+  "mnemolith.configuration.discoveryHints.tooltip": "Могут ли каталог и барабан показать, сколько устойчивых узоров ещё не прочитано. Сами узоры остаются скрытыми.",
+  "mnemolith.configuration.lensOverlay": "Наложение линзы",
+  "mnemolith.configuration.lensOverlay.tooltip": "Рисует ли хроникальная линза плашку давления над панелью быстрого доступа.",
+  "mnemolith.configuration.overlayOpacity": "Прозрачность наложения",
+  "mnemolith.configuration.overlayOpacity.tooltip": "Прозрачность плашки давления от 0.2 до 1.0. Название полосы остаётся читаемым.",
+  "mnemolith.configuration.showNumericPressure": "Число давления",
+  "mnemolith.configuration.showNumericPressure.tooltip": "Показывать ли число давления рядом с названием полосы.",
+  "mnemolith.gui.done": "Готово",
+  "mnemolith.gui.catalog": "Каталог открытий",
+  "mnemolith.gui.catalog_empty": "Извлеките отпечаток. Каталог хранит только то, что вы уже узнали.",
+  "mnemolith.gui.catalog_tags": "Изученные метки",
+  "mnemolith.gui.catalog_formulas": "Устойчивые узоры",
+  "mnemolith.gui.catalog_no_formula": "Устойчивого узора ещё нет.",
+  "mnemolith.gui.catalog_remaining": "Ещё не прочитано узоров: %s",
+  "mnemolith.gui.compose_idle": "Положите бланки и составьте.",
+  "mnemolith.gui.compose_success": "Составлено: %s",
+  "mnemolith.gui.compose_fail": "Бланки не удерживаются вместе.",
+  "mnemolith.gui.compose_empty": "Барабан пуст.",
+  "mnemolith.gui.compose_disabled": "Составление отключено.",
+  "mnemolith.gui.compose_unknown": "?",
+  "mnemolith.gui.compose_no_pattern": "Изученного узора ещё нет.",
+  "mnemolith.gui.lens_waiting": "Чтение",
+  "mnemolith.gui.lens_pressure": "%s %s",
+  "mnemolith.state.normal": "Ясно",
+  "mnemolith.state.muted": "Глухо",
+  "mnemolith.state.archival": "Архив",
+  "mnemolith.state.fractured": "Разлом",
+  "mnemolith.message.mute_first": "Глушащий камень. Этот чанк больше не принимает отпечатки.",
+  "mnemolith.message.observatory_first": "Хроникальная обсерватория. Барабан здесь отвечает тем же формулам.",
+  "mnemolith.message.catalog_disabled": "Каталог закрыт.",
+  "item.mnemolith.catalog_fragment.hint": "Используйте, чтобы открыть метки и узоры, которые вы уже узнали."
 }

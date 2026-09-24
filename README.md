@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 5**: the core memory loop, three mobs, and three worldgen features on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. There is no new biome and no Scar.
+This repository is **Phase 6**: the core memory loop, three mobs, three worldgen features, and the archival interface on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. There is no new biome and no Scar.
 
 | | |
 | --- | --- |
@@ -29,9 +29,10 @@ The mod has no required dependencies beyond Minecraft and NeoForge.
 
 1. Deaths, explosions, long falls, and block changes write **imprints** on the chunk where they happened. Build and redstone writes are throttled. An unwitnessed death also writes silence. Placing a **mute stone** writes silence, then blocks further writes in its chunk.
 2. Each chunk's **memory pressure** is intensity times tag weight, plus instability from a failed composition, clamped by the soft cap. Bands are calm, saturated, overloaded, and fracture. Fracture is logged. It does not start a storm.
-3. Hold a **chronicle lens** to see the band for your chunk and shimmer on saturated chunks nearby.
-4. Use an **extraction needle** on a block in that chunk. The strongest imprint becomes an **imprint slip**.
-5. Put slips in a **composition reel** and press Compose.
+3. Hold a **chronicle lens** to see a pressure pill above the hotbar: the band name, and the number unless you turn that off. Sneak to add the chunk state (clear, muted, archival, or fractured). Saturated chunks nearby still shimmer. Put the lens away and the pill is gone.
+4. Use an **extraction needle** on a block in that chunk. The strongest imprint becomes an **imprint slip**, and that tag is added to your catalog.
+5. Put slips in a **composition reel** and press Compose. Learned patterns show as tag icons. Unread ones stay a question mark, or stay hidden if discovery hints are off. Success and failure are written on the screen. The server decides the result.
+6. Use a **catalog fragment** to open the tags and patterns you have already learned.
 
 | Slips | Result |
 | --- | --- |
@@ -68,19 +69,19 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 
 | File | Where it loads | What it holds |
 | --- | --- | --- |
-| `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay, mobs |
+| `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs |
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether storms are allowed, the per-dimension cap, pressure logging |
-| `config/mnemolith-client.toml` | Physical client only | Imprint particles, particle density, lens poll interval, pressure vignette, storm screen shake, lens chime volume |
+| `config/mnemolith-client.toml` | Physical client only | Imprint particles, particle density, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, storm screen shake, lens chime volume |
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition) apply the next time that action runs. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Multiplayer
 
 Install the same jar on the client and on the dedicated server. Imprint writes, extraction, composition, and pressure are decided on the server. The lens sends a request and receives a snapshot of nearby chunks. It does not write memory.
 
-Server options in `mnemolith-server.toml` are authoritative and are synced to connected clients. Client options in `mnemolith-client.toml` stay on that player's machine: particles, lens polling, vignette, screen shake, and the lens chime. Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemolith.client`.
+Server options in `mnemolith-server.toml` are authoritative and are synced to connected clients. Client options in `mnemolith-client.toml` stay on that player's machine: particles, the lens pill, lens polling, vignette, screen shake, and the lens chime. The catalog opens from a server payload; the screen class is client-only. Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemolith.client`.
 
 ## Known issues
 
@@ -152,7 +153,7 @@ com.mnemolith
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 5**: основной цикл памяти, три моба и три места генерации для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Нового биома и Шрама нет.
+Это **фаза 6**: основной цикл памяти, три моба, три места генерации и интерфейс архива для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Нового биома и Шрама нет.
 
 ### Установка
 
@@ -165,7 +166,7 @@ com.mnemolith
 
 ### Игра
 
-Смерть, взрыв, долгое падение и установка или разрушение блока оставляют **отпечаток** на чанке. **Глушащий камень** после записи тишины запрещает новые отпечатки в своём чанке и прогоняет эхо-странника. **Хроникальная линза** показывает полосу давления; крадитесь и используйте её, чтобы ослепить репликанта момента. **Игла извлечения** забирает сильнейший отпечаток в **бланк**. **Барабан составления** принимает четыре формулы: смерть и тишина (незаписанный), огонь и стройка (огненный след), падение и игрок (всплеск приземления), тишина и игрок (приманка архивариуса). Неверная пара портит один бланк, поднимает давление и может призвать репликанта. Разлом пишется в журнал и не начинает бурю.
+Смерть, взрыв, долгое падение и установка или разрушение блока оставляют **отпечаток** на чанке. **Глушащий камень** после записи тишины запрещает новые отпечатки в своём чанке и прогоняет эхо-странника. **Хроникальная линза** показывает плашку давления над панелью быстрого доступа; крадитесь, чтобы увидеть состояние чанка, и используйте её, чтобы ослепить репликанта момента. Без линзы плашки нет. **Игла извлечения** забирает сильнейший отпечаток в **бланк** и записывает метку в каталог. **Барабан составления** принимает четыре формулы: смерть и тишина (незаписанный), огонь и стройка (огненный след), падение и игрок (всплеск приземления), тишина и игрок (приманка архивариуса). Изученные узоры видны значками меток, неизвестные остаются вопросом. Неверная пара портит один бланк, поднимает давление и может призвать репликанта. **Фрагмент каталога** открывает только то, что вы уже узнали. Разлом пишется в журнал и не начинает бурю.
 
 Эхо-странник ходит по вашему пути и делает рывок в перегруженном чанке. Архивариус забирает один бланк из открытого сундука, из руки или с земли. Резонаторная ловушка и приманка его останавливают. Репликант момента копирует удар, прыжок, установку блока или использование предмета.
 
@@ -187,7 +188,7 @@ com.mnemolith
 
 ### Сеть
 
-Одинаковый jar нужен и клиенту, и выделенному серверу. Серверный конфиг задаёт правила бурь. Клиентский конфиг (частицы, виньетка, тряска, громкость) остаётся на компьютере игрока. Классы из `com.mnemolith.client` на выделенном сервере не загружаются.
+Одинаковый jar нужен и клиенту, и выделенному серверу. Серверный конфиг задаёт правила бурь. Клиентский конфиг (частицы, плашка линзы, виньетка, тряска, громкость) остаётся на компьютере игрока. Каталог открывается пакетом с сервера. Классы из `com.mnemolith.client` на выделенном сервере не загружаются.
 
 ### Сборка
 
