@@ -1,0 +1,24 @@
+package com.mnemolith.imprint;
+
+import com.mnemolith.Mnemolith;
+
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+
+/** Chunk attachment. Not synced: the lens asks for a pressure snapshot instead. */
+public final class ModAttachments {
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Mnemolith.MOD_ID);
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChunkMemory>> CHUNK_MEMORY = ATTACHMENT_TYPES.register(
+            "chunk_memory",
+            () -> AttachmentType.builder(ChunkMemory::new).serialize(ChunkMemory.CODEC, memory -> !memory.isEmpty()).build());
+
+    private ModAttachments() {}
+
+    public static void register(IEventBus modEventBus) {
+        ATTACHMENT_TYPES.register(modEventBus);
+    }
+}

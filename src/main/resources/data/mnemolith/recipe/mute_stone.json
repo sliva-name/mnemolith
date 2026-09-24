@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:ink_sac",
+    "A": "minecraft:amethyst_shard",
+    "C": "minecraft:cobblestone"
+  },
+  "pattern": [
+    "I",
+    "A",
+    "C"
+  ],
+  "result": {
+    "id": "mnemolith:mute_stone"
+  }
+}

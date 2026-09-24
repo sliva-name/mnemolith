@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "G": "minecraft:glass_pane",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    "A",
+    "G",
+    "C"
+  ],
+  "result": {
+    "id": "mnemolith:chronicle_lens"
+  }
+}

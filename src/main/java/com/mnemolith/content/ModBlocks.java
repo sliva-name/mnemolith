@@ -1,12 +1,36 @@
 package com.mnemolith.content;
 
-import com.mnemolith.Mnemolith;
+import java.util.function.UnaryOperator;
 
+import com.mnemolith.Mnemolith;
+import com.mnemolith.content.block.CompositionReelBlock;
+import com.mnemolith.content.block.MuteStoneBlock;
+
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** Block registry. Empty until imprint-bearing blocks are added. */
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Mnemolith.MOD_ID);
 
+    public static final DeferredBlock<MuteStoneBlock> MUTE_STONE = BLOCKS.registerBlock(
+            "mute_stone",
+            MuteStoneBlock::new,
+            stoneProperties());
+    public static final DeferredBlock<CompositionReelBlock> COMPOSITION_REEL = BLOCKS.registerBlock(
+            "composition_reel",
+            CompositionReelBlock::new,
+            reelProperties());
+
     private ModBlocks() {}
+
+    private static UnaryOperator<BlockBehaviour.Properties> stoneProperties() {
+        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(SoundType.STONE);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> reelProperties() {
+        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 3.0F).sound(SoundType.AMETHYST);
+    }
 }

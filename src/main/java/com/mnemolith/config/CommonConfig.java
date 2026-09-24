@@ -4,7 +4,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * Common config ({@code mnemolith-common.toml}). Loaded on the physical client and the dedicated server.
- * Gameplay does not read these values yet; they are the defaults later phases will use.
  */
 public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue RECOLLECTION_STORM_THRESHOLD;
@@ -15,6 +14,19 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue STRUCTURE_SPACING;
     public static final ModConfigSpec.BooleanValue COMPOSITION_ENABLED;
     public static final ModConfigSpec.IntValue MAX_IMPRINTS_PER_CHUNK;
+    public static final ModConfigSpec.BooleanValue WRITE_IMPRINTS;
+    public static final ModConfigSpec.IntValue WRITE_DEBOUNCE_TICKS;
+    public static final ModConfigSpec.BooleanValue WRITE_DEATH;
+    public static final ModConfigSpec.BooleanValue WRITE_EXPLOSION;
+    public static final ModConfigSpec.BooleanValue WRITE_FALL;
+    public static final ModConfigSpec.BooleanValue WRITE_BUILD;
+    public static final ModConfigSpec.DoubleValue FALL_DISTANCE_MIN;
+    public static final ModConfigSpec.IntValue EXTRACTION_DURABILITY_COST;
+    public static final ModConfigSpec.IntValue FAILURE_PRESSURE_SPIKE;
+    public static final ModConfigSpec.IntValue SATURATED_THRESHOLD;
+    public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
+    public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
+    public static final ModConfigSpec.IntValue MUTE_RADIUS_CHUNKS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -61,7 +73,7 @@ public final class CommonConfig {
                 .defineInRange("structureSpacing", 32, 8, 256);
         builder.pop();
 
-        builder.comment("Player-facing memory rules. Composition is not implemented yet.")
+        builder.comment("Player-facing memory rules for writing, extraction, and composition.")
                 .translation("mnemolith.configuration.gameplay")
                 .push("gameplay");
         COMPOSITION_ENABLED = builder
@@ -69,9 +81,61 @@ public final class CommonConfig {
                 .translation("mnemolith.configuration.compositionEnabled")
                 .define("compositionEnabled", true);
         MAX_IMPRINTS_PER_CHUNK = builder
-                .comment("Maximum imprints stored on a single chunk.")
+                .comment("Maximum imprints stored on a single chunk. Lowest intensity is dropped first.")
                 .translation("mnemolith.configuration.maxImprintsPerChunk")
                 .defineInRange("maxImprintsPerChunk", 8, 1, 64);
+        WRITE_IMPRINTS = builder
+                .comment("Whether world events write imprints.")
+                .translation("mnemolith.configuration.writeImprints")
+                .define("writeImprints", true);
+        WRITE_DEBOUNCE_TICKS = builder
+                .comment("Ticks that must pass before another build or redstone imprint can be written in the same chunk.")
+                .translation("mnemolith.configuration.writeDebounceTicks")
+                .defineInRange("writeDebounceTicks", 40, 1, 200);
+        WRITE_DEATH = builder
+                .comment("Whether a death writes a death imprint.")
+                .translation("mnemolith.configuration.writeDeath")
+                .define("writeDeath", true);
+        WRITE_EXPLOSION = builder
+                .comment("Whether an explosion writes an explosion imprint.")
+                .translation("mnemolith.configuration.writeExplosion")
+                .define("writeExplosion", true);
+        WRITE_FALL = builder
+                .comment("Whether a significant fall writes a fall imprint.")
+                .translation("mnemolith.configuration.writeFall")
+                .define("writeFall", true);
+        WRITE_BUILD = builder
+                .comment("Whether placing or breaking a block writes a build or redstone imprint.")
+                .translation("mnemolith.configuration.writeBuild")
+                .define("writeBuild", true);
+        FALL_DISTANCE_MIN = builder
+                .comment("Minimum fall distance, in blocks, before a fall imprint is written.")
+                .translation("mnemolith.configuration.fallDistanceMin")
+                .defineInRange("fallDistanceMin", 4.0D, 1.0D, 40.0D);
+        EXTRACTION_DURABILITY_COST = builder
+                .comment("Durability the extraction needle loses on a successful extract.")
+                .translation("mnemolith.configuration.extractionDurabilityCost")
+                .defineInRange("extractionDurabilityCost", 1, 0, 32);
+        FAILURE_PRESSURE_SPIKE = builder
+                .comment("Instability added to the composition reel's chunk when a formula fails.")
+                .translation("mnemolith.configuration.failurePressureSpike")
+                .defineInRange("failurePressureSpike", 8, 0, 100);
+        SATURATED_THRESHOLD = builder
+                .comment("Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold.")
+                .translation("mnemolith.configuration.saturatedThreshold")
+                .defineInRange("saturatedThreshold", 20, 1, 10_000);
+        OVERLOADED_THRESHOLD = builder
+                .comment("Pressure at which a chunk becomes overloaded. Multiplied by recollectionStormThreshold.")
+                .translation("mnemolith.configuration.overloadedThreshold")
+                .defineInRange("overloadedThreshold", 50, 1, 10_000);
+        FRACTURE_THRESHOLD = builder
+                .comment("Pressure at which a chunk fractures. Fracture is a status and a log line.")
+                .translation("mnemolith.configuration.fractureThreshold")
+                .defineInRange("fractureThreshold", 80, 1, 10_000);
+        MUTE_RADIUS_CHUNKS = builder
+                .comment("Chebyshev radius, in chunks, of loaded chunks where a mute stone blocks imprint writes. 0 is the stone's own chunk.")
+                .translation("mnemolith.configuration.muteRadiusChunks")
+                .defineInRange("muteRadiusChunks", 0, 0, 2);
         builder.pop();
 
         SPEC = builder.build();

@@ -11,6 +11,8 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue PRESSURE_VIGNETTE;
     public static final ModConfigSpec.BooleanValue STORM_SCREEN_SHAKE;
     public static final ModConfigSpec.DoubleValue MEMORY_AUDIO_VOLUME;
+    public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
+    public static final ModConfigSpec.IntValue LENS_POLL_INTERVAL;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -32,9 +34,17 @@ public final class ClientConfig {
                 .translation("mnemolith.configuration.stormScreenShake")
                 .define("stormScreenShake", true);
         MEMORY_AUDIO_VOLUME = builder
-                .comment("Volume scale, from 0.0 to 1.0, for Mnemolith memory audio.")
+                .comment("Volume scale, from 0.0 to 1.0, for the local chronicle lens chime.")
                 .translation("mnemolith.configuration.memoryAudioVolume")
                 .defineInRange("memoryAudioVolume", 1.0D, 0.0D, 1.0D);
+        PARTICLE_DENSITY = builder
+                .comment("Scale, from 0.0 to 1.0, for chronicle lens shimmer particles.")
+                .translation("mnemolith.configuration.particleDensity")
+                .defineInRange("particleDensity", 1.0D, 0.0D, 1.0D);
+        LENS_POLL_INTERVAL = builder
+                .comment("Ticks between chronicle lens pressure requests.")
+                .translation("mnemolith.configuration.lensPollInterval")
+                .defineInRange("lensPollInterval", 20, 1, 200);
         builder.pop();
 
         SPEC = builder.build();
