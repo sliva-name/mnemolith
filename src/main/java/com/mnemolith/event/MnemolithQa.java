@@ -396,11 +396,11 @@ public final class MnemolithQa {
         boolean lootJson = resourceContains(level, "loot_table/chests/chronicle_observatory.json", "\"name\": \"mnemolith:field_guide\"");
         boolean pages = true;
         for (int index = 0; index < GuideBook.pageCount(); index++) {
-            String title = "\"" + GuideBook.titleKey(index) + "\"";
-            pages &= resourceContains(level, "lang/en_us.json", title);
-            pages &= resourceContains(level, "lang/ru_ru.json", title);
-            pages &= level.getServer().getResourceManager().getResource(GuideBook.texture(index)).isPresent();
+            pages &= GuideBook.pageId(index) != null
+                    && GuideBook.titleKey(index).startsWith("mnemolith.guide.")
+                    && GuideBook.texture(index).getPath().endsWith(GuideBook.pageId(index) + ".png");
         }
+        // Language files and page art are client assets. A dedicated resource manager does not serve them.
         return loaded && recipeJson && lootJson && pages && ModItems.FIELD_GUIDE.get() != null;
     }
 
