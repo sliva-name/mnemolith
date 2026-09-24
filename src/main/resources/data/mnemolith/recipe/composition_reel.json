@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "P": "minecraft:paper",
+    "T": "minecraft:crafting_table"
+  },
+  "pattern": [
+    "C",
+    "P",
+    "T"
+  ],
+  "result": {
+    "id": "mnemolith:composition_reel"
+  }
+}

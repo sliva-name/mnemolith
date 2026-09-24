@@ -1,0 +1,38 @@
+{
+  "imprint_write": {
+    "subtitle": "subtitles.mnemolith.imprint_write",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.amethyst_block.chime"
+      }
+    ]
+  },
+  "extract": {
+    "subtitle": "subtitles.mnemolith.extract",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.experience_orb.pickup"
+      }
+    ]
+  },
+  "compose_success": {
+    "subtitle": "subtitles.mnemolith.compose_success",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.beacon.activate"
+      }
+    ]
+  },
+  "compose_fail": {
+    "subtitle": "subtitles.mnemolith.compose_fail",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.beacon.deactivate"
+      }
+    ]
+  }
+}

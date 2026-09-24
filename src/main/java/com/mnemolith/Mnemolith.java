@@ -8,7 +8,9 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.config.ServerConfig;
 import com.mnemolith.content.ModContent;
 import com.mnemolith.data.ModDataComponents;
+import com.mnemolith.entity.ModEffects;
 import com.mnemolith.entity.ModEntities;
+import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.network.ModNetwork;
 import com.mojang.logging.LogUtils;
 
@@ -33,7 +35,9 @@ public final class Mnemolith {
         ModContent.register(modEventBus);
         ModSounds.register(modEventBus);
         ModEntities.register(modEventBus);
+        ModEffects.register(modEventBus);
         ModDataComponents.register(modEventBus);
+        ModAttachments.register(modEventBus);
         ModNetwork.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);

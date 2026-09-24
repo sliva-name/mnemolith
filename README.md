@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 2**: a NeoForge 26.2 mod skeleton. It loads on the client and the dedicated server, registers empty content registries, and ships common, client, and server configs. Imprints, mobs, structures, and custom art are not in the game yet.
+This repository is **Phase 3**: the core memory loop on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Mobs, the Scar, and structures are not in the game yet.
 
 | | |
 | --- | --- |
@@ -27,16 +27,23 @@ The mod has no required dependencies beyond Minecraft and NeoForge.
 
 ## Gameplay
 
-Later phases add the actual loop:
+1. Deaths, explosions, long falls, and block changes write **imprints** on the chunk where they happened. Build and redstone writes are throttled. An unwitnessed death also writes silence. Placing a **mute stone** writes silence, then blocks further writes in its chunk.
+2. Each chunk's **memory pressure** is intensity times tag weight, plus instability from a failed composition, clamped by the soft cap. Bands are calm, saturated, overloaded, and fracture. Fracture is logged. It does not start a storm.
+3. Hold a **chronicle lens** to see the band for your chunk and shimmer on saturated chunks nearby.
+4. Use an **extraction needle** on a block in that chunk. The strongest imprint becomes an **imprint slip**.
+5. Put slips in a **composition reel** and press Compose.
 
-1. World events write **imprints** — tagged memories stored on the chunk where they happened.
-2. Imprints in loaded chunks raise **memory pressure**.
-3. The player extracts and **composes** those memories.
-4. Pressure past the threshold can start a **recollection storm**, and with it the **Scar**.
+| Slips | Result |
+| --- | --- |
+| Death + silence | Unrecorded. Mobs lose you as a target for a short time |
+| Fire + build | Fire trail, brief fire resistance, and snow underfoot melts |
+| Fall + player | The next hard landing is softened once |
 
-Planned content is about 16 blocks, 18 items, 3 mobs, one boss event, and 3 structure types. None of that content is registered yet. A new world with only this jar plays as vanilla Minecraft with the mod loaded.
+A wrong pair damages one slip and spikes pressure in the reel's chunk. Recipes use amethyst, glass, copper, iron, sticks, paper, a crafting table, ink, and cobblestone. Items are on the Mnemolith creative tab.
 
-How the systems are meant to stay cheap at runtime is written in [docs/architecture.md](docs/architecture.md).
+`/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the same write, mute, extract, and compose paths.
+
+Runtime rules are in [docs/architecture.md](docs/architecture.md).
 
 ## Config
 
@@ -46,24 +53,22 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay |
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether storms are allowed, the per-dimension cap, pressure logging |
-| `config/mnemolith-client.toml` | Physical client only | Imprint particles, pressure vignette, storm screen shake, memory audio volume |
+| `config/mnemolith-client.toml` | Physical client only | Imprint particles, particle density, lens poll interval, pressure vignette, storm screen shake, lens chime volume |
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.structureSpacing` apply the next time a world loads. The other values are defaults for systems that are not built yet. Startup logs print a few of them so you can see that the files were read.
+`worldGen.structuresEnabled` and `worldGen.structureSpacing` apply the next time a world loads. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition) apply the next time that action runs. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Multiplayer
 
-Install the same jar on the client and on the dedicated server. The mod registers common content (even while those registries are empty), so a client without the mod will not match a server that has it, and the reverse is also true.
+Install the same jar on the client and on the dedicated server. Imprint writes, extraction, composition, and pressure are decided on the server. The lens sends a request and receives a snapshot of nearby chunks. It does not write memory.
 
-Server options in `mnemolith-server.toml` are authoritative and are synced to connected clients. Client options in `mnemolith-client.toml` stay on that player's machine: particles, vignette, screen shake, and audio volume. Storms, when they exist, will be decided on the server.
-
-Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemolith.client`.
+Server options in `mnemolith-server.toml` are authoritative and are synced to connected clients. Client options in `mnemolith-client.toml` stay on that player's machine: particles, lens polling, vignette, screen shake, and the lens chime. Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemolith.client`.
 
 ## Known issues
 
-- No blocks, items, mobs, structures, sounds, or imprint gameplay yet.
-- Config values are loaded and logged. Nothing in the world consumes them.
+- No mobs, Scar boss, or structures yet. Fracture does not start a recollection storm.
+- `visuals.pressureVignette` and `visuals.stormScreenShake` are loaded and not drawn. The lens uses the action bar and particles.
 - The `gameTestServer` run crashes until a game test is registered. That is the MDK default. `build` does not run it.
 - A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.
 - On a machine with no audio device, the client logs `Failed to open OpenAL device` and continues with sounds disabled. That message comes from the sound engine.
@@ -115,7 +120,7 @@ com.mnemolith
   MnemolithClient        physical client @Mod
   common/                shared names
   content/               blocks, items, creative tabs
-  imprint/  pressure/    future memory systems
+  imprint/  pressure/    chunk memory and pressure bands
   entity/  world/  event/
   network/  data/  audio/
   config/                common, client, and server specs
@@ -127,7 +132,7 @@ com.mnemolith
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 2**: каркас мода для NeoForge 26.2. Мод загружается на клиенте и на выделенном сервере, регистрирует пустые реестры и заводит общий, клиентский и серверный конфиг. Отпечатков, мобов, структур и своих текстур в игре ещё нет.
+Это **фаза 3**: основной цикл памяти для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Мобов, Шрама и структур ещё нет.
 
 ### Установка
 
@@ -140,7 +145,9 @@ com.mnemolith
 
 ### Игра
 
-Позже события мира будут оставлять **отпечатки** на чанке, отпечатки в загруженных чанках будут поднимать **давление памяти**, игрок сможет **составлять** память, а порог давления сможет начать **бурю воспоминаний** и босса **Шрам**. Сейчас мир с одним этим модом идёт как ванильный Minecraft.
+Смерть, взрыв, долгое падение и установка или разрушение блока оставляют **отпечаток** на чанке. **Глушащий камень** после записи тишины запрещает новые отпечатки в своём чанке. **Хроникальная линза** показывает полосу давления. **Игла извлечения** забирает сильнейший отпечаток в **бланк**. **Барабан составления** принимает три формулы: смерть и тишина (незаписанный), огонь и стройка (огненный след), падение и игрок (всплеск приземления). Неверная пара портит один бланк и поднимает давление. Разлом пишется в журнал и не начинает бурю.
+
+`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка тех же путей для оператора.
 
 Правила производительности — в [docs/architecture.md](docs/architecture.md): отпечаток пишется в событии, которое его породило; полный обход мира каждый тик не допускается.
 

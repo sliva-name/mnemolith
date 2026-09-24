@@ -1,11 +1,69 @@
 package com.mnemolith.pressure;
 
-/**
- * Future home of memory pressure: a value derived from imprints in loaded chunks.
- * <p>
- * Crossing a threshold is what later starts a recollection storm. Phase 2 only stores the
- * threshold defaults in the common config. Pressure is not computed yet.
- */
+import com.mnemolith.Mnemolith;
+import com.mnemolith.config.CommonConfig;
+import com.mnemolith.config.ServerConfig;
+import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.Imprint;
+
+import net.minecraft.world.level.chunk.LevelChunk;
+
+/** Pressure is the clamped sum of imprint contributions plus instability. Recomputed when memory changes or a chunk loads. */
 public final class MemoryPressure {
     private MemoryPressure() {}
+
+    public static int score(ChunkMemory memory) {
+        int sum = memory.instability();
+        for (Imprint imprint : memory.imprintsCopy()) {
+            sum += imprint.pressureContribution();
+        }
+        return Math.min(CommonConfig.PRESSURE_SOFT_CAP.get(), Math.max(0, sum));
+    }
+
+    public static PressureBand band(int pressure) {
+        double scale = CommonConfig.RECOLLECTION_STORM_THRESHOLD.get();
+        int fracture = scale(CommonConfig.FRACTURE_THRESHOLD.get(), scale);
+        int overloaded = scale(CommonConfig.OVERLOADED_THRESHOLD.get(), scale);
+        int saturated = scale(CommonConfig.SATURATED_THRESHOLD.get(), scale);
+        if (pressure >= fracture) {
+            return PressureBand.FRACTURE;
+        }
+        if (pressure >= overloaded) {
+            return PressureBand.OVERLOADED;
+        }
+        if (pressure >= saturated) {
+            return PressureBand.SATURATED;
+        }
+        return PressureBand.CALM;
+    }
+
+    public static PressureBand recompute(LevelChunk chunk, ChunkMemory memory) {
+        int previous = memory.cachedPressure();
+        PressureBand previousBand = band(previous);
+        int next = score(memory);
+        memory.setCachedPressure(next);
+        PressureBand nextBand = band(next);
+        if (nextBand == PressureBand.FRACTURE && !memory.fractured()) {
+            memory.setFractured(true);
+            Mnemolith.LOGGER.info(
+                    "Mnemolith fracture at chunk {} {} pressure={}",
+                    chunk.getPos().x(),
+                    chunk.getPos().z(),
+                    next);
+        } else if (ServerConfig.LOG_PRESSURE_CHANGES.get() && previousBand != nextBand) {
+            Mnemolith.LOGGER.info(
+                    "Mnemolith pressure chunk {} {} {} -> {} ({})",
+                    chunk.getPos().x(),
+                    chunk.getPos().z(),
+                    previous,
+                    next,
+                    nextBand);
+        }
+        chunk.markUnsaved();
+        return nextBand;
+    }
+
+    private static int scale(int threshold, double multiplier) {
+        return Math.max(1, (int) Math.round(threshold * multiplier));
+    }
 }
