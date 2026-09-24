@@ -39,6 +39,7 @@ import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.LoadedChunkMemory;
 import com.mnemolith.worldgen.ModFeatures;
+import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -50,11 +51,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -182,23 +185,43 @@ public final class MnemolithQa {
                 && MemoryPressure.band(overloaded) == PressureBand.OVERLOADED
                 && MemoryPressure.band(fracture - 1) == PressureBand.OVERLOADED
                 && MemoryPressure.band(fracture) == PressureBand.FRACTURE;
-        clear(level, pos);
-        discardReplicants(level, pos);
-        int calm = ImprintWriter.spike(level, pos, saturated - 1);
-        boolean calmLive = calm == saturated - 1 && MemoryPressure.band(calm) == PressureBand.CALM;
-        int saturatedLive = ImprintWriter.spike(level, pos, 1);
-        boolean saturatedOk = saturatedLive == saturated && MemoryPressure.band(saturatedLive) == PressureBand.SATURATED;
-        clear(level, pos);
-        discardReplicants(level, pos);
-        int fractured = ImprintWriter.spike(level, pos, fracture);
-        ChunkMemory memory = memory(level, pos);
-        boolean fractureLive = fractured >= fracture
-                && memory != null
-                && memory.fractured()
-                && MemoryPressure.band(fractured) == PressureBand.FRACTURE
-                && replicantCount(level, pos) >= 1;
-        discardReplicants(level, pos);
-        return defaults && edges && calmLive && saturatedOk && fractureLive;
+        ChunkPos chunk = ChunkPos.containing(pos);
+        tickColumn(level, chunk);
+        try {
+            clear(level, pos);
+            discardReplicants(level, pos);
+            int calm = ImprintWriter.spike(level, pos, saturated - 1);
+            boolean calmLive = calm == saturated - 1 && MemoryPressure.band(calm) == PressureBand.CALM;
+            int saturatedLive = ImprintWriter.spike(level, pos, 1);
+            boolean saturatedOk = saturatedLive == saturated && MemoryPressure.band(saturatedLive) == PressureBand.SATURATED;
+            clear(level, pos);
+            discardReplicants(level, pos);
+            int fractured = ImprintWriter.spike(level, pos, fracture);
+            ChunkMemory memory = memory(level, pos);
+            int replicants = replicantCount(level, pos);
+            boolean fractureLive = fractured >= fracture
+                    && memory != null
+                    && memory.fractured()
+                    && MemoryPressure.band(fractured) == PressureBand.FRACTURE
+                    && replicants >= 1;
+            boolean ok = defaults && edges && calmLive && saturatedOk && fractureLive;
+            if (!ok) {
+                Mnemolith.LOGGER.info(
+                        "Mnemolith qa bands detail defaults={} edges={} calm={} saturated={} fractureLive={} pressure={} fractured={} replicants={}",
+                        defaults,
+                        edges,
+                        calmLive,
+                        saturatedOk,
+                        fractureLive,
+                        fractured,
+                        memory != null && memory.fractured(),
+                        replicants);
+            }
+            discardReplicants(level, pos);
+            return ok;
+        } finally {
+            releaseColumn(level, chunk);
+        }
     }
 
     private static boolean extract(ServerLevel level, FakePlayer player, BlockPos pos) {
@@ -252,20 +275,40 @@ public final class MnemolithQa {
 
     private static boolean loudFail(ServerLevel level, FakePlayer player, BlockPos pos) {
         reset(player);
-        clear(level, pos);
-        discardReplicants(level, pos);
-        ImprintWriter.tryWrite(level, pos, ImprintTag.DEATH, null, false);
-        ImprintWriter.tryWrite(level, pos, ImprintTag.EXPLOSION, null, false);
-        ChunkMemory before = memory(level, pos);
-        if (before == null || MemoryPressure.band(before.cachedPressure()) != PressureBand.OVERLOADED) {
-            return false;
+        ChunkPos chunk = ChunkPos.containing(pos);
+        tickColumn(level, chunk);
+        try {
+            clear(level, pos);
+            discardReplicants(level, pos);
+            ImprintWriter.tryWrite(level, pos, ImprintTag.DEATH, null, false);
+            ImprintWriter.tryWrite(level, pos, ImprintTag.EXPLOSION, null, false);
+            ChunkMemory before = memory(level, pos);
+            if (before == null || MemoryPressure.band(before.cachedPressure()) != PressureBand.OVERLOADED) {
+                Mnemolith.LOGGER.info(
+                        "Mnemolith qa loudFail detail overloaded=false pressure={}",
+                        before == null ? -1 : before.cachedPressure());
+                return false;
+            }
+            int spawned = replicantCount(level, pos);
+            ComposeResult result = compose(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
+            ChunkMemory after = memory(level, pos);
+            PressureBand band = after == null ? PressureBand.CALM : MemoryPressure.band(after.cachedPressure());
+            boolean loud = band == PressureBand.OVERLOADED || band == PressureBand.FRACTURE;
+            int replicants = replicantCount(level, pos);
+            boolean ok = !result.success() && loud && replicants == spawned + 1;
+            if (!ok) {
+                Mnemolith.LOGGER.info(
+                        "Mnemolith qa loudFail detail success={} band={} before={} after={}",
+                        result.success(),
+                        band,
+                        spawned,
+                        replicants);
+            }
+            discardReplicants(level, pos);
+            return ok;
+        } finally {
+            releaseColumn(level, chunk);
         }
-        int spawned = replicantCount(level, pos);
-        ComposeResult result = compose(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
-        ChunkMemory after = memory(level, pos);
-        PressureBand band = after == null ? PressureBand.CALM : MemoryPressure.band(after.cachedPressure());
-        boolean loud = band == PressureBand.OVERLOADED || band == PressureBand.FRACTURE;
-        return !result.success() && loud && replicantCount(level, pos) == spawned + 1;
     }
 
     private static boolean mute(ServerLevel level, BlockPos pos) {
@@ -344,8 +387,33 @@ public final class MnemolithQa {
     }
 
     private static boolean pocket(ServerLevel level, BlockPos pos) {
+        BlockPos floor = pos.below(4);
+        if (floor.getY() <= level.getMinY()) {
+            return false;
+        }
+        // The feature only replaces stone or air. A surface column is dirt, so the check lays a stone volume first.
+        int half = WorldgenTuning.POCKET_HALF;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int dx = -half; dx <= half; dx++) {
+            for (int dz = -half; dz <= half; dz++) {
+                for (int dy = 0; dy <= 3; dy++) {
+                    cursor.set(floor.getX() + dx, floor.getY() + dy, floor.getZ() + dz);
+                    level.setBlock(cursor, Blocks.STONE.defaultBlockState(), 2);
+                }
+            }
+        }
         boolean placed = ModFeatures.MUTE_POCKET.get().placePocket(level, pos, level.getRandom(), true);
-        return placed && LoadedChunkMemory.isMuted(level, pos.below(4));
+        boolean muted = LoadedChunkMemory.isMuted(level, floor);
+        if (!placed || !muted) {
+            Mnemolith.LOGGER.info(
+                    "Mnemolith qa pocket detail placed={} muted={} floor={},{},{}",
+                    placed,
+                    muted,
+                    floor.getX(),
+                    floor.getY(),
+                    floor.getZ());
+        }
+        return placed && muted;
     }
 
     private static boolean observatory(ServerLevel level, BlockPos searchFrom, BlockPos placeAt) {
@@ -533,8 +601,18 @@ public final class MnemolithQa {
         }
     }
 
+    /** Loads the column as entity-ticking. A plain getChunk leaves far columns hidden from entity queries. */
+    private static void tickColumn(ServerLevel level, ChunkPos chunk) {
+        var future = level.getChunkSource().addTicketAndLoadWithRadius(TicketType.FORCED, chunk, 2);
+        level.getServer().managedBlock(future::isDone);
+    }
+
+    private static void releaseColumn(ServerLevel level, ChunkPos chunk) {
+        level.getChunkSource().removeTicketWithRadius(TicketType.FORCED, chunk, 2);
+    }
+
     private static List<MomentReplicant> replicants(ServerLevel level, BlockPos pos) {
-        net.minecraft.world.level.ChunkPos chunk = net.minecraft.world.level.ChunkPos.containing(pos);
+        ChunkPos chunk = ChunkPos.containing(pos);
         AABB column = new AABB(
                 chunk.getMinBlockX(),
                 level.getMinY(),
