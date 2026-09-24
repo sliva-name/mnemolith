@@ -70,7 +70,7 @@ MemoryPressure.recompute (that chunk only)
         └── band FRACTURE → log + ChunkMemory.fractured
 ```
 
-`/mnemolith inspect` reads the chunk under the command source. `/mnemolith smoke` (gamemaster) clears that chunk, drops a chicken through a fall, explodes, kills the chicken, places a mute stone, checks that a build write is refused, extracts one imprint, and composes the three formulas plus one failure.
+`/mnemolith inspect` reads the chunk under the command source. `/mnemolith smoke` (gamemaster) clears that chunk, composes a deliberate mismatch on the neighbor chunk, drops a chicken through a fall, explodes, kills the chicken, places a mute stone, checks that a build write is refused, extracts one imprint, and composes the three formulas plus one failure.
 
 ### Imprints
 
