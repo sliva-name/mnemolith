@@ -65,7 +65,8 @@ Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemol
 - No blocks, items, mobs, structures, sounds, or imprint gameplay yet.
 - Config values are loaded and logged. Nothing in the world consumes them.
 - The `gameTestServer` run crashes until a game test is registered. That is the MDK default. `build` does not run it.
-- The first `runServer` launch exits until `eula=true` is set. See below.
+- A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.
+- On a machine with no audio device, the client logs `Failed to open OpenAL device` and continues with sounds disabled. That message comes from the sound engine.
 
 ## Development
 
@@ -92,12 +93,11 @@ Run directories:
 
 ### Dedicated server
 
-1. Run `./gradlew runServer` once. It creates `run/server/eula.txt` and exits.
-2. Set `eula=true` in that file.
-3. In `run/server/server.properties`, set `online-mode=false` if you want the development account to join.
-4. Run `./gradlew runServer` again. Stop it with `stop` on the console, or end the Gradle process.
+`./gradlew runServer` uses `run/server`. Stop the server from its console with `stop`.
 
-A successful dedicated-server log contains `Mnemolith dedicated server setup` and `Mnemolith logical server starting`. It does not contain `Mnemolith client setup`.
+If the process exits and leaves `eula.txt`, set `eula=true` and start it again. Set `online-mode=false` in `server.properties` when the development account should be able to join.
+
+A successful dedicated-server log contains `Mnemolith dedicated server setup` and `Mnemolith logical server starting`. It does not contain `Mnemolith client setup`. The server writes `config/mnemolith-common.toml` and `config/mnemolith-server.toml`.
 
 ### Client
 
@@ -170,4 +170,4 @@ com.mnemolith
 
 Готовый файл: `build/libs/mnemolith-<версия>.jar`.
 
-Первый `runServer` завершится, пока в `run/server/eula.txt` не стоит `eula=true`. Для входа дев-аккаунтом в `server.properties` укажите `online-mode=false`. В журнале выделенного сервера должны быть строки `Mnemolith dedicated server setup` и `Mnemolith logical server starting`, и не должно быть `Mnemolith client setup`.
+Если `runServer` остановится и создаст `run/server/eula.txt`, поставьте `eula=true` и запустите снова. Для входа дев-аккаунтом в `server.properties` укажите `online-mode=false`. В журнале выделенного сервера должны быть строки `Mnemolith dedicated server setup` и `Mnemolith logical server starting`, и не должно быть `Mnemolith client setup`.
