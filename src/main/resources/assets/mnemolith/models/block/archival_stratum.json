@@ -1,6 +1,40 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "mnemolith:block/archival_stratum"
+    "particle": "mnemolith:block/archival_stratum",
+    "strata": "mnemolith:block/archival_stratum"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "down": { "uv": [0, 13, 8, 16], "texture": "#strata" },
+        "up": { "uv": [0, 0, 8, 3], "texture": "#strata" },
+        "north": { "uv": [2, 0, 14, 16], "texture": "#strata" },
+        "south": { "uv": [2, 0, 14, 16], "texture": "#strata" },
+        "west": { "uv": [2, 0, 14, 16], "texture": "#strata" },
+        "east": { "uv": [2, 0, 14, 16], "texture": "#strata" }
+      }
+    },
+    {
+      "from": [0, 5, 0],
+      "to": [16, 9, 16],
+      "faces": {
+        "down": { "uv": [0, 7, 16, 9], "texture": "#strata" },
+        "up": { "uv": [0, 4, 16, 6], "texture": "#strata" },
+        "north": { "uv": [0, 4, 16, 9], "texture": "#strata" },
+        "south": { "uv": [0, 4, 16, 9], "texture": "#strata" },
+        "west": { "uv": [0, 4, 16, 9], "texture": "#strata" },
+        "east": { "uv": [0, 4, 16, 9], "texture": "#strata" }
+      }
+    }
+  ],
+  "display": {
+    "gui": { "rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625] },
+    "ground": { "rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25] },
+    "fixed": { "rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [0.5, 0.5, 0.5] },
+    "thirdperson_righthand": { "rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375] },
+    "firstperson_righthand": { "rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4] }
   }
 }

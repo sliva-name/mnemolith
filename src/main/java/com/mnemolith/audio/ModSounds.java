@@ -17,6 +17,12 @@ public final class ModSounds {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, Mnemolith.MOD_ID);
 
     public static final DeferredHolder<SoundEvent, SoundEvent> IMPRINT_WRITE = register("imprint_write");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LENS_FOCUS = register("lens_focus");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRESSURE_WARN = register("pressure_warn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUTE_BREAK = register("mute_break");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUTE_PLACE = register("mute_place");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRATUM_BREAK = register("stratum_break");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRATUM_PLACE = register("stratum_place");
     public static final DeferredHolder<SoundEvent, SoundEvent> EXTRACT = register("extract");
     public static final DeferredHolder<SoundEvent, SoundEvent> COMPOSE_SUCCESS = register("compose_success");
     public static final DeferredHolder<SoundEvent, SoundEvent> COMPOSE_FAIL = register("compose_fail");

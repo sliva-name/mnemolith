@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 7**: the core memory loop, three mobs, three worldgen features, the archival interface, and budgeted memory particles on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
+This repository is **Phase 8**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, and a shared art pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
 
 | | |
 | --- | --- |
@@ -150,11 +150,19 @@ com.mnemolith
   server/                dedicated server @Mod
 ```
 
+## Art
+
+The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist bait, composition reel, mute stone, archival stratum, resonator trap, and the three mobs share one palette: deep indigo, bone, verdigris, and mute gray. Ember is reserved for failure and fire. The lens is a 32×32 ring. The four blocks are multi-part models, not flat cubes. Strider, archivist, and replicant silhouettes stay on the existing part-posing animation: walk, charge, snatch, and telegraph. Sounds are short mono `.ogg` tones. Particle sprites stay white and the client tints them. Sizes, pivots, and UV notes are in [`docs/asset-pipeline.md`](docs/asset-pipeline.md). Scar, a decoration set, and a music album are not in this pass.
+
 ## Русский
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 7**: основной цикл памяти, три моба, три места генерации, интерфейс архива и частицы памяти для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. Полноэкранного шейдера разлома, нового биома и Шрама нет.
+Это **фаза 8**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти и общий художественный проход для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. Полноэкранного шейдера разлома, нового биома и Шрама нет.
+
+### Оформление
+
+Линза, игла, бланк, фрагмент каталога, приманка, барабан, глушащий камень, архивный слой, резонатор и три моба собраны в одной палитре: глубокий индиго, кость, ярь-медянка и глухой серый. Уголь — только для провала и огня. Линза — кольцо 32×32. Четыре блока собраны из нескольких деталей. Походка, рывок, похищение и телеграф остаются позами частей модели. Звуки — короткие моно `.ogg`. Спрайты частиц белые, клиент их окрашивает. Размеры, точки опоры и UV — в [`docs/asset-pipeline.md`](docs/asset-pipeline.md). Шрама, набора декора и музыкального альбома в этом проходе нет.
 
 ### Установка
 
