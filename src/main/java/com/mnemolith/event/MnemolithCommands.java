@@ -58,7 +58,7 @@ import net.minecraft.world.phys.Vec3;
 
 import com.mojang.brigadier.context.CommandContext;
 
-/** {@code /mnemolith inspect}, {@code smoke}, {@code spawn}, {@code mobs}, and {@code worldgen}. */
+/** {@code /mnemolith inspect}, {@code smoke}, {@code mpsmoke}, {@code spawn}, {@code mobs}, {@code worldgen}, and {@code perf}. */
 public final class MnemolithCommands {
     private static final double SMOKE_FALL_DISTANCE = 5.0D;
 
@@ -376,6 +376,7 @@ public final class MnemolithCommands {
         discardReplicants(level, pos);
 
         boolean guarded = composeGuarded(level, first, pos.above(6));
+        discardReplicants(level, pos);
         first.containerMenu = first.inventoryMenu;
         second.containerMenu = second.inventoryMenu;
 
@@ -450,6 +451,7 @@ public final class MnemolithCommands {
         reel.setItem(0, ImprintSlips.of(ImprintTag.BUILD, reelPos));
         CompositionMenu menu = new CompositionMenu(1, player.getInventory(), reel);
         Archivist archivist = new Archivist(ModEntities.ARCHIVIST.get(), level);
+        archivist.setPos(reelPos.getX() + 0.5D, reelPos.getY(), reelPos.getZ() + 0.5D);
         boolean stole = archivist.snatchMenu(player, menu, true);
         boolean chestTaken = reel.getItem(0).isEmpty();
         boolean pocketKept = holdsTag(player, ImprintTag.DEATH);

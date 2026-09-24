@@ -30,8 +30,10 @@ Particles and sounds for writes, compose, pressure, and mute use the vanilla nea
 Gamemaster. It uses two `FakePlayer`s in the dedicated process, 96 blocks from the command source, so `/mnemolith smoke` and `/mnemolith perf` keep their own chunks. One line is logged:
 
 ```
-Mnemolith mpsmoke sameBand=... discoveryIsolated=... steal=... reel=... muteBlocks=... replicants=... guarded=...
+Mnemolith mpsmoke sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true
 ```
+
+That line is the dedicated run of this command. The same server then ran `/mnemolith smoke` and still logged `pressure=75 band=OVERLOADED muted=true writeBlocked=true compose=3`, with the quiet fail at 18 (no replicant), the fall at 10, the explosion at 34, the mute at 77, three successful composes, and the loud fail at 89.
 
 | Flag | What it checks |
 | --- | --- |
