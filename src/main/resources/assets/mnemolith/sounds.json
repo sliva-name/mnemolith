@@ -1,90 +1,94 @@
 {
   "imprint_write": {
     "subtitle": "subtitles.mnemolith.imprint_write",
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:block.amethyst_block.chime"
-      }
-    ]
+    "sounds": [{ "name": "mnemolith:imprint_write", "stream": false }]
   },
   "extract": {
     "subtitle": "subtitles.mnemolith.extract",
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:entity.experience_orb.pickup"
-      }
-    ]
+    "sounds": [{ "name": "mnemolith:extract", "stream": false }]
   },
   "compose_success": {
     "subtitle": "subtitles.mnemolith.compose_success",
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:block.beacon.activate"
-      }
-    ]
+    "sounds": [{ "name": "mnemolith:compose_success", "stream": false }]
   },
   "compose_fail": {
     "subtitle": "subtitles.mnemolith.compose_fail",
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:block.beacon.deactivate"
-      }
-    ]
+    "sounds": [{ "name": "mnemolith:compose_fail", "stream": false }]
+  },
+  "lens_focus": {
+    "subtitle": "subtitles.mnemolith.lens_focus",
+    "sounds": [{ "name": "mnemolith:lens_focus", "stream": false }]
+  },
+  "pressure_warn": {
+    "subtitle": "subtitles.mnemolith.pressure_warn",
+    "sounds": [{ "name": "mnemolith:pressure_warn", "stream": false }]
+  },
+  "mute_break": {
+    "subtitle": "subtitles.mnemolith.mute_break",
+    "sounds": [{ "name": "mnemolith:mute_break", "stream": false }]
+  },
+  "mute_place": {
+    "subtitle": "subtitles.mnemolith.mute_place",
+    "sounds": [{ "name": "mnemolith:mute_place", "stream": false }]
+  },
+  "stratum_break": {
+    "subtitle": "subtitles.mnemolith.stratum_break",
+    "sounds": [{ "name": "mnemolith:stratum_break", "stream": false }]
+  },
+  "stratum_place": {
+    "subtitle": "subtitles.mnemolith.stratum_place",
+    "sounds": [{ "name": "mnemolith:stratum_place", "stream": false }]
   },
   "strider_ambient": {
     "subtitle": "subtitles.mnemolith.strider_ambient",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.ambient" }]
+    "sounds": [{ "name": "mnemolith:strider_ambient", "stream": false }]
   },
   "strider_hurt": {
     "subtitle": "subtitles.mnemolith.strider_hurt",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.hurt" }]
+    "sounds": [{ "name": "mnemolith:strider_hurt", "stream": false }]
   },
   "strider_death": {
     "subtitle": "subtitles.mnemolith.strider_death",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.death" }]
+    "sounds": [{ "name": "mnemolith:strider_death", "stream": false }]
   },
   "strider_charge": {
     "subtitle": "subtitles.mnemolith.strider_charge",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.enderman.teleport" }]
+    "sounds": [{ "name": "mnemolith:strider_charge", "stream": false }]
   },
   "archivist_ambient": {
     "subtitle": "subtitles.mnemolith.archivist_ambient",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.ambient_without_item" }]
+    "sounds": [{ "name": "mnemolith:archivist_ambient", "stream": false }]
   },
   "archivist_hurt": {
     "subtitle": "subtitles.mnemolith.archivist_hurt",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.hurt" }]
+    "sounds": [{ "name": "mnemolith:archivist_hurt", "stream": false }]
   },
   "archivist_death": {
     "subtitle": "subtitles.mnemolith.archivist_death",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.death" }]
+    "sounds": [{ "name": "mnemolith:archivist_death", "stream": false }]
   },
   "archivist_steal": {
     "subtitle": "subtitles.mnemolith.archivist_steal",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.allay.item_taken" }]
+    "sounds": [{ "name": "mnemolith:archivist_steal", "stream": false }]
   },
   "replicant_ambient": {
     "subtitle": "subtitles.mnemolith.replicant_ambient",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.ambient" }]
+    "sounds": [{ "name": "mnemolith:replicant_ambient", "stream": false }]
   },
   "replicant_hurt": {
     "subtitle": "subtitles.mnemolith.replicant_hurt",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.hurt" }]
+    "sounds": [{ "name": "mnemolith:replicant_hurt", "stream": false }]
   },
   "replicant_death": {
     "subtitle": "subtitles.mnemolith.replicant_death",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.death" }]
+    "sounds": [{ "name": "mnemolith:replicant_death", "stream": false }]
   },
   "replicant_telegraph": {
     "subtitle": "subtitles.mnemolith.replicant_telegraph",
-    "sounds": [{ "type": "event", "name": "minecraft:entity.vex.charge" }]
+    "sounds": [{ "name": "mnemolith:replicant_telegraph", "stream": false }]
   },
   "replicant_blind": {
     "subtitle": "subtitles.mnemolith.replicant_blind",
-    "sounds": [{ "type": "event", "name": "minecraft:item.spyglass.use" }]
+    "sounds": [{ "name": "mnemolith:replicant_blind", "stream": false }]
   }
 }

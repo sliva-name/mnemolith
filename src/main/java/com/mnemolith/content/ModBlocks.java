@@ -3,6 +3,7 @@ package com.mnemolith.content;
 import java.util.function.UnaryOperator;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.MemorySoundTypes;
 import com.mnemolith.content.block.ArchivalStratumBlock;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
@@ -37,7 +38,7 @@ public final class ModBlocks {
     private ModBlocks() {}
 
     private static UnaryOperator<BlockBehaviour.Properties> stoneProperties() {
-        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(SoundType.STONE);
+        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(MemorySoundTypes.MUTE);
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> reelProperties() {
@@ -52,7 +53,7 @@ public final class ModBlocks {
         return properties -> properties
                 .mapColor(MapColor.COLOR_BLUE)
                 .strength(3.0F, 6.0F)
-                .sound(SoundType.DEEPSLATE)
+                .sound(MemorySoundTypes.STRATUM)
                 .lightLevel(state -> 7)
                 .requiresCorrectToolForDrops();
     }

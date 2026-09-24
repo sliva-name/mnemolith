@@ -52,7 +52,7 @@ public final class PressureClient {
             ClientParticles.shimmer(player, new ChunkPos(chunk.chunkX(), chunk.chunkZ()));
         }
         if (loudest != lastChimeBand && loudest >= PressureBand.SATURATED.ordinal() && volume > 0.0F) {
-            player.playSound(ModSounds.EXTRACT.get(), volume * 0.35F, 1.4F);
+            player.playSound(ModSounds.LENS_FOCUS.get(), volume * 0.35F, 1.4F);
         }
         lastChimeBand = loudest;
     }

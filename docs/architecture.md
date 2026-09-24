@@ -1,6 +1,6 @@
 # Mnemolith architecture
 
-Mnemolith (Мнемолит) is a content mod about memory written into the world. A world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. Worldgen feeds that loop with archival veins, mute pockets, and the chronicle observatory. Phase 6 adds the lens overlay, the composition screen, and a per-player discovery catalog. Phase 7 adds budgeted particles for those beats. There is no new biome, no Scar, and no strikethrough shaft.
+Mnemolith (Мнемолит) is a content mod about memory written into the world. A world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. Worldgen feeds that loop with archival veins, mute pockets, and the chronicle observatory. Phase 6 adds the lens overlay, the composition screen, and a per-player discovery catalog. Phase 7 adds budgeted particles for those beats. Phase 8 replaces the placeholder textures and vanilla sound redirects for the lens, reel, mute stone, archival stratum, resonator trap, and the three mobs. Sizes and UV notes are in `docs/asset-pipeline.md`. There is no new biome, no Scar, and no strikethrough shaft.
 
 ## Identity
 
@@ -208,7 +208,7 @@ Attached to the mod event bus during `Mnemolith` construction.
 | Block entities | Composition reel |
 | Menus | Composition reel (`MenuType`, three slip slots, status data slots) |
 | Creative tab | `mnemolith` |
-| Sound events | Imprint, extract, compose, and ambient / hurt / death / special for each mob (playback reuses vanilla events) |
+| Sound events | Lens focus, imprint, extract, compose, pressure warn, mute and stratum break/place, and ambient / hurt / death / special for each mob. Each event plays a short mono ogg (`docs/asset-pipeline.md`) |
 | Particle types | Shimmer, extract, compose success, compose fail, pressure warn, mute haze, strider trail, archivist snatch, replicant telegraph |
 | Effects | Unrecorded, fire trail, landing burst |
 | Entity types | Echo strider, archivist, moment replicant |

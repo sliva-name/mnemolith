@@ -1,10 +1,12 @@
 package com.mnemolith.particle;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.ModSounds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * Edge-triggered bursts. Each call sends one vanilla level-particles packet group.
@@ -52,6 +54,7 @@ public final class MemoryFx {
                     0.02D,
                     0.01D);
         }
+        level.playSound(null, pos, ModSounds.PRESSURE_WARN.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         Mnemolith.LOGGER.info("Mnemolith fx pressure at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
