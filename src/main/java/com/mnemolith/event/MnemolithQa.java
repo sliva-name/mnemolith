@@ -383,9 +383,30 @@ public final class MnemolithQa {
     }
 
     private static boolean vein(ServerLevel level, BlockPos pos) {
-        boolean placed = ModFeatures.ARCHIVAL_VEIN.get().placeVein(level, pos.below(8), level.getRandom(), true);
-        ChunkMemory memory = memory(level, pos.below(8));
-        return placed && memory != null && memory.strataCount() > 0;
+        BlockPos origin = pos.below(8);
+        // The feature replaces stone. A repeat pass, or dirt, would place nothing, so lay stone on both axes first.
+        int length = WorldgenTuning.veinSize();
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int step = 0; step < length; step++) {
+            for (int axis = 0; axis < 2; axis++) {
+                int x = origin.getX() + (axis == 0 ? step - length / 2 : 0);
+                int z = origin.getZ() + (axis == 0 ? 0 : step - length / 2);
+                for (int dy = 0; dy >= -1; dy--) {
+                    cursor.set(x, origin.getY() + dy, z);
+                    if (level.getBlockState(cursor).getBlock() != Blocks.BEDROCK) {
+                        level.setBlock(cursor, Blocks.STONE.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+        clear(level, origin);
+        boolean placed = ModFeatures.ARCHIVAL_VEIN.get().placeVein(level, origin, level.getRandom(), true);
+        ChunkMemory memory = memory(level, origin);
+        int strata = memory == null ? 0 : memory.strataCount();
+        if (!placed || strata <= 0) {
+            Mnemolith.LOGGER.info("Mnemolith qa vein detail placed={} strata={}", placed, strata);
+        }
+        return placed && strata > 0;
     }
 
     private static boolean pocket(ServerLevel level, BlockPos pos) {
