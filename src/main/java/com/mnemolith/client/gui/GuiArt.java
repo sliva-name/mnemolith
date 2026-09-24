@@ -46,8 +46,8 @@ public final class GuiArt {
     }
 
     public static void paragraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color) {
-        graphics.textWithWordWrap(font, text, x + 1, y + 1, width, SHADOW);
-        graphics.textWithWordWrap(font, text, x, y, width, color);
+        graphics.textWithWordWrap(font, text, x + 1, y + 1, width, SHADOW, false);
+        graphics.textWithWordWrap(font, text, x, y, width, color, false);
     }
 
     public static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {

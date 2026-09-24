@@ -7,25 +7,32 @@ import net.minecraft.resources.Identifier;
 /**
  * Static pages of the field guide. Text lives in the language files.
  * The screen that draws these pages is client-only.
+ * Dedicated QA expects {@link #pageCount()} to stay 18.
  */
 public final class GuideBook {
     public static final String ITEM_ID = "field_guide";
-    public static final int ART_WIDTH = 128;
-    public static final int ART_HEIGHT = 64;
+    public static final int ART_WIDTH = 256;
+    public static final int ART_HEIGHT = 128;
 
     private static final String[] PAGES = {
+            "welcome",
+            "hour",
             "loop",
             "sources",
             "bands",
-            "mute",
-            "crafts",
+            "lens",
+            "needle",
+            "reel",
             "formulas",
             "fails",
+            "mute",
+            "catalog",
             "strider",
             "archivist",
             "replicant",
             "world",
-            "players"
+            "players",
+            "reference"
     };
 
     private GuideBook() {}

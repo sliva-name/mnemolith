@@ -11,8 +11,8 @@ Drawn in the Phase 8 palette (ink `#1C244A`, indigo `#3D4A8A`, bone `#E6DCC8`, v
 | `textures/item/chronicle_lens.png` | 32×32 | Bone ring, indigo rim, verdigris glass with a highlight, bone bracket |
 | `textures/item/extraction_needle.png` | 16×16 | Indigo handle, bone shaft, verdigris tip, ink outline |
 | `textures/item/catalog_fragment.png` | 16×16 | Torn page, indigo spine, verdigris mark |
-| `textures/item/field_guide.png` | 16×16 | Indigo cover, bone page edge, verdigris mark |
-| `textures/gui/guide/*.png` | 128×64 | Twelve original diagrams for the field-guide pages |
+| `textures/item/field_guide.png` | 16×16 | Indigo cover, bone page block, verdigris clasp, warm spine line |
+| `textures/gui/guide/*.png` | 256×128 | Eighteen original panels (ink `#1C244A`, bone `#E6DCC8`, verdigris `#8ED9C8`, fail `#FFB089`) for the field-guide pages |
 | `textures/item/imprint_slip.png` | 16×16 | Bone sheet, indigo stripe, fold |
 | `textures/item/archival_tablet.png` | 16×16 | Indigo tablet, bone lines, verdigris corner |
 | `textures/block/composition_reel.png` | 16×16 | Bevel and grain inside the metal, bone, gel, and indigo quadrants |
