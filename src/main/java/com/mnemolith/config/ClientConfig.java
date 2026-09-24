@@ -12,6 +12,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue STORM_SCREEN_SHAKE;
     public static final ModConfigSpec.DoubleValue MEMORY_AUDIO_VOLUME;
     public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
+    public static final ModConfigSpec.IntValue MAX_PARTICLES_PER_TICK;
     public static final ModConfigSpec.BooleanValue AMBIENT_WITHOUT_LENS;
     public static final ModConfigSpec.IntValue LENS_POLL_INTERVAL;
     public static final ModConfigSpec.BooleanValue LENS_OVERLAY;
@@ -45,6 +46,10 @@ public final class ClientConfig {
                 .comment("Scale, from 0.0 to 1.0, for every custom memory particle. 0 disables them.")
                 .translation("mnemolith.configuration.particleDensity")
                 .defineInRange("particleDensity", 1.0D, 0.0D, 1.0D);
+        MAX_PARTICLES_PER_TICK = builder
+                .comment("Hard cap on custom memory particles spawned in one client tick. Density still scales the budget, and 0 density disables them.")
+                .translation("mnemolith.configuration.maxParticlesPerTick")
+                .defineInRange("maxParticlesPerTick", 48, 1, 256);
         AMBIENT_WITHOUT_LENS = builder
                 .comment("Whether saturated chunks shimmer without a chronicle lens. Vein marks stay lens-only.")
                 .translation("mnemolith.configuration.ambientWithoutLens")

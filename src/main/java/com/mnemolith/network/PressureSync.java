@@ -1,8 +1,12 @@
 package com.mnemolith.network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ImprintConstants;
@@ -21,9 +25,24 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Server answers a lens request with the chunks around that player. */
+/** Server answers a lens request with the chunks around that player. Unchanged snapshots are not resent. */
 public final class PressureSync {
+    private static int memoryEpoch;
+    private static int perfEpoch = -1;
+    private static int perfChunkX;
+    private static int perfChunkZ;
+    private static final Map<UUID, Stamp> STAMPS = new HashMap<>();
+
     private PressureSync() {}
+
+    /** Any pressure, mute, or fracture change. Lens polls skip their chunk walk until this moves. */
+    public static void markDirty() {
+        memoryEpoch++;
+    }
+
+    public static void forget(UUID player) {
+        STAMPS.remove(player);
+    }
 
     public static void handleRequest(RequestPressurePayload payload, IPayloadContext context) {
         if (!(context.player() instanceof ServerPlayer player)) {
@@ -36,15 +55,49 @@ public final class PressureSync {
         if (!lens && !payload.ambient()) {
             return;
         }
-        ChunkPos origin = new ChunkPos(player.blockPosition().getX() >> 4, player.blockPosition().getZ() >> 4);
+        ChunkPos origin = ChunkPos.containing(player.blockPosition());
+        Stamp stamp = STAMPS.get(player.getUUID());
+        if (stamp != null && stamp.matches(memoryEpoch, origin.x(), origin.z(), lens, payload.ambient())) {
+            int interval = CommonConfig.VEIN_SHIMMER_TICKS.get();
+            if (lens && interval > 0 && level.getGameTime() - stamp.shimmer >= interval) {
+                shimmerVeins(level, player, origin);
+                stamp.shimmer = level.getGameTime();
+            }
+            return;
+        }
+        List<ChunkPressure> chunks = collect(level, player.blockPosition());
+        if (lens) {
+            shimmerVeins(level, player, origin);
+        }
+        STAMPS.put(player.getUUID(), new Stamp(memoryEpoch, origin.x(), origin.z(), lens, payload.ambient(), level.getGameTime()));
+        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
+    }
+
+    /**
+     * One lens-sized chunk walk, used by {@code /mnemolith perf}. Returns 1 when the walk ran.
+     * A repeat with the same memory epoch and chunk returns 0.
+     */
+    public static int timedPoll(ServerLevel level, BlockPos pos) {
+        ChunkPos origin = ChunkPos.containing(pos);
+        if (perfEpoch == memoryEpoch && perfChunkX == origin.x() && perfChunkZ == origin.z()) {
+            return 0;
+        }
+        collect(level, pos);
+        perfEpoch = memoryEpoch;
+        perfChunkX = origin.x();
+        perfChunkZ = origin.z();
+        return 1;
+    }
+
+    private static List<ChunkPressure> collect(ServerLevel level, BlockPos playerPos) {
+        ChunkPos origin = ChunkPos.containing(playerPos);
         ChunkMemory originMemory = LoadedChunkMemory.existing(level.getChunk(origin.x(), origin.z()));
         int radius = ImprintConstants.LENS_CHUNK_RADIUS;
         if (originMemory != null && originMemory.strataCount() > 0) {
             radius += 1;
         }
+        int muteRadius = CommonConfig.MUTE_RADIUS_CHUNKS.get();
         List<ChunkPressure> chunks = new ArrayList<>();
-        int hinted = 0;
-        BlockPos playerPos = player.blockPosition();
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
                 int chunkX = origin.x() + dx;
@@ -52,44 +105,86 @@ public final class PressureSync {
                 if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
                     continue;
                 }
+                if (chunks.size() >= ImprintConstants.LENS_CHUNK_LIMIT) {
+                    break;
+                }
                 LevelChunk chunk = level.getChunk(chunkX, chunkZ);
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
                 int pressure = memory == null ? 0 : memory.cachedPressure();
                 PressureBand band = MemoryPressure.band(pressure);
-                if (chunks.size() < ImprintConstants.LENS_CHUNK_LIMIT) {
-                    BlockPos sample = new BlockPos((chunkX << 4) + 8, playerPos.getY(), (chunkZ << 4) + 8);
-                    boolean muted = LoadedChunkMemory.isMuted(level, sample);
-                    ChunkState state = LoadedChunkMemory.stateOf(memory, muted);
-                    chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), state.ordinal()));
+                BlockPos sample = new BlockPos((chunkX << 4) + 8, playerPos.getY(), (chunkZ << 4) + 8);
+                boolean muted = memory != null && memory.hasMuteStone();
+                if (!muted && muteRadius > 0) {
+                    muted = LoadedChunkMemory.isMuted(level, sample);
                 }
-                if (lens && memory != null && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
-                    for (BlockPos mark : memory.strataCopy()) {
-                        if (hinted >= 8 || mark.distSqr(playerPos) > (long) WorldgenTuning.LENS_VEIN_RANGE * WorldgenTuning.LENS_VEIN_RANGE) {
-                            continue;
-                        }
-                        level.sendParticles(
-                                player,
-                                ModParticles.IMPRINT_SHIMMER.get(),
-                                false,
-                                false,
-                                mark.getX() + 0.5D,
-                                mark.getY() + 1.1D,
-                                mark.getZ() + 0.5D,
-                                2,
-                                0.15D,
-                                0.2D,
-                                0.15D,
-                                0.01D);
-                        hinted++;
+                chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), LoadedChunkMemory.stateOf(memory, muted).ordinal()));
+            }
+        }
+        return chunks;
+    }
+
+    private static void shimmerVeins(ServerLevel level, ServerPlayer player, ChunkPos origin) {
+        BlockPos playerPos = player.blockPosition();
+        int hinted = 0;
+        long rangeSqr = (long) WorldgenTuning.LENS_VEIN_RANGE * WorldgenTuning.LENS_VEIN_RANGE;
+        for (int dx = -1; dx <= 1 && hinted < 8; dx++) {
+            for (int dz = -1; dz <= 1 && hinted < 8; dz++) {
+                int chunkX = origin.x() + dx;
+                int chunkZ = origin.z() + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                ChunkMemory memory = LoadedChunkMemory.existing(level.getChunk(chunkX, chunkZ));
+                if (memory == null) {
+                    continue;
+                }
+                for (BlockPos mark : memory.strataCopy()) {
+                    if (hinted >= 8 || mark.distSqr(playerPos) > rangeSqr) {
+                        continue;
                     }
+                    level.sendParticles(
+                            player,
+                            ModParticles.IMPRINT_SHIMMER.get(),
+                            false,
+                            false,
+                            mark.getX() + 0.5D,
+                            mark.getY() + 1.1D,
+                            mark.getZ() + 0.5D,
+                            2,
+                            0.15D,
+                            0.2D,
+                            0.15D,
+                            0.01D);
+                    hinted++;
                 }
             }
         }
-        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
     }
 
     public static boolean holdsLens(ServerPlayer player) {
         return player.getMainHandItem().getItem() == ModItems.CHRONICLE_LENS.get()
                 || player.getOffhandItem().getItem() == ModItems.CHRONICLE_LENS.get();
+    }
+
+    private static final class Stamp {
+        private final int epoch;
+        private final int x;
+        private final int z;
+        private final boolean lens;
+        private final boolean ambient;
+        private long shimmer;
+
+        private Stamp(int epoch, int x, int z, boolean lens, boolean ambient, long shimmer) {
+            this.epoch = epoch;
+            this.x = x;
+            this.z = z;
+            this.lens = lens;
+            this.ambient = ambient;
+            this.shimmer = shimmer;
+        }
+
+        private boolean matches(int epoch, int x, int z, boolean lens, boolean ambient) {
+            return this.epoch == epoch && this.x == x && this.z == z && this.lens == lens && this.ambient == ambient;
+        }
     }
 }

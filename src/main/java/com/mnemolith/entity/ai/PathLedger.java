@@ -34,12 +34,20 @@ public final class PathLedger {
     private PathLedger() {}
 
     public static void note(ServerPlayer player) {
-        BlockPos now = player.blockPosition().immutable();
+        int x = player.getBlockX();
+        int y = player.getBlockY();
+        int z = player.getBlockZ();
         UUID id = player.getUUID();
         BlockPos last = LAST_STEP.get(id);
-        if (last != null && last.distSqr(now) < STEP_SQR) {
-            return;
+        if (last != null) {
+            double dx = last.getX() - x;
+            double dy = last.getY() - y;
+            double dz = last.getZ() - z;
+            if (dx * dx + dy * dy + dz * dz < STEP_SQR) {
+                return;
+            }
         }
+        BlockPos now = new BlockPos(x, y, z);
         LAST_STEP.put(id, now);
         Deque<BlockPos> path = PATHS.computeIfAbsent(id, key -> new ArrayDeque<>());
         path.addLast(now);
@@ -91,7 +99,9 @@ public final class PathLedger {
                 if (memory == null) {
                     continue;
                 }
-                for (Imprint imprint : memory.imprintsCopy()) {
+                int imprints = memory.imprintCount();
+                for (int index = 0; index < imprints; index++) {
+                    Imprint imprint = memory.imprintAt(index);
                     if (imprint.tag() != ImprintTag.PATH && imprint.tag() != ImprintTag.PLAYER) {
                         continue;
                     }

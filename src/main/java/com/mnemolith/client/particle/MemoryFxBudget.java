@@ -40,6 +40,7 @@ final class MemoryFxBudget {
             spawned = 0;
         }
         int cap = Math.max(1, (int) Math.round(48.0D * density));
+        cap = Math.min(cap, ClientConfig.MAX_PARTICLES_PER_TICK.get());
         if (spawned >= cap) {
             return false;
         }

@@ -40,6 +40,8 @@ public final class ChunkMemory {
     private int cachedPressure;
     private int instability;
     private long lastCoolGameTime;
+    /** Set when instability or a build, redstone, or path imprint can still cool. Not saved. */
+    private boolean coolDirty;
 
     public ChunkMemory() {}
 
@@ -55,6 +57,7 @@ public final class ChunkMemory {
         memory.resonators.addAll(resonators);
         memory.strata.addAll(strata);
         memory.observatory = observatory;
+        memory.refreshCooling();
         return memory;
     }
 
@@ -79,6 +82,10 @@ public final class ChunkMemory {
 
     public int imprintCount() {
         return this.imprints.size();
+    }
+
+    public Imprint imprintAt(int index) {
+        return this.imprints.get(index);
     }
 
     public boolean hasMuteStone() {
@@ -122,6 +129,26 @@ public final class ChunkMemory {
             return;
         }
         this.instability = Math.min(cap, this.instability + amount);
+        this.coolDirty = true;
+    }
+
+    public boolean wantsCooling() {
+        return this.coolDirty;
+    }
+
+    /** Keeps the cool flag only while instability or a quiet imprint remains. */
+    public void refreshCooling() {
+        if (this.instability > 0) {
+            this.coolDirty = true;
+            return;
+        }
+        for (int index = 0; index < this.imprints.size(); index++) {
+            if (isQuiet(this.imprints.get(index).tag())) {
+                this.coolDirty = true;
+                return;
+            }
+        }
+        this.coolDirty = false;
     }
 
     public int coolInstability(int amount) {
@@ -183,6 +210,9 @@ public final class ChunkMemory {
 
     public void addImprint(Imprint imprint, int cap) {
         this.imprints.add(imprint);
+        if (isQuiet(imprint.tag())) {
+            this.coolDirty = true;
+        }
         int limit = Math.max(1, Math.min(cap, ImprintConstants.ABSOLUTE_LIST_CAP));
         while (this.imprints.size() > limit) {
             int lowest = 0;

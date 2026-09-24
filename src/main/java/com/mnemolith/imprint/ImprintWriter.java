@@ -32,7 +32,22 @@ public final class ImprintWriter {
     private ImprintWriter() {}
 
     public static boolean tryWrite(ServerLevel level, BlockPos pos, ImprintTag tag, @Nullable UUID player, boolean throttled) {
+        if (throttled && !acceptsThrottled(level, pos)) {
+            return false;
+        }
         return write(level, pos, List.of(tag), player, throttled);
+    }
+
+    /** False when a muted chunk or the build/redstone pause would drop the write. Does not create memory. */
+    public static boolean acceptsThrottled(ServerLevel level, BlockPos pos) {
+        if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMuted(level, pos)) {
+            return false;
+        }
+        ChunkMemory memory = LoadedChunkMemory.existing(level.getChunkAt(pos));
+        if (memory == null) {
+            return true;
+        }
+        return memory.acceptsThrottledWrite(level.getGameTime(), CommonConfig.WRITE_DEBOUNCE_TICKS.get());
     }
 
     public static boolean write(ServerLevel level, BlockPos pos, List<ImprintTag> tags, @Nullable UUID player, boolean throttled) {
@@ -43,11 +58,12 @@ public final class ImprintWriter {
             return false;
         }
         LevelChunk chunk = level.getChunkAt(pos);
-        ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
         long now = level.getGameTime();
-        if (throttled && !memory.acceptsThrottledWrite(now, CommonConfig.WRITE_DEBOUNCE_TICKS.get())) {
+        ChunkMemory existing = LoadedChunkMemory.existing(chunk);
+        if (throttled && existing != null && !existing.acceptsThrottledWrite(now, CommonConfig.WRITE_DEBOUNCE_TICKS.get())) {
             return false;
         }
+        ChunkMemory memory = existing != null ? existing : LoadedChunkMemory.getOrCreate(chunk);
         boolean wrote = false;
         for (ImprintTag tag : tags) {
             int intensity = intensityFor(tag);

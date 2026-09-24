@@ -253,9 +253,11 @@ public class EchoStrider extends MemoryMob {
                 away = new Vec3(1.0D, 0.0D, 0.0D);
             }
             away = away.normalize();
-            double x = this.strider.getX() + away.x * 8.0D;
-            double z = this.strider.getZ() + away.z * 8.0D;
-            this.strider.getNavigation().moveTo(x, this.strider.getY(), z, 1.25D);
+            if (MobTuning.sensorDue(this.strider.tickCount, this.strider.getNavigation().isDone())) {
+                double x = this.strider.getX() + away.x * 8.0D;
+                double z = this.strider.getZ() + away.z * 8.0D;
+                this.strider.getNavigation().moveTo(x, this.strider.getY(), z, 1.25D);
+            }
             if (this.strider.tickCount % 10 == 0) {
                 MemoryFx.mob(this.strider.serverLevel(), ModParticles.STRIDER_TRAIL.get(), this.strider.getX(), this.strider.getY() + 0.6D, this.strider.getZ(), 2);
             }
@@ -361,7 +363,7 @@ public class EchoStrider extends MemoryMob {
                 return;
             }
             this.strider.stepPhase(this.strider.waypoint);
-            if (!this.strider.noPhysics) {
+            if (!this.strider.noPhysics && MobTuning.sensorDue(this.strider.tickCount, this.strider.getNavigation().isDone())) {
                 BlockPos waypoint = this.strider.waypoint;
                 this.strider.getNavigation().moveTo(waypoint.getX() + 0.5D, waypoint.getY(), waypoint.getZ() + 0.5D, 0.9D);
             }

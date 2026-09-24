@@ -1,6 +1,5 @@
 package com.mnemolith.entity.mob;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -169,17 +168,16 @@ public class MomentReplicant extends MemoryMob {
     }
 
     private @Nullable ServerPlayer choosePlayer(ServerLevel level) {
-        List<ServerPlayer> nearby = new ArrayList<>();
-        for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(this) < 16.0D * 16.0D) {
-                nearby.add(player);
-            }
+        if (!this.twin()) {
+            Player nearest = level.getNearestPlayer(this, 16.0D);
+            return nearest instanceof ServerPlayer serverPlayer ? serverPlayer : null;
         }
-        nearby.sort(Comparator.comparingDouble(this::distanceToSqr));
+        List<ServerPlayer> nearby = level.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(16.0D));
         if (nearby.isEmpty()) {
             return null;
         }
-        if (this.twin() && nearby.size() >= 2) {
+        nearby.sort(Comparator.comparingDouble(this::distanceToSqr));
+        if (nearby.size() >= 2) {
             return nearby.get((this.tickCount / 20) % 2);
         }
         return nearby.getFirst();
@@ -217,7 +215,9 @@ public class MomentReplicant extends MemoryMob {
         if (action == null || action.kind() != CopiedActionKind.MELEE || player == null || !player.isAlive()) {
             return;
         }
-        this.getNavigation().moveTo(player, 1.2D);
+        if (MobTuning.sensorDue(this.tickCount, this.getNavigation().isDone())) {
+            this.getNavigation().moveTo(player, 1.2D);
+        }
         if (this.distanceToSqr(player) < 4.0D) {
             this.doHurtTarget(level, player);
             this.executeTicks = 0;
@@ -289,7 +289,9 @@ public class MomentReplicant extends MemoryMob {
                 away = new Vec3(1.0D, 0.0D, 0.0D);
             }
             away = away.normalize();
-            this.replicant.getNavigation().moveTo(this.replicant.getX() + away.x * 6.0D, this.replicant.getY(), this.replicant.getZ() + away.z * 6.0D, 1.2D);
+            if (MobTuning.sensorDue(this.replicant.tickCount, this.replicant.getNavigation().isDone())) {
+                this.replicant.getNavigation().moveTo(this.replicant.getX() + away.x * 6.0D, this.replicant.getY(), this.replicant.getZ() + away.z * 6.0D, 1.2D);
+            }
             this.replicant.setAction(MobActions.FLEE);
         }
     }
@@ -313,7 +315,7 @@ public class MomentReplicant extends MemoryMob {
             if (player == null) {
                 return;
             }
-            if (this.replicant.distanceToSqr(player) > 9.0D) {
+            if (this.replicant.distanceToSqr(player) > 9.0D && MobTuning.sensorDue(this.replicant.tickCount, this.replicant.getNavigation().isDone())) {
                 this.replicant.getNavigation().moveTo(player, 0.9D);
             }
         }

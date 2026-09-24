@@ -3,6 +3,7 @@ package com.mnemolith.world;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ModAttachments;
+import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
 
 import net.minecraft.core.BlockPos;
@@ -35,6 +36,7 @@ public final class LoadedChunkMemory {
         if (chunk.hasData(ModAttachments.CHUNK_MEMORY.get())) {
             chunk.removeData(ModAttachments.CHUNK_MEMORY.get());
             chunk.markUnsaved();
+            PressureSync.markDirty();
         }
     }
 
@@ -69,6 +71,7 @@ public final class LoadedChunkMemory {
         ChunkMemory memory = getOrCreate(chunk);
         if (memory.addMuteStone(pos)) {
             chunk.markUnsaved();
+            PressureSync.markDirty();
             return true;
         }
         return false;
@@ -79,6 +82,7 @@ public final class LoadedChunkMemory {
         ChunkMemory memory = existing(chunk);
         if (memory != null && memory.removeMuteStone(pos)) {
             chunk.markUnsaved();
+            PressureSync.markDirty();
         }
     }
 
