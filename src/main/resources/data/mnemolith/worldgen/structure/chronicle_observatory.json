@@ -1,0 +1,7 @@
+{
+  "type": "mnemolith:chronicle_observatory",
+  "biomes": "#mnemolith:has_observatory",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

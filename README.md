@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 4**: the core memory loop plus three mobs on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. The Scar and structures are not in the game yet.
+This repository is **Phase 5**: the core memory loop, three mobs, and three worldgen features on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. There is no new biome and no Scar.
 
 | | |
 | --- | --- |
@@ -50,7 +50,15 @@ Three mobs spawn in the overworld only where the chunk is loud enough, and from 
 | Archivist | Takes one slip from an open container, your hand, or the ground, then runs | Resonator trap, or archivist bait |
 | Moment replicant | Copies your last hit, jump, placed block, or item use after a short tell | Sneak and use the chronicle lens |
 
-`/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith mobs` spawns all three and makes the archivist steal once.
+Three generated places use that loop. They are sparse, and each one can be turned off in `worldGen`.
+
+| Place | Where | What it changes |
+| --- | --- | --- |
+| Archival vein | Underground stone, about 12% of overworld chunks, Y −48 to 32 | Archival stratum adds a small pressure bleed (default 1 each, at most 6) and, while you hold the lens, a wider read plus a few particles on the vein |
+| Mute pocket | A small buried room, about 2% of chunks | Mute stone lining. Imprint writes in that chunk stop. Echo striders do not naturally spawn there. Some pockets have a chest |
+| Chronicle observatory | A ruined platform on forest, hill, taiga, jungle, mountain, plains, meadow, savanna, desert, or snowy ground. About one every 40 chunks, 16 chunks apart | A composition reel, a crafting table, and a chest with a lens, a needle, slips, and an archival tablet. Archivists are a little more willing to spawn nearby |
+
+`/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith mobs` spawns all three and makes the archivist steal once. `/mnemolith worldgen` force-places a vein and a mute pocket at your feet. `/locate structure mnemolith:chronicle_observatory` finds an observatory.
 
 Runtime rules are in [docs/architecture.md](docs/architecture.md).
 
@@ -66,7 +74,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.structureSpacing` apply the next time a world loads. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition) apply the next time that action runs. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition) apply the next time that action runs. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Multiplayer
 
@@ -76,7 +84,8 @@ Server options in `mnemolith-server.toml` are authoritative and are synced to co
 
 ## Known issues
 
-- No Scar boss or structures yet. Fracture logs, and it can spawn a moment replicant. It does not start a recollection storm.
+- No Scar boss, no new biome, and no strikethrough shafts. Fracture logs, and it can spawn a moment replicant. It does not start a recollection storm.
+- Observatory spacing is the structure set, not `worldGen.structureSpacing`.
 - `visuals.pressureVignette` and `visuals.stormScreenShake` are loaded and not drawn. The lens uses the action bar and particles.
 - The `gameTestServer` run crashes until a game test is registered. That is the MDK default. `build` does not run it.
 - A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.
@@ -131,7 +140,8 @@ com.mnemolith
   content/               blocks, items, creative tabs
   imprint/  pressure/    chunk memory and pressure bands
   entity/  entity/mob/  entity/ai/
-  world/  event/
+  world/  worldgen/    veins, mute pockets, observatory
+  event/
   network/  data/  audio/
   config/                common, client, and server specs
   client/render|particle|audio|gui
@@ -142,7 +152,7 @@ com.mnemolith
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 4**: основной цикл памяти и три моба для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Шрама и структур ещё нет.
+Это **фаза 5**: основной цикл памяти, три моба и три места генерации для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Нового биома и Шрама нет.
 
 ### Установка
 
@@ -159,7 +169,9 @@ com.mnemolith
 
 Эхо-странник ходит по вашему пути и делает рывок в перегруженном чанке. Архивариус забирает один бланк из открытого сундука, из руки или с земли. Резонаторная ловушка и приманка его останавливают. Репликант момента копирует удар, прыжок, установку блока или использование предмета.
 
-`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк.
+Под землёй встречается **архивная жила**: пласт чуть поднимает давление и, пока в руке линза, расширяет чтение. **Глухой карман** выложен глушащим камнем и не принимает новые отпечатки. **Хроникальная обсерватория** — редкая руина с барабаном составления и сундуком (линза, игла, бланки, архивная табличка). Обсерватории стоят примерно раз в 40 чанков. Шахт и нового биома нет.
+
+`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
 
 Правила производительности — в [docs/architecture.md](docs/architecture.md): отпечаток пишется в событии, которое его породило; полный обход мира каждый тик не допускается.
 

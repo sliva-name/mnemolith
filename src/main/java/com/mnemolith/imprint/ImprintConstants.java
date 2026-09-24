@@ -36,9 +36,9 @@ public final class ImprintConstants {
     public static final double WITNESS_RANGE = 32.0D;
     public static final double WITNESS_RANGE_SQR = WITNESS_RANGE * WITNESS_RANGE;
 
-    /** Chebyshev radius, in chunks, of a lens pressure request. 2 → 25 chunks. */
+    /** Chebyshev radius, in chunks, of a lens pressure request. 2 → 25 chunks. Strata add one. */
     public static final int LENS_CHUNK_RADIUS = 2;
-    public static final int LENS_CHUNK_LIMIT = 25;
+    public static final int LENS_CHUNK_LIMIT = 49;
 
     public static final int SERVER_PARTICLE_COUNT = 6;
     public static final int LENS_PARTICLES_PER_CHUNK = 4;

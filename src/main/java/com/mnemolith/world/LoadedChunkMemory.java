@@ -6,6 +6,7 @@ import com.mnemolith.imprint.ModAttachments;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
@@ -15,7 +16,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 public final class LoadedChunkMemory {
     private LoadedChunkMemory() {}
 
-    public static ChunkMemory getOrCreate(LevelChunk chunk) {
+    public static ChunkMemory getOrCreate(ChunkAccess chunk) {
         ChunkMemory existing = chunk.getExistingDataOrNull(ModAttachments.CHUNK_MEMORY.get());
         if (existing != null) {
             return existing;
@@ -25,7 +26,7 @@ public final class LoadedChunkMemory {
         return created;
     }
 
-    public static ChunkMemory existing(LevelChunk chunk) {
+    public static ChunkMemory existing(ChunkAccess chunk) {
         return chunk.getExistingDataOrNull(ModAttachments.CHUNK_MEMORY.get());
     }
 
@@ -58,7 +59,10 @@ public final class LoadedChunkMemory {
     }
 
     public static void addMuteStone(ServerLevel level, BlockPos pos) {
-        LevelChunk chunk = level.getChunkAt(pos);
+        addMuteStone(level.getChunkAt(pos), pos);
+    }
+
+    public static void addMuteStone(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = getOrCreate(chunk);
         if (memory.addMuteStone(pos)) {
             chunk.markUnsaved();
@@ -109,6 +113,53 @@ public final class LoadedChunkMemory {
                     if (resonator.distSqr(pos) <= rangeSqr) {
                         return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean noteStratum(ChunkAccess chunk, BlockPos pos) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (!memory.noteStratum(pos)) {
+            return false;
+        }
+        chunk.markUnsaved();
+        return true;
+    }
+
+    public static boolean forgetStratum(ChunkAccess chunk, BlockPos pos) {
+        ChunkMemory memory = existing(chunk);
+        if (memory == null || !memory.forgetStratum(pos)) {
+            return false;
+        }
+        chunk.markUnsaved();
+        return true;
+    }
+
+    public static boolean markObservatory(ChunkAccess chunk) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.observatory()) {
+            return false;
+        }
+        memory.setObservatory(true);
+        chunk.markUnsaved();
+        return true;
+    }
+
+    public static boolean observatoryNearby(ServerLevel level, BlockPos pos, int radius) {
+        int originX = pos.getX() >> 4;
+        int originZ = pos.getZ() >> 4;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int chunkX = originX + dx;
+                int chunkZ = originZ + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
+                if (memory != null && memory.observatory()) {
+                    return true;
                 }
             }
         }

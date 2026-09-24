@@ -21,6 +21,8 @@ public final class MemoryPressure {
         for (Imprint imprint : memory.imprintsCopy()) {
             sum += imprint.pressureContribution();
         }
+        int strata = Math.min(memory.strataCount(), CommonConfig.ARCHIVAL_BLEED_CAP.get());
+        sum += strata * CommonConfig.ARCHIVAL_BLEED.get();
         return Math.min(CommonConfig.PRESSURE_SOFT_CAP.get(), Math.max(0, sum));
     }
 

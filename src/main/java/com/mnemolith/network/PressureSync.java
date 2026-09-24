@@ -9,7 +9,10 @@ import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.LoadedChunkMemory;
+import com.mnemolith.worldgen.WorldgenTuning;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,11 +33,18 @@ public final class PressureSync {
             return;
         }
         ChunkPos origin = new ChunkPos(player.blockPosition().getX() >> 4, player.blockPosition().getZ() >> 4);
+        ChunkMemory originMemory = LoadedChunkMemory.existing(level.getChunk(origin.x(), origin.z()));
+        int radius = ImprintConstants.LENS_CHUNK_RADIUS;
+        if (originMemory != null && originMemory.strataCount() > 0) {
+            radius += 1;
+        }
         List<ChunkPressure> chunks = new ArrayList<>();
         int here = 0;
         PressureBand hereBand = PressureBand.CALM;
-        for (int dx = -ImprintConstants.LENS_CHUNK_RADIUS; dx <= ImprintConstants.LENS_CHUNK_RADIUS; dx++) {
-            for (int dz = -ImprintConstants.LENS_CHUNK_RADIUS; dz <= ImprintConstants.LENS_CHUNK_RADIUS; dz++) {
+        int hinted = 0;
+        BlockPos playerPos = player.blockPosition();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
                 int chunkX = origin.x() + dx;
                 int chunkZ = origin.z() + dz;
                 if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
@@ -50,6 +60,15 @@ public final class PressureSync {
                 }
                 if (chunks.size() < ImprintConstants.LENS_CHUNK_LIMIT) {
                     chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal()));
+                }
+                if (memory != null && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
+                    for (BlockPos mark : memory.strataCopy()) {
+                        if (hinted >= 8 || mark.distSqr(playerPos) > (long) WorldgenTuning.LENS_VEIN_RANGE * WorldgenTuning.LENS_VEIN_RANGE) {
+                            continue;
+                        }
+                        level.sendParticles(ParticleTypes.END_ROD, mark.getX() + 0.5D, mark.getY() + 1.1D, mark.getZ() + 0.5D, 2, 0.15D, 0.2D, 0.15D, 0.01D);
+                        hinted++;
+                    }
                 }
             }
         }

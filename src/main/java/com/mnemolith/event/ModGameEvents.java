@@ -38,6 +38,9 @@ public final class ModGameEvents {
                         .then(Commands.literal("moment_replicant").executes(context -> MnemolithCommands.spawn(context, "moment_replicant"))))
                 .then(Commands.literal("mobs")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
-                        .executes(MnemolithCommands::mobs)));
+                        .executes(MnemolithCommands::mobs))
+                .then(Commands.literal("worldgen")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(MnemolithCommands::worldgen)));
     }
 }

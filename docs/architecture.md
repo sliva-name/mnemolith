@@ -1,16 +1,16 @@
 # Mnemolith architecture
 
-Mnemolith (Мнемолит) is a content mod about memory written into the world. Phase 4 adds three mobs on the Phase 3 loop: a world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. The Scar and structures are not in this phase.
+Mnemolith (Мнемолит) is a content mod about memory written into the world. A world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. Phase 5 adds three worldgen features that feed that loop: archival veins, mute pockets, and the chronicle observatory. There is no new biome, no Scar, and no strikethrough shaft.
 
 ## Identity
 
 The world writes its history into stone. Players read imprints, compose memory, and survive recollection storms. The mod is not an RPG class system, an ore mod, or an automation framework.
 
-Later content targets, not built in this phase:
+Later content, not built yet:
 
 - the rest of a ~16 block / ~18 item set
 - 1 boss event (the Scar, during a recollection storm)
-- 3 structure types
+- strikethrough shafts
 
 ## Package map
 
@@ -27,6 +27,9 @@ Later content targets, not built in this phase:
 | `com.mnemolith.client.model` | physical client | Placeholder models |
 | `com.mnemolith.client.render` | physical client | Entity renderers. Registered from `MnemolithClient` |
 | `com.mnemolith.world` | both | `LoadedChunkMemory` and `ChunkState` |
+| `com.mnemolith.worldgen` | both | Vein and mute-pocket features, observatory structure type, processor |
+| `com.mnemolith.worldgen.feature` | both | `ArchivalVeinFeature`, `MutePocketFeature` |
+| `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
 | `com.mnemolith.event` | both | Vanilla listeners and `/mnemolith` |
 | `com.mnemolith.network` | both | Lens request and pressure snapshot. Client handler is registered from `MnemolithClient` |
 | `com.mnemolith.data` | both | Data component register |
@@ -71,13 +74,13 @@ MemoryPressure.recompute (that chunk only)
 
 `Imprint` is a record: `ImprintTag`, intensity 1–10, origin `BlockPos`, optional player UUID, context hash, and the game time it was written. Tags and weights: death 12, explosion 10, fall 8, fire 6, silence 5, player 4, build 3, redstone 3, path 2. Path is appended so older ordinal ids stay valid. Pressure contribution is intensity times weight. A moving player writes a path imprint about every 12 blocks, and `PathLedger` keeps a 16-step ring buffer in memory.
 
-`ChunkMemory` is the `chunk_memory` attachment (`ModAttachments`). It stores the imprint list, mute-stone positions, resonator positions, fractured and archival flags, the last throttled write time, cached pressure, and instability from a failed composition. `resonators` is optional in the codec so chunks saved before Phase 4 still load. The codec skips empty memory. Mutating the object is followed by `LevelChunk.markUnsaved()`. The list is capped by `gameplay.maxImprintsPerChunk`; the lowest intensity (then the oldest) is dropped.
+`ChunkMemory` is the `chunk_memory` attachment (`ModAttachments`). It stores the imprint list, mute-stone positions, resonator positions, archival-stratum positions, an observatory flag, fractured and archival flags, the last throttled write time, cached pressure, and instability from a failed composition. `resonators`, `strata`, and `observatory` are optional in the codec so older chunks still load. The codec skips empty memory. Mutating the object is followed by `ChunkAccess.markUnsaved()`. The imprint list is capped by `gameplay.maxImprintsPerChunk`; the lowest intensity (then the oldest) is dropped. Stratum marks stop at 64.
 
 `ImprintWriter` is the only writer. Deaths, explosions, falls, and silence are not throttled. Build and redstone writes wait `gameplay.writeDebounceTicks`. A mute stone blocks writes after it has registered itself. Placing one first writes a silence imprint, then registers, so the death+silence formula can be gathered from an unwitnessed death or from the stone.
 
 ### Memory pressure
 
-`MemoryPressure.score` sums contributions and instability, then clamps to `difficulty.pressureSoftCap`. `MemoryPressure.band` maps that score through `difficulty.recollectionStormThreshold` onto calm, saturated, overloaded, and fracture (`gameplay.saturatedThreshold`, `overloadedThreshold`, `fractureThreshold`). Recompute runs when memory changes and once in `ChunkEvent.Load` for a chunk that already has memory. It does not scan the dimension.
+`MemoryPressure.score` sums contributions, instability, and archival bleed (`min(strata, worldGen.archivalBleedCap) * worldGen.archivalBleed`), then clamps to `difficulty.pressureSoftCap`. A vein cannot saturate a chunk by itself: the default bleed cap is 6 and saturated starts at 20. `MemoryPressure.band` maps that score through `difficulty.recollectionStormThreshold` onto calm, saturated, overloaded, and fracture (`gameplay.saturatedThreshold`, `overloadedThreshold`, `fractureThreshold`). Recompute runs when memory changes and once in `ChunkEvent.Load` for a chunk that already has memory. It does not scan the dimension.
 
 Fracture sets `ChunkMemory.fractured`, logs `Mnemolith fracture`, and asks `MobSpawns.trySpawnReplicant` once for that chunk if no replicant is already within 24 blocks. `server.logPressureChanges` logs other band changes. No storm and no Scar are started. `server.allowRecollectionStorms` and `spawnRates.stormAttemptChance` stay loaded for that later step.
 
@@ -85,9 +88,9 @@ Fracture sets `ChunkMemory.fractured`, logs `Mnemolith fracture`, and asks `MobS
 
 ### Extraction and the lens
 
-`ChronicleLensItem` in either hand makes `PressureClient` send `RequestPressurePayload` every `visuals.lensPollInterval` ticks. `PressureSync` answers with `PressureSnapshotPayload` for loaded chunks in a Chebyshev radius of 2, and writes the current chunk's band to the action bar. The attachment is not synced to every player tracking the chunk. `ClientParticles.shimmer` draws sculk soul particles on saturated and higher chunks when `visuals.imprintParticles` is on, scaled by `visuals.particleDensity`. `visuals.memoryAudioVolume` scales the local lens chime. World sounds are played by the server.
+`ChronicleLensItem` in either hand makes `PressureClient` send `RequestPressurePayload` every `visuals.lensPollInterval` ticks. `PressureSync` answers with `PressureSnapshotPayload` for loaded chunks in a Chebyshev radius of 2, or 3 when the player's chunk has at least one archival stratum. The snapshot list is capped at 49 chunks. The same poll sends up to eight end-rod particles on stratum marks within 24 blocks in the surrounding 3×3 loaded chunks. It writes the current chunk's band to the action bar. The attachment is not synced to every player tracking the chunk. `ClientParticles.shimmer` draws sculk soul particles on saturated and higher chunks when `visuals.imprintParticles` is on, scaled by `visuals.particleDensity`. `visuals.memoryAudioVolume` scales the local lens chime. World sounds are played by the server.
 
-`ExtractionNeedleItem.useOn` asks `ImprintWriter.extract` for the highest-intensity imprint, stores it as `imprint_cast` on an `ImprintSlipItem`, and spends `gameplay.extractionDurabilityCost`.
+`ExtractionNeedleItem.useOn` asks `ImprintWriter.extract` for the highest-intensity imprint, stores it as `imprint_cast` on an `ImprintSlipItem`, and spends `gameplay.extractionDurabilityCost`. If the clicked chunk has strata and no local imprint, extract reads one highest imprint from a loaded neighbor chunk and logs `Mnemolith extract reach`. It does not scan blocks.
 
 ### Composition
 
@@ -104,7 +107,7 @@ A mismatch consumes one slip, adds `gameplay.failurePressureSpike` as instabilit
 
 ### Mute stone
 
-`MuteStoneBlock.onPlace` and `affectNeighborsAfterRemoval` maintain the mute list, including `/setblock`. `LoadedChunkMemory.isMuted` checks loaded chunks inside `gameplay.muteRadiusChunks` (default 0, this chunk only). An echo strider inside that radius flees.
+`MuteStoneBlock.onPlace` and `affectNeighborsAfterRemoval` maintain the mute list, including `/setblock`. `LoadedChunkMemory.isMuted` checks loaded chunks inside `gameplay.muteRadiusChunks` (default 0, this chunk only). An echo strider inside that radius flees. A mute pocket places the same block and calls `LoadedChunkMemory.addMuteStone` on the chunk being generated, because worldgen `setBlock` does not run `onPlace`. The registration is idempotent, so a later place event cannot double-count the stone.
 
 `ResonatorTrapBlock` keeps the same place and remove path for resonator positions. An archivist within 4 blocks of one is stunned. The check reads the stored list on the loaded chunk and its neighbors. It does not scan chests or block columns.
 
@@ -114,8 +117,8 @@ Server-authoritative. Client classes under `client.model` and `client.render` ar
 
 | Mob | Pressure | Behavior | Counterplay |
 | --- | --- | --- | --- |
-| Echo strider | Natural spawn at `mobs.echoStriderMinPressure` (default 20, saturated). Charges at overloaded, or when hurt | `PathLedger` waypoints, then path and player imprint origins, then the higher-pressure neighbor among the 9 loaded chunks around it. A short phase step crosses non-solid blocks, at most 12 ticks | Mute radius, or sneak while holding the chronicle lens |
-| Archivist | Natural spawn at `mobs.archivistMinPressure` | `PlayerContainerEvent.Open`, a tossed slip, or a nearby player holding a high-weight slip. It takes one slip, says so, and runs toward a higher-pressure chunk. Cooldown is `mobs.archivistStealCooldown` | Resonator trap, or bait from silence + player |
+| Echo strider | Natural spawn at `mobs.echoStriderMinPressure` (default 20, saturated). A path imprint lowers that gate by 8 when `worldGen.striderPathBias` is on. A muted chunk refuses the natural attempt. Charges at overloaded, or when hurt | `PathLedger` waypoints, then path and player imprint origins, then the higher-pressure neighbor among the 9 loaded chunks around it. A short phase step crosses non-solid blocks, at most 12 ticks | Mute radius or a mute pocket, or sneak while holding the chronicle lens |
+| Archivist | Natural spawn at `mobs.archivistMinPressure`. An observatory flag within 2 loaded chunks lowers that gate by 14 when `worldGen.archivistObservatoryBias` is on | `PlayerContainerEvent.Open`, a tossed slip, or a nearby player holding a high-weight slip. It takes one slip, says so, and runs toward a higher-pressure chunk. Cooldown is `mobs.archivistStealCooldown` | Resonator trap, or bait from silence + player |
 | Moment replicant | Fracture, a failed composition, or natural spawn at `mobs.replicantMinPressure` (default 80) | Copies the last melee, jump, block place, or item use from the last 5 seconds, after a telegraph | Sneak and use the chronicle lens. Anything outside the whitelist is not copied |
 
 A natural attempt is also kept only `mobs.*SpawnWeight` percent of the time. Eggs and `/mnemolith spawn` skip the pressure and weight gates. Biome weights live in `data/mnemolith/neoforge/biome_modifier/memory_mobs.json` (`neoforge:add_spawns` on `#minecraft:is_overworld`). The three types are in the `mnemolith:memory_mobs` entity tag.
@@ -123,6 +126,22 @@ A natural attempt is also kept only `mobs.*SpawnWeight` percent of the time. Egg
 About one in ten is a twin: the strider alternates two players' paths, and the replicant alternates two nearby players. Loot is a path-tagged slip, catalog fragment plus a chance of the stolen slip and an archivist husk, or an unstable slip. There is no separate composition experience item.
 
 `/mnemolith mobs` (gamemaster) spawns all three at the command source, starts a strider charge, makes the archivist steal one death slip from a container, and starts a replicant melee telegraph. The log line is `Mnemolith mobs strider={} archivistStole={} replicant={}`.
+
+### Worldgen
+
+All of this is common code. A dedicated server loads it. Nothing under `com.mnemolith.client` is referenced.
+
+| Feature | What it does | Datapack |
+| --- | --- | --- |
+| Archival vein | A short band of archival stratum in stone or deepslate. Each mark adds bleed when pressure is scored and can extend a lens read. The feature resamples Y, chance, and length from config when it places | `data/mnemolith/worldgen/configured_feature/archival_vein.json`, `placed_feature/archival_vein.json`, `neoforge/biome_modifier/archival_veins.json` (`neoforge:add_features`, `#minecraft:is_overworld`, step `underground_ores`) |
+| Mute pocket | A 5×5 cavity lined with mute stone, at least 8 blocks under the surface, only if the floor is stone. Writes are suppressed by the existing mute list. About half of natural pockets include a chest (`loot_table/chests/mute_pocket.json`) | `configured_feature/mute_pocket.json`, `placed_feature/mute_pocket.json`, `neoforge/biome_modifier/mute_pockets.json` (step `underground_decoration`) |
+| Chronicle observatory | One rigid template, 11×6×9, on the surface. A composition reel, crafting table, and chest (`loot_table/chests/chronicle_observatory.json`: tablet, reel, lens, needle, mute stone, silence and player slips). The processor marks the chunk when the reel is placed and logs `Mnemolith observatory` | `worldgen/structure/chronicle_observatory.json`, `structure_set/chronicle_observatory.json`, `template_pool/chronicle_observatory.json`, `processor_list/observatory.json`, `structure/chronicle_observatory.nbt`, `tags/worldgen/biome/has_observatory.json` |
+
+`ObservatoryStructure` delegates to `JigsawStructure` (depth 1, `WORLD_SURFACE_WG`, `ConstantHeight.ZERO`). `worldGen.structuresEnabled` and `worldGen.observatoryEnabled` return an empty generation point, so both are `worldRestart()`. Spacing is the structure set: salt `49031415`, spacing 40 chunks, separation 16. `worldGen.structureSpacing` documents that number. Editing the toml does not move structures. Biome tags stay in the datapack because a stock biome modifier cannot read the config spec.
+
+Vein and pocket toggles, chance, and Y are read inside `Feature.place`, so they apply to chunks generated after the config reloads. Natural pockets and veins do not scan the world on a tick. `/mnemolith worldgen` (gamemaster) force-places one vein and one pocket at the command source and logs `Mnemolith worldgen`. `/locate structure mnemolith:chronicle_observatory` and `/place` use the registered structure and placed features.
+
+Strikethrough shafts are not generated.
 
 ### Recollection storm
 
@@ -138,6 +157,7 @@ Not started in this phase. The server config and spawn-rate values remain the kn
 6. The client renders particles, the pressure vignette, screen shake, and memory audio from synced state and the client config. The client does not decide whether a storm starts.
 7. Registry work happens while the mod event bus is being constructed. Gameplay ticks do not register content.
 8. Respect `maxImprintsPerChunk` and `maxStormsPerDimension` so a single chunk or dimension cannot queue unbounded work.
+9. Vein and pocket placement run inside the chunk being generated. Observatory spacing is the structure set (40 / 16). Do not scan the world each tick to find them.
 
 ## Registries
 
@@ -145,8 +165,11 @@ Attached to the mod event bus during `Mnemolith` construction.
 
 | Register | Contents |
 | --- | --- |
-| Blocks | Mute stone, composition reel, resonator trap |
-| Items | Chronicle lens, extraction needle, imprint slip, bait, catalog fragment, husk, unstable slip, spawn eggs, block items |
+| Blocks | Mute stone, composition reel, resonator trap, archival stratum |
+| Items | Chronicle lens, extraction needle, imprint slip, archival tablet, bait, catalog fragment, husk, unstable slip, spawn eggs, block items |
+| Features | Archival vein, mute pocket |
+| Structure types | Chronicle observatory |
+| Structure processors | Observatory (marks the chunk that receives the reel) |
 | Block entities | Composition reel |
 | Menus | Composition reel |
 | Creative tab | `mnemolith` |
@@ -166,6 +189,6 @@ Specs use `ModConfigSpec.Builder` and are registered with `ModContainer#register
 | `SERVER` | `mnemolith-server.toml` | logical server, synced to clients; overridable per world | server |
 | `CLIENT` | `mnemolith-client.toml` | physical client only | visuals |
 
-`worldGen.structuresEnabled` and `worldGen.structureSpacing` are marked `worldRestart()`. Gameplay values are read when an imprint is written, extracted, or composed. Client values are read when the lens polls. `ClientConfig` is still referenced only from `MnemolithClient`.
+`worldGen.structuresEnabled`, `worldGen.structureSpacing`, and `worldGen.observatoryEnabled` are marked `worldRestart()`. Vein, pocket, bleed, and spawn-bias values are read when a feature places or a mob spawn is tested. Gameplay values are read when an imprint is written, extracted, or composed. Client values are read when the lens polls. `ClientConfig` is still referenced only from `MnemolithClient`.
 
 Read values with `ConfigValue#get()` at the moment of use. Common values are available from common setup onward. Server values are available once the server is starting. Client values are available from client setup onward.
