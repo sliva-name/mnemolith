@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 10**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, a balance pass, and a dedicated-server performance pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
+This repository is **Phase 11**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, a balance pass, a dedicated-server performance pass, and a multiplayer pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
 
 | | |
 | --- | --- |
@@ -85,7 +85,9 @@ A dedicated view distance of 8 to 10 fits this loop. The lens packet stays a rad
 
 ## Multiplayer
 
-Install the same jar on the client and on the dedicated server. Imprint writes, extraction, composition, and pressure are decided on the server. The lens sends a request and receives a snapshot of nearby chunks. It does not write memory.
+Install the same jar on the client and on the dedicated server. NeoForge 26.2.0.88 or a newer 26.2.x build is required on both. Imprint writes, extraction, composition, and pressure are decided on the server. The lens sends a request and receives a snapshot of nearby chunks. It does not write memory. Two players in one chunk read the same cached pressure. Discovery is stored on the player who extracted or composed, and it is synced only to that player.
+
+`/mnemolith mpsmoke` (gamemaster) runs that checklist with two simulated players in the dedicated process: same lens band, catalog isolation, one archivist steal from the open reel, a second reel left untouched, a mute stone blocking the other player, one replicant after a loud fail, and a compose button ignored once the menu is closed. It does not open a second game client. Hosting notes, payload versions, and that limit are in [docs/multiplayer.md](docs/multiplayer.md).
 
 Server options in `mnemolith-server.toml` are authoritative and are synced to connected clients. Client options in `mnemolith-client.toml` stay on that player's machine: particles, the lens pill, lens polling, vignette, screen shake, and the lens chime. The catalog opens from a server payload; the screen class is client-only. Dedicated servers do not load `MnemolithClient` or the classes under `com.mnemolith.client`.
 
@@ -189,7 +191,7 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Под землёй встречается **архивная жила** (около 8% чанков): пласт чуть поднимает давление и, пока в руке линза, расширяет чтение. **Глухой карман** (около 4% чанков) выложен глушащим камнем и не принимает новые отпечатки. **Хроникальная обсерватория** — руина с барабаном составления и сундуком, в котором всегда есть линза или игла. Обсерватории стоят примерно раз в 32 чанка, с разделением 12. Шахт и нового биома нет.
 
-`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith perf` замеряет запись, счёт, обход линзы и датчики на соседнем чанке. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
+`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith perf` замеряет запись, счёт, обход линзы и датчики на соседнем чанке. `/mnemolith mpsmoke` проверяет двух игроков в одном процессе сервера. Второй клиент он не открывает. Заметки — в [docs/multiplayer.md](docs/multiplayer.md). `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
 
 Для выделенного сервера хватает дальности прорисовки 8–10. Пакет линзы остаётся радиусом в 2 чанка (3, если в чанке есть архивный пласт). `visuals.particleDensity` 1 и `visuals.maxParticlesPerTick` 48 сохраняют прежние частицы. Плотность 0 их выключает. Замеры — в [docs/performance.md](docs/performance.md). Остывание идёт только в чанке игрока и пропускается, когда остывать нечему.
 

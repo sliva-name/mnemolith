@@ -11,7 +11,9 @@ import com.mnemolith.pressure.PressureBand;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
@@ -21,6 +23,7 @@ import java.util.List;
 /** Lens polling and the latest pressure snapshot. Loaded only from the client entrypoint. */
 public final class PressureClient {
     private static List<ChunkPressure> snapshot = List.of();
+    private static ResourceKey<Level> snapshotDimension;
     private static int ticksUntilPoll;
     private static int ticksUntilShimmer;
     private static int lastChimeBand = -1;
@@ -31,6 +34,7 @@ public final class PressureClient {
         snapshot = List.copyOf(payload.chunks());
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
+        snapshotDimension = player == null || player.level() == null ? null : player.level().dimension();
         if (player == null || !ClientConfig.IMPRINT_PARTICLES.get()) {
             return;
         }
@@ -50,12 +54,19 @@ public final class PressureClient {
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.level == null) {
             snapshot = List.of();
+            snapshotDimension = null;
             return;
+        }
+        if (snapshotDimension != null && !player.level().dimension().equals(snapshotDimension)) {
+            snapshot = List.of();
+            snapshotDimension = null;
+            lastChimeBand = -1;
         }
         boolean lens = holdsLens(player);
         boolean ambient = ClientConfig.AMBIENT_WITHOUT_LENS.get();
         if (!lens && !ambient) {
             snapshot = List.of();
+            snapshotDimension = null;
             lastChimeBand = -1;
             ticksUntilPoll = 0;
             return;

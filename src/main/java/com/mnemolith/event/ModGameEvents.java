@@ -44,6 +44,9 @@ public final class ModGameEvents {
                         .executes(MnemolithCommands::worldgen))
                 .then(Commands.literal("perf")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
-                        .executes(MnemolithCommands::perf)));
+                        .executes(MnemolithCommands::perf))
+                .then(Commands.literal("mpsmoke")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(MnemolithCommands::mpsmoke)));
     }
 }

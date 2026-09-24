@@ -12,6 +12,7 @@ import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -85,8 +86,7 @@ public final class MobSpawns {
         if (!MobTuning.replicantEnabled()) {
             return;
         }
-        AABB box = new AABB(pos).inflate(MobTuning.REPLICANT_CLEARANCE);
-        if (!level.getEntitiesOfClass(MomentReplicant.class, box).isEmpty()) {
+        if (replicantNear(level, pos)) {
             return;
         }
         MomentReplicant replicant = ModEntities.MOMENT_REPLICANT.get().spawn(level, pos, EntitySpawnReason.EVENT);
@@ -97,6 +97,22 @@ public final class MobSpawns {
             BlockPos at = replicant.blockPosition();
             Mnemolith.LOGGER.info("Mnemolith replicant spawn at {},{},{}", at.getX(), at.getY(), at.getZ());
         }
+    }
+
+    /** True when a replicant is already within 24 blocks or anywhere in this chunk's column. */
+    public static boolean replicantNear(ServerLevel level, BlockPos pos) {
+        if (!level.getEntitiesOfClass(MomentReplicant.class, new AABB(pos).inflate(MobTuning.REPLICANT_CLEARANCE)).isEmpty()) {
+            return true;
+        }
+        ChunkPos chunk = ChunkPos.containing(pos);
+        AABB column = new AABB(
+                chunk.getMinBlockX(),
+                level.getMinY(),
+                chunk.getMinBlockZ(),
+                chunk.getMaxBlockX() + 1.0D,
+                level.getMaxY(),
+                chunk.getMaxBlockZ() + 1.0D);
+        return !level.getEntitiesOfClass(MomentReplicant.class, column).isEmpty();
     }
 
     public static <T extends Mob> T summon(EntityType<T> type, ServerLevel level, BlockPos pos) {

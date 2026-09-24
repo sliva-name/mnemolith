@@ -18,9 +18,11 @@ import com.mnemolith.world.LoadedChunkMemory;
 import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -31,6 +33,7 @@ public final class PressureSync {
     private static int perfEpoch = -1;
     private static int perfChunkX;
     private static int perfChunkZ;
+    private static ResourceKey<Level> perfDimension;
     private static final Map<UUID, Stamp> STAMPS = new HashMap<>();
 
     private PressureSync() {}
@@ -51,13 +54,16 @@ public final class PressureSync {
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
+        if (player.hasDisconnected() || player.isRemoved()) {
+            return;
+        }
         boolean lens = holdsLens(player);
         if (!lens && !payload.ambient()) {
             return;
         }
         ChunkPos origin = ChunkPos.containing(player.blockPosition());
         Stamp stamp = STAMPS.get(player.getUUID());
-        if (stamp != null && stamp.matches(memoryEpoch, origin.x(), origin.z(), lens, payload.ambient())) {
+        if (stamp != null && stamp.matches(memoryEpoch, level.dimension(), origin.x(), origin.z(), lens, payload.ambient())) {
             int interval = CommonConfig.VEIN_SHIMMER_TICKS.get();
             if (lens && interval > 0 && level.getGameTime() - stamp.shimmer >= interval) {
                 shimmerVeins(level, player, origin);
@@ -69,7 +75,7 @@ public final class PressureSync {
         if (lens) {
             shimmerVeins(level, player, origin);
         }
-        STAMPS.put(player.getUUID(), new Stamp(memoryEpoch, origin.x(), origin.z(), lens, payload.ambient(), level.getGameTime()));
+        STAMPS.put(player.getUUID(), new Stamp(memoryEpoch, level.dimension(), origin.x(), origin.z(), lens, payload.ambient(), level.getGameTime()));
         PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
     }
 
@@ -79,14 +85,27 @@ public final class PressureSync {
      */
     public static int timedPoll(ServerLevel level, BlockPos pos) {
         ChunkPos origin = ChunkPos.containing(pos);
-        if (perfEpoch == memoryEpoch && perfChunkX == origin.x() && perfChunkZ == origin.z()) {
+        if (perfEpoch == memoryEpoch && perfChunkX == origin.x() && perfChunkZ == origin.z() && level.dimension().equals(perfDimension)) {
             return 0;
         }
         collect(level, pos);
         perfEpoch = memoryEpoch;
         perfChunkX = origin.x();
         perfChunkZ = origin.z();
+        perfDimension = level.dimension();
         return 1;
+    }
+
+    /** Band ordinal for the chunk containing {@code pos}, using the same walk a lens snapshot uses. */
+    public static int originBand(ServerLevel level, BlockPos pos) {
+        int chunkX = pos.getX() >> 4;
+        int chunkZ = pos.getZ() >> 4;
+        for (ChunkPressure chunk : collect(level, pos)) {
+            if (chunk.chunkX() == chunkX && chunk.chunkZ() == chunkZ) {
+                return chunk.band();
+            }
+        }
+        return -1;
     }
 
     private static List<ChunkPressure> collect(ServerLevel level, BlockPos playerPos) {
@@ -168,14 +187,16 @@ public final class PressureSync {
 
     private static final class Stamp {
         private final int epoch;
+        private final ResourceKey<Level> dimension;
         private final int x;
         private final int z;
         private final boolean lens;
         private final boolean ambient;
         private long shimmer;
 
-        private Stamp(int epoch, int x, int z, boolean lens, boolean ambient, long shimmer) {
+        private Stamp(int epoch, ResourceKey<Level> dimension, int x, int z, boolean lens, boolean ambient, long shimmer) {
             this.epoch = epoch;
+            this.dimension = dimension;
             this.x = x;
             this.z = z;
             this.lens = lens;
@@ -183,8 +204,13 @@ public final class PressureSync {
             this.shimmer = shimmer;
         }
 
-        private boolean matches(int epoch, int x, int z, boolean lens, boolean ambient) {
-            return this.epoch == epoch && this.x == x && this.z == z && this.lens == lens && this.ambient == ambient;
+        private boolean matches(int epoch, ResourceKey<Level> dimension, int x, int z, boolean lens, boolean ambient) {
+            return this.epoch == epoch
+                    && this.dimension.equals(dimension)
+                    && this.x == x
+                    && this.z == z
+                    && this.lens == lens
+                    && this.ambient == ambient;
         }
     }
 }
