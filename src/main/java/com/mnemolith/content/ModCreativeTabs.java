@@ -17,6 +17,7 @@ public final class ModCreativeTabs {
             .title(Component.translatable("itemGroup.mnemolith"))
             .icon(() -> new ItemStack(ModItems.CHRONICLE_LENS.get()))
             .displayItems((parameters, output) -> {
+                output.accept(ModItems.FIELD_GUIDE.get());
                 output.accept(ModItems.CHRONICLE_LENS.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.IMPRINT_SLIP.get());

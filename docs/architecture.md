@@ -70,7 +70,7 @@ MemoryPressure.recompute (that chunk only)
         └── band FRACTURE → log + ChunkMemory.fractured
 ```
 
-`/mnemolith inspect` reads the chunk under the command source. `/mnemolith smoke` (gamemaster) clears that chunk, composes a deliberate mismatch on the neighbor chunk, drops a chicken through a fall, explodes, kills the chicken, places a mute stone, checks that a build write is refused, extracts one imprint, and composes the three formulas plus one failure. `/mnemolith perf` (gamemaster) times writes, scoring, a lens walk, and sensor scans on a chunk 48 blocks away. `/mnemolith qa` (gamemaster) runs the survival checklist in [qa-checklist.md](qa-checklist.md) on chunks east of the source, so smoke, perf, and mpsmoke keep their own chunks.
+`/mnemolith inspect` reads the chunk under the command source. `/mnemolith smoke` (gamemaster) clears that chunk, composes a deliberate mismatch on the neighbor chunk, drops a chicken through a fall, explodes, kills the chicken, places a mute stone, checks that a build write is refused, extracts one imprint, and composes the three formulas plus one failure. `/mnemolith perf` (gamemaster) times writes, scoring, a lens walk, and sensor scans on a chunk 48 blocks away. `/mnemolith qa` (gamemaster) runs the survival checklist in [qa-checklist.md](qa-checklist.md) on chunks east of the source, so smoke, perf, and mpsmoke keep their own chunks. The field guide is an item plus static pages; the illustrated screen is opened from `MnemolithClient` and is not loaded on a dedicated server.
 
 ### Imprints
 

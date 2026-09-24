@@ -29,6 +29,8 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
+            } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
             }
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.IMPRINT_CAST, (stack, context, display, player, flag, builder) -> {

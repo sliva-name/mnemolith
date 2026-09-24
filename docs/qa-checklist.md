@@ -3,10 +3,10 @@
 `/mnemolith qa` is a gamemaster command. It runs on the dedicated server, on surface columns east of the command source, and does not use the chunks owned by `/mnemolith smoke` (the source chunk), `/mnemolith perf` (48 blocks east), or `/mnemolith mpsmoke` (96 blocks east). One log line is the result:
 
 ```
-Mnemolith qa writes=true bands=true extract=true formulas=true quietFail=true loudFail=true mute=true lens=true catalog=true recipe=true vein=true pocket=true observatory=true loot=true strider=true archivist=true replicant=true dimension=minecraft:overworld
+Mnemolith qa writes=true bands=true extract=true formulas=true quietFail=true loudFail=true mute=true lens=true catalog=true recipe=true guide=true vein=true pocket=true observatory=true loot=true strider=true archivist=true replicant=true dimension=minecraft:overworld
 ```
 
-A second line, `Mnemolith qa observatory registered=true chest=true located=<pos>`, records the structure search. The chat message is `QA <passed> of 17`. Every flag above has to be true. Multiplayer flags stay on `/mnemolith mpsmoke` and are not folded into this command.
+A second line, `Mnemolith qa observatory registered=true chest=true located=<pos>`, records the structure search. The chat message is `QA <passed> of 18`. Every flag above has to be true. Multiplayer flags stay on `/mnemolith mpsmoke` and are not folded into this command.
 
 `/mnemolith smoke` is unchanged. The Phase 9 line is still `pressure=75 band=OVERLOADED muted=true writeBlocked=true compose=3`.
 
@@ -25,6 +25,7 @@ A second line, `Mnemolith qa observatory registered=true chest=true located=<pos
 | 9 | Mobs: spawn plus one action | `strider` summons an echo strider and `beginCharge` sets the telegraph pose. `archivist` summons an archivist, `snatch` empties the container, and the pose is flee. `replicant` summons a moment replicant and `beginTelegraph` sets the telegraph pose |
 | 10 | Phase 11 multiplayer invariants | `/mnemolith mpsmoke`, not this command. The line is `sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true` |
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
+| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. All 12 page textures load, and `en_us` plus `ru_ru` contain every page title. The illustrated screen is client-only and is not opened on the dedicated server |
 
 ## GUI contrast
 

@@ -6,6 +6,7 @@ import com.mnemolith.Mnemolith;
 import com.mnemolith.content.item.CatalogFragmentItem;
 import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.content.item.ExtractionNeedleItem;
+import com.mnemolith.content.item.FieldGuideItem;
 import com.mnemolith.content.item.ImprintSlipItem;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.imprint.ImprintConstants;
@@ -32,6 +33,10 @@ public final class ModItems {
             ImprintSlipItem::new,
             slip());
     public static final DeferredItem<Item> ARCHIVIST_BAIT = ITEMS.registerItem("archivist_bait", Item::new, stackTo(16));
+    public static final DeferredItem<FieldGuideItem> FIELD_GUIDE = ITEMS.registerItem(
+            "field_guide",
+            FieldGuideItem::new,
+            stackTo(1));
     public static final DeferredItem<CatalogFragmentItem> CATALOG_FRAGMENT = ITEMS.registerItem(
             "catalog_fragment",
             CatalogFragmentItem::new,

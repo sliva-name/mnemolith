@@ -2,6 +2,7 @@ package com.mnemolith;
 
 import com.mnemolith.client.audio.ClientAudio;
 import com.mnemolith.client.gui.ClientScreens;
+import com.mnemolith.client.gui.FieldGuideClient;
 import com.mnemolith.client.gui.GuiArt;
 import com.mnemolith.client.gui.LensOverlay;
 import com.mnemolith.client.network.ClientPayloads;
@@ -39,6 +40,7 @@ public final class MnemolithClient {
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(FieldGuideClient::onRightClick);
     }
 
     @SubscribeEvent

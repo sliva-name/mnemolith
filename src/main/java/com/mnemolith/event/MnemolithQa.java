@@ -17,6 +17,7 @@ import com.mnemolith.content.ModItems;
 import com.mnemolith.content.composition.ComposeResult;
 import com.mnemolith.content.composition.Composition;
 import com.mnemolith.content.composition.CompositionFormula;
+import com.mnemolith.content.guide.GuideBook;
 import com.mnemolith.content.item.CatalogFragmentItem;
 import com.mnemolith.data.ImprintCast;
 import com.mnemolith.data.ImprintSlips;
@@ -77,7 +78,7 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
 public final class MnemolithQa {
     private static final Identifier OBSERVATORY_ID = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "chronicle_observatory");
     private static final Identifier LOOT_ID = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "chests/chronicle_observatory");
-    private static final int CHECKS = 17;
+    private static final int CHECKS = 18;
     private static int salt = 1;
 
     private MnemolithQa() {}
@@ -105,6 +106,7 @@ public final class MnemolithQa {
         boolean lens = lens(level, column(level, chunkX + 14, chunkZ));
         boolean catalog = catalog(level, player, column(level, chunkX + 15, chunkZ));
         boolean recipe = recipe(level);
+        boolean guide = guide(level);
         boolean vein = vein(level, column(level, chunkX + 16, chunkZ));
         BlockPos observatoryAt = column(level, chunkX + 20, chunkZ);
         boolean pocket = pocket(level, column(level, chunkX + 18, chunkZ));
@@ -117,7 +119,7 @@ public final class MnemolithQa {
 
         String dimension = level.dimension().identifier().toString();
         Mnemolith.LOGGER.info(
-                "Mnemolith qa writes={} bands={} extract={} formulas={} quietFail={} loudFail={} mute={} lens={} catalog={} recipe={} vein={} pocket={} observatory={} loot={} strider={} archivist={} replicant={} dimension={}",
+                "Mnemolith qa writes={} bands={} extract={} formulas={} quietFail={} loudFail={} mute={} lens={} catalog={} recipe={} guide={} vein={} pocket={} observatory={} loot={} strider={} archivist={} replicant={} dimension={}",
                 writes,
                 bands,
                 extract,
@@ -128,6 +130,7 @@ public final class MnemolithQa {
                 lens,
                 catalog,
                 recipe,
+                guide,
                 vein,
                 pocket,
                 observatory,
@@ -138,7 +141,7 @@ public final class MnemolithQa {
                 dimension);
         int passed = count(
                 writes, bands, extract, formulas, quietFail, loudFail, mute, lens,
-                catalog, recipe, vein, pocket, observatory, loot, strider, archivist, replicant);
+                catalog, recipe, guide, vein, pocket, observatory, loot, strider, archivist, replicant);
         int reported = passed;
         source.sendSuccess(() -> Component.translatable("mnemolith.command.qa", reported, CHECKS), true);
         return passed;
@@ -380,6 +383,25 @@ public final class MnemolithQa {
         ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
         boolean loaded = level.getServer().getRecipeManager().byKey(key).isPresent();
         return loaded && resourceContains(level, "recipe/catalog_fragment.json", "\"id\": \"mnemolith:catalog_fragment\"");
+    }
+
+    private static boolean guide(ServerLevel level) {
+        if (GuideBook.pageCount() != 12 || !GuideBook.ITEM_ID.equals("field_guide")) {
+            return false;
+        }
+        Identifier id = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, GuideBook.ITEM_ID);
+        ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
+        boolean loaded = level.getServer().getRecipeManager().byKey(key).isPresent();
+        boolean recipeJson = resourceContains(level, "recipe/field_guide.json", "\"id\": \"mnemolith:field_guide\"");
+        boolean lootJson = resourceContains(level, "loot_table/chests/chronicle_observatory.json", "\"name\": \"mnemolith:field_guide\"");
+        boolean pages = true;
+        for (int index = 0; index < GuideBook.pageCount(); index++) {
+            String title = "\"" + GuideBook.titleKey(index) + "\"";
+            pages &= resourceContains(level, "lang/en_us.json", title);
+            pages &= resourceContains(level, "lang/ru_ru.json", title);
+            pages &= level.getServer().getResourceManager().getResource(GuideBook.texture(index)).isPresent();
+        }
+        return loaded && recipeJson && lootJson && pages && ModItems.FIELD_GUIDE.get() != null;
     }
 
     private static boolean vein(ServerLevel level, BlockPos pos) {
