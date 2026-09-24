@@ -186,7 +186,7 @@ public final class MnemolithQa {
                 && MemoryPressure.band(fracture - 1) == PressureBand.OVERLOADED
                 && MemoryPressure.band(fracture) == PressureBand.FRACTURE;
         ChunkPos chunk = ChunkPos.containing(pos);
-        tickColumn(level, chunk);
+        tickColumn(level, pos);
         try {
             clear(level, pos);
             discardReplicants(level, pos);
@@ -207,7 +207,7 @@ public final class MnemolithQa {
             boolean ok = defaults && edges && calmLive && saturatedOk && fractureLive;
             if (!ok) {
                 Mnemolith.LOGGER.info(
-                        "Mnemolith qa bands detail defaults={} edges={} calm={} saturated={} fractureLive={} pressure={} fractured={} replicants={}",
+                        "Mnemolith qa bands detail defaults={} edges={} calm={} saturated={} fractureLive={} pressure={} fractured={} replicants={} ticking={}",
                         defaults,
                         edges,
                         calmLive,
@@ -215,7 +215,8 @@ public final class MnemolithQa {
                         fractureLive,
                         fractured,
                         memory != null && memory.fractured(),
-                        replicants);
+                        replicants,
+                        level.isPositionEntityTicking(pos));
             }
             discardReplicants(level, pos);
             return ok;
@@ -276,7 +277,7 @@ public final class MnemolithQa {
     private static boolean loudFail(ServerLevel level, FakePlayer player, BlockPos pos) {
         reset(player);
         ChunkPos chunk = ChunkPos.containing(pos);
-        tickColumn(level, chunk);
+        tickColumn(level, pos);
         try {
             clear(level, pos);
             discardReplicants(level, pos);
@@ -298,11 +299,12 @@ public final class MnemolithQa {
             boolean ok = !result.success() && loud && replicants == spawned + 1;
             if (!ok) {
                 Mnemolith.LOGGER.info(
-                        "Mnemolith qa loudFail detail success={} band={} before={} after={}",
+                        "Mnemolith qa loudFail detail success={} band={} before={} after={} ticking={}",
                         result.success(),
                         band,
                         spawned,
-                        replicants);
+                        replicants,
+                        level.isPositionEntityTicking(pos));
             }
             discardReplicants(level, pos);
             return ok;
@@ -601,10 +603,17 @@ public final class MnemolithQa {
         }
     }
 
-    /** Loads the column as entity-ticking. A plain getChunk leaves far columns hidden from entity queries. */
-    private static void tickColumn(ServerLevel level, ChunkPos chunk) {
+    /**
+     * Loads the column as entity-ticking. A plain {@code getChunk} leaves far columns hidden from entity queries,
+     * and the tracking promotion is queued on the server thread after the chunk future completes.
+     */
+    private static void tickColumn(ServerLevel level, BlockPos pos) {
+        ChunkPos chunk = ChunkPos.containing(pos);
         var future = level.getChunkSource().addTicketAndLoadWithRadius(TicketType.FORCED, chunk, 2);
-        level.getServer().managedBlock(future::isDone);
+        var server = level.getServer();
+        server.managedBlock(future::isDone);
+        long deadline = System.nanoTime() + 2_000_000_000L;
+        server.managedBlock(() -> level.isPositionEntityTicking(pos) || System.nanoTime() > deadline);
     }
 
     private static void releaseColumn(ServerLevel level, ChunkPos chunk) {
