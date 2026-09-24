@@ -10,6 +10,8 @@ import com.mnemolith.content.ModContent;
 import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.entity.ModEffects;
 import com.mnemolith.entity.ModEntities;
+import com.mnemolith.entity.ModEntityAttributes;
+import com.mnemolith.entity.ModSpawnPlacements;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.network.ModNetwork;
 import com.mojang.logging.LogUtils;
@@ -35,6 +37,8 @@ public final class Mnemolith {
         ModContent.register(modEventBus);
         ModSounds.register(modEventBus);
         ModEntities.register(modEventBus);
+        modEventBus.addListener(ModEntityAttributes::onCreate);
+        modEventBus.addListener(ModSpawnPlacements::onRegister);
         ModEffects.register(modEventBus);
         ModDataComponents.register(modEventBus);
         ModAttachments.register(modEventBus);

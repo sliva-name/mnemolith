@@ -122,6 +122,7 @@ public final class ImprintWriter {
             case PLAYER -> ImprintConstants.PLAYER_INTENSITY;
             case BUILD -> ImprintConstants.BUILD_INTENSITY;
             case REDSTONE -> ImprintConstants.REDSTONE_INTENSITY;
+            case PATH -> ImprintConstants.PATH_INTENSITY;
         };
         return Math.max(ImprintConstants.INTENSITY_MIN, Math.min(ImprintConstants.INTENSITY_MAX, intensity));
     }

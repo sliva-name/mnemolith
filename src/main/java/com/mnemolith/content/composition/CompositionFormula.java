@@ -7,7 +7,8 @@ import com.mnemolith.imprint.ImprintTag;
 public enum CompositionFormula {
     UNRECORDED(List.of(ImprintTag.DEATH, ImprintTag.SILENCE)),
     FIRE_TRAIL(List.of(ImprintTag.FIRE, ImprintTag.BUILD)),
-    LANDING_BURST(List.of(ImprintTag.FALL, ImprintTag.PLAYER));
+    LANDING_BURST(List.of(ImprintTag.FALL, ImprintTag.PLAYER)),
+    BAIT(List.of(ImprintTag.SILENCE, ImprintTag.PLAYER));
 
     private final List<ImprintTag> tags;
 

@@ -17,7 +17,8 @@ public enum ImprintTag implements StringRepresentable {
     EXPLOSION("explosion", 10),
     SILENCE("silence", 5),
     PLAYER("player", 4),
-    REDSTONE("redstone", 3);
+    REDSTONE("redstone", 3),
+    PATH("path", 2);
 
     public static final Codec<ImprintTag> CODEC = StringRepresentable.fromEnum(ImprintTag::values);
     public static final StreamCodec<ByteBuf, ImprintTag> STREAM_CODEC = ByteBufCodecs.idMapper(ImprintTag::byOrdinal, ImprintTag::ordinal);

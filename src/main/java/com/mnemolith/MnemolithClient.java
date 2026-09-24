@@ -5,6 +5,7 @@ import com.mnemolith.client.gui.ClientScreens;
 import com.mnemolith.client.network.ClientPayloads;
 import com.mnemolith.client.particle.ClientParticles;
 import com.mnemolith.client.render.ClientRender;
+import com.mnemolith.client.render.ModEntityRenderers;
 import com.mnemolith.client.render.PressureClient;
 import com.mnemolith.config.ClientConfig;
 
@@ -31,6 +32,8 @@ public final class MnemolithClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modEventBus.addListener(ClientScreens::registerMenus);
         modEventBus.addListener(ClientPayloads::register);
+        modEventBus.addListener(ModEntityRenderers::registerLayers);
+        modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
     }
 

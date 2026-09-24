@@ -20,6 +20,19 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> EXTRACT = register("extract");
     public static final DeferredHolder<SoundEvent, SoundEvent> COMPOSE_SUCCESS = register("compose_success");
     public static final DeferredHolder<SoundEvent, SoundEvent> COMPOSE_FAIL = register("compose_fail");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRIDER_AMBIENT = register("strider_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRIDER_HURT = register("strider_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRIDER_DEATH = register("strider_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STRIDER_CHARGE = register("strider_charge");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ARCHIVIST_AMBIENT = register("archivist_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ARCHIVIST_HURT = register("archivist_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ARCHIVIST_DEATH = register("archivist_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ARCHIVIST_STEAL = register("archivist_steal");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_AMBIENT = register("replicant_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_HURT = register("replicant_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_DEATH = register("replicant_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_TELEGRAPH = register("replicant_telegraph");
+    public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_BLIND = register("replicant_blind");
 
     private ModSounds() {}
 

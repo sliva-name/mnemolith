@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.config.CommonConfig;
+import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.data.ImprintCast;
 import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.entity.ModEffects;
@@ -94,6 +95,7 @@ public final class Composition {
             }
         }
         ImprintWriter.spike(level, pos, CommonConfig.FAILURE_PRESSURE_SPIKE.get());
+        MobSpawns.trySpawnReplicant(level, pos.above());
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         level.sendParticles(ParticleTypes.ANGRY_VILLAGER, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.3D, 0.3D, 0.3D, 0.0D);
         if (player != null) {
@@ -113,6 +115,12 @@ public final class Composition {
                 player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, ImprintConstants.FIRE_TRAIL_DURATION_TICKS, 0, false, true));
             }
             case LANDING_BURST -> player.addEffect(new MobEffectInstance(ModEffects.LANDING_BURST, ImprintConstants.LANDING_BURST_DURATION_TICKS, 0, false, false));
+            case BAIT -> {
+                ItemStack bait = new ItemStack(ModItems.ARCHIVIST_BAIT.get());
+                if (!player.getInventory().add(bait)) {
+                    player.drop(bait, false);
+                }
+            }
         }
     }
 }

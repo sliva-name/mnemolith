@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mnemolith:item/moment_replicant_spawn_egg"
+  }
+}

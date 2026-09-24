@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": "minecraft:redstone",
+    "C": "minecraft:copper_ingot",
+    "B": "minecraft:cobblestone"
+  },
+  "pattern": [
+    "R",
+    "C",
+    "B"
+  ],
+  "result": {
+    "id": "mnemolith:resonator_trap"
+  }
+}

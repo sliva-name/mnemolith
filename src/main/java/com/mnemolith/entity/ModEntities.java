@@ -1,13 +1,35 @@
 package com.mnemolith.entity;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.entity.mob.Archivist;
+import com.mnemolith.entity.mob.EchoStrider;
+import com.mnemolith.entity.mob.MomentReplicant;
 
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** Entity type registry. Empty until the three mobs and the Scar boss event exist. */
+/** The three memory mobs. The Scar stays unregistered. */
 public final class ModEntities {
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Mnemolith.MOD_ID);
+
+    public static final DeferredHolder<EntityType<?>, EntityType<EchoStrider>> ECHO_STRIDER = ENTITY_TYPES.registerEntityType(
+            "echo_strider",
+            EchoStrider::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(0.9F, 1.4F).eyeHeight(1.1F).clientTrackingRange(8).notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<Archivist>> ARCHIVIST = ENTITY_TYPES.registerEntityType(
+            "archivist",
+            Archivist::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(0.6F, 1.1F).eyeHeight(0.9F).clientTrackingRange(8).notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<MomentReplicant>> MOMENT_REPLICANT = ENTITY_TYPES.registerEntityType(
+            "moment_replicant",
+            MomentReplicant::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(8).notInPeaceful());
 
     private ModEntities() {}
 
