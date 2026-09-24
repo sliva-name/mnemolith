@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 9**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, and a balance pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
+This repository is **Phase 10**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, a balance pass, and a dedicated-server performance pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
 
 | | |
 | --- | --- |
@@ -61,9 +61,9 @@ Three generated places use that loop. They are sparse, and each one can be turne
 | Mute pocket | A small buried room, about 4% of chunks | Mute stone lining. Imprint writes in that chunk stop. Echo striders do not naturally spawn there. Some pockets have a chest, sometimes with a needle |
 | Chronicle observatory | A ruined platform on forest, hill, taiga, jungle, mountain, plains, meadow, savanna, desert, or snowy ground. About one every 32 chunks, 12 chunks apart | A composition reel, a crafting table, and a chest that always has a lens or a needle, plus a tablet, mute stone, or teaching slips. Archivists spawn nearby only once the chunk is loud |
 
-`/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith mobs` spawns all three and makes the archivist steal once. `/mnemolith worldgen` force-places a vein and a mute pocket at your feet. `/locate structure mnemolith:chronicle_observatory` finds an observatory.
+`/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith perf` times those write, score, lens, and sensor paths on a chunk beside you. `/mnemolith mobs` spawns all three and makes the archivist steal once. `/mnemolith worldgen` force-places a vein and a mute pocket at your feet. `/locate structure mnemolith:chronicle_observatory` finds an observatory.
 
-Runtime rules are in [docs/architecture.md](docs/architecture.md).
+Runtime rules are in [docs/architecture.md](docs/architecture.md). Measured timings are in [docs/performance.md](docs/performance.md).
 
 ## Config
 
@@ -73,11 +73,15 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs |
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether storms are allowed, the per-dimension cap, pressure logging |
-| `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, storm screen shake, lens chime volume |
+| `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, storm screen shake, lens chime volume |
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (32 chunks, separation 12 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost and cooldown, instability decay, quiet fade, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (32 chunks, separation 12 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost and cooldown, instability decay, quiet fade, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.maxParticlesPerTick`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles before the cap. The default cap is 48. `gameplay.veinShimmerTicks` (default 40) spaces vein particles while a lens snapshot is unchanged. `mobs.sensorInterval` (default 10) spaces resonator scans, flee scans, and idle repaths. A charge still aims every tick. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+
+## Performance
+
+A dedicated view distance of 8 to 10 fits this loop. The lens packet stays a radius of 2 chunks (3 with archival strata). Leave `visuals.particleDensity` at 1 and `visuals.maxParticlesPerTick` at 48 to keep the same particles as before. Set density to 0 to turn custom memory particles off. The before-and-after `/mnemolith perf` numbers are in [docs/performance.md](docs/performance.md).
 
 ## Multiplayer
 
@@ -185,9 +189,9 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Под землёй встречается **архивная жила** (около 8% чанков): пласт чуть поднимает давление и, пока в руке линза, расширяет чтение. **Глухой карман** (около 4% чанков) выложен глушащим камнем и не принимает новые отпечатки. **Хроникальная обсерватория** — руина с барабаном составления и сундуком, в котором всегда есть линза или игла. Обсерватории стоят примерно раз в 32 чанка, с разделением 12. Шахт и нового биома нет.
 
-`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
+`/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith perf` замеряет запись, счёт, обход линзы и датчики на соседнем чанке. `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
 
-Правила производительности — в [docs/architecture.md](docs/architecture.md): отпечаток пишется в событии, которое его породило; полный обход мира каждый тик не допускается.
+Для выделенного сервера хватает дальности прорисовки 8–10. Пакет линзы остаётся радиусом в 2 чанка (3, если в чанке есть архивный пласт). `visuals.particleDensity` 1 и `visuals.maxParticlesPerTick` 48 сохраняют прежние частицы. Плотность 0 их выключает. Замеры — в [docs/performance.md](docs/performance.md). Остывание идёт только в чанке игрока и пропускается, когда остывать нечему.
 
 ### Конфиг
 
