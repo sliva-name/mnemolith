@@ -16,6 +16,8 @@ import net.minecraft.network.chat.Component;
 public class CatalogScreen extends Screen {
     private static final int PANEL_WIDTH = 248;
     private static final int PANEL_HEIGHT = 236;
+    private static final Component[] TAG_LABELS = labels(ImprintTag.values());
+    private static final Component[] FORMULA_LABELS = formulaLabels();
 
     private int tags;
     private int formulas;
@@ -43,7 +45,6 @@ public class CatalogScreen extends Screen {
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        this.refresh();
         int left = (this.width - PANEL_WIDTH) / 2;
         int top = (this.height - PANEL_HEIGHT) / 2;
         GuiArt.panel(graphics, left, top, PANEL_WIDTH, PANEL_HEIGHT);
@@ -66,7 +67,7 @@ public class CatalogScreen extends Screen {
             int x = left + 10 + column * 116;
             int y = top + 36 + line * 16;
             GuiArt.tag(graphics, tag, x, y);
-            graphics.text(this.font, Component.translatable(tag.translationKey()), x + 18, y + 4, GuiArt.INK, false);
+            graphics.text(this.font, TAG_LABELS[tag.ordinal()], x + 18, y + 4, GuiArt.INK, false);
             row = line;
             shown++;
         }
@@ -86,7 +87,7 @@ public class CatalogScreen extends Screen {
                 GuiArt.tag(graphics, tag, x, y);
                 x += 16;
             }
-            graphics.text(this.font, Component.translatable(formula.translationKey()), x + 4, y + 4, GuiArt.INK, false);
+            graphics.text(this.font, FORMULA_LABELS[formula.ordinal()], x + 4, y + 4, GuiArt.INK, false);
             written++;
         }
         if (written == 0) {
@@ -100,6 +101,12 @@ public class CatalogScreen extends Screen {
         }
     }
 
+    @Override
+    public void tick() {
+        super.tick();
+        this.refresh();
+    }
+
     private void refresh() {
         if (this.minecraft == null) {
             return;
@@ -110,5 +117,22 @@ public class CatalogScreen extends Screen {
             this.tags = discovery.tags();
             this.formulas = discovery.formulas();
         }
+    }
+
+    private static Component[] labels(ImprintTag[] tags) {
+        Component[] out = new Component[tags.length];
+        for (ImprintTag tag : tags) {
+            out[tag.ordinal()] = Component.translatable(tag.translationKey());
+        }
+        return out;
+    }
+
+    private static Component[] formulaLabels() {
+        CompositionFormula[] formulas = CompositionFormula.values();
+        Component[] out = new Component[formulas.length];
+        for (CompositionFormula formula : formulas) {
+            out[formula.ordinal()] = Component.translatable(formula.translationKey());
+        }
+        return out;
     }
 }

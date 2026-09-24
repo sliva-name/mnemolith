@@ -22,6 +22,7 @@ import java.util.List;
 public final class PressureClient {
     private static List<ChunkPressure> snapshot = List.of();
     private static int ticksUntilPoll;
+    private static int ticksUntilShimmer;
     private static int lastChimeBand = -1;
 
     private PressureClient() {}
@@ -35,21 +36,8 @@ public final class PressureClient {
         }
         float volume = ClientConfig.MEMORY_AUDIO_VOLUME.get().floatValue();
         int loudest = PressureBand.CALM.ordinal();
-        ChunkPos origin = player.chunkPosition();
-        int shown = 0;
         for (ChunkPressure chunk : snapshot) {
-            int band = PressureBand.byOrdinal(chunk.band()).ordinal();
-            loudest = Math.max(loudest, band);
-            if (band < PressureBand.SATURATED.ordinal() || shown >= 4) {
-                continue;
-            }
-            int dx = Math.abs(chunk.chunkX() - origin.x());
-            int dz = Math.abs(chunk.chunkZ() - origin.z());
-            if (dx > 1 || dz > 1) {
-                continue;
-            }
-            shown++;
-            ClientParticles.shimmer(player, new ChunkPos(chunk.chunkX(), chunk.chunkZ()));
+            loudest = Math.max(loudest, PressureBand.byOrdinal(chunk.band()).ordinal());
         }
         if (loudest != lastChimeBand && loudest >= PressureBand.SATURATED.ordinal() && volume > 0.0F) {
             player.playSound(ModSounds.LENS_FOCUS.get(), volume * 0.35F, 1.4F);
@@ -72,12 +60,36 @@ public final class PressureClient {
             ticksUntilPoll = 0;
             return;
         }
+        shimmerCached(player);
         if (ticksUntilPoll > 0) {
             ticksUntilPoll--;
             return;
         }
         ticksUntilPoll = ClientConfig.LENS_POLL_INTERVAL.get();
         ClientPacketDistributor.sendToServer(new RequestPressurePayload(!lens));
+    }
+
+    /** Saturated motes come from the cached snapshot, so a skipped server packet does not stop them. */
+    private static void shimmerCached(LocalPlayer player) {
+        if (ticksUntilShimmer > 0) {
+            ticksUntilShimmer--;
+            return;
+        }
+        ticksUntilShimmer = ClientConfig.LENS_POLL_INTERVAL.get();
+        ChunkPos origin = player.chunkPosition();
+        int shown = 0;
+        for (ChunkPressure chunk : snapshot) {
+            if (PressureBand.byOrdinal(chunk.band()).ordinal() < PressureBand.SATURATED.ordinal() || shown >= 4) {
+                continue;
+            }
+            int dx = Math.abs(chunk.chunkX() - origin.x());
+            int dz = Math.abs(chunk.chunkZ() - origin.z());
+            if (dx > 1 || dz > 1) {
+                continue;
+            }
+            shown++;
+            ClientParticles.shimmer(player, new ChunkPos(chunk.chunkX(), chunk.chunkZ()));
+        }
     }
 
     public static boolean holdsLens(LocalPlayer player) {

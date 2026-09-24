@@ -72,4 +72,14 @@ public final class MobTuning {
     public static int replicantMinPressure() {
         return CommonConfig.REPLICANT_MIN_PRESSURE.get();
     }
+
+    public static int sensorInterval() {
+        return CommonConfig.SENSOR_INTERVAL.get();
+    }
+
+    /** True on the sensor tick, or when a path has finished and needs a new target. */
+    public static boolean sensorDue(int tickCount, boolean pathDone) {
+        int interval = sensorInterval();
+        return pathDone || interval <= 1 || tickCount % interval == 0;
+    }
 }

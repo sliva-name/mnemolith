@@ -13,6 +13,7 @@ import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
+import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.world.LoadedChunkMemory;
@@ -38,6 +39,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import com.mnemolith.audio.ModSounds;
@@ -136,6 +138,11 @@ public final class ImprintEvents {
     }
 
     @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        PressureSync.forget(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
@@ -190,13 +197,14 @@ public final class ImprintEvents {
         }
         LevelChunk chunk = level.getChunkAt(player.blockPosition());
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-        if (memory == null || !memory.markCoolPulse(level.getGameTime())) {
+        if (memory == null || !memory.wantsCooling() || !memory.markCoolPulse(level.getGameTime())) {
             return;
         }
         boolean changed = memory.coolInstability(CommonConfig.INSTABILITY_DECAY.get()) > 0;
         if (memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get())) {
             changed = true;
         }
+        memory.refreshCooling();
         if (!changed) {
             return;
         }
@@ -211,6 +219,9 @@ public final class ImprintEvents {
 
     private static void writeBuild(ServerLevel level, BlockPos pos, BlockState state, Player player) {
         if (!CommonConfig.WRITE_BUILD.get() || state.getBlock() == ModBlocks.MUTE_STONE.get()) {
+            return;
+        }
+        if (!ImprintWriter.acceptsThrottled(level, pos)) {
             return;
         }
         List<ImprintTag> tags = new ArrayList<>();

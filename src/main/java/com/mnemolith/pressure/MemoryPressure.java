@@ -1,15 +1,13 @@
 package com.mnemolith.pressure;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.List;
+import java.util.Arrays;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.config.ServerConfig;
 import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.imprint.Imprint;
 import com.mnemolith.imprint.ImprintTag;
@@ -23,20 +21,48 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class MemoryPressure {
     /** Copies of one tag, after the strongest, that still add pressure. */
     private static final int DIMINISHED_COPIES = 3;
+    private static final int TOP = 1 + DIMINISHED_COPIES;
+    private static final int TAGS = ImprintTag.values().length;
+    /** Server-thread scratch. A nested score falls back to a fresh list. */
+    private static final int[] TOP_VALUES = new int[TAGS * TOP];
+    private static final int[] TOP_COUNTS = new int[TAGS];
+    private static int scoring;
 
     private MemoryPressure() {}
 
     public static int score(ChunkMemory memory) {
-        int sum = memory.instability();
-        EnumMap<ImprintTag, List<Integer>> byTag = new EnumMap<>(ImprintTag.class);
-        for (Imprint imprint : memory.imprintsCopy()) {
-            byTag.computeIfAbsent(imprint.tag(), ignored -> new ArrayList<>()).add(imprint.pressureContribution());
+        if (scoring != 0) {
+            return scoreAllocating(memory);
         }
-        for (List<Integer> contributions : byTag.values()) {
-            contributions.sort(Comparator.reverseOrder());
-            int counted = Math.min(contributions.size(), 1 + DIMINISHED_COPIES);
-            for (int index = 0; index < counted; index++) {
-                int contribution = contributions.get(index);
+        scoring = 1;
+        try {
+            return scoreScratch(memory);
+        } finally {
+            scoring = 0;
+        }
+    }
+
+    private static int scoreScratch(ChunkMemory memory) {
+        return scoreInto(memory, TOP_VALUES, TOP_COUNTS);
+    }
+
+    private static int scoreAllocating(ChunkMemory memory) {
+        return scoreInto(memory, new int[TAGS * TOP], new int[TAGS]);
+    }
+
+    private static int scoreInto(ChunkMemory memory, int[] values, int[] counts) {
+        Arrays.fill(counts, 0);
+        int count = memory.imprintCount();
+        for (int index = 0; index < count; index++) {
+            Imprint imprint = memory.imprintAt(index);
+            insertTop(values, counts, imprint.tag().ordinal(), imprint.pressureContribution());
+        }
+        int sum = memory.instability();
+        for (int tag = 0; tag < TAGS; tag++) {
+            int kept = counts[tag];
+            int base = tag * TOP;
+            for (int index = 0; index < kept; index++) {
+                int contribution = values[base + index];
                 if (index == 0) {
                     sum += contribution;
                 } else {
@@ -44,6 +70,26 @@ public final class MemoryPressure {
                 }
             }
         }
+        return finishScore(memory, sum);
+    }
+
+    private static void insertTop(int[] values, int[] counts, int tag, int value) {
+        int base = tag * TOP;
+        int count = counts[tag];
+        if (count == TOP && value <= values[base + TOP - 1]) {
+            return;
+        }
+        int limit = Math.min(count + 1, TOP);
+        int slot = limit - 1;
+        while (slot > 0 && value > values[base + slot - 1]) {
+            values[base + slot] = values[base + slot - 1];
+            slot--;
+        }
+        values[base + slot] = value;
+        counts[tag] = limit;
+    }
+
+    private static int finishScore(ChunkMemory memory, int sum) {
         int strata = Math.min(memory.strataCount(), CommonConfig.ARCHIVAL_BLEED_CAP.get());
         sum += strata * CommonConfig.ARCHIVAL_BLEED.get();
         return Math.min(CommonConfig.PRESSURE_SOFT_CAP.get(), Math.max(0, sum));
@@ -68,11 +114,12 @@ public final class MemoryPressure {
 
     public static PressureBand recompute(LevelChunk chunk, ChunkMemory memory) {
         int previous = memory.cachedPressure();
+        boolean wasFractured = memory.fractured();
         PressureBand previousBand = band(previous);
         int next = score(memory);
         memory.setCachedPressure(next);
         PressureBand nextBand = band(next);
-        if (nextBand == PressureBand.FRACTURE && !memory.fractured()) {
+        if (nextBand == PressureBand.FRACTURE && !wasFractured) {
             memory.setFractured(true);
             Mnemolith.LOGGER.info(
                     "Mnemolith fracture at chunk {} {} pressure={}",
@@ -102,7 +149,10 @@ public final class MemoryPressure {
             int y = server.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             MemoryFx.pressure(server, new BlockPos(x, y, z));
         }
-        chunk.markUnsaved();
+        if (next != previous || memory.fractured() != wasFractured) {
+            chunk.markUnsaved();
+            PressureSync.markDirty();
+        }
         return nextBand;
     }
 

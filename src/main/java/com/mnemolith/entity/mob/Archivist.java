@@ -233,7 +233,7 @@ public class Archivist extends MemoryMob {
         if (this.fleeTicks > 0) {
             this.fleeTicks--;
         }
-        if (LoadedChunkMemory.resonatorNearby(level, this.blockPosition(), MobTuning.RESONATOR_RANGE)) {
+        if (MobTuning.sensorDue(this.tickCount, false) && LoadedChunkMemory.resonatorNearby(level, this.blockPosition(), MobTuning.RESONATOR_RANGE)) {
             this.stunTicks = 80;
             this.fleeTicks = 0;
             this.interest = null;
@@ -333,7 +333,9 @@ public class Archivist extends MemoryMob {
             if (bait == null || !bait.isAlive()) {
                 return;
             }
-            this.archivist.getNavigation().moveTo(bait, 1.1D);
+            if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
+                this.archivist.getNavigation().moveTo(bait, 1.1D);
+            }
             this.archivist.getLookControl().setLookAt(bait, 30.0F, 30.0F);
             if (this.archivist.distanceToSqr(bait) < 2.0D) {
                 bait.getItem().shrink(1);
@@ -351,6 +353,7 @@ public class Archivist extends MemoryMob {
 
     private static final class FleeGoal extends Goal {
         private final Archivist archivist;
+        private @Nullable BlockPos nest;
 
         private FleeGoal(Archivist archivist) {
             this.archivist = archivist;
@@ -376,13 +379,16 @@ public class Archivist extends MemoryMob {
         @Override
         public void tick() {
             this.archivist.setAction(MobActions.FLEE);
-            ServerLevel level = this.archivist.serverLevel();
-            BlockPos nest = PathLedger.higherPressure(level, this.archivist.blockPosition());
-            if (nest == null) {
-                Vec3 look = this.archivist.getLookAngle();
-                nest = BlockPos.containing(this.archivist.getX() + look.x * 8.0D, this.archivist.getY(), this.archivist.getZ() + look.z * 8.0D);
+            if (!MobTuning.sensorDue(this.archivist.tickCount, this.nest == null || this.archivist.getNavigation().isDone())) {
+                return;
             }
-            this.archivist.getNavigation().moveTo(nest.getX() + 0.5D, nest.getY(), nest.getZ() + 0.5D, 1.3D);
+            ServerLevel level = this.archivist.serverLevel();
+            this.nest = PathLedger.higherPressure(level, this.archivist.blockPosition());
+            if (this.nest == null) {
+                Vec3 look = this.archivist.getLookAngle();
+                this.nest = BlockPos.containing(this.archivist.getX() + look.x * 8.0D, this.archivist.getY(), this.archivist.getZ() + look.z * 8.0D);
+            }
+            this.archivist.getNavigation().moveTo(this.nest.getX() + 0.5D, this.nest.getY(), this.nest.getZ() + 0.5D, 1.3D);
         }
     }
 
@@ -406,7 +412,9 @@ public class Archivist extends MemoryMob {
         public void tick() {
             if (this.archivist.dropped != null && this.archivist.dropped.isAlive() && ImprintSlips.isSlip(this.archivist.dropped.getItem())) {
                 ItemEntity drop = this.archivist.dropped;
-                this.archivist.getNavigation().moveTo(drop, 1.05D);
+                if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
+                    this.archivist.getNavigation().moveTo(drop, 1.05D);
+                }
                 if (this.archivist.distanceToSqr(drop) < 2.0D && this.archivist.stealCooldown <= 0) {
                     ItemStack stolen = drop.getItem().split(1);
                     if (drop.getItem().isEmpty()) {
@@ -422,7 +430,9 @@ public class Archivist extends MemoryMob {
                 return;
             }
             this.archivist.getLookControl().setLookAt(player, 30.0F, 30.0F);
-            this.archivist.getNavigation().moveTo(player, 0.95D);
+            if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
+                this.archivist.getNavigation().moveTo(player, 0.95D);
+            }
         }
     }
 }

@@ -47,6 +47,12 @@ public final class ClientParticles {
         double x = chunk.getMiddleBlockX() + 0.5D;
         double z = chunk.getMiddleBlockZ() + 0.5D;
         double y = player.getY() + 1.2D;
+        double dx = x - player.getX();
+        double dy = y - player.getY();
+        double dz = z - player.getZ();
+        if (dx * dx + dy * dy + dz * dz > 48.0D * 48.0D) {
+            return;
+        }
         for (int i = 0; i < count; i++) {
             double ox = (random.nextDouble() - 0.5D) * 6.0D;
             double oz = (random.nextDouble() - 0.5D) * 6.0D;

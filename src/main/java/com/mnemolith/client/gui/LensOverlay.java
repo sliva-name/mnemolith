@@ -20,6 +20,9 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 /** Compact pressure pill. Drawn only while the chronicle lens is held. */
 public final class LensOverlay {
     public static final Identifier LAYER = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "lens_pressure");
+    private static Component cachedLine = Component.empty();
+    private static Component cachedDetail = Component.empty();
+    private static int cachedKey = Integer.MIN_VALUE;
 
     private LensOverlay() {}
 
@@ -40,8 +43,15 @@ public final class LensOverlay {
             return;
         }
         ChunkPressure here = PressureClient.origin(player);
-        Component line = line(here);
-        Component detail = player.isShiftKeyDown() ? detail(here) : null;
+        boolean sneak = player.isShiftKeyDown();
+        int key = cacheKey(here, sneak, ClientConfig.SHOW_NUMERIC_PRESSURE.get());
+        if (key != cachedKey) {
+            cachedKey = key;
+            cachedLine = line(here);
+            cachedDetail = sneak ? detail(here) : null;
+        }
+        Component line = cachedLine;
+        Component detail = sneak ? cachedDetail : null;
         Font font = minecraft.font;
         int textWidth = font.width(line);
         if (detail != null) {
@@ -59,6 +69,13 @@ public final class LensOverlay {
         if (detail != null) {
             graphics.text(font, detail, x + 8, y + 14, GuiArt.BONE, false);
         }
+    }
+
+    private static int cacheKey(ChunkPressure here, boolean sneak, boolean numeric) {
+        int pressure = here == null ? -1 : here.pressure();
+        int band = here == null ? -1 : here.band();
+        int state = here == null ? -1 : here.state();
+        return (pressure * 17) ^ (band * 31) ^ (state * 13) ^ (sneak ? 1 : 0) ^ (numeric ? 2 : 0);
     }
 
     private static Component line(ChunkPressure here) {

@@ -27,6 +27,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue INSTABILITY_DECAY;
     public static final ModConfigSpec.IntValue INSTABILITY_DECAY_TICKS;
     public static final ModConfigSpec.IntValue QUIET_FADE_TICKS;
+    public static final ModConfigSpec.IntValue VEIN_SHIMMER_TICKS;
     public static final ModConfigSpec.IntValue SATURATED_THRESHOLD;
     public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
     public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
@@ -46,6 +47,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_STRIDER_MIN_PRESSURE;
     public static final ModConfigSpec.IntValue ARCHIVIST_MIN_PRESSURE;
     public static final ModConfigSpec.IntValue REPLICANT_MIN_PRESSURE;
+    public static final ModConfigSpec.IntValue SENSOR_INTERVAL;
     public static final ModConfigSpec.BooleanValue ARCHIVAL_VEINS_ENABLED;
     public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_CHANCE;
     public static final ModConfigSpec.IntValue ARCHIVAL_VEIN_MIN_Y;
@@ -226,6 +228,10 @@ public final class CommonConfig {
                 .comment("Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.")
                 .translation("mnemolith.configuration.quietFadeTicks")
                 .defineInRange("quietFadeTicks", 6000, 0, 72_000);
+        VEIN_SHIMMER_TICKS = builder
+                .comment("Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.")
+                .translation("mnemolith.configuration.veinShimmerTicks")
+                .defineInRange("veinShimmerTicks", 40, 0, 200);
         SATURATED_THRESHOLD = builder
                 .comment("Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold.")
                 .translation("mnemolith.configuration.saturatedThreshold")
@@ -307,6 +313,10 @@ public final class CommonConfig {
                 .comment("Minimum cached pressure before a moment replicant can spawn naturally. Defaults to the fracture band.")
                 .translation("mnemolith.configuration.replicantMinPressure")
                 .defineInRange("replicantMinPressure", 80, 0, 10_000);
+        SENSOR_INTERVAL = builder
+                .comment("Ticks between archivist resonator scans, flee pressure scans, and idle strider repaths. A charge still aims every tick. 1 checks every tick.")
+                .translation("mnemolith.configuration.sensorInterval")
+                .defineInRange("sensorInterval", 10, 1, 100);
         builder.pop();
 
         SPEC = builder.build();
