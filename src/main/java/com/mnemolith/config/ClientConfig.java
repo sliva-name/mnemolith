@@ -12,6 +12,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue STORM_SCREEN_SHAKE;
     public static final ModConfigSpec.DoubleValue MEMORY_AUDIO_VOLUME;
     public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
+    public static final ModConfigSpec.BooleanValue AMBIENT_WITHOUT_LENS;
     public static final ModConfigSpec.IntValue LENS_POLL_INTERVAL;
     public static final ModConfigSpec.BooleanValue LENS_OVERLAY;
     public static final ModConfigSpec.DoubleValue OVERLAY_OPACITY;
@@ -25,7 +26,7 @@ public final class ClientConfig {
                 .translation("mnemolith.configuration.visuals")
                 .push("visuals");
         IMPRINT_PARTICLES = builder
-                .comment("Whether imprint particles are shown.")
+                .comment("Whether custom memory particles are shown.")
                 .translation("mnemolith.configuration.imprintParticles")
                 .define("imprintParticles", true);
         PRESSURE_VIGNETTE = builder
@@ -41,9 +42,13 @@ public final class ClientConfig {
                 .translation("mnemolith.configuration.memoryAudioVolume")
                 .defineInRange("memoryAudioVolume", 1.0D, 0.0D, 1.0D);
         PARTICLE_DENSITY = builder
-                .comment("Scale, from 0.0 to 1.0, for chronicle lens shimmer particles.")
+                .comment("Scale, from 0.0 to 1.0, for every custom memory particle. 0 disables them.")
                 .translation("mnemolith.configuration.particleDensity")
                 .defineInRange("particleDensity", 1.0D, 0.0D, 1.0D);
+        AMBIENT_WITHOUT_LENS = builder
+                .comment("Whether saturated chunks shimmer without a chronicle lens. Vein marks stay lens-only.")
+                .translation("mnemolith.configuration.ambientWithoutLens")
+                .define("ambientWithoutLens", false);
         LENS_POLL_INTERVAL = builder
                 .comment("Ticks between chronicle lens pressure requests.")
                 .translation("mnemolith.configuration.lensPollInterval")

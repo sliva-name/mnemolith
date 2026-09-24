@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-This repository is **Phase 6**: the core memory loop, three mobs, three worldgen features, and the archival interface on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. There is no new biome and no Scar.
+This repository is **Phase 7**: the core memory loop, three mobs, three worldgen features, the archival interface, and budgeted memory particles on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. There is no full-screen fracture shader, no new biome, and no Scar.
 
 | | |
 | --- | --- |
@@ -71,11 +71,11 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs |
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether storms are allowed, the per-dimension cap, pressure logging |
-| `config/mnemolith-client.toml` | Physical client only | Imprint particles, particle density, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, storm screen shake, lens chime volume |
+| `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, storm screen shake, lens chime volume |
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity` and `visuals.lensPollInterval` apply on the client. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (40 chunks, separation 16 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Multiplayer
 
@@ -87,7 +87,8 @@ Server options in `mnemolith-server.toml` are authoritative and are synced to co
 
 - No Scar boss, no new biome, and no strikethrough shafts. Fracture logs, and it can spawn a moment replicant. It does not start a recollection storm.
 - Observatory spacing is the structure set, not `worldGen.structureSpacing`.
-- `visuals.pressureVignette` and `visuals.stormScreenShake` are loaded and not drawn. The lens uses the action bar and particles.
+- `visuals.pressureVignette` and `visuals.stormScreenShake` are loaded and not drawn. The lens uses the pressure pill and particles.
+- Fracture does not desaturate the screen. NeoForge 26.2 can register render pipelines, and a screen-space fringe would be a new shader pass. Phase 7 stays on particles, item glint, and archival stratum light.
 - The `gameTestServer` run crashes until a game test is registered. That is the MDK default. `build` does not run it.
 - A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.
 - On a machine with no audio device, the client logs `Failed to open OpenAL device` and continues with sounds disabled. That message comes from the sound engine.
@@ -143,7 +144,7 @@ com.mnemolith
   entity/  entity/mob/  entity/ai/
   world/  worldgen/    veins, mute pockets, observatory
   event/
-  network/  data/  audio/
+  network/  data/  audio/  particle/
   config/                common, client, and server specs
   client/render|particle|audio|gui
   server/                dedicated server @Mod
@@ -153,7 +154,7 @@ com.mnemolith
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Это **фаза 6**: основной цикл памяти, три моба, три места генерации и интерфейс архива для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Нового биома и Шрама нет.
+Это **фаза 7**: основной цикл памяти, три моба, три места генерации, интерфейс архива и частицы памяти для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. Полноэкранного шейдера разлома, нового биома и Шрама нет.
 
 ### Установка
 

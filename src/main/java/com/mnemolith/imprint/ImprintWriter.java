@@ -12,12 +12,12 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.data.ImprintCast;
 import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -73,7 +73,7 @@ public final class ImprintWriter {
                     band);
         }
         level.playSound(null, pos, ModSounds.IMPRINT_WRITE.get(), SoundSource.BLOCKS, 0.6F, 1.2F);
-        level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.3D, 0.3D, 0.3D, 0.01D);
+        MemoryFx.write(level, pos);
         return true;
     }
 
@@ -109,7 +109,7 @@ public final class ImprintWriter {
             DiscoveryNotes.noteTag(player, imprint.tag());
         }
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
-        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
+        MemoryFx.extract(level, pos);
         return removed;
     }
 
@@ -155,7 +155,7 @@ public final class ImprintWriter {
         }
         DiscoveryNotes.noteTag(player, imprint.tag());
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
-        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.4D, 0.4D, 0.2D);
+        MemoryFx.extract(level, pos);
     }
 
     public static int intensityFor(ImprintTag tag) {

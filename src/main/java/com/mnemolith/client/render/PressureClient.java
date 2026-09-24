@@ -35,12 +35,20 @@ public final class PressureClient {
         }
         float volume = ClientConfig.MEMORY_AUDIO_VOLUME.get().floatValue();
         int loudest = PressureBand.CALM.ordinal();
+        ChunkPos origin = player.chunkPosition();
+        int shown = 0;
         for (ChunkPressure chunk : snapshot) {
             int band = PressureBand.byOrdinal(chunk.band()).ordinal();
-            if (band < PressureBand.SATURATED.ordinal()) {
+            loudest = Math.max(loudest, band);
+            if (band < PressureBand.SATURATED.ordinal() || shown >= 4) {
                 continue;
             }
-            loudest = Math.max(loudest, band);
+            int dx = Math.abs(chunk.chunkX() - origin.x());
+            int dz = Math.abs(chunk.chunkZ() - origin.z());
+            if (dx > 1 || dz > 1) {
+                continue;
+            }
+            shown++;
             ClientParticles.shimmer(player, new ChunkPos(chunk.chunkX(), chunk.chunkZ()));
         }
         if (loudest != lastChimeBand && loudest >= PressureBand.SATURATED.ordinal() && volume > 0.0F) {
@@ -56,7 +64,9 @@ public final class PressureClient {
             snapshot = List.of();
             return;
         }
-        if (!holdsLens(player)) {
+        boolean lens = holdsLens(player);
+        boolean ambient = ClientConfig.AMBIENT_WITHOUT_LENS.get();
+        if (!lens && !ambient) {
             snapshot = List.of();
             lastChimeBand = -1;
             ticksUntilPoll = 0;
@@ -67,7 +77,7 @@ public final class PressureClient {
             return;
         }
         ticksUntilPoll = ClientConfig.LENS_POLL_INTERVAL.get();
-        ClientPacketDistributor.sendToServer(new RequestPressurePayload());
+        ClientPacketDistributor.sendToServer(new RequestPressurePayload(!lens));
     }
 
     public static boolean holdsLens(LocalPlayer player) {

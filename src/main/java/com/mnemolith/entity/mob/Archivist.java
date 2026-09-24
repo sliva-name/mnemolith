@@ -14,6 +14,8 @@ import com.mnemolith.entity.MemoryMob;
 import com.mnemolith.entity.MobActions;
 import com.mnemolith.entity.MobTuning;
 import com.mnemolith.entity.ai.PathLedger;
+import com.mnemolith.particle.MemoryFx;
+import com.mnemolith.particle.ModParticles;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.core.BlockPos;
@@ -155,7 +157,7 @@ public class Archivist extends MemoryMob {
         BlockPos pos = this.blockPosition();
         Mnemolith.LOGGER.info("Mnemolith archivist stole=true tag={} at {},{},{}", tag, pos.getX(), pos.getY(), pos.getZ());
         level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 1.1F);
-        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 8, 0.3D, 0.4D, 0.3D, 0.2D);
+        MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10);
         if (player != null && cast != null) {
             player.sendOverlayMessage(Component.translatable("mnemolith.message.stolen", Component.translatable(cast.tag().translationKey())));
         }

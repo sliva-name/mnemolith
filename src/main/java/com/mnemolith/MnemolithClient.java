@@ -34,6 +34,7 @@ public final class MnemolithClient {
         modEventBus.addListener(ClientScreens::registerMenus);
         modEventBus.addListener(LensOverlay::register);
         modEventBus.addListener(ClientPayloads::register);
+        modEventBus.addListener(ClientParticles::register);
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);

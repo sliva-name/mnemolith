@@ -13,6 +13,7 @@ import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
+import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.world.LoadedChunkMemory;
 
@@ -96,7 +97,7 @@ public final class ImprintEvents {
             event.setDamageMultiplier(ImprintConstants.LANDING_BURST_DAMAGE_MULTIPLIER);
             player.removeEffect(ModEffects.LANDING_BURST);
             level.playSound(null, player.blockPosition(), ModSounds.COMPOSE_SUCCESS.get(), SoundSource.PLAYERS, 0.5F, 1.4F);
-            level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY(), player.getZ(), ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.2D, 0.4D, 0.05D);
+            MemoryFx.landing(level, player.getX(), player.getY(), player.getZ());
         }
         if (!CommonConfig.WRITE_FALL.get() || event.getDistance() < CommonConfig.FALL_DISTANCE_MIN.get()) {
             return;
