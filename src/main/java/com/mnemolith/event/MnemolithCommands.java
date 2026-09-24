@@ -70,8 +70,12 @@ public final class MnemolithCommands {
         ServerLevel level = source.getLevel();
         Vec3 position = source.getPosition();
         BlockPos pos = BlockPos.containing(position);
+        ServerPlayer player = source.getPlayer();
         LevelChunk chunk = level.getChunkAt(pos);
         LoadedChunkMemory.clear(chunk);
+        BlockPos quiet = pos.offset(16, 0, 0);
+        LoadedChunkMemory.clear(level.getChunkAt(quiet));
+        composePair(level, quiet, player, ImprintTag.BUILD, ImprintTag.BUILD);
 
         LivingEntity subject = EntityTypes.CHICKEN.spawn(level, pos.above(), EntitySpawnReason.EVENT);
         if (subject != null) {
@@ -91,7 +95,6 @@ public final class MnemolithCommands {
         boolean writeBlocked = !ImprintWriter.tryWrite(level, pos, ImprintTag.BUILD, null, false);
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
 
-        ServerPlayer player = source.getPlayer();
         ImprintWriter.extract(level, pos, player);
 
         int compose = 0;
@@ -106,7 +109,8 @@ public final class MnemolithCommands {
         }
         composePair(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
 
-        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} muted={} writeBlocked={} compose={}", pressure, muted, writeBlocked, compose);
+        PressureBand smokeBand = MemoryPressure.band(pressure);
+        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} band={} muted={} writeBlocked={} compose={}", pressure, smokeBand, muted, writeBlocked, compose);
         int reported = compose;
         boolean reportedMuted = muted;
         boolean reportedBlocked = writeBlocked;

@@ -5,7 +5,7 @@ import com.mnemolith.config.CommonConfig;
 /** Distances and timings that are part of the mob fantasy, plus config reads. */
 public final class MobTuning {
     public static final double TWIN_CHANCE = 0.1D;
-    public static final int CHARGE_TELEGRAPH_TICKS = 40;
+    public static final int CHARGE_TELEGRAPH_TICKS = 45;
     public static final int PHASE_LIMIT = 12;
     public static final double LENS_FLEE_RANGE = 8.0D;
     public static final double PATH_ARRIVE_SQR = 4.0D;
@@ -15,7 +15,7 @@ public final class MobTuning {
     public static final double RESONATOR_RANGE = 4.0D;
     public static final int ACTION_WINDOW_TICKS = 100;
     public static final int BLIND_TICKS = 80;
-    public static final int REPLICANT_TELEGRAPH_TICKS = 40;
+    public static final int REPLICANT_TELEGRAPH_TICKS = 60;
     public static final double REPLICANT_CLEARANCE = 24.0D;
     public static final int HIGH_VALUE_WEIGHT = 8;
 

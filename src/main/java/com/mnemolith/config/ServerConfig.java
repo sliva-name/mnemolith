@@ -15,7 +15,7 @@ public final class ServerConfig {
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
-        builder.comment("Authority rules for recollection storms. The logical server owns these values.")
+        builder.comment("Authority rules for recollection storms. Instability cooling and imprint strengths live in the common gameplay section. The logical server owns these values.")
                 .translation("mnemolith.configuration.server")
                 .push("server");
         ALLOW_RECOLLECTION_STORMS = builder
@@ -27,7 +27,7 @@ public final class ServerConfig {
                 .translation("mnemolith.configuration.maxStormsPerDimension")
                 .defineInRange("maxStormsPerDimension", 1, 0, 16);
         LOG_PRESSURE_CHANGES = builder
-                .comment("Whether pressure changes are written to the server log. Intended for later debugging.")
+                .comment("Whether a pressure band change, other than fracture, is written to the server log.")
                 .translation("mnemolith.configuration.logPressureChanges")
                 .define("logPressureChanges", false);
         builder.pop();

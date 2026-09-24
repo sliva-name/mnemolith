@@ -17,6 +17,8 @@ import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
+import com.mnemolith.pressure.MemoryPressure;
+import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.audio.ModSounds;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.particle.MemoryFx;
@@ -102,8 +104,13 @@ public final class Composition {
                 break;
             }
         }
-        ImprintWriter.spike(level, pos, CommonConfig.FAILURE_PRESSURE_SPIKE.get());
-        MobSpawns.trySpawnReplicant(level, pos.above());
+        int pressure = ImprintWriter.spike(level, pos, CommonConfig.FAILURE_PRESSURE_SPIKE.get());
+        PressureBand band = MemoryPressure.band(pressure);
+        boolean replicant = band == PressureBand.OVERLOADED || band == PressureBand.FRACTURE;
+        if (replicant) {
+            MobSpawns.trySpawnReplicant(level, pos.above());
+        }
+        Mnemolith.LOGGER.info("Mnemolith compose fail pressure={} band={} replicantAsked={}", pressure, band, replicant);
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         MemoryFx.composeFail(level, pos);
         if (player != null) {

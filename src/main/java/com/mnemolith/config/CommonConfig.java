@@ -22,7 +22,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue WRITE_BUILD;
     public static final ModConfigSpec.DoubleValue FALL_DISTANCE_MIN;
     public static final ModConfigSpec.IntValue EXTRACTION_DURABILITY_COST;
+    public static final ModConfigSpec.IntValue EXTRACTION_COOLDOWN_TICKS;
     public static final ModConfigSpec.IntValue FAILURE_PRESSURE_SPIKE;
+    public static final ModConfigSpec.IntValue INSTABILITY_DECAY;
+    public static final ModConfigSpec.IntValue INSTABILITY_DECAY_TICKS;
+    public static final ModConfigSpec.IntValue QUIET_FADE_TICKS;
     public static final ModConfigSpec.IntValue SATURATED_THRESHOLD;
     public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
     public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
@@ -96,10 +100,10 @@ public final class CommonConfig {
                 .worldRestart()
                 .define("structuresEnabled", true);
         STRUCTURE_SPACING = builder
-                .comment("Documented spacing, in chunks, of the chronicle observatory. The structure set json uses 40 and a separation of 16. Editing this number does not move structures.")
+                .comment("Documented spacing, in chunks, of the chronicle observatory. The structure set json uses 32 and a separation of 12. Editing this number does not move structures.")
                 .translation("mnemolith.configuration.structureSpacing")
                 .worldRestart()
-                .defineInRange("structureSpacing", 40, 8, 256);
+                .defineInRange("structureSpacing", 32, 8, 256);
         ARCHIVAL_VEINS_ENABLED = builder
                 .comment("Whether archival veins may generate. The biome modifier uses #minecraft:is_overworld. The Y range keeps them underground.")
                 .translation("mnemolith.configuration.archivalVeinsEnabled")
@@ -107,7 +111,7 @@ public final class CommonConfig {
         ARCHIVAL_VEIN_CHANCE = builder
                 .comment("Chance, out of 100, that a chunk attempts an archival vein.")
                 .translation("mnemolith.configuration.archivalVeinChance")
-                .defineInRange("archivalVeinChance", 12, 0, 100);
+                .defineInRange("archivalVeinChance", 8, 0, 100);
         ARCHIVAL_VEIN_MIN_Y = builder
                 .comment("Lowest Y of an archival vein.")
                 .translation("mnemolith.configuration.archivalVeinMinY")
@@ -135,7 +139,7 @@ public final class CommonConfig {
         MUTE_POCKET_CHANCE = builder
                 .comment("Chance, out of 100, that a chunk attempts a mute pocket.")
                 .translation("mnemolith.configuration.mutePocketChance")
-                .defineInRange("mutePocketChance", 2, 0, 100);
+                .defineInRange("mutePocketChance", 4, 0, 100);
         MUTE_POCKET_MIN_Y = builder
                 .comment("Lowest Y of a mute pocket.")
                 .translation("mnemolith.configuration.mutePocketMinY")
@@ -177,7 +181,7 @@ public final class CommonConfig {
         WRITE_DEBOUNCE_TICKS = builder
                 .comment("Ticks that must pass before another build or redstone imprint can be written in the same chunk.")
                 .translation("mnemolith.configuration.writeDebounceTicks")
-                .defineInRange("writeDebounceTicks", 40, 1, 200);
+                .defineInRange("writeDebounceTicks", 80, 1, 200);
         WRITE_DEATH = builder
                 .comment("Whether a death writes a death imprint.")
                 .translation("mnemolith.configuration.writeDeath")
@@ -201,11 +205,27 @@ public final class CommonConfig {
         EXTRACTION_DURABILITY_COST = builder
                 .comment("Durability the extraction needle loses on a successful extract.")
                 .translation("mnemolith.configuration.extractionDurabilityCost")
-                .defineInRange("extractionDurabilityCost", 1, 0, 32);
+                .defineInRange("extractionDurabilityCost", 2, 0, 32);
+        EXTRACTION_COOLDOWN_TICKS = builder
+                .comment("Ticks before the extraction needle can extract again. 0 disables the cooldown.")
+                .translation("mnemolith.configuration.extractionCooldownTicks")
+                .defineInRange("extractionCooldownTicks", 20, 0, 200);
         FAILURE_PRESSURE_SPIKE = builder
-                .comment("Instability added to the composition reel's chunk when a formula fails.")
+                .comment("Instability added to the composition reel's chunk when a formula fails. A moment replicant is asked only if the chunk is then overloaded or fractured.")
                 .translation("mnemolith.configuration.failurePressureSpike")
-                .defineInRange("failurePressureSpike", 8, 0, 100);
+                .defineInRange("failurePressureSpike", 18, 0, 100);
+        INSTABILITY_DECAY = builder
+                .comment("Instability removed from a player's chunk on each decay pulse. 0 disables cooling. Loud imprints stay until extracted.")
+                .translation("mnemolith.configuration.instabilityDecay")
+                .defineInRange("instabilityDecay", 1, 0, 20);
+        INSTABILITY_DECAY_TICKS = builder
+                .comment("Ticks between instability and quiet-imprint pulses while a player is in the chunk. 0 disables the pulse.")
+                .translation("mnemolith.configuration.instabilityDecayTicks")
+                .defineInRange("instabilityDecayTicks", 200, 0, 20_000);
+        QUIET_FADE_TICKS = builder
+                .comment("Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.")
+                .translation("mnemolith.configuration.quietFadeTicks")
+                .defineInRange("quietFadeTicks", 6000, 0, 72_000);
         SATURATED_THRESHOLD = builder
                 .comment("Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold.")
                 .translation("mnemolith.configuration.saturatedThreshold")
@@ -244,7 +264,7 @@ public final class CommonConfig {
                 .translation("mnemolith.configuration.archivistEnabled")
                 .define("archivistEnabled", true);
         MOMENT_REPLICANT_ENABLED = builder
-                .comment("Whether moment replicants may spawn from fracture, composition failure, or pressure.")
+                .comment("Whether moment replicants may spawn from fracture, an overloaded composition failure, or natural pressure.")
                 .translation("mnemolith.configuration.momentReplicantEnabled")
                 .define("momentReplicantEnabled", true);
         ECHO_STRIDER_DAMAGE = builder
@@ -262,27 +282,27 @@ public final class CommonConfig {
         ARCHIVIST_STEAL_COOLDOWN = builder
                 .comment("Ticks an archivist waits after a successful theft before it can steal again.")
                 .translation("mnemolith.configuration.archivistStealCooldown")
-                .defineInRange("archivistStealCooldown", 200, 20, 20_000);
+                .defineInRange("archivistStealCooldown", 300, 20, 20_000);
         ECHO_STRIDER_SPAWN_WEIGHT = builder
                 .comment("Chance, out of 100, that a natural echo strider spawn attempt is kept. 0 disables natural spawns.")
                 .translation("mnemolith.configuration.echoStriderSpawnWeight")
-                .defineInRange("echoStriderSpawnWeight", 50, 0, 100);
+                .defineInRange("echoStriderSpawnWeight", 35, 0, 100);
         ARCHIVIST_SPAWN_WEIGHT = builder
                 .comment("Chance, out of 100, that a natural archivist spawn attempt is kept. 0 disables natural spawns.")
                 .translation("mnemolith.configuration.archivistSpawnWeight")
-                .defineInRange("archivistSpawnWeight", 40, 0, 100);
+                .defineInRange("archivistSpawnWeight", 25, 0, 100);
         REPLICANT_SPAWN_WEIGHT = builder
                 .comment("Chance, out of 100, that a natural moment replicant spawn attempt is kept. 0 disables natural spawns.")
                 .translation("mnemolith.configuration.replicantSpawnWeight")
-                .defineInRange("replicantSpawnWeight", 20, 0, 100);
+                .defineInRange("replicantSpawnWeight", 12, 0, 100);
         ECHO_STRIDER_MIN_PRESSURE = builder
                 .comment("Minimum cached pressure before an echo strider can spawn naturally. Defaults to the saturated band.")
                 .translation("mnemolith.configuration.echoStriderMinPressure")
                 .defineInRange("echoStriderMinPressure", 20, 0, 10_000);
         ARCHIVIST_MIN_PRESSURE = builder
-                .comment("Minimum cached pressure before an archivist can spawn naturally. Defaults to the saturated band.")
+                .comment("Minimum cached pressure before an archivist can spawn naturally. Defaults to the overloaded band.")
                 .translation("mnemolith.configuration.archivistMinPressure")
-                .defineInRange("archivistMinPressure", 20, 0, 10_000);
+                .defineInRange("archivistMinPressure", 50, 0, 10_000);
         REPLICANT_MIN_PRESSURE = builder
                 .comment("Minimum cached pressure before a moment replicant can spawn naturally. Defaults to the fracture band.")
                 .translation("mnemolith.configuration.replicantMinPressure")

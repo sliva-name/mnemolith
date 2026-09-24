@@ -6,7 +6,18 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "mnemolith:catalog_fragment"
+          "name": "mnemolith:catalog_fragment",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:paper",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:ink_sac",
+          "weight": 2
         }
       ]
     },
@@ -19,7 +30,7 @@
           "conditions": [
             {
               "condition": "minecraft:random_chance",
-              "chance": 0.35
+              "chance": 0.25
             }
           ]
         }

@@ -8,17 +8,17 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 
-/** One memory tag. Weight is the pressure contribution per point of intensity. */
+/** One memory tag. Weight is the pressure contribution per point of intensity. Repeated copies diminish in the score. */
 public enum ImprintTag implements StringRepresentable {
-    FIRE("fire", 6),
-    FALL("fall", 8),
-    DEATH("death", 12),
-    BUILD("build", 3),
-    EXPLOSION("explosion", 10),
-    SILENCE("silence", 5),
-    PLAYER("player", 4),
-    REDSTONE("redstone", 3),
-    PATH("path", 2);
+    FIRE("fire", 4),
+    FALL("fall", 5),
+    DEATH("death", 9),
+    BUILD("build", 2),
+    EXPLOSION("explosion", 8),
+    SILENCE("silence", 4),
+    PLAYER("player", 2),
+    REDSTONE("redstone", 2),
+    PATH("path", 1);
 
     public static final Codec<ImprintTag> CODEC = StringRepresentable.fromEnum(ImprintTag::values);
     public static final StreamCodec<ByteBuf, ImprintTag> STREAM_CODEC = ByteBufCodecs.idMapper(ImprintTag::byOrdinal, ImprintTag::ordinal);

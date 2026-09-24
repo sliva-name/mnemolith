@@ -77,14 +77,19 @@ public final class ImprintWriter {
         return true;
     }
 
-    public static void spike(ServerLevel level, BlockPos pos, int amount) {
-        if (amount <= 0) {
-            return;
-        }
+    public static int spike(ServerLevel level, BlockPos pos, int amount) {
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
-        memory.addInstability(amount, CommonConfig.PRESSURE_SOFT_CAP.get());
-        MemoryPressure.recompute(chunk, memory);
+        if (amount > 0) {
+            memory.addInstability(amount, CommonConfig.PRESSURE_SOFT_CAP.get());
+            MemoryPressure.recompute(chunk, memory);
+        }
+        Mnemolith.LOGGER.info(
+                "Mnemolith instability spike amount={} pressure={} band={}",
+                amount,
+                memory.cachedPressure(),
+                MemoryPressure.band(memory.cachedPressure()));
+        return memory.cachedPressure();
     }
 
     public static Optional<Imprint> extract(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player) {

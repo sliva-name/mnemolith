@@ -1,5 +1,10 @@
 package com.mnemolith.pressure;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.config.ServerConfig;
@@ -7,6 +12,7 @@ import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.imprint.Imprint;
+import com.mnemolith.imprint.ImprintTag;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -15,12 +21,28 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 /** Pressure is the clamped sum of imprint contributions plus instability. Recomputed when memory changes or a chunk loads. */
 public final class MemoryPressure {
+    /** Copies of one tag, after the strongest, that still add pressure. */
+    private static final int DIMINISHED_COPIES = 3;
+
     private MemoryPressure() {}
 
     public static int score(ChunkMemory memory) {
         int sum = memory.instability();
+        EnumMap<ImprintTag, List<Integer>> byTag = new EnumMap<>(ImprintTag.class);
         for (Imprint imprint : memory.imprintsCopy()) {
-            sum += imprint.pressureContribution();
+            byTag.computeIfAbsent(imprint.tag(), ignored -> new ArrayList<>()).add(imprint.pressureContribution());
+        }
+        for (List<Integer> contributions : byTag.values()) {
+            contributions.sort(Comparator.reverseOrder());
+            int counted = Math.min(contributions.size(), 1 + DIMINISHED_COPIES);
+            for (int index = 0; index < counted; index++) {
+                int contribution = contributions.get(index);
+                if (index == 0) {
+                    sum += contribution;
+                } else {
+                    sum += Math.max(1, contribution / 4);
+                }
+            }
         }
         int strata = Math.min(memory.strataCount(), CommonConfig.ARCHIVAL_BLEED_CAP.get());
         sum += strata * CommonConfig.ARCHIVAL_BLEED.get();
