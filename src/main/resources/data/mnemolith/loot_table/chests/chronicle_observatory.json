@@ -71,6 +71,11 @@
               }
             }
           ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:catalog_fragment",
+          "weight": 1
         }
       ]
     }

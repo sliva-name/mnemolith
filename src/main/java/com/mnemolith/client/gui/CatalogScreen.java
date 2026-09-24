@@ -48,14 +48,14 @@ public class CatalogScreen extends Screen {
         int left = (this.width - PANEL_WIDTH) / 2;
         int top = (this.height - PANEL_HEIGHT) / 2;
         GuiArt.panel(graphics, left, top, PANEL_WIDTH, PANEL_HEIGHT);
-        graphics.text(this.font, this.title, left + 10, top + 8, GuiArt.INK, false);
+        GuiArt.label(graphics, this.font, this.title, left + 10, top + 8, GuiArt.BONE);
 
         if (this.tags == 0 && this.formulas == 0) {
-            graphics.textWithWordWrap(this.font, Component.translatable("mnemolith.gui.catalog_empty"), left + 10, top + 28, PANEL_WIDTH - 20, GuiArt.INK);
+            GuiArt.paragraph(graphics, this.font, Component.translatable("mnemolith.gui.catalog_empty"), left + 10, top + 28, PANEL_WIDTH - 20, GuiArt.BONE);
             return;
         }
 
-        graphics.text(this.font, Component.translatable("mnemolith.gui.catalog_tags"), left + 10, top + 24, GuiArt.INK, false);
+        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_tags"), left + 10, top + 24, GuiArt.BONE);
         int row = 0;
         int shown = 0;
         for (ImprintTag tag : ImprintTag.values()) {
@@ -67,12 +67,12 @@ public class CatalogScreen extends Screen {
             int x = left + 10 + column * 116;
             int y = top + 36 + line * 16;
             GuiArt.tag(graphics, tag, x, y);
-            graphics.text(this.font, TAG_LABELS[tag.ordinal()], x + 18, y + 4, GuiArt.INK, false);
+            GuiArt.label(graphics, this.font, TAG_LABELS[tag.ordinal()], x + 18, y + 4, GuiArt.BONE);
             row = line;
             shown++;
         }
         int formulaY = top + 42 + (shown == 0 ? 0 : (row + 1) * 16);
-        graphics.text(this.font, Component.translatable("mnemolith.gui.catalog_formulas"), left + 10, formulaY, GuiArt.INK, false);
+        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_formulas"), left + 10, formulaY, GuiArt.BONE);
         int written = 0;
         for (CompositionFormula formula : CompositionFormula.values()) {
             if ((this.formulas & (1 << formula.ordinal())) == 0) {
@@ -87,16 +87,16 @@ public class CatalogScreen extends Screen {
                 GuiArt.tag(graphics, tag, x, y);
                 x += 16;
             }
-            graphics.text(this.font, FORMULA_LABELS[formula.ordinal()], x + 4, y + 4, GuiArt.INK, false);
+            GuiArt.label(graphics, this.font, FORMULA_LABELS[formula.ordinal()], x + 4, y + 4, GuiArt.BONE);
             written++;
         }
         if (written == 0) {
-            graphics.text(this.font, Component.translatable("mnemolith.gui.catalog_no_formula"), left + 10, formulaY + 14, GuiArt.INK, false);
+            GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_no_formula"), left + 10, formulaY + 14, GuiArt.BONE);
         }
         if (CommonConfig.DISCOVERY_HINTS.get()) {
             int unread = Discovery.FORMULA_COUNT - Integer.bitCount(this.formulas & ((1 << Discovery.FORMULA_COUNT) - 1));
             if (unread > 0) {
-                graphics.text(this.font, Component.translatable("mnemolith.gui.catalog_remaining", unread), left + 10, top + PANEL_HEIGHT - 40, GuiArt.VERDIGRIS, false);
+                GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_remaining", unread), left + 10, top + PANEL_HEIGHT - 40, GuiArt.VERDIGRIS);
             }
         }
     }

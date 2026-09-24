@@ -198,6 +198,7 @@
   "mnemolith.command.worldgen": "Worldgen vein %s pocket %s muted %s strata %s",
   "mnemolith.command.perf": "Perf pathNs %s buildNs %s scoreNs %s syncNs %s skipped %s sensorNs %s",
   "mnemolith.command.mpsmoke": "MP smoke sameBand %s discovery %s steal %s reel %s mute %s replicants %s guarded %s",
+  "mnemolith.command.qa": "QA %s of %s",
   "mnemolith.message.stolen": "An archivist took your %s slip.",
   "entity.mnemolith.echo_strider": "Echo Strider",
   "entity.mnemolith.archivist": "Archivist",

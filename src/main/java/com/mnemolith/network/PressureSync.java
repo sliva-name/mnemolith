@@ -96,6 +96,21 @@ public final class PressureSync {
         return 1;
     }
 
+    /**
+     * True when the last lens-sized walk was for this dimension and chunk and memory has not changed since.
+     * A dimension change fails the match, which is the stamp {@code /mnemolith qa} checks.
+     */
+    public static boolean perfStampMatches(ServerLevel level, BlockPos pos) {
+        if (perfDimension == null) {
+            return false;
+        }
+        ChunkPos origin = ChunkPos.containing(pos);
+        return perfEpoch == memoryEpoch
+                && perfChunkX == origin.x()
+                && perfChunkZ == origin.z()
+                && perfDimension.equals(level.dimension());
+    }
+
     /** Band ordinal for the chunk containing {@code pos}, using the same walk a lens snapshot uses. */
     public static int originBand(ServerLevel level, BlockPos pos) {
         int chunkX = pos.getX() >> 4;

@@ -198,6 +198,7 @@
   "mnemolith.command.worldgen": "Мир: жила %s карман %s глушение %s пласт %s",
   "mnemolith.command.perf": "Замер: запись %s стройка %s счёт %s сеть %s пропуск %s датчики %s",
   "mnemolith.command.mpsmoke": "Сеть: одна полоса %s открытия %s кража %s барабан %s глушение %s репликанты %s защита %s",
+  "mnemolith.command.qa": "Проверка функций: %s из %s",
   "mnemolith.message.stolen": "Архивариус забрал бланк: %s.",
   "entity.mnemolith.echo_strider": "Эхо-странник",
   "entity.mnemolith.archivist": "Архивариус",

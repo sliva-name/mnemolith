@@ -63,11 +63,11 @@ public final class LensOverlay {
         int y = minecraft.getWindow().getGuiScaledHeight() - 68;
         int alpha = (int) Math.round(ClientConfig.OVERLAY_OPACITY.get() * 255.0D);
         alpha = Math.max(48, Math.min(255, alpha));
-        graphics.fill(x, y, x + boxWidth, y + boxHeight, (alpha << 24) | 0x1C244A);
+        graphics.fill(x, y, x + boxWidth, y + boxHeight, (alpha << 24) | (GuiArt.INK & 0xFFFFFF));
         graphics.fill(x, y, x + 2, y + boxHeight, 0xFF3E8E7E);
-        graphics.text(font, line, x + 8, y + 4, GuiArt.BONE, false);
+        GuiArt.label(graphics, font, line, x + 8, y + 4, GuiArt.BONE);
         if (detail != null) {
-            graphics.text(font, detail, x + 8, y + 14, GuiArt.BONE, false);
+            GuiArt.label(graphics, font, detail, x + 8, y + 14, GuiArt.BONE);
         }
     }
 
