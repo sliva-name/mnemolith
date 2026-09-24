@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-/** Illustrated field guide. One page at a time, bone text on the ink panel, art above a scrolling body. */
+/** Illustrated field guide. One page at a time, dark ink on the bone page, art above a scrolling body. */
 public class FieldGuideScreen extends Screen {
     private static final int DOT = 5;
     private static final int DOT_GAP = 3;
@@ -96,21 +96,36 @@ public class FieldGuideScreen extends Screen {
                 GuideBook.ART_HEIGHT,
                 GuideBook.ART_WIDTH,
                 GuideBook.ART_HEIGHT);
-        GuiArt.label(graphics, this.font, Component.translatable(GuideBook.titleKey(index)), frame.left + 12, frame.top + 8, GuiArt.BONE);
+        GuiArt.label(
+                graphics,
+                this.font,
+                Component.translatable(GuideBook.titleKey(index)),
+                frame.left + 12,
+                frame.top + 8,
+                GuiArt.GUIDE_INK,
+                GuiArt.GUIDE_SHADOW);
         Component pageLabel = Component.translatable("mnemolith.guide.page", index + 1, GuideBook.pageCount());
         int pageX = frame.left + frame.panelW - 12 - this.font.width(pageLabel);
-        GuiArt.label(graphics, this.font, pageLabel, pageX, frame.top + 8, GuiArt.VERDIGRIS);
+        GuiArt.label(graphics, this.font, pageLabel, pageX, frame.top + 8, GuiArt.GUIDE_INK, GuiArt.GUIDE_SHADOW);
         Component body = Component.translatable(GuideBook.bodyKey(index));
         int textHeight = this.textHeight(body, frame.bodyW);
         int maxScroll = Math.max(0, textHeight - frame.bodyH);
         this.scroll = Math.min(this.scroll, maxScroll);
         graphics.enableScissor(frame.bodyX, frame.bodyY, frame.bodyX + frame.bodyW, frame.bodyY + frame.bodyH);
-        GuiArt.paragraph(graphics, this.font, body, frame.bodyX, frame.bodyY - this.scroll, frame.bodyW - 6, GuiArt.BONE);
+        GuiArt.paragraph(
+                graphics,
+                this.font,
+                body,
+                frame.bodyX,
+                frame.bodyY - this.scroll,
+                frame.bodyW - 6,
+                GuiArt.GUIDE_INK,
+                GuiArt.GUIDE_SHADOW);
         graphics.disableScissor();
         if (maxScroll > 0) {
             int barH = Math.max(8, frame.bodyH * frame.bodyH / textHeight);
             int barY = frame.bodyY + (frame.bodyH - barH) * this.scroll / maxScroll;
-            graphics.fill(frame.bodyX + frame.bodyW - 3, barY, frame.bodyX + frame.bodyW - 1, barY + barH, GuiArt.VERDIGRIS);
+            graphics.fill(frame.bodyX + frame.bodyW - 3, barY, frame.bodyX + frame.bodyW - 1, barY + barH, GuiArt.GUIDE_INK);
         }
         this.drawDots(graphics, frame);
     }
@@ -119,7 +134,7 @@ public class FieldGuideScreen extends Screen {
         int count = GuideBook.pageCount();
         for (int index = 0; index < count; index++) {
             int x = frame.dotsX + index * (DOT + DOT_GAP);
-            int color = index == this.page ? GuiArt.VERDIGRIS : GuiArt.BONE;
+            int color = index == this.page ? GuiArt.GUIDE_INK : GuiArt.GUIDE_DOT;
             graphics.fill(x, frame.dotsY, x + DOT, frame.dotsY + DOT, color);
         }
     }
