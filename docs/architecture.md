@@ -1,6 +1,6 @@
 # Mnemolith architecture
 
-Mnemolith (Мнемолит) is a content mod about memory written into the world. A world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. Worldgen feeds that loop with archival veins, mute pockets, and the chronicle observatory. Phase 6 adds the lens overlay, the composition screen, and a per-player discovery catalog. There is no new biome, no Scar, and no strikethrough shaft.
+Mnemolith (Мнемолит) is a content mod about memory written into the world. A world event writes an imprint on one chunk, memory pressure is recomputed for that chunk, and a player can extract a slip or compose slips at a reel. Fracture is logged and can spawn a moment replicant. Worldgen feeds that loop with archival veins, mute pockets, and the chronicle observatory. Phase 6 adds the lens overlay, the composition screen, and a per-player discovery catalog. Phase 7 adds budgeted particles for those beats. There is no new biome, no Scar, and no strikethrough shaft.
 
 ## Identity
 
@@ -35,6 +35,7 @@ Later content, not built yet:
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
 | `com.mnemolith.data` | both | Data component register |
 | `com.mnemolith.audio` | both | Sound event register |
+| `com.mnemolith.particle` | both | Particle types and edge-triggered `MemoryFx` bursts. Providers stay in `com.mnemolith.client.particle` |
 | `com.mnemolith.config` | mixed | Common and server specs are common types. `ClientConfig` is referenced only from the client entry |
 | `com.mnemolith.client.*` | physical client | Render, particles, audio playback, screens |
 | `com.mnemolith.server` | dedicated server | Dedicated-server entry |
@@ -89,13 +90,13 @@ Fracture sets `ChunkMemory.fractured`, logs `Mnemolith fracture`, and asks `MobS
 
 ### Extraction and the lens
 
-`ChronicleLensItem` in either hand makes `PressureClient` send `RequestPressurePayload` every `visuals.lensPollInterval` ticks. `PressureSync` answers with `PressureSnapshotPayload` for loaded chunks in a Chebyshev radius of 2, or 3 when the player's chunk has at least one archival stratum. The snapshot list is capped at 49 chunks. Each entry carries chunk coordinates, pressure, band, and a `ChunkState` ordinal. The same poll sends up to eight end-rod particles on stratum marks within 24 blocks in the surrounding 3×3 loaded chunks. The attachment is not synced to every player tracking the chunk. `LensOverlay` draws one pill above the hotbar from that snapshot, and only while the lens is held and `visuals.lensOverlay` is on. Sneak adds the chunk state on a second line. `visuals.showNumericPressure` adds the number. `visuals.overlayOpacity` fades the pill; the band name stays in bone text. Putting the lens away clears the snapshot, so the pill disappears. `ClientParticles.shimmer` draws sculk soul particles on saturated and higher chunks when `visuals.imprintParticles` is on, scaled by `visuals.particleDensity`. `visuals.memoryAudioVolume` scales the local lens chime. World sounds are played by the server.
+`ChronicleLensItem` in either hand makes `PressureClient` send `RequestPressurePayload` every `visuals.lensPollInterval` ticks. `PressureSync` answers with `PressureSnapshotPayload` for loaded chunks in a Chebyshev radius of 2, or 3 when the player's chunk has at least one archival stratum. The snapshot list is capped at 49 chunks. Each entry carries chunk coordinates, pressure, band, and a `ChunkState` ordinal. The same poll, and only while that player holds the lens, sends up to eight `imprint_shimmer` particles to that player on stratum marks within 24 blocks in the surrounding 3×3 loaded chunks. `visuals.ambientWithoutLens` lets the client keep polling without a lens so saturated chunks can still shimmer. Vein marks stay lens-only. The attachment is not synced to every player tracking the chunk. `LensOverlay` draws one pill above the hotbar from that snapshot, and only while the lens is held and `visuals.lensOverlay` is on. Sneak adds the chunk state on a second line. `visuals.showNumericPressure` adds the number. `visuals.overlayOpacity` fades the pill; the band name stays in bone text. Putting the lens away clears the snapshot unless ambient shimmer is on, so the pill disappears. `ClientParticles.shimmer` draws `imprint_shimmer` on at most four saturated or higher chunks within Chebyshev 1 of the player, two motes each, when `visuals.imprintParticles` is on. `visuals.particleDensity` scales that count, and 0 disables it. `visuals.memoryAudioVolume` scales the local lens chime. World sounds are played by the server.
 
 `ExtractionNeedleItem.useOn` asks `ImprintWriter.extract` for the highest-intensity imprint, stores it as `imprint_cast` on an `ImprintSlipItem`, and spends `gameplay.extractionDurabilityCost`. If the clicked chunk has strata and no local imprint, extract reads one highest imprint from a loaded neighbor chunk and logs `Mnemolith extract reach`. It does not scan blocks.
 
 ### Composition
 
-`CompositionReelBlock` opens `CompositionMenu` (three slip slots, player inventory, three data slots). `CompositionScreen` is registered from `MnemolithClient` through `RegisterMenuScreensEvent`. It draws the archival panel and slot frames. The Compose button calls `clickMenuButton`, which runs `Composition.compose` on the server. The result status and formula ordinal are written into the menu's `SimpleContainerData` and synced with the container. The screen shows that line in words. Learned formulas appear as tag-icon silhouettes. With `gameplay.discoveryHints`, unread formulas are a dark bar and a question mark, with no ingredients. Without hints, unread formulas are omitted. Sounds and particles stay on the server. Stable formulas, matched as a sorted tag multiset:
+`CompositionReelBlock` opens `CompositionMenu` (three slip slots, player inventory, three data slots). `CompositionScreen` is registered from `MnemolithClient` through `RegisterMenuScreensEvent`. It draws the archival panel and slot frames. The Compose button calls `clickMenuButton`, which runs `Composition.compose` on the server. The result status and formula ordinal are written into the menu's `SimpleContainerData` and synced with the container. The screen shows that line in words. Learned formulas appear as tag-icon silhouettes. With `gameplay.discoveryHints`, unread formulas are a dark bar and a question mark, with no ingredients. Without hints, unread formulas are omitted. Sounds stay on the server. Success and failure each send one `MemoryFx` burst. Stable formulas, matched as a sorted tag multiset:
 
 | Slips | Result |
 | --- | --- |
@@ -156,6 +157,31 @@ Strikethrough shafts are not generated.
 
 Not started in this phase. The server config and spawn-rate values remain the knobs for it.
 
+## Visual effects
+
+`ModParticles` registers nine `SimpleParticleType` values on both sides: `imprint_shimmer`, `imprint_extract`, `compose_success`, `compose_fail`, `pressure_warn`, `mute_haze`, `strider_trail`, `archivist_snatch`, and `replicant_telegraph`. Sprites are 16×16 white shapes under `assets/mnemolith/textures/particle`. The client tints them. `ClientParticles` registers one `SimpleAnimatedParticle` provider per type from `MnemolithClient`. Those particles are translucent and fullbright.
+
+`MemoryFx` is the only sender. It calls `ServerLevel.sendParticles`, which is the vanilla level-particles packet. There is no second custom FX payload and no per-tick stream. Call sites:
+
+| Moment | Particle | When |
+| --- | --- | --- |
+| Imprint write | `imprint_shimmer` | Once per accepted write. No extra info log |
+| Extract, including a neighbor reach | `imprint_extract` | Once. Logs `Mnemolith fx extract` |
+| Compose success | `compose_success` | Once. Logs `Mnemolith fx compose_success` |
+| Compose fail | `compose_fail` | Once. Logs `Mnemolith fx compose_fail` |
+| Landing burst | `compose_success` | Once, when the effect fires. No extra log |
+| Pressure band rises into overloaded or fracture | `pressure_warn` | Eight packets, one ring. Logs `Mnemolith fx pressure`. A saved cache that already matches does not fire it. Saturated alone does not |
+| Mute stone newly registered on a `ServerLevel` | `mute_haze` | Once. Logs `Mnemolith fx mute`. Worldgen calls the `ChunkAccess` overload and does not |
+| Strider charge | `strider_trail` | Once at `beginCharge`. Flee leaves a trail of two every 10 ticks |
+| Archivist steal | `archivist_snatch` | Once in `finishSteal` |
+| Replicant telegraph, blind, use, and place | `replicant_telegraph` | Once per action. The old every-4-tick end rod is gone |
+
+The provider is the budget. It drops a particle when `visuals.imprintParticles` is off or `visuals.particleDensity` is 0, when it is more than 48 blocks from the player, at random beyond 24 blocks as density falls, and after `round(48 * density)` custom particles in one client tick. Density 0 therefore disables customs even if the server already sent the packet.
+
+The chronicle lens and imprint slip set `ENCHANTMENT_GLINT_OVERRIDE`. Archival stratum emits light level 7.
+
+A Fracture screen-space pass is not included. NeoForge 26.2 has `RegisterRenderPipelinesEvent` and core shaders, and that is not a stable one-line desaturation or chromatic-fringe hook. Particles, glint, and stratum light are the cues.
+
 ## Performance rules
 
 1. Write an imprint in the event that created it, for that chunk. Do not rebuild imprints by scanning blocks during a tick.
@@ -163,7 +189,7 @@ Not started in this phase. The server config and spawn-rate values remain the kn
 3. Keep a set of dirty chunks. A tick handler, if one is added, drains a bounded number of those chunks and then stops.
 4. Recompute pressure when a chunk loads, unloads, or its imprint set changes. Cache the result until the next invalidation.
 5. Network payloads carry deltas: one chunk's imprint change, or pressure near the player. They do not send the world's history.
-6. The client renders particles, the lens pill, screens, the pressure vignette, screen shake, and memory audio from synced state and the client config. The overlay reads the latest lens snapshot. It does not scan chunks. The client does not decide whether a storm starts.
+6. The client renders particles, the lens pill, screens, the pressure vignette, screen shake, and memory audio from synced state and the client config. The overlay reads the latest lens snapshot. It does not scan chunks. Shimmer uses that snapshot and only the chunks next to the player. The client does not decide whether a storm starts. Custom particles are culled by distance and by `visuals.particleDensity`.
 7. Registry work happens while the mod event bus is being constructed. Gameplay ticks do not register content.
 8. Respect `maxImprintsPerChunk` and `maxStormsPerDimension` so a single chunk or dimension cannot queue unbounded work.
 9. Vein and pocket placement run inside the chunk being generated. Observatory spacing is the structure set (40 / 16). Do not scan the world each tick to find them.
@@ -183,6 +209,7 @@ Attached to the mod event bus during `Mnemolith` construction.
 | Menus | Composition reel (`MenuType`, three slip slots, status data slots) |
 | Creative tab | `mnemolith` |
 | Sound events | Imprint, extract, compose, and ambient / hurt / death / special for each mob (playback reuses vanilla events) |
+| Particle types | Shimmer, extract, compose success, compose fail, pressure warn, mute haze, strider trail, archivist snatch, replicant telegraph |
 | Effects | Unrecorded, fire trail, landing burst |
 | Entity types | Echo strider, archivist, moment replicant |
 | Data components | `imprint_cast` |
@@ -198,6 +225,6 @@ Specs use `ModConfigSpec.Builder` and are registered with `ModContainer#register
 | `SERVER` | `mnemolith-server.toml` | logical server, synced to clients; overridable per world | server |
 | `CLIENT` | `mnemolith-client.toml` | physical client only | visuals |
 
-`worldGen.structuresEnabled`, `worldGen.structureSpacing`, and `worldGen.observatoryEnabled` are marked `worldRestart()`. Vein, pocket, bleed, and spawn-bias values are read when a feature places or a mob spawn is tested. Gameplay values, including `catalogEnabled` and `discoveryHints`, are read when an imprint is written, extracted, composed, or when the catalog item is used. Client values are read when the lens polls and when the pill is drawn. `ClientConfig` is still referenced only from `MnemolithClient`.
+`worldGen.structuresEnabled`, `worldGen.structureSpacing`, and `worldGen.observatoryEnabled` are marked `worldRestart()`. Vein, pocket, bleed, and spawn-bias values are read when a feature places or a mob spawn is tested. Gameplay values, including `catalogEnabled` and `discoveryHints`, are read when an imprint is written, extracted, composed, or when the catalog item is used. Client values are read when the lens polls, when the pill is drawn, and when a custom particle is spawned. `visuals.particleDensity` at 0 and `visuals.imprintParticles` at false both drop those particles. `visuals.ambientWithoutLens` defaults to false. `ClientConfig` is still referenced only from `MnemolithClient`.
 
 Read values with `ConfigValue#get()` at the moment of use. Common values are available from common setup onward. Server values are available once the server is starting. Client values are available from client setup onward.

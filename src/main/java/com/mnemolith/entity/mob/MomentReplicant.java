@@ -18,10 +18,11 @@ import com.mnemolith.entity.MobTuning;
 import com.mnemolith.entity.ai.ActionMemory;
 import com.mnemolith.entity.ai.CopiedActionKind;
 import com.mnemolith.imprint.ImprintTag;
+import com.mnemolith.particle.MemoryFx;
+import com.mnemolith.particle.ModParticles;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -89,7 +90,7 @@ public class MomentReplicant extends MemoryMob {
             replicant.blind();
         }
         level.playSound(null, source.blockPosition(), ModSounds.REPLICANT_BLIND.get(), SoundSource.PLAYERS, 0.8F, 1.4F);
-        level.sendParticles(ParticleTypes.WITCH, source.getX(), source.getEyeY(), source.getZ(), 16, 0.6D, 0.4D, 0.6D, 0.05D);
+        MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), source.getX(), source.getEyeY(), source.getZ(), 12);
     }
 
     public void blind() {
@@ -112,6 +113,9 @@ public class MomentReplicant extends MemoryMob {
         BlockPos at = this.blockPosition();
         Mnemolith.LOGGER.info("Mnemolith replicant telegraph={} at {},{},{}", kind.serialized(), at.getX(), at.getY(), at.getZ());
         this.playSound(ModSounds.REPLICANT_TELEGRAPH.get(), 1.0F, 1.0F);
+        if (this.level() instanceof ServerLevel server) {
+            MemoryFx.mob(server, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 10);
+        }
     }
 
     public boolean blinded() {
@@ -132,9 +136,6 @@ public class MomentReplicant extends MemoryMob {
         if (this.telegraphTicks > 0) {
             this.telegraphTicks--;
             this.setAction(MobActions.TELEGRAPH);
-            if (this.telegraphTicks % 4 == 0) {
-                level.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 1.2D, this.getZ(), 3, 0.25D, 0.4D, 0.25D, 0.01D);
-            }
             if (this.telegraphTicks == 0) {
                 this.executeTicks = 30;
                 this.replay(level);
@@ -205,7 +206,7 @@ public class MomentReplicant extends MemoryMob {
             case PLACE -> this.placeCopy(level, player, action.stack());
             case USE -> {
                 this.swing(InteractionHand.MAIN_HAND);
-                level.sendParticles(ParticleTypes.ENCHANT, this.getX(), this.getY() + 1.0D, this.getZ(), 8, 0.3D, 0.4D, 0.3D, 0.1D);
+                MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 8);
             }
         }
     }
@@ -239,7 +240,7 @@ public class MomentReplicant extends MemoryMob {
         BlockState existing = level.getBlockState(target);
         if (existing.isAir() || existing.canBeReplaced()) {
             level.setBlock(target, block.defaultBlockState(), Block.UPDATE_ALL);
-            level.sendParticles(ParticleTypes.ENCHANT, target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D, 6, 0.2D, 0.2D, 0.2D, 0.0D);
+            MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D, 6);
         }
     }
 

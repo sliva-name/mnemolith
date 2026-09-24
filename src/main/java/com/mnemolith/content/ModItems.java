@@ -10,6 +10,7 @@ import com.mnemolith.content.item.ImprintSlipItem;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.imprint.ImprintConstants;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -58,7 +59,7 @@ public final class ModItems {
     private ModItems() {}
 
     private static UnaryOperator<Item.Properties> stackToOne() {
-        return properties -> properties.stacksTo(1);
+        return properties -> properties.stacksTo(1).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
     private static UnaryOperator<Item.Properties> stackTo(int size) {
@@ -70,6 +71,6 @@ public final class ModItems {
     }
 
     private static UnaryOperator<Item.Properties> slip() {
-        return properties -> properties.stacksTo(ImprintConstants.SLIP_STACK_SIZE);
+        return properties -> properties.stacksTo(ImprintConstants.SLIP_STACK_SIZE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 }

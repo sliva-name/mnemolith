@@ -49,6 +49,11 @@ public final class ModBlocks {
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> stratumProperties() {
-        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(3.0F, 6.0F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops();
+        return properties -> properties
+                .mapColor(MapColor.COLOR_BLUE)
+                .strength(3.0F, 6.0F)
+                .sound(SoundType.DEEPSLATE)
+                .lightLevel(state -> 7)
+                .requiresCorrectToolForDrops();
     }
 }

@@ -8,12 +8,12 @@ import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
+import com.mnemolith.particle.ModParticles;
 import com.mnemolith.world.ChunkState;
 import com.mnemolith.world.LoadedChunkMemory;
 import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -29,7 +29,11 @@ public final class PressureSync {
         if (!(context.player() instanceof ServerPlayer player)) {
             return;
         }
-        if (!holdsLens(player) || !(player.level() instanceof ServerLevel level)) {
+        if (!(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        boolean lens = holdsLens(player);
+        if (!lens && !payload.ambient()) {
             return;
         }
         ChunkPos origin = new ChunkPos(player.blockPosition().getX() >> 4, player.blockPosition().getZ() >> 4);
@@ -58,12 +62,24 @@ public final class PressureSync {
                     ChunkState state = LoadedChunkMemory.stateOf(memory, muted);
                     chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), state.ordinal()));
                 }
-                if (memory != null && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
+                if (lens && memory != null && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
                     for (BlockPos mark : memory.strataCopy()) {
                         if (hinted >= 8 || mark.distSqr(playerPos) > (long) WorldgenTuning.LENS_VEIN_RANGE * WorldgenTuning.LENS_VEIN_RANGE) {
                             continue;
                         }
-                        level.sendParticles(ParticleTypes.END_ROD, mark.getX() + 0.5D, mark.getY() + 1.1D, mark.getZ() + 0.5D, 2, 0.15D, 0.2D, 0.15D, 0.01D);
+                        level.sendParticles(
+                                player,
+                                ModParticles.IMPRINT_SHIMMER.get(),
+                                false,
+                                false,
+                                mark.getX() + 0.5D,
+                                mark.getY() + 1.1D,
+                                mark.getZ() + 0.5D,
+                                2,
+                                0.15D,
+                                0.2D,
+                                0.15D,
+                                0.01D);
                         hinted++;
                     }
                 }

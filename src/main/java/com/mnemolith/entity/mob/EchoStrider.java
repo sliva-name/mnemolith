@@ -16,12 +16,13 @@ import com.mnemolith.entity.MobTuning;
 import com.mnemolith.entity.ai.PathLedger;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ImprintTag;
+import com.mnemolith.particle.MemoryFx;
+import com.mnemolith.particle.ModParticles;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -94,6 +95,9 @@ public class EchoStrider extends MemoryMob {
         BlockPos pos = this.blockPosition();
         Mnemolith.LOGGER.info("Mnemolith strider charge at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
         this.playSound(ModSounds.STRIDER_CHARGE.get(), 1.0F, 0.7F);
+        if (this.level() instanceof ServerLevel server) {
+            MemoryFx.mob(server, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 8);
+        }
     }
 
     public boolean shouldRetreat() {
@@ -252,8 +256,8 @@ public class EchoStrider extends MemoryMob {
             double x = this.strider.getX() + away.x * 8.0D;
             double z = this.strider.getZ() + away.z * 8.0D;
             this.strider.getNavigation().moveTo(x, this.strider.getY(), z, 1.25D);
-            if (this.strider.tickCount % 8 == 0) {
-                this.strider.serverLevel().sendParticles(ParticleTypes.SCULK_SOUL, this.strider.getX(), this.strider.getY() + 0.6D, this.strider.getZ(), 3, 0.2D, 0.2D, 0.2D, 0.01D);
+            if (this.strider.tickCount % 10 == 0) {
+                MemoryFx.mob(this.strider.serverLevel(), ModParticles.STRIDER_TRAIL.get(), this.strider.getX(), this.strider.getY() + 0.6D, this.strider.getZ(), 2);
             }
         }
     }
@@ -302,9 +306,6 @@ public class EchoStrider extends MemoryMob {
             if (this.strider.chargeTicks > 0) {
                 this.strider.chargeTicks--;
                 this.strider.setAction(MobActions.TELEGRAPH);
-                if (this.strider.chargeTicks % 5 == 0) {
-                    this.strider.serverLevel().sendParticles(ParticleTypes.END_ROD, this.strider.getX(), this.strider.getY() + 1.0D, this.strider.getZ(), 4, 0.3D, 0.4D, 0.3D, 0.02D);
-                }
                 return;
             }
             this.strider.setAction(MobActions.ATTACK);

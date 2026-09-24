@@ -3,6 +3,7 @@ package com.mnemolith.world;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ModAttachments;
+import com.mnemolith.particle.MemoryFx;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -59,14 +60,18 @@ public final class LoadedChunkMemory {
     }
 
     public static void addMuteStone(ServerLevel level, BlockPos pos) {
-        addMuteStone(level.getChunkAt(pos), pos);
+        if (addMuteStone(level.getChunkAt(pos), pos)) {
+            MemoryFx.mute(level, pos);
+        }
     }
 
-    public static void addMuteStone(ChunkAccess chunk, BlockPos pos) {
+    public static boolean addMuteStone(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = getOrCreate(chunk);
         if (memory.addMuteStone(pos)) {
             chunk.markUnsaved();
+            return true;
         }
+        return false;
     }
 
     public static void removeMuteStone(ServerLevel level, BlockPos pos) {

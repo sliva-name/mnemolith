@@ -5,6 +5,7 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.config.ServerConfig;
 import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.imprint.Imprint;
 
 import net.minecraft.core.BlockPos;
@@ -70,6 +71,14 @@ public final class MemoryPressure {
                     previous,
                     next,
                     nextBand);
+        }
+        if (chunk.getLevel() instanceof ServerLevel server
+                && previousBand.ordinal() < nextBand.ordinal()
+                && nextBand.ordinal() >= PressureBand.OVERLOADED.ordinal()) {
+            int x = chunk.getPos().getMiddleBlockX();
+            int z = chunk.getPos().getMiddleBlockZ();
+            int y = server.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            MemoryFx.pressure(server, new BlockPos(x, y, z));
         }
         chunk.markUnsaved();
         return nextBand;

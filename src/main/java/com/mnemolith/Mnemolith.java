@@ -14,6 +14,7 @@ import com.mnemolith.entity.ModEntityAttributes;
 import com.mnemolith.entity.ModSpawnPlacements;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.network.ModNetwork;
+import com.mnemolith.particle.ModParticles;
 import com.mnemolith.worldgen.ModWorldgen;
 import com.mojang.logging.LogUtils;
 
@@ -44,6 +45,7 @@ public final class Mnemolith {
         ModDataComponents.register(modEventBus);
         ModAttachments.register(modEventBus);
         ModNetwork.register(modEventBus);
+        ModParticles.register(modEventBus);
         ModWorldgen.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);

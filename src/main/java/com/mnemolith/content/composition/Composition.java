@@ -19,9 +19,9 @@ import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.audio.ModSounds;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.particle.MemoryFx;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -86,7 +86,7 @@ public final class Composition {
         }
         apply(player, formula.get());
         level.playSound(null, pos, ModSounds.COMPOSE_SUCCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
-        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.4D, 0.3D, 0.4D, 0.0D);
+        MemoryFx.composeSuccess(level, pos);
         if (player != null) {
             DiscoveryNotes.noteFormula(player, formula.get().ordinal());
             player.sendSystemMessage(Component.translatable("mnemolith.message.composed", Component.translatable(formula.get().translationKey())));
@@ -105,7 +105,7 @@ public final class Composition {
         ImprintWriter.spike(level, pos, CommonConfig.FAILURE_PRESSURE_SPIKE.get());
         MobSpawns.trySpawnReplicant(level, pos.above());
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
-        level.sendParticles(ParticleTypes.ANGRY_VILLAGER, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintConstants.SERVER_PARTICLE_COUNT, 0.3D, 0.3D, 0.3D, 0.0D);
+        MemoryFx.composeFail(level, pos);
         if (player != null) {
             for (ImprintTag tag : tags) {
                 DiscoveryNotes.noteTag(player, tag);
