@@ -29,15 +29,20 @@ A second line, `Mnemolith qa observatory registered=true chest=true located=<pos
 
 ## GUI contrast
 
-The archival panel is ink `#1C244A`. Glyphs on it are bone or a light accent. The drop shadow is drawn one pixel down-right by `GuiArt.label` and `GuiArt.paragraph`. The font's own shadow flag stays off.
+The archival panel chrome is ink `#1C244A`. Catalog, lens, and reel glyphs are bone or a light accent. The drop shadow is drawn one pixel down-right by `GuiArt.label` and `GuiArt.paragraph`. The font's own shadow flag stays off.
+
+The field-guide page is the bone center of that panel (`#E6DCC8`). Title, page number, and body sit on that page, so they use near-black ink and a light shadow. Catalog, lens, and reel do not use those two constants.
 
 | Constant | Hex | Role |
 | --- | --- | --- |
 | `GuiArt.BONE` | `#E6DCC8` | Catalog title and rows, lens pill, reel title, inventory label, idle compose status |
-| `GuiArt.SHADOW` | `#070B18` | Shadow. Darker than the panel, not `#000000`, not the glyph color |
-| `GuiArt.INK` | `#1C244A` | Panel fill only. Not a glyph color |
+| `GuiArt.SHADOW` | `#070B18` | Shadow for those bone glyphs. Darker than the panel, not `#000000`, not the glyph color |
+| `GuiArt.INK` | `#1C244A` | Panel chrome and the lens pill fill. Not a glyph color |
 | `GuiArt.VERDIGRIS` | `#8ED9C8` | Success status and the unread-formula count |
 | `GuiArt.FAIL` | `#FFB089` | Fail and disabled status |
 | `GuiArt.CHIP` | `#101628` | Unread formula chip, darker than the panel, with bone text |
+| `GuiArt.GUIDE_INK` | `#1A1520` | Field-guide title, page number, and body |
+| `GuiArt.GUIDE_SHADOW` | `#F5F0E6` | Shadow under that guide text. Light bone, not the glyph, not `#070B18` |
+| `GuiArt.GUIDE_DOT` | `#6B6258` | Inactive field-guide page dot on the bone page |
 
 A physical client logs `Mnemolith gui contrast glyph=ffe6dcc8 shadow=ff070b18 panel=ff1c244a accent=ff8ed9c8 fail=ffffb089` from `MnemolithClient`. That class is not loaded on a dedicated server.

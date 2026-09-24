@@ -11,7 +11,8 @@ import net.minecraft.resources.Identifier;
 
 /**
  * Archival panel, slot, and tag icons. Drawn with the GUI texture pipeline.
- * Glyphs on the panel are bone or a light accent. The shadow is darker than the panel and is not the glyph color.
+ * Catalog, lens, and reel glyphs stay bone or a light accent, with {@link #SHADOW}.
+ * The field-guide page is the bone center of the same panel, so its title and body use {@link #GUIDE_INK}.
  */
 public final class GuiArt {
     public static final Identifier PANEL = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/gui/panel.png");
@@ -30,6 +31,18 @@ public final class GuiArt {
     public static final int FAIL = 0xFFFFB089;
     /** Chip behind an unread formula. Darker than the panel so bone text stays separated. */
     public static final int CHIP = 0xFF101628;
+    /**
+     * Near-black ink for field-guide title and body.
+     * The page fill is bone ({@link #BONE}), so a bone glyph disappears into it.
+     */
+    public static final int GUIDE_INK = 0xFF1A1520;
+    /**
+     * Drop shadow under field-guide ink. Light bone, one pixel down-right.
+     * Not equal to {@link #GUIDE_INK}, and not the dark panel shadow {@link #SHADOW}.
+     */
+    public static final int GUIDE_SHADOW = 0xFFF5F0E6;
+    /** Inactive page dot on the bone page. Dark enough to read, lighter than {@link #GUIDE_INK}. */
+    public static final int GUIDE_DOT = 0xFF6B6258;
 
     private static final int BORDER = 4;
     private static final int PANEL_SIZE = 32;
@@ -37,16 +50,25 @@ public final class GuiArt {
     private GuiArt() {}
 
     /**
-     * Light glyph, then a softer shadow one pixel down and right.
-     * The font shadow flag stays off: that shadow is near-black and disappears into the panel when the glyph is dark.
+     * Glyph, then a shadow one pixel down and right. The font shadow flag stays off:
+     * that shadow is near-black and fights a custom light shadow on the field-guide page.
+     * Catalog, lens, and reel keep {@link #SHADOW}.
      */
     public static void label(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color) {
-        graphics.text(font, text, x + 1, y + 1, SHADOW, false);
+        label(graphics, font, text, x, y, color, SHADOW);
+    }
+
+    public static void label(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, int shadow) {
+        graphics.text(font, text, x + 1, y + 1, shadow, false);
         graphics.text(font, text, x, y, color, false);
     }
 
     public static void paragraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color) {
-        graphics.textWithWordWrap(font, text, x + 1, y + 1, width, SHADOW, false);
+        paragraph(graphics, font, text, x, y, width, color, SHADOW);
+    }
+
+    public static void paragraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, int shadow) {
+        graphics.textWithWordWrap(font, text, x + 1, y + 1, width, shadow, false);
         graphics.textWithWordWrap(font, text, x, y, width, color, false);
     }
 
