@@ -32,6 +32,8 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class MnemolithClient {
     public MnemolithClient(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
+        com.mnemolith.entity.echo.EchoEntity.clientFactory = com.mnemolith.client.echo.ClientEcho::new;
+        com.mnemolith.entity.echo.EchoShell.clientFactory = com.mnemolith.client.echo.ClientEchoShell::new;
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modEventBus.addListener(ClientScreens::registerMenus);
         modEventBus.addListener(LensOverlay::register);
@@ -41,6 +43,12 @@ public final class MnemolithClient {
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(FieldGuideClient::onRightClick);
+        modEventBus.addListener(com.mnemolith.client.echo.ThermalClient::registerKeys);
+        modEventBus.addListener(com.mnemolith.client.echo.EchoHud::register);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onAfterLevel);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, false, net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre.class, com.mnemolith.client.echo.EchoRenderer::onRenderPlayerPre);
     }
 
     @SubscribeEvent

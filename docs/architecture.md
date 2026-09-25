@@ -23,6 +23,9 @@ Later content, not built yet:
 | `com.mnemolith.pressure` | both | `MemoryPressure` and `PressureBand` |
 | `com.mnemolith.entity` | both | Effects, entity types, attributes, spawn gates, `MemoryMob` |
 | `com.mnemolith.entity.mob` | both | Echo strider, archivist, moment replicant |
+| `com.mnemolith.entity.echo` | both | Echo and shell entities (`MemoryAvatar`, `EchoEntity`, `EchoShell`) and the echo's 41-slot inventory |
+| `com.mnemolith.echo` | both | Echo recording format, recorder, replay hands (owner fake player), echo registry, possession swap and its player attachment. See [echo-design.md](echo-design.md) |
+| `com.mnemolith.client.echo` | physical client | Echo renderer, client echo/shell subclasses, lens thermal view, targeting, HUD hints, return key, echo inventory screen |
 | `com.mnemolith.entity.ai` | both | Path ledger, the replicant's action window, and the three mobs' goals |
 | `com.mnemolith.client.model` | physical client | Placeholder models |
 | `com.mnemolith.client.render` | physical client | Entity renderers. Registered from `MnemolithClient` |

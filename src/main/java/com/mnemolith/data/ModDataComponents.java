@@ -16,6 +16,11 @@ public final class ModDataComponents {
             "imprint_cast",
             builder -> builder.persistent(ImprintCast.CODEC).networkSynchronized(ImprintCast.STREAM_CODEC));
 
+    /** A filled echo recording: frames and world actions of one self-recording. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.EchoRecording>> ECHO_RECORDING = DATA_COMPONENTS.registerComponentType(
+            "echo_recording",
+            builder -> builder.persistent(com.mnemolith.echo.EchoRecording.CODEC).networkSynchronized(com.mnemolith.echo.EchoRecording.STREAM_CODEC));
+
     private ModDataComponents() {}
 
     public static void register(IEventBus modEventBus) {

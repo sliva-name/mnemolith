@@ -19,6 +19,10 @@ public final class ModMenus {
             "composition_reel",
             () -> IMenuTypeExtension.create((containerId, inventory, buffer) -> new CompositionMenu(containerId, inventory, new SimpleContainer(ImprintConstants.COMPOSITION_SLOTS))));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<com.mnemolith.content.menu.EchoMenu>> ECHO = MENUS.register(
+            "echo",
+            () -> IMenuTypeExtension.create(com.mnemolith.content.menu.EchoMenu::client));
+
     private ModMenus() {}
 
     public static void register(IEventBus modEventBus) {

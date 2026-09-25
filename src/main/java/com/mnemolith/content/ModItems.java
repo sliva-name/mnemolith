@@ -5,6 +5,8 @@ import java.util.function.UnaryOperator;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.item.CatalogFragmentItem;
 import com.mnemolith.content.item.ChronicleLensItem;
+import com.mnemolith.content.item.EchoRecordingItem;
+import com.mnemolith.content.item.EchoSlipItem;
 import com.mnemolith.content.item.ExtractionNeedleItem;
 import com.mnemolith.content.item.FieldGuideItem;
 import com.mnemolith.content.item.ImprintSlipItem;
@@ -48,6 +50,11 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> COMPOSITION_REEL = ITEMS.registerSimpleBlockItem(ModBlocks.COMPOSITION_REEL);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> RESONATOR_TRAP = ITEMS.registerSimpleBlockItem(ModBlocks.RESONATOR_TRAP);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM);
+    public static final DeferredItem<EchoSlipItem> ECHO_SLIP = ITEMS.registerItem("echo_slip", EchoSlipItem::new, stackTo(16));
+    public static final DeferredItem<EchoRecordingItem> ECHO_RECORDING = ITEMS.registerItem(
+            "echo_recording",
+            EchoRecordingItem::new,
+            properties -> properties.stacksTo(1).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

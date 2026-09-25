@@ -62,6 +62,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("mpsmoke")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MultiplayerSmoke::mpsmoke))
+                .then(Commands.literal("echoqa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.EchoQa::run))
                 .then(Commands.literal("qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MnemolithQa::run)));

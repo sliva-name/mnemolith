@@ -27,6 +27,30 @@ A second line, `Mnemolith qa observatory registered=true chest=true located=<pos
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
 | — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has 18 ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
 
+## Echo QA
+
+`/mnemolith echoqa` is a gamemaster command for the echo stage 1 paths. It runs on a flat test pad next to the command source, uses a temporary fake-player stand-in as the owner (so it works from RCON with nobody online), and cleans up its echoes, shells, and blocks. One log line is the result, and the chat message is `Echo QA <passed> of 11`:
+
+```
+Mnemolith echoqa spawn=true emptyInventory=true replayFakePlayer=true giveItems=true replayWithGear=true possessSwap=true bodyDied=true logout=true crashRecover=true dimension=true shellKilled=true
+```
+
+| Flag | What is proved |
+| --- | --- |
+| `spawn` | A synthetic recording spawns a registered echo with the owner's profile |
+| `emptyInventory` | All 41 echo slots are empty at spawn, while the owner holds gear |
+| `replayFakePlayer` | Replay with an empty echo: dirt is broken and its drop lands in the echo inventory, stone is kept (no fitting tool), planks are not placed (no item), the lever flips, and the break event actor is a fake player with the owner's UUID |
+| `giveItems` | Items moved into the echo inventory leave the giver; the total count is unchanged |
+| `replayWithGear` | With a pickaxe and planks: stone is broken with the echo's tool, cobblestone is kept, planks are placed and consumed |
+| `possessSwap` | Possess, then unpossess: the owner's real items, the body items, and the total are identical before and after, and the shell appears and goes |
+| `bodyDied` | Lethal damage while possessed: the owner returns, every body item drops where it died, and chunk instability rises by `echoDeathPressureSpike` |
+| `logout` | The logout path swaps back with no lost or extra items |
+| `crashRecover` | The possession attachment survives a codec round trip (as after a crash) and the join path restores it with no lost or extra items |
+| `dimension` | A dimension change while possessed is cancelled and swaps back |
+| `shellKilled` | Damage to the shell is written to the stored real health; killing the shell returns the owner |
+
+`/mnemolith qa` stays at 18 of 18 and does not include these checks.
+
 ## GUI contrast
 
 The archival panel chrome is ink `#1C244A`. Catalog, lens, and reel glyphs are bone or a light accent. The drop shadow is drawn one pixel down-right by `GuiArt.label` and `GuiArt.paragraph`. The font's own shadow flag stays off.

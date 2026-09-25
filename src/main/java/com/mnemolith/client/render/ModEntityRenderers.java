@@ -28,6 +28,14 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.ECHO_STRIDER.get(), EchoStriderRenderer::new);
         event.registerEntityRenderer(ModEntities.ARCHIVIST.get(), ArchivistRenderer::new);
         event.registerEntityRenderer(ModEntities.MOMENT_REPLICANT.get(), ReplicantRenderer::new);
+        registerAvatar(event, ModEntities.ECHO.get(), true);
+        registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);
+    }
+
+    /** Client echoes and shells are always the client subclasses, so the avatar renderer can be bound to their types. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerAvatar(EntityRenderersEvent.RegisterRenderers event, net.minecraft.world.entity.EntityType<?> type, boolean echo) {
+        event.registerEntityRenderer((net.minecraft.world.entity.EntityType) type, context -> new com.mnemolith.client.echo.EchoRenderer(context, echo));
     }
 
     private static ModelLayerLocation layer(String name) {
