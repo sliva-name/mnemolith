@@ -1,5 +1,7 @@
 package com.mnemolith.world;
 
+import java.util.function.Predicate;
+
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ModAttachments;
@@ -40,8 +42,11 @@ public final class LoadedChunkMemory {
         }
     }
 
-    public static boolean isMuted(ServerLevel level, BlockPos pos) {
-        int radius = CommonConfig.MUTE_RADIUS_CHUNKS.get();
+    /**
+     * True if any already-loaded chunk with memory in the Chebyshev {@code radius} around {@code pos} passes
+     * {@code test}. Never loads chunks; walks x-major, z-minor and stops at the first match.
+     */
+    public static boolean anyLoaded(ServerLevel level, BlockPos pos, int radius, Predicate<ChunkMemory> test) {
         int originX = pos.getX() >> 4;
         int originZ = pos.getZ() >> 4;
         for (int dx = -radius; dx <= radius; dx++) {
@@ -51,14 +56,17 @@ public final class LoadedChunkMemory {
                 if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
                     continue;
                 }
-                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
-                ChunkMemory memory = existing(chunk);
-                if (memory != null && memory.hasMuteStone()) {
+                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
+                if (memory != null && test.test(memory)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    public static boolean isMuted(ServerLevel level, BlockPos pos) {
+        return anyLoaded(level, pos, CommonConfig.MUTE_RADIUS_CHUNKS.get(), ChunkMemory::hasMuteStone);
     }
 
     public static void addMuteStone(ServerLevel level, BlockPos pos) {
@@ -105,27 +113,14 @@ public final class LoadedChunkMemory {
     /** Loaded chunks in a one-chunk ring. Range is a few blocks, so the ring is enough. */
     public static boolean resonatorNearby(ServerLevel level, BlockPos pos, double range) {
         double rangeSqr = range * range;
-        int originX = pos.getX() >> 4;
-        int originZ = pos.getZ() >> 4;
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                int chunkX = originX + dx;
-                int chunkZ = originZ + dz;
-                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
-                    continue;
-                }
-                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
-                if (memory == null) {
-                    continue;
-                }
-                for (BlockPos resonator : memory.resonatorsCopy()) {
-                    if (resonator.distSqr(pos) <= rangeSqr) {
-                        return true;
-                    }
+        return anyLoaded(level, pos, 1, memory -> {
+            for (BlockPos resonator : memory.resonatorsCopy()) {
+                if (resonator.distSqr(pos) <= rangeSqr) {
+                    return true;
                 }
             }
-        }
-        return false;
+            return false;
+        });
     }
 
     public static boolean noteStratum(ChunkAccess chunk, BlockPos pos) {
@@ -157,22 +152,7 @@ public final class LoadedChunkMemory {
     }
 
     public static boolean observatoryNearby(ServerLevel level, BlockPos pos, int radius) {
-        int originX = pos.getX() >> 4;
-        int originZ = pos.getZ() >> 4;
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                int chunkX = originX + dx;
-                int chunkZ = originZ + dz;
-                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
-                    continue;
-                }
-                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
-                if (memory != null && memory.observatory()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return anyLoaded(level, pos, radius, ChunkMemory::observatory);
     }
 
     public static ChunkState stateOf(ChunkMemory memory, boolean muted) {

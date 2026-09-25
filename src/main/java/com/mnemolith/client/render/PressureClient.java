@@ -2,8 +2,8 @@ package com.mnemolith.client.render;
 
 import com.mnemolith.audio.ModSounds;
 import com.mnemolith.client.particle.ClientParticles;
-import com.mnemolith.config.ClientConfig;
-import com.mnemolith.content.ModItems;
+import com.mnemolith.client.config.ClientConfig;
+import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.network.ChunkPressure;
 import com.mnemolith.network.PressureSnapshotPayload;
 import com.mnemolith.network.RequestPressurePayload;
@@ -104,8 +104,7 @@ public final class PressureClient {
     }
 
     public static boolean holdsLens(LocalPlayer player) {
-        return player.getMainHandItem().getItem() == ModItems.CHRONICLE_LENS.get()
-                || player.getOffhandItem().getItem() == ModItems.CHRONICLE_LENS.get();
+        return ChronicleLensItem.isHeld(player);
     }
 
     public static ChunkPressure origin(LocalPlayer player) {

@@ -15,21 +15,10 @@ public final class ServerConfig {
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
-        builder.comment("Authority rules for recollection storms. Instability cooling and imprint strengths live in the common gameplay section. The logical server owns these values.")
-                .translation("mnemolith.configuration.server")
-                .push("server");
-        ALLOW_RECOLLECTION_STORMS = builder
-                .comment("Whether recollection storms are allowed to start.")
-                .translation("mnemolith.configuration.allowRecollectionStorms")
-                .define("allowRecollectionStorms", true);
-        MAX_STORMS_PER_DIMENSION = builder
-                .comment("Maximum recollection storms active in one dimension at once.")
-                .translation("mnemolith.configuration.maxStormsPerDimension")
-                .defineInRange("maxStormsPerDimension", 1, 0, 16);
-        LOG_PRESSURE_CHANGES = builder
-                .comment("Whether a pressure band change, other than fracture, is written to the server log.")
-                .translation("mnemolith.configuration.logPressureChanges")
-                .define("logPressureChanges", false);
+        SpecValues.section(builder, "server", "Authority rules for recollection storms. Instability cooling and imprint strengths live in the common gameplay section. The logical server owns these values.");
+        ALLOW_RECOLLECTION_STORMS = SpecValues.bool(builder, "allowRecollectionStorms", "Whether recollection storms are allowed to start.", true);
+        MAX_STORMS_PER_DIMENSION = SpecValues.integer(builder, "maxStormsPerDimension", "Maximum recollection storms active in one dimension at once.", 1, 0, 16);
+        LOG_PRESSURE_CHANGES = SpecValues.bool(builder, "logPressureChanges", "Whether a pressure band change, other than fracture, is written to the server log.", false);
         builder.pop();
 
         SPEC = builder.build();

@@ -1,6 +1,7 @@
 package com.mnemolith.client.gui;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.common.MemoryPalette;
 import com.mnemolith.imprint.ImprintTag;
 
 import net.minecraft.client.gui.Font;
@@ -20,29 +21,29 @@ public final class GuiArt {
     public static final Identifier TAGS = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/gui/tags.png");
 
     /** Panel fill. Not a glyph color. */
-    public static final int INK = 0xFF1C244A;
+    public static final int INK = MemoryPalette.opaque(MemoryPalette.INK);
     /** Light glyph on the dark panel. */
-    public static final int BONE = 0xFFE6DCC8;
+    public static final int BONE = MemoryPalette.opaque(MemoryPalette.BONE);
     /** Drop shadow. Darker than {@link #INK}, not {@code #000000}, and not equal to {@link #BONE}. */
-    public static final int SHADOW = 0xFF070B18;
+    public static final int SHADOW = MemoryPalette.opaque(MemoryPalette.SHADOW);
     /** Light verdigris glyph. The pigment {@code #3E8E7E} is too close to the panel for small text. */
-    public static final int VERDIGRIS = 0xFF8ED9C8;
+    public static final int VERDIGRIS = MemoryPalette.opaque(MemoryPalette.VERDIGRIS);
     /** Light ember glyph for a failed compose. */
-    public static final int FAIL = 0xFFFFB089;
+    public static final int FAIL = MemoryPalette.opaque(MemoryPalette.FAIL);
     /** Chip behind an unread formula. Darker than the panel so bone text stays separated. */
-    public static final int CHIP = 0xFF101628;
+    public static final int CHIP = MemoryPalette.opaque(MemoryPalette.CHIP);
     /**
      * Near-black ink for field-guide title and body.
      * The page fill is bone ({@link #BONE}), so a bone glyph disappears into it.
      */
-    public static final int GUIDE_INK = 0xFF1A1520;
+    public static final int GUIDE_INK = MemoryPalette.opaque(MemoryPalette.GUIDE_INK);
     /**
      * Drop shadow under field-guide ink. Light bone, one pixel down-right.
      * Not equal to {@link #GUIDE_INK}, and not the dark panel shadow {@link #SHADOW}.
      */
-    public static final int GUIDE_SHADOW = 0xFFF5F0E6;
+    public static final int GUIDE_SHADOW = MemoryPalette.opaque(MemoryPalette.GUIDE_SHADOW);
     /** Inactive page dot on the bone page. Dark enough to read, lighter than {@link #GUIDE_INK}. */
-    public static final int GUIDE_DOT = 0xFF6B6258;
+    public static final int GUIDE_DOT = MemoryPalette.opaque(MemoryPalette.GUIDE_DOT);
 
     private static final int BORDER = 4;
     private static final int PANEL_SIZE = 32;

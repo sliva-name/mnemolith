@@ -1,6 +1,6 @@
 package com.mnemolith.client.particle;
 
-import com.mnemolith.config.ClientConfig;
+import com.mnemolith.client.config.ClientConfig;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;

@@ -9,6 +9,8 @@ public final class WorldgenTuning {
     public static final int OBSERVATORY_RELIEF = 14;
     public static final int PATH_RELIEF = 8;
     public static final int LENS_VEIN_RANGE = 24;
+    /** Vein marks hinted to the lens holder in one snapshot. */
+    public static final int LENS_VEIN_HINTS = 8;
     public static final int POCKET_HALF = 2;
 
     private WorldgenTuning() {}

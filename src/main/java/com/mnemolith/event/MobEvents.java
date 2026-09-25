@@ -35,15 +35,30 @@ public final class MobEvents {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
-        boolean grounded = player.onGround();
-        Boolean was = WAS_ON_GROUND.put(player.getUUID(), grounded);
         if (player.level().isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        // Written only on the server thread; the integrated client used to share this map.
+        boolean grounded = player.onGround();
+        Boolean was = WAS_ON_GROUND.put(player.getUUID(), grounded);
         PathLedger.note(serverPlayer);
         if (was != null && was && !grounded && player.getDeltaMovement().y > 0.2D) {
             ActionMemory.record(serverPlayer, CopiedActionKind.JUMP, serverPlayer.blockPosition(), ItemStack.EMPTY);
         }
+    }
+
+    /** Drops the player's per-player mob state (logout). Server thread only. */
+    public static void forget(UUID player) {
+        WAS_ON_GROUND.remove(player);
+        ActionMemory.forget(player);
+        PathLedger.forget(player);
+    }
+
+    /** Drops all per-player mob state (server stopped). */
+    public static void clearAll() {
+        WAS_ON_GROUND.clear();
+        ActionMemory.clearAll();
+        PathLedger.clearAll();
     }
 
     @SubscribeEvent

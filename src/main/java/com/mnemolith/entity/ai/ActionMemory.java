@@ -34,5 +34,15 @@ public final class ActionMemory {
         return Optional.of(action);
     }
 
+    /** Drops the player's last action (logout). Server thread only. */
+    public static void forget(UUID player) {
+        LAST.remove(player);
+    }
+
+    /** Drops every recorded action (server stopped). */
+    public static void clearAll() {
+        LAST.clear();
+    }
+
     public record CopiedAction(CopiedActionKind kind, BlockPos pos, ItemStack stack, long gameTime, UUID player) {}
 }

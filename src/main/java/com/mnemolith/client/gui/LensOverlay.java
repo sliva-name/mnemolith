@@ -2,7 +2,8 @@ package com.mnemolith.client.gui;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.client.render.PressureClient;
-import com.mnemolith.config.ClientConfig;
+import com.mnemolith.common.MemoryPalette;
+import com.mnemolith.client.config.ClientConfig;
 import com.mnemolith.network.ChunkPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.ChunkState;
@@ -64,7 +65,7 @@ public final class LensOverlay {
         int alpha = (int) Math.round(ClientConfig.OVERLAY_OPACITY.get() * 255.0D);
         alpha = Math.max(48, Math.min(255, alpha));
         graphics.fill(x, y, x + boxWidth, y + boxHeight, (alpha << 24) | (GuiArt.INK & 0xFFFFFF));
-        graphics.fill(x, y, x + 2, y + boxHeight, 0xFF3E8E7E);
+        graphics.fill(x, y, x + 2, y + boxHeight, MemoryPalette.opaque(MemoryPalette.PIGMENT));
         GuiArt.label(graphics, font, line, x + 8, y + 4, GuiArt.BONE);
         if (detail != null) {
             GuiArt.label(graphics, font, detail, x + 8, y + 14, GuiArt.BONE);

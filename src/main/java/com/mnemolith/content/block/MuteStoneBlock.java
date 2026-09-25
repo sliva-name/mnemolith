@@ -28,7 +28,8 @@ public class MuteStoneBlock extends Block {
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (level.isClientSide() || oldState.getBlock() == this || !(level instanceof ServerLevel server)) {
+        ServerLevel server = ServerPlacement.ifFresh(level, this, oldState);
+        if (server == null) {
             return;
         }
         ImprintWriter.tryWrite(server, pos, ImprintTag.SILENCE, null, false);
