@@ -1,6 +1,6 @@
 # Assets
 
-Phase 12 textures and tones are original work for this repository. They use the same MIT license as the mod (`LICENSE`). No Minecraft DLC, marketplace pack, or other third-party sample is included.
+Phase 12 textures and tones are original work for this repository. They are covered by the same All Rights Reserved license as the mod (`LICENSE`). No Minecraft DLC, marketplace pack, or other third-party sample is included.
 
 ## Textures
 
