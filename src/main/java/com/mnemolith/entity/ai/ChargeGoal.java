@@ -27,15 +27,13 @@ public final class ChargeGoal extends Goal {
 
     @Override
     public void start() {
-        if (this.strider.chargeTicks <= 0) {
-            this.strider.beginCharge();
-        }
+        this.strider.startCharge();
         this.strider.noPhysics = false;
     }
 
     @Override
     public void stop() {
-        this.strider.forceCharge = false;
+        this.strider.releaseForcedCharge();
         if (this.strider.action() == MobActions.TELEGRAPH) {
             this.strider.setAction(MobActions.IDLE);
         }
@@ -48,24 +46,21 @@ public final class ChargeGoal extends Goal {
             this.strider.getLookControl().setLookAt(target, 30.0F, 30.0F);
             this.strider.setTarget(target);
         }
-        if (this.strider.chargeTicks > 0) {
-            this.strider.chargeTicks--;
+        if (this.strider.tickTelegraph()) {
             this.strider.setAction(MobActions.TELEGRAPH);
             return;
         }
         this.strider.setAction(MobActions.ATTACK);
         if (target == null) {
-            this.strider.chargeCooldown = 40;
-            this.strider.forceCharge = false;
+            // The telegraph has already run down here, so finishCharge() only adds the cooldown.
+            this.strider.finishCharge();
             return;
         }
         this.strider.getNavigation().moveTo(target, 1.35D);
         if (this.strider.distanceToSqr(target) < 4.0D) {
-            this.strider.doHurtTarget(this.strider.serverLevel(), target);
+            this.strider.doHurtTarget(getServerLevel(this.strider), target);
             this.strider.playSound(ModSounds.STRIDER_CHARGE.get(), 1.0F, 1.2F);
-            this.strider.chargeCooldown = 40;
-            this.strider.forceCharge = false;
-            this.strider.chargeTicks = 0;
+            this.strider.finishCharge();
         }
     }
 

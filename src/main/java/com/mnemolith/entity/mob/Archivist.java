@@ -48,11 +48,11 @@ import net.minecraft.world.phys.AABB;
 
 /** Stalks an open container or a held slip, takes one, then runs for a louder chunk. */
 public class Archivist extends MemoryMob {
-    public int stealCooldown;
-    public int fleeTicks;
-    public int stunTicks;
-    public @Nullable ServerPlayer interest;
-    public @Nullable ItemEntity dropped;
+    private int stealCooldown;
+    private int fleeTicks;
+    private int stunTicks;
+    private @Nullable ServerPlayer interest;
+    private @Nullable ItemEntity dropped;
     private ItemStack carried = ItemStack.EMPTY;
 
     public Archivist(EntityType<? extends Archivist> type, Level level) {
@@ -83,6 +83,38 @@ public class Archivist extends MemoryMob {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);
         this.applyAttackDamage(MobTuning.archivistDamage());
         return result;
+    }
+
+    public boolean isStunned() {
+        return this.stunTicks > 0;
+    }
+
+    public boolean isFleeing() {
+        return this.fleeTicks > 0;
+    }
+
+    public boolean stealReady() {
+        return this.stealCooldown <= 0;
+    }
+
+    public @Nullable ServerPlayer interest() {
+        return this.interest;
+    }
+
+    public void loseInterest() {
+        this.interest = null;
+    }
+
+    public @Nullable ItemEntity dropped() {
+        return this.dropped;
+    }
+
+    /** Eating bait: stunned for five seconds and forgets both the player and any dropped slip. */
+    public void stunByBait() {
+        this.stunTicks = 100;
+        this.interest = null;
+        this.dropped = null;
+        this.setAction(MobActions.IDLE);
     }
 
     public void noticeMenu(ServerPlayer player, AbstractContainerMenu menu) {

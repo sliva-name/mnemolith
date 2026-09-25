@@ -20,30 +20,30 @@ public final class StalkGoal extends Goal {
     @Override
     public boolean canUse() {
         return MobTuning.archivistEnabled()
-                && this.archivist.stunTicks <= 0
-                && this.archivist.fleeTicks <= 0
-                && (this.archivist.interest != null || this.archivist.dropped != null);
+                && !this.archivist.isStunned()
+                && !this.archivist.isFleeing()
+                && (this.archivist.interest() != null || this.archivist.dropped() != null);
     }
 
     @Override
     public void tick() {
-        if (this.archivist.dropped != null && this.archivist.dropped.isAlive() && ImprintSlips.isSlip(this.archivist.dropped.getItem())) {
-            ItemEntity drop = this.archivist.dropped;
+        ItemEntity drop = this.archivist.dropped();
+        if (drop != null && drop.isAlive() && ImprintSlips.isSlip(drop.getItem())) {
             if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
                 this.archivist.getNavigation().moveTo(drop, 1.05D);
             }
-            if (this.archivist.distanceToSqr(drop) < 2.0D && this.archivist.stealCooldown <= 0) {
+            if (this.archivist.distanceToSqr(drop) < 2.0D && this.archivist.stealReady()) {
                 ItemStack stolen = drop.getItem().split(1);
                 if (drop.getItem().isEmpty()) {
                     drop.discard();
                 }
-                this.archivist.finishSteal(this.archivist.serverLevel(), null, stolen);
+                this.archivist.finishSteal(getServerLevel(this.archivist), null, stolen);
             }
             return;
         }
-        ServerPlayer player = this.archivist.interest;
+        ServerPlayer player = this.archivist.interest();
         if (player == null || !player.isAlive()) {
-            this.archivist.interest = null;
+            this.archivist.loseInterest();
             return;
         }
         this.archivist.getLookControl().setLookAt(player, 30.0F, 30.0F);

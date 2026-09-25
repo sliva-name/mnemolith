@@ -3,7 +3,6 @@ package com.mnemolith.entity.ai;
 import com.mnemolith.entity.mob.Archivist;
 import java.util.EnumSet;
 import org.jspecify.annotations.Nullable;
-import com.mnemolith.entity.MobActions;
 import com.mnemolith.entity.MobTuning;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -20,7 +19,7 @@ public final class BaitGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!MobTuning.archivistEnabled() || this.archivist.stunTicks > 0 || this.archivist.fleeTicks > 0) {
+        if (!MobTuning.archivistEnabled() || this.archivist.isStunned() || this.archivist.isFleeing()) {
             return false;
         }
         this.bait = this.archivist.nearestBait();
@@ -42,11 +41,8 @@ public final class BaitGoal extends Goal {
             if (bait.getItem().isEmpty()) {
                 bait.discard();
             }
-            this.archivist.stunTicks = 100;
-            this.archivist.interest = null;
-            this.archivist.dropped = null;
-            this.archivist.setAction(MobActions.IDLE);
-            this.archivist.serverLevel().sendParticles(ParticleTypes.HAPPY_VILLAGER, bait.getX(), bait.getY(), bait.getZ(), 6, 0.2D, 0.2D, 0.2D, 0.0D);
+            this.archivist.stunByBait();
+            getServerLevel(this.archivist).sendParticles(ParticleTypes.HAPPY_VILLAGER, bait.getX(), bait.getY(), bait.getZ(), 6, 0.2D, 0.2D, 0.2D, 0.0D);
         }
     }
 }

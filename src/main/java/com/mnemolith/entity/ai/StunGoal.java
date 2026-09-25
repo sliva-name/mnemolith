@@ -14,7 +14,7 @@ public final class StunGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return this.archivist.stunTicks > 0;
+        return this.archivist.isStunned();
     }
 }
 

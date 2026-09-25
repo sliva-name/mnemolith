@@ -49,11 +49,11 @@ import net.minecraft.world.phys.Vec3;
 
 /** Telegraphs, then replays the last whitelisted thing a nearby player did. */
 public class MomentReplicant extends MemoryMob {
-    public int telegraphTicks;
+    private int telegraphTicks;
     private int blindTicks;
     private int executeTicks;
     private ActionMemory.@Nullable CopiedAction pending;
-    public @Nullable ServerPlayer focus;
+    private @Nullable ServerPlayer focus;
 
     public MomentReplicant(EntityType<? extends MomentReplicant> type, Level level) {
         super(type, level);
@@ -118,6 +118,14 @@ public class MomentReplicant extends MemoryMob {
 
     public boolean blinded() {
         return this.blindTicks > 0;
+    }
+
+    public boolean telegraphing() {
+        return this.telegraphTicks > 0;
+    }
+
+    public @Nullable ServerPlayer focus() {
+        return this.focus;
     }
 
     @Override

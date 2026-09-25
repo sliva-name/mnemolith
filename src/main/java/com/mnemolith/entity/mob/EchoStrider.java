@@ -3,7 +3,6 @@ package com.mnemolith.entity.mob;
 import com.mnemolith.entity.ai.RetreatGoal;
 import com.mnemolith.entity.ai.ChargeGoal;
 import com.mnemolith.entity.ai.FollowPathGoal;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.audio.ModSounds;
@@ -44,14 +43,10 @@ import net.minecraft.world.phys.Vec3;
 
 /** Walks recorded paths, then charges when hurt or the chunk is overloaded. */
 public class EchoStrider extends MemoryMob {
-    public int chargeTicks;
-    public int chargeCooldown;
-    public boolean forceCharge;
-    public int phaseTicks;
-    public int ownerCursor;
-    public @Nullable UUID pathOwner;
-    public @Nullable BlockPos waypoint;
-    public @Nullable BlockPos lastImprint;
+    private int chargeTicks;
+    private int chargeCooldown;
+    private boolean forceCharge;
+    private int phaseTicks;
 
     public EchoStrider(EntityType<? extends EchoStrider> type, Level level) {
         super(type, level);
@@ -95,6 +90,40 @@ public class EchoStrider extends MemoryMob {
         }
     }
 
+    /** Starts the telegraph unless one is already running. */
+    public void startCharge() {
+        if (this.chargeTicks <= 0) {
+            this.beginCharge();
+        }
+    }
+
+    /** Counts the telegraph down by one tick; false once the strider is ready to strike. */
+    public boolean tickTelegraph() {
+        if (this.chargeTicks > 0) {
+            this.chargeTicks--;
+            return true;
+        }
+        return false;
+    }
+
+    /** Drops a forced charge without touching the telegraph or cooldown. */
+    public void releaseForcedCharge() {
+        this.forceCharge = false;
+    }
+
+    /** Aborts any forced or telegraphed charge, e.g. when retreating. */
+    public void cancelCharge() {
+        this.forceCharge = false;
+        this.chargeTicks = 0;
+    }
+
+    /** Ends a charge (hit or no target) and starts the cooldown. */
+    public void finishCharge() {
+        this.chargeCooldown = 40;
+        this.forceCharge = false;
+        this.chargeTicks = 0;
+    }
+
     public boolean shouldRetreat() {
         if (!(this.level() instanceof ServerLevel level)) {
             return false;
@@ -131,10 +160,6 @@ public class EchoStrider extends MemoryMob {
             }
         }
         return null;
-    }
-
-    public net.minecraft.util.RandomSource random() {
-        return this.random;
     }
 
     public @Nullable LivingEntity chargeTarget() {
@@ -183,6 +208,12 @@ public class EchoStrider extends MemoryMob {
                 this.setAction(MobActions.IDLE);
             }
         }
+    }
+
+    /** Leaves phase mode and resets the phase budget. */
+    public void stopPhasing() {
+        this.noPhysics = false;
+        this.phaseTicks = 0;
     }
 
     public void stepPhase(BlockPos destination) {

@@ -21,10 +21,10 @@ public final class FleeGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.archivist.stunTicks > 0) {
+        if (this.archivist.isStunned()) {
             return false;
         }
-        if (this.archivist.fleeTicks > 0) {
+        if (this.archivist.isFleeing()) {
             return true;
         }
         return this.archivist.getLastHurtByMob() != null && this.archivist.tickCount - this.archivist.getLastHurtByMobTimestamp() < 40;
@@ -41,7 +41,7 @@ public final class FleeGoal extends Goal {
         if (!MobTuning.sensorDue(this.archivist.tickCount, this.nest == null || this.archivist.getNavigation().isDone())) {
             return;
         }
-        ServerLevel level = this.archivist.serverLevel();
+        ServerLevel level = getServerLevel(this.archivist);
         this.nest = PathLedger.higherPressure(level, this.archivist.blockPosition());
         if (this.nest == null) {
             Vec3 look = this.archivist.getLookAngle();

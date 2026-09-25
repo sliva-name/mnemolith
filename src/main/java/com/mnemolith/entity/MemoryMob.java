@@ -68,7 +68,11 @@ public abstract class MemoryMob extends Monster {
         super.aiStep();
     }
 
-    public final ServerLevel serverLevel() {
-        return (ServerLevel) this.level();
+    /** Server-side level for AI code that only runs on the logical server; fails loudly if misused on a client. */
+    protected final ServerLevel serverLevel() {
+        if (this.level() instanceof ServerLevel server) {
+            return server;
+        }
+        throw new IllegalStateException("MemoryMob.serverLevel() called on a client-side entity");
     }
 }

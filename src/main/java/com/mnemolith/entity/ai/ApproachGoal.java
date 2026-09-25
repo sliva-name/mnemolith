@@ -16,12 +16,13 @@ public final class ApproachGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return MobTuning.replicantEnabled() && !this.replicant.blinded() && this.replicant.telegraphTicks <= 0;
+        return MobTuning.replicantEnabled() && !this.replicant.blinded() && !this.replicant.telegraphing();
     }
 
     @Override
     public void tick() {
-        Player player = this.replicant.focus != null ? this.replicant.focus : this.replicant.level().getNearestPlayer(this.replicant, 16.0D);
+        Player focus = this.replicant.focus();
+        Player player = focus != null ? focus : this.replicant.level().getNearestPlayer(this.replicant, 16.0D);
         if (player == null) {
             return;
         }

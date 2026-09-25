@@ -4,6 +4,7 @@ import com.mnemolith.entity.mob.EchoStrider;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import com.mnemolith.entity.MobTuning;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +13,11 @@ import net.minecraft.world.phys.Vec3;
 
 public final class FollowPathGoal extends Goal {
     private final EchoStrider strider;
+    // Path-following state lives with the goal: one goal instance per strider, only this goal reads it.
+    private int ownerCursor;
+    private @Nullable UUID pathOwner;
+    private @Nullable BlockPos waypoint;
+    private @Nullable BlockPos lastImprint;
 
     public FollowPathGoal(EchoStrider strider) {
         this.strider = strider;
@@ -25,60 +31,59 @@ public final class FollowPathGoal extends Goal {
 
     @Override
     public void stop() {
-        this.strider.noPhysics = false;
-        this.strider.phaseTicks = 0;
+        this.strider.stopPhasing();
     }
 
     @Override
     public void tick() {
-        if (this.strider.waypoint == null || this.strider.distanceToSqr(Vec3.atLowerCornerOf(this.strider.waypoint).add(0.5D, 0.0D, 0.5D)) < MobTuning.PATH_ARRIVE_SQR) {
-            if (this.strider.pathOwner != null && this.strider.waypoint != null) {
-                PathLedger.consume(this.strider.pathOwner, this.strider.waypoint);
+        if (this.waypoint == null || this.strider.distanceToSqr(Vec3.atLowerCornerOf(this.waypoint).add(0.5D, 0.0D, 0.5D)) < MobTuning.PATH_ARRIVE_SQR) {
+            if (this.pathOwner != null && this.waypoint != null) {
+                PathLedger.consume(this.pathOwner, this.waypoint);
             }
             this.pick();
         }
-        if (this.strider.waypoint == null) {
+        if (this.waypoint == null) {
             return;
         }
-        this.strider.stepPhase(this.strider.waypoint);
+        this.strider.stepPhase(this.waypoint);
         if (!this.strider.noPhysics && MobTuning.sensorDue(this.strider.tickCount, this.strider.getNavigation().isDone())) {
-            BlockPos waypoint = this.strider.waypoint;
+            BlockPos waypoint = this.waypoint;
             this.strider.getNavigation().moveTo(waypoint.getX() + 0.5D, waypoint.getY(), waypoint.getZ() + 0.5D, 0.9D);
         }
     }
 
     private void pick() {
-        ServerLevel level = this.strider.serverLevel();
+        ServerLevel level = getServerLevel(this.strider);
         List<UUID> owners = PathLedger.owners();
-        this.strider.waypoint = null;
+        this.waypoint = null;
         if (!owners.isEmpty()) {
             int count = this.strider.twin() ? Math.min(2, owners.size()) : 1;
             for (int attempt = 0; attempt < count; attempt++) {
-                UUID owner = owners.get(Math.floorMod(this.strider.ownerCursor++, owners.size()));
+                UUID owner = owners.get(Math.floorMod(this.ownerCursor++, owners.size()));
                 BlockPos next = PathLedger.peek(owner);
                 if (next != null) {
-                    this.strider.pathOwner = owner;
-                    this.strider.waypoint = next;
+                    this.pathOwner = owner;
+                    this.waypoint = next;
                     return;
                 }
             }
         }
-        BlockPos imprint = PathLedger.nearestImprint(level, this.strider.blockPosition(), this.strider.lastImprint);
+        BlockPos imprint = PathLedger.nearestImprint(level, this.strider.blockPosition(), this.lastImprint);
         if (imprint != null) {
-            this.strider.lastImprint = imprint;
-            this.strider.pathOwner = null;
-            this.strider.waypoint = imprint;
+            this.lastImprint = imprint;
+            this.pathOwner = null;
+            this.waypoint = imprint;
             return;
         }
         BlockPos gradient = PathLedger.higherPressure(level, this.strider.blockPosition());
         if (gradient != null) {
-            this.strider.pathOwner = null;
-            this.strider.waypoint = gradient;
+            this.pathOwner = null;
+            this.waypoint = gradient;
             return;
         }
-        int dx = this.strider.random().nextInt(9) - 4;
-        int dz = this.strider.random().nextInt(9) - 4;
-        this.strider.waypoint = this.strider.blockPosition().offset(dx, 0, dz);
+        int dx = this.strider.getRandom().nextInt(9) - 4;
+        int dz = this.strider.getRandom().nextInt(9) - 4;
+        this.waypoint = this.strider.blockPosition().offset(dx, 0, dz);
     }
 
     @Override
