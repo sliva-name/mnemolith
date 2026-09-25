@@ -36,6 +36,8 @@ public class EchoMenu extends AbstractContainerMenu {
 
     private final Container container;
     private final @Nullable EchoEntity echo;
+    /** The echo's lesson as sent in the open packet (client), or read from the echo (server). */
+    private com.mnemolith.echo.EchoLesson lesson = com.mnemolith.echo.EchoLesson.NONE;
 
     public EchoMenu(int containerId, Inventory inventory, Container container, @Nullable EchoEntity echo) {
         super(ModMenus.ECHO.get(), containerId);
@@ -61,7 +63,15 @@ public class EchoMenu extends AbstractContainerMenu {
     public static EchoMenu client(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         int id = buffer.readVarInt();
         EchoEntity echo = inventory.player.level().getEntity(id) instanceof EchoEntity found ? found : null;
-        return new EchoMenu(containerId, inventory, new SimpleContainer(ECHO_SLOTS), echo);
+        EchoMenu menu = new EchoMenu(containerId, inventory, new SimpleContainer(ECHO_SLOTS), echo);
+        if (buffer.isReadable()) {
+            menu.lesson = com.mnemolith.echo.EchoLesson.STREAM_CODEC.decode(buffer);
+        }
+        return menu;
+    }
+
+    public com.mnemolith.echo.EchoLesson lesson() {
+        return this.echo != null && !this.echo.level().isClientSide() ? this.echo.job().lesson() : this.lesson;
     }
 
     public @Nullable EchoEntity echo() {

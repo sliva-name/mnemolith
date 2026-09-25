@@ -20,6 +20,8 @@ public final class ModNetwork {
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)
                 .playToServer(EchoPossessPayload.TYPE, EchoPossessPayload.STREAM_CODEC, EchoNetwork::handlePossess)
                 .playToServer(EchoUnpossessPayload.TYPE, EchoUnpossessPayload.STREAM_CODEC, EchoNetwork::handleUnpossess)
-                .playToClient(EchoStatePayload.TYPE, EchoStatePayload.STREAM_CODEC);
+                .playToClient(EchoStatePayload.TYPE, EchoStatePayload.STREAM_CODEC)
+                .playToServer(EchoJobPayload.TYPE, EchoJobPayload.STREAM_CODEC, EchoNetwork::handleJob)
+                .playToClient(EchoGhostPayload.TYPE, EchoGhostPayload.STREAM_CODEC);
     }
 }

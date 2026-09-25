@@ -21,6 +21,10 @@ public final class EchoView {
         return thermal;
     }
 
+    public static boolean isTarget(int id) {
+        return id == targetId;
+    }
+
     public static int targetId() {
         return targetId;
     }

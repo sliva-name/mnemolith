@@ -70,6 +70,13 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue ECHO_MAX_HEALTH;
     public static final ModConfigSpec.IntValue ECHO_DEATH_PRESSURE_SPIKE;
     public static final ModConfigSpec.IntValue ECHO_SHELL_AGGRO_RADIUS;
+    public static final ModConfigSpec.IntValue ECHO_MINE_RADIUS;
+    public static final ModConfigSpec.IntValue ECHO_MINE_MAX_RADIUS;
+    public static final ModConfigSpec.IntValue ECHO_TUNNEL_MAX;
+    public static final ModConfigSpec.IntValue ECHO_DEPOSIT_FREE_SLOTS;
+    public static final ModConfigSpec.BooleanValue ECHO_BUILD_CLEARS_TERRAIN;
+    public static final ModConfigSpec.IntValue ECHO_SCAN_BUDGET;
+    public static final ModConfigSpec.IntValue ECHO_PATH_BUDGET;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -155,6 +162,13 @@ public final class CommonConfig {
         ECHO_MAX_HEALTH = SpecValues.decimal(builder, "echoMaxHealth", "Maximum health of an echo body.", 20.0D, 1.0D, 100.0D);
         ECHO_DEATH_PRESSURE_SPIKE = SpecValues.integer(builder, "echoDeathPressureSpike", "Instability added to the chunk where an echo body dies.", 24, 0, 200);
         ECHO_SHELL_AGGRO_RADIUS = SpecValues.integer(builder, "echoShellAggroRadius", "Radius, in blocks, in which idle hostile mobs notice the empty shell you leave while possessing. 0 turns it off.", 12, 0, 32);
+        ECHO_MINE_RADIUS = SpecValues.integer(builder, "echoMineRadius", "Default search radius, in blocks, of a mining job around its work anchor.", 16, 2, 32);
+        ECHO_MINE_MAX_RADIUS = SpecValues.integer(builder, "echoMineMaxRadius", "Largest mining radius a player can pick on the echo screen.", 32, 2, 32);
+        ECHO_TUNNEL_MAX = SpecValues.integer(builder, "echoTunnelMax", "Most blocks (natural stone, deepslate, dirt) an echo may dig to reach one enclosed target. 0 turns tunnelling off.", 12, 0, 64);
+        ECHO_DEPOSIT_FREE_SLOTS = SpecValues.integer(builder, "echoDepositFreeSlots", "A mining echo walks to its chest when this many main slots or fewer are still empty.", 1, 0, 27);
+        ECHO_BUILD_CLEARS_TERRAIN = SpecValues.bool(builder, "echoBuildClearsTerrain", "Whether a building echo may break natural terrain (stone, dirt, sand, gravel, plants) that stands where the blueprint needs a block. Other blocks are never overwritten.", false);
+        ECHO_SCAN_BUDGET = SpecValues.integer(builder, "echoScanBudget", "Block positions a mining echo may inspect per tick while searching for targets.", 4096, 256, 65536);
+        ECHO_PATH_BUDGET = SpecValues.integer(builder, "echoPathBudget", "Path nodes an echo may expand per tick. A search gives up after 16 times this many.", 400, 50, 4000);
         builder.pop();
 
         SPEC = builder.build();

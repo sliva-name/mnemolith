@@ -1,6 +1,7 @@
 package com.mnemolith.entity.echo;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
@@ -10,13 +11,18 @@ import com.mnemolith.content.ModItems;
 import com.mnemolith.content.menu.EchoMenu;
 import com.mnemolith.echo.EchoAction;
 import com.mnemolith.echo.EchoHands;
+import com.mnemolith.echo.EchoLesson;
 import com.mnemolith.echo.EchoLife;
 import com.mnemolith.echo.EchoRecording;
 import com.mnemolith.echo.EchoRegistry;
 import com.mnemolith.echo.EchoView;
 import com.mnemolith.echo.SlotStack;
+import com.mnemolith.echo.job.EchoJob;
+import com.mnemolith.network.EchoGhostPayload;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -40,6 +46,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * An echo: replays its owner's recording, then stays as an idle helper body.
@@ -47,6 +54,16 @@ import net.minecraft.world.phys.Vec3;
  */
 public class EchoEntity extends MemoryAvatar {
     private static final EntityDataAccessor<Boolean> DATA_REPLAYING = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BOOLEAN);
+    // Job display state for the owner's screen and the lens label (stage 2).
+    private static final EntityDataAccessor<Byte> DATA_JOB_MODE = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Component> DATA_JOB_STATUS = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
+    private static final EntityDataAccessor<Integer> DATA_JOB_RADIUS = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_CHEST = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_ANCHOR = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    private static final EntityDataAccessor<Byte> DATA_LESSON = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
+    public static final int LESSON_MINING = 1;
+    public static final int LESSON_BUILDING = 2;
+    private static final int JOB_STOPPED = 0x40;
     /** Set by the physical client so client-side echoes carry a skin. Null on a dedicated server. */
     public static EntityType.@Nullable EntityFactory<EchoEntity> clientFactory;
 
@@ -59,6 +76,9 @@ public class EchoEntity extends MemoryAvatar {
     private long generation;
     /** True once the body was handed to its owner, or found to be a stale copy. Suppresses drops and registry removal. */
     private boolean silentRemoval;
+    private final EchoJob job = new EchoJob();
+    /** Where the job wants the body to walk this tick; null when standing. Server only. */
+    private @Nullable Vec3 moveTarget;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -82,6 +102,12 @@ public class EchoEntity extends MemoryAvatar {
     protected void defineSynchedData(SynchedEntityData.Builder entityData) {
         super.defineSynchedData(entityData);
         entityData.define(DATA_REPLAYING, false);
+        entityData.define(DATA_JOB_MODE, (byte) 0);
+        entityData.define(DATA_JOB_STATUS, Component.empty());
+        entityData.define(DATA_JOB_RADIUS, 16);
+        entityData.define(DATA_JOB_CHEST, Optional.empty());
+        entityData.define(DATA_JOB_ANCHOR, Optional.empty());
+        entityData.define(DATA_LESSON, (byte) 0);
     }
 
     // ---- inventory ----
@@ -157,13 +183,23 @@ public class EchoEntity extends MemoryAvatar {
         this.setYBodyRot(first.yRot());
         this.replayTick = 0;
         this.nextAction = 0;
+        this.moveTarget = null;
+        this.job.release(this);
+        this.job.beginReplay();
         this.beginReplayPhysics();
+        this.syncJob();
     }
 
     /** Keeps {@code recording} as this body's lesson without replaying it (used when a possessed body is released). */
     public void keepRecording(EchoRecording recording) {
         this.recording = recording;
         this.stopReplay();
+    }
+
+    public void stopReplayIfRunning() {
+        if (this.replayTick >= 0) {
+            this.stopReplay();
+        }
     }
 
     public void stopReplay() {
@@ -231,11 +267,159 @@ public class EchoEntity extends MemoryAvatar {
                 return;
             }
             this.stepReplay(level);
+            if (!this.isReplaying() && this.isAlive()) {
+                this.job.tick(level, this);
+            }
+            if (this.job.consumeDirty()) {
+                this.syncJob();
+            }
             if (!this.isReplaying() && this.tickCount % 100 == 0 && this.getHealth() < this.getMaxHealth() && this.isAlive()) {
                 this.heal(1.0F);
             }
         }
         super.tick();
+    }
+
+    // ---- jobs (stage 2) ----
+
+    public EchoJob job() {
+        return this.job;
+    }
+
+    /** The echo learns {@code lesson}; an old blueprint ghost disappears for the owner. */
+    public void teachLesson(EchoLesson lesson) {
+        this.job.setLesson(lesson);
+        this.sendGhostToOwner();
+        this.syncJob();
+    }
+
+    /** Restores a job saved while the body was possessed. Lesson, chest and blueprint stay; the echo waits idle. */
+    public void restoreJobIdle(EchoJob.Saved saved) {
+        this.job.load(saved);
+        this.job.stop(this);
+        this.syncJob();
+    }
+
+    public void setMoveTarget(@Nullable Vec3 target) {
+        this.moveTarget = target;
+    }
+
+    public @Nullable Vec3 moveTarget() {
+        return this.moveTarget;
+    }
+
+    /** Turns head and body towards {@code point} (used when digging or placing). */
+    public void lookAt(Vec3 point) {
+        Vec3 eye = this.getEyePosition();
+        double dx = point.x - eye.x;
+        double dy = point.y - eye.y;
+        double dz = point.z - eye.z;
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        float yaw = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90.0F;
+        float pitch = (float) -(Mth.atan2(dy, horizontal) * Mth.RAD_TO_DEG);
+        this.setYRot(yaw);
+        this.setXRot(Mth.clamp(pitch, -90.0F, 90.0F));
+        this.setYHeadRot(yaw);
+        this.setYBodyRot(yaw);
+    }
+
+    /** The building job finished: the owner's ghost is cleared. */
+    public void onBuildFinished() {
+        this.sendGhostToOwner();
+    }
+
+    /** Sends the owner the current blueprint ghost (or a clear when nothing is being built). */
+    public void sendGhostToOwner() {
+        if (this.level() instanceof ServerLevel level && this.ownerId() != null
+                && level.getServer().getPlayerList().getPlayer(this.ownerId()) instanceof ServerPlayer owner) {
+            PacketDistributor.sendToPlayer(owner, this.ghostPayload());
+        }
+    }
+
+    private EchoGhostPayload ghostPayload() {
+        BlockPos anchor = this.job.buildAnchor();
+        if (anchor == null || this.job.mode() != EchoJob.Mode.BUILD || this.job.lesson().blueprint().isEmpty()) {
+            return EchoGhostPayload.clear(this.getId());
+        }
+        return new EchoGhostPayload(this.getId(), anchor, this.job.rotation(), this.job.lesson().blueprint());
+    }
+
+    @Override
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        if (this.isOwnedBy(player) && this.job.mode() == EchoJob.Mode.BUILD) {
+            PacketDistributor.sendToPlayer(player, this.ghostPayload());
+        }
+    }
+
+    private void syncJob() {
+        this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (this.job.status().kind().isStop() ? JOB_STOPPED : 0)));
+        this.entityData.set(DATA_JOB_STATUS, this.job.status().component());
+        this.entityData.set(DATA_JOB_RADIUS, this.job.radius());
+        this.entityData.set(DATA_JOB_CHEST, Optional.ofNullable(this.job.chest()));
+        this.entityData.set(DATA_JOB_ANCHOR, Optional.ofNullable(this.job.buildAnchor()));
+        EchoLesson lesson = this.job.lesson();
+        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)));
+    }
+
+    /** Synced job mode (client and server). */
+    public EchoJob.Mode jobMode() {
+        return EchoJob.Mode.byId(this.entityData.get(DATA_JOB_MODE) & 0x0F);
+    }
+
+    /** True when the last job ended with a stop reason (shown in a warmer color). */
+    public boolean jobStopped() {
+        return (this.entityData.get(DATA_JOB_MODE) & JOB_STOPPED) != 0;
+    }
+
+    /** Synced, already translated-on-display job status. */
+    public Component jobStatus() {
+        return this.entityData.get(DATA_JOB_STATUS);
+    }
+
+    public int jobRadius() {
+        return this.entityData.get(DATA_JOB_RADIUS);
+    }
+
+    public Optional<BlockPos> jobChest() {
+        return this.entityData.get(DATA_JOB_CHEST);
+    }
+
+    public Optional<BlockPos> jobAnchor() {
+        return this.entityData.get(DATA_JOB_ANCHOR);
+    }
+
+    public int lessonFlags() {
+        return this.entityData.get(DATA_LESSON);
+    }
+
+    /** Walks towards {@link #moveTarget} with normal physics and collisions. Replay keeps its exact frames instead. */
+    @Override
+    protected void serverAiStep() {
+        super.serverAiStep();
+        Vec3 target = this.moveTarget;
+        if (this.isReplaying() || target == null) {
+            this.zza = 0.0F;
+            this.xxa = 0.0F;
+            this.setJumping(false);
+            return;
+        }
+        double dx = target.x - this.getX();
+        double dz = target.z - this.getZ();
+        double dy = target.y - this.getY();
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        if (horizontal > 0.05D) {
+            float yaw = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90.0F;
+            float turned = Mth.approachDegrees(this.getYRot(), yaw, 40.0F);
+            this.setYRot(turned);
+            this.setYBodyRot(turned);
+            this.setYHeadRot(turned);
+            this.setXRot(0.0F);
+        }
+        this.setSpeed((float) (this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.3D));
+        this.xxa = 0.0F;
+        this.zza = horizontal > 0.05D ? (float) Math.min(1.0D, horizontal * 3.0D) : 0.0F;
+        this.setJumping(dy > 0.5D && this.onGround() && (this.horizontalCollision || horizontal < 1.3D));
     }
 
     /** Removes this body without drops and without touching the registry. */
@@ -269,6 +453,10 @@ public class EchoEntity extends MemoryAvatar {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
+        if (this.job.mode() == EchoJob.Mode.MINE || this.job.mode() == EchoJob.Mode.BUILD) {
+            serverPlayer.sendSystemMessage(this.job.status().component(), true);
+            return InteractionResult.SUCCESS_SERVER;
+        }
         serverPlayer.sendSystemMessage(Component.translatable(
                 this.isReplaying() ? "mnemolith.echo.status_replaying" : "mnemolith.echo.status_idle",
                 Math.round(this.getHealth()),
@@ -281,7 +469,10 @@ public class EchoEntity extends MemoryAvatar {
         int id = this.getId();
         player.openMenu(
                 new SimpleMenuProvider((containerId, playerInventory, p) -> new EchoMenu(containerId, playerInventory, this.inventory, this), this.getDisplayName()),
-                buffer -> buffer.writeVarInt(id));
+                buffer -> {
+                    buffer.writeVarInt(id);
+                    EchoLesson.STREAM_CODEC.encode(buffer, this.job.lesson());
+                });
     }
 
     // ---- damage and death ----
@@ -342,7 +533,8 @@ public class EchoEntity extends MemoryAvatar {
     @Override
     public boolean isCurrentlyGlowing() {
         if (this.level().isClientSide() && EchoView.thermal()) {
-            return true;
+            // Stage 2: every echo gets a filled silhouette; the vanilla edge outline only marks the targeted one.
+            return EchoView.isTarget(this.getId());
         }
         return super.isCurrentlyGlowing();
     }
@@ -381,6 +573,7 @@ public class EchoEntity extends MemoryAvatar {
             output.store("echo_recording", EchoRecording.CODEC, this.recording);
         }
         output.putInt("echo_replay_tick", this.replayTick);
+        output.store("echo_job", EchoJob.Saved.CODEC, this.job.save());
     }
 
     @Override
@@ -400,6 +593,7 @@ public class EchoEntity extends MemoryAvatar {
         this.generation = input.getLongOr("echo_generation", 0L);
         this.recording = input.read("echo_recording", EchoRecording.CODEC).orElse(null);
         this.replayTick = input.getIntOr("echo_replay_tick", -1);
+        input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
         if (this.recording != null && this.replayTick >= 0 && this.replayTick < this.recording.length()) {
             this.nextAction = 0;
             List<EchoAction> actions = this.recording.actions();
@@ -407,9 +601,11 @@ public class EchoEntity extends MemoryAvatar {
                 this.nextAction++;
             }
             this.beginReplayPhysics();
+            this.job.beginReplay();
         } else {
             this.replayTick = -1;
         }
+        this.syncJob();
     }
 
     public void applyConfiguredHealth() {
