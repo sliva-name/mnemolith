@@ -1,4 +1,6 @@
-package com.mnemolith.command;
+package com.mnemolith.command.qa;
+
+import static com.mnemolith.command.qa.QaSupport.compose;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.ModBlocks;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
@@ -38,7 +41,7 @@ public final class SmokeCommand {
         LoadedChunkMemory.clear(chunk);
         BlockPos quiet = pos.offset(16, 0, 0);
         LoadedChunkMemory.clear(level.getChunkAt(quiet));
-        SmokeCommand.composePair(level, quiet, player, ImprintTag.BUILD, ImprintTag.BUILD);
+        compose(level, quiet, player, ImprintTag.BUILD, ImprintTag.BUILD);
 
         LivingEntity subject = EntityTypes.CHICKEN.spawn(level, pos.above(), EntitySpawnReason.EVENT);
         if (subject != null) {
@@ -53,35 +56,31 @@ public final class SmokeCommand {
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         int pressure = memory == null ? 0 : memory.cachedPressure();
 
-        level.setBlock(pos, ModBlocks.MUTE_STONE.get().defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(pos, ModBlocks.MUTE_STONE.get().defaultBlockState(), Block.UPDATE_ALL);
         boolean muted = LoadedChunkMemory.isMuted(level, pos);
         boolean writeBlocked = !ImprintWriter.tryWrite(level, pos, ImprintTag.BUILD, null, false);
-        level.setBlock(pos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
 
         ImprintWriter.extract(level, pos, player);
 
-        int compose = 0;
-        if (SmokeCommand.composePair(level, pos, player, ImprintTag.DEATH, ImprintTag.SILENCE)) {
-            compose++;
+        int composed = 0;
+        if (compose(level, pos, player, ImprintTag.DEATH, ImprintTag.SILENCE).success()) {
+            composed++;
         }
-        if (SmokeCommand.composePair(level, pos, player, ImprintTag.FIRE, ImprintTag.BUILD)) {
-            compose++;
+        if (compose(level, pos, player, ImprintTag.FIRE, ImprintTag.BUILD).success()) {
+            composed++;
         }
-        if (SmokeCommand.composePair(level, pos, player, ImprintTag.FALL, ImprintTag.PLAYER)) {
-            compose++;
+        if (compose(level, pos, player, ImprintTag.FALL, ImprintTag.PLAYER).success()) {
+            composed++;
         }
-        SmokeCommand.composePair(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
+        compose(level, pos, player, ImprintTag.BUILD, ImprintTag.BUILD);
 
         PressureBand smokeBand = MemoryPressure.band(pressure);
-        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} band={} muted={} writeBlocked={} compose={}", pressure, smokeBand, muted, writeBlocked, compose);
-        int reported = compose;
+        Mnemolith.LOGGER.info("Mnemolith smoke pressure={} band={} muted={} writeBlocked={} compose={}", pressure, smokeBand, muted, writeBlocked, composed);
+        int reported = composed;
         boolean reportedMuted = muted;
         boolean reportedBlocked = writeBlocked;
         source.sendSuccess(() -> Component.translatable("mnemolith.command.smoke", pressure, reportedMuted, reportedBlocked, reported), true);
-        return compose;
-    }
-
-    static boolean composePair(ServerLevel level, BlockPos pos, ServerPlayer player, ImprintTag first, ImprintTag second) {
-        return SlipPair.compose(level, pos, player, first, second).success();
+        return composed;
     }
 }

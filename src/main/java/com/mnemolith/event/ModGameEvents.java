@@ -3,11 +3,11 @@ package com.mnemolith.event;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.command.InspectCommand;
 import com.mnemolith.command.MobCommands;
-import com.mnemolith.command.MultiplayerSmoke;
-import com.mnemolith.command.PerfCommand;
-import com.mnemolith.command.SmokeCommand;
 import com.mnemolith.command.WorldgenCommand;
 import com.mnemolith.command.qa.MnemolithQa;
+import com.mnemolith.command.qa.MultiplayerSmoke;
+import com.mnemolith.command.qa.PerfCommand;
+import com.mnemolith.command.qa.SmokeCommand;
 import com.mnemolith.config.ServerConfig;
 
 import net.minecraft.commands.Commands;

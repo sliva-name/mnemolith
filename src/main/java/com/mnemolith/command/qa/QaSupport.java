@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.composition.ComposeResult;
+import com.mnemolith.content.composition.Composition;
 import com.mnemolith.data.ImprintSlips;
 import com.mnemolith.entity.ai.PathLedger;
 import com.mnemolith.entity.mob.MomentReplicant;
@@ -18,13 +20,15 @@ import com.mnemolith.world.LoadedChunkMemory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.common.util.FakePlayer;
 
-/** Shared chunk, player, and replicant helpers for the checklist. */
+/** Shared chunk, player, and replicant helpers for the checklist, smoke, mpsmoke, and perf commands. */
 public final class QaSupport {
     private QaSupport() {}
 
@@ -44,8 +48,12 @@ public final class QaSupport {
         return ImprintWriter.tryWrite(level, pos, tag, null, false) && hasTag(level, pos, tag);
     }
 
-    static ComposeResult compose(ServerLevel level, BlockPos pos, FakePlayer player, ImprintTag first, ImprintTag second) {
-        return com.mnemolith.command.SlipPair.compose(level, pos, player, first, second);
+    /** Two slips in a temporary container, composed as if at {@code pos}. */
+    static ComposeResult compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, ImprintTag first, ImprintTag second) {
+        SimpleContainer container = new SimpleContainer(3);
+        container.setItem(0, ImprintSlips.of(first, pos));
+        container.setItem(1, ImprintSlips.of(second, pos));
+        return Composition.compose(level, pos, player, container);
     }
 
     static boolean resourceContains(ServerLevel level, String path, String needle) {
@@ -66,7 +74,7 @@ public final class QaSupport {
         }
     }
 
-    static boolean holdsTag(FakePlayer player, ImprintTag tag) {
+    static boolean holdsTag(ServerPlayer player, ImprintTag tag) {
         return ImprintSlips.holdsTag(player, tag);
     }
 
@@ -83,7 +91,7 @@ public final class QaSupport {
         LoadedChunkMemory.clear(level.getChunkAt(pos));
     }
 
-    static void reset(FakePlayer player) {
+    static void reset(ServerPlayer player) {
         player.getInventory().clearContent();
         player.setData(ModAttachments.DISCOVERY.get(), new Discovery());
     }

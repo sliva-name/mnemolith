@@ -1,4 +1,6 @@
-package com.mnemolith.command;
+package com.mnemolith.command.qa;
+
+import static com.mnemolith.command.qa.QaSupport.*;
 
 import java.util.UUID;
 import com.mojang.authlib.GameProfile;
@@ -12,9 +14,9 @@ import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.entity.mob.Archivist;
-import com.mnemolith.entity.mob.MomentReplicant;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.network.PressureSync;
@@ -30,6 +32,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import com.mojang.brigadier.context.CommandContext;
@@ -76,12 +79,12 @@ public final class MultiplayerSmoke {
         discoveryB = second.getData(ModAttachments.DISCOVERY.get());
         discoveryIsolated = discoveryIsolated && discoveryA.hasFormula(CompositionFormula.UNRECORDED.ordinal()) && discoveryB.formulas() == 0;
 
-        level.setBlock(pos.above(), ModBlocks.MUTE_STONE.get().defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(pos.above(), ModBlocks.MUTE_STONE.get().defaultBlockState(), Block.UPDATE_ALL);
         boolean muteBlocks = LoadedChunkMemory.isMuted(level, pos)
                 && !ImprintWriter.tryWrite(level, pos, ImprintTag.BUILD, second.getUUID(), false);
-        level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
 
-        LoadedChunkMemory.clear(level.getChunkAt(pos));
+        clear(level, pos);
         discardReplicants(level, pos);
         ImprintWriter.tryWrite(level, pos, ImprintTag.DEATH, null, false);
         ImprintWriter.tryWrite(level, pos, ImprintTag.EXPLOSION, null, false);
@@ -90,7 +93,7 @@ public final class MultiplayerSmoke {
         ImprintWriter.tryWrite(level, pos, ImprintTag.SILENCE, null, false);
         ImprintWriter.tryWrite(level, pos, ImprintTag.PLAYER, null, false);
         int spawned = replicantCount(level, pos);
-        SmokeCommand.composePair(level, pos, first, ImprintTag.BUILD, ImprintTag.BUILD);
+        compose(level, pos, first, ImprintTag.BUILD, ImprintTag.BUILD);
         int afterFail = replicantCount(level, pos);
         MobSpawns.trySpawnReplicant(level, pos.above());
         int afterAsk = replicantCount(level, pos);
@@ -127,29 +130,7 @@ public final class MultiplayerSmoke {
                 reportedMute,
                 reportedReplicants,
                 reportedGuarded), true);
-        int passed = 0;
-        if (sameBand) {
-            passed++;
-        }
-        if (discoveryIsolated) {
-            passed++;
-        }
-        if (steal) {
-            passed++;
-        }
-        if (reel) {
-            passed++;
-        }
-        if (muteBlocks) {
-            passed++;
-        }
-        if (replicants) {
-            passed++;
-        }
-        if (guarded) {
-            passed++;
-        }
-        return passed;
+        return count(sameBand, discoveryIsolated, steal, reel, muteBlocks, replicants, guarded);
     }
 
     private static FakePlayer fake(ServerLevel level, String name, UUID id) {
@@ -157,9 +138,8 @@ public final class MultiplayerSmoke {
     }
 
     private static void resetPlayer(ServerPlayer player) {
-        player.getInventory().clearContent();
+        reset(player);
         player.containerMenu = player.inventoryMenu;
-        player.setData(ModAttachments.DISCOVERY.get(), new Discovery());
     }
 
     private static boolean archivistPrefersContainer(ServerLevel level, ServerPlayer player, BlockPos reelPos) {
@@ -177,7 +157,7 @@ public final class MultiplayerSmoke {
         boolean stole = archivist.snatchMenu(player, menu, true);
         boolean chestTaken = reel.getItem(0).isEmpty();
         boolean pocketKept = holdsTag(player, ImprintTag.DEATH);
-        level.setBlock(reelPos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(reelPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         return stole && chestTaken && pocketKept;
     }
 
@@ -194,11 +174,11 @@ public final class MultiplayerSmoke {
         right.setItem(1, ImprintSlips.of(ImprintTag.BUILD, rightPos));
         CompositionMenu menu = new CompositionMenu(2, first.getInventory(), left);
         first.containerMenu = menu;
-        boolean composed = menu.clickMenuButton(first, com.mnemolith.imprint.ImprintConstants.COMPOSE_BUTTON_ID);
+        boolean composed = menu.clickMenuButton(first, ImprintConstants.COMPOSE_BUTTON_ID);
         boolean otherUntouched = filled(right) == 2 && left.getItem(0).isEmpty() && left.getItem(1).isEmpty();
         second.containerMenu = second.inventoryMenu;
-        level.setBlock(leftPos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
-        level.setBlock(rightPos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(leftPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(rightPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         return composed && otherUntouched;
     }
 
@@ -212,17 +192,17 @@ public final class MultiplayerSmoke {
         reel.setItem(1, ImprintSlips.of(ImprintTag.BUILD, reelPos));
         CompositionMenu menu = new CompositionMenu(3, player.getInventory(), reel);
         player.containerMenu = player.inventoryMenu;
-        boolean closed = !menu.clickMenuButton(player, com.mnemolith.imprint.ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 2;
+        boolean closed = !menu.clickMenuButton(player, ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 2;
         player.containerMenu = menu;
-        boolean open = menu.clickMenuButton(player, com.mnemolith.imprint.ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 1;
+        boolean open = menu.clickMenuButton(player, ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 1;
         player.containerMenu = player.inventoryMenu;
-        boolean afterClose = !menu.clickMenuButton(player, com.mnemolith.imprint.ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 1;
-        level.setBlock(reelPos, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        boolean afterClose = !menu.clickMenuButton(player, ImprintConstants.COMPOSE_BUTTON_ID) && filled(reel) == 1;
+        level.setBlock(reelPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         return closed && open && afterClose;
     }
 
     private static CompositionReelBlockEntity placeReel(ServerLevel level, BlockPos pos) {
-        level.setBlock(pos, ModBlocks.COMPOSITION_REEL.get().defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        level.setBlock(pos, ModBlocks.COMPOSITION_REEL.get().defaultBlockState(), Block.UPDATE_ALL);
         BlockEntity entity = level.getBlockEntity(pos);
         if (entity instanceof CompositionReelBlockEntity reel) {
             return reel;
@@ -238,23 +218,5 @@ public final class MultiplayerSmoke {
             }
         }
         return count;
-    }
-
-    private static boolean holdsTag(ServerPlayer player, ImprintTag tag) {
-        return ImprintSlips.holdsTag(player, tag);
-    }
-
-    private static int replicantCount(ServerLevel level, BlockPos pos) {
-        return replicants(level, pos).size();
-    }
-
-    private static void discardReplicants(ServerLevel level, BlockPos pos) {
-        for (MomentReplicant replicant : replicants(level, pos)) {
-            replicant.discard();
-        }
-    }
-
-    private static java.util.List<MomentReplicant> replicants(ServerLevel level, BlockPos pos) {
-        return MomentReplicant.inColumn(level, pos);
     }
 }
