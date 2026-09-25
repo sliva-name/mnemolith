@@ -54,6 +54,9 @@ public class Archivist extends MemoryMob {
     private @Nullable ServerPlayer interest;
     private @Nullable ItemEntity dropped;
     private ItemStack carried = ItemStack.EMPTY;
+    // Same-tick cache for nearestBait(): BaitGoal can ask twice in one AI step (continue check, then start check).
+    private int baitTick = Integer.MIN_VALUE;
+    private @Nullable ItemEntity bait;
 
     public Archivist(EntityType<? extends Archivist> type, Level level) {
         super(type, level);
@@ -244,6 +247,14 @@ public class Archivist extends MemoryMob {
     }
 
     public @Nullable ItemEntity nearestBait() {
+        if (this.baitTick != this.tickCount) {
+            this.baitTick = this.tickCount;
+            this.bait = this.findNearestBait();
+        }
+        return this.bait;
+    }
+
+    private @Nullable ItemEntity findNearestBait() {
         AABB box = this.getBoundingBox().inflate(MobTuning.BAIT_RANGE);
         ItemEntity best = null;
         double bestDist = Double.MAX_VALUE;

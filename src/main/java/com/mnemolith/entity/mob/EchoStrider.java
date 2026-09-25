@@ -47,6 +47,12 @@ public class EchoStrider extends MemoryMob {
     private int chargeCooldown;
     private boolean forceCharge;
     private int phaseTicks;
+    // Same-tick sensor caches: goals ask shouldRetreat()/lensFocus() several times per AI step, and nothing
+    // they depend on (position, muted ring, nearby players) changes inside one step. Keyed on tickCount.
+    private int retreatTick = Integer.MIN_VALUE;
+    private boolean retreat;
+    private int lensTick = Integer.MIN_VALUE;
+    private @Nullable Player lens;
 
     public EchoStrider(EntityType<? extends EchoStrider> type, Level level) {
         super(type, level);
@@ -128,10 +134,11 @@ public class EchoStrider extends MemoryMob {
         if (!(this.level() instanceof ServerLevel level)) {
             return false;
         }
-        if (LoadedChunkMemory.isMuted(level, this.blockPosition())) {
-            return true;
+        if (this.retreatTick != this.tickCount) {
+            this.retreatTick = this.tickCount;
+            this.retreat = LoadedChunkMemory.isMuted(level, this.blockPosition()) || this.lensFocus() != null;
         }
-        return this.lensFocus(level) != null;
+        return this.retreat;
     }
 
     public boolean wantsCharge() {
@@ -152,7 +159,19 @@ public class EchoStrider extends MemoryMob {
         return MemoryPressure.band(pressure).ordinal() >= PressureBand.OVERLOADED.ordinal();
     }
 
-    public @Nullable Player lensFocus(ServerLevel level) {
+    /** A sneaking lens holder within flee range, or null. Cached for the current tick. */
+    public @Nullable Player lensFocus() {
+        if (!(this.level() instanceof ServerLevel level)) {
+            return null;
+        }
+        if (this.lensTick != this.tickCount) {
+            this.lensTick = this.tickCount;
+            this.lens = this.findLensFocus(level);
+        }
+        return this.lens;
+    }
+
+    private @Nullable Player findLensFocus(ServerLevel level) {
         AABB box = this.getBoundingBox().inflate(MobTuning.LENS_FLEE_RANGE);
         for (Player player : level.getEntitiesOfClass(Player.class, box, ChronicleLensItem::isHeld)) {
             if (player.isShiftKeyDown()) {

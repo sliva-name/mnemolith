@@ -34,7 +34,7 @@ public final class RetreatGoal extends Goal {
     @Override
     public void tick() {
         this.strider.setAction(MobActions.FLEE);
-        Player focus = this.strider.lensFocus(getServerLevel(this.strider));
+        Player focus = this.strider.lensFocus();
         Vec3 away;
         if (focus != null) {
             away = this.strider.position().subtract(focus.position());
