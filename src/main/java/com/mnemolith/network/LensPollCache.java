@@ -3,6 +3,7 @@ package com.mnemolith.network;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +15,8 @@ import net.minecraft.world.level.Level;
  * A matching stamp skips the chunk walk. Logout and a dimension change drop the stamp.
  */
 final class LensPollCache {
-    private static int memoryEpoch;
+    /** Bumped from the server thread and from worldgen threads (mute pockets), so it must be atomic. */
+    private static final AtomicInteger MEMORY_EPOCH = new AtomicInteger();
     private static int perfEpoch = -1;
     private static int perfChunkX;
     private static int perfChunkZ;
@@ -24,11 +26,11 @@ final class LensPollCache {
     private LensPollCache() {}
 
     static void markDirty() {
-        memoryEpoch++;
+        MEMORY_EPOCH.incrementAndGet();
     }
 
     static int epoch() {
-        return memoryEpoch;
+        return MEMORY_EPOCH.get();
     }
 
     static void forget(UUID player) {
@@ -44,14 +46,14 @@ final class LensPollCache {
     }
 
     static boolean skipPerf(ServerLevel level, ChunkPos origin) {
-        return perfEpoch == memoryEpoch
+        return perfEpoch == MEMORY_EPOCH.get()
                 && perfChunkX == origin.x()
                 && perfChunkZ == origin.z()
                 && level.dimension().equals(perfDimension);
     }
 
     static void rememberPerf(ServerLevel level, ChunkPos origin) {
-        perfEpoch = memoryEpoch;
+        perfEpoch = MEMORY_EPOCH.get();
         perfChunkX = origin.x();
         perfChunkZ = origin.z();
         perfDimension = level.dimension();
