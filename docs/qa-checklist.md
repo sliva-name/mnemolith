@@ -51,6 +51,32 @@ Mnemolith echoqa spawn=true emptyInventory=true replayFakePlayer=true giveItems=
 
 `/mnemolith qa` stays at 18 of 18 and does not include these checks.
 
+## Echo job QA (stage 2)
+
+`/mnemolith jobqa` is a gamemaster command for the stage 2 jobs. Like `echoqa`, it uses a fake-player stand-in as the owner, builds its own test areas next to the command source, ticks the echo through the level's own entity tick (so movement has real collisions), and cleans up. The chat message is `Echo job check <passed> of 12`. Each check also logs a detail line with counts:
+
+```
+mining ticks=350 status=nothing_left mined=6 oresLeft=0 rawIron=5(echo 5, chest 0) coal=1 cobble=8 tunnelled=8 pickDamage=14
+buildExact ticks=166 rotation=CLOCKWISE_90 status="Done: 15/15" wrong=0 stairsFacing=south logAxis=z echoItemsLeft=5
+```
+
+| Flag | What is proved |
+| --- | --- |
+| `mineLesson` | A synthetic recording that breaks 3 iron ore and 1 coal ore gives a mining lesson with both types, most common first |
+| `mining` | Radius 8. In a 21×21 stone box with buried iron ores (one enclosed) and a coal ore, the echo pathfinds, tunnels only through stone, mines every taught ore in range with its own pickaxe, and the drops are in the echo or the chest. The pickaxe took damage |
+| `deposit` | With a nearly full inventory, the echo walks to the linked chest and deposits everything except the pickaxe and food. The stick total before and after is equal (33) |
+| `safety` | An ore next to water and one next to lava stay, no fluid is opened, the rim that holds the echo stays, a chest in the box stays, and untaught copper and an out-of-radius ore stay |
+| `minePersist` | Mid-job, the echo is saved to NBT and loaded as a new entity. It resumes in MINE mode and finishes |
+| `noTool` | Without a pickaxe, the job stops with `no_tool` / "Stopped: no pickaxe" |
+| `buildLesson` | A synthetic recording that places 15 blocks (stone bricks, planks, logs, stairs, glass), one placed then broken, gives a 15-entry blueprint with the right facing |
+| `buildExact` | Placed with a 90° rotation and enough blocks, every position matches the rotated blueprint (stairs facing, log axis), and the status is "Done: 15/15" |
+| `buildMissing` | With 2 glass and 1 stair short, the status lists "Missing: 2× Glass, 1× Oak Stairs" and those 3 positions stay empty |
+| `buildResume` | After an NBT reload, the missing blocks are added to the linked chest. The echo fetches them, finishes the build exactly, and leaves the rest in the chest |
+| `clientSummary` | The recording's network form is a small summary (241 bytes vs 549 for the full 25-frame recording), and a creative-style client round trip restores the full recording |
+| `strangerRefused` | Another player cannot stop the echo, unlink its chest, or open it |
+
+The last line of `mnemolith jobqa` must be `Echo job check: 12 of 12`. `mnemolith qa` stays at 18 of 18 and `mnemolith echoqa` at 11 of 11.
+
 ## GUI contrast
 
 The archival panel chrome is ink `#1C244A`. Catalog, lens, and reel glyphs are bone or a light accent. The drop shadow is drawn one pixel down-right by `GuiArt.label` and `GuiArt.paragraph`. The font's own shadow flag stays off.
