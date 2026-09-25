@@ -17,8 +17,12 @@ public final class ImprintSlips {
     private ImprintSlips() {}
 
     public static ItemStack of(ImprintTag tag, BlockPos pos) {
+        return of(new Imprint(tag, ImprintWriter.intensityFor(tag), pos, Optional.empty(), Imprint.contextHash(tag, pos, 0L), 0L));
+    }
+
+    /** A slip carrying exactly this imprint. */
+    public static ItemStack of(Imprint imprint) {
         ItemStack stack = new ItemStack(ModItems.IMPRINT_SLIP.get());
-        Imprint imprint = new Imprint(tag, ImprintWriter.intensityFor(tag), pos, Optional.empty(), Imprint.contextHash(tag, pos, 0L), 0L);
         stack.set(ModDataComponents.IMPRINT_CAST.get(), ImprintCast.from(imprint));
         return stack;
     }

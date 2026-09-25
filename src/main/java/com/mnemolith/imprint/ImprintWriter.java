@@ -9,9 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
-import com.mnemolith.data.ImprintCast;
-import com.mnemolith.data.ModDataComponents;
-import com.mnemolith.content.ModItems;
+import com.mnemolith.data.ImprintSlips;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
@@ -21,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -32,9 +29,7 @@ public final class ImprintWriter {
     private ImprintWriter() {}
 
     public static boolean tryWrite(ServerLevel level, BlockPos pos, ImprintTag tag, @Nullable UUID player, boolean throttled) {
-        if (throttled && !acceptsThrottled(level, pos)) {
-            return false;
-        }
+        // write() runs the same mute and debounce checks as acceptsThrottled(), so no separate pre-check here.
         return write(level, pos, List.of(tag), player, throttled);
     }
 
@@ -64,15 +59,10 @@ public final class ImprintWriter {
             return false;
         }
         ChunkMemory memory = existing != null ? existing : LoadedChunkMemory.getOrCreate(chunk);
-        boolean wrote = false;
         for (ImprintTag tag : tags) {
             int intensity = intensityFor(tag);
             Imprint imprint = new Imprint(tag, intensity, pos.immutable(), Optional.ofNullable(player), Imprint.contextHash(tag, pos, now), now);
             memory.addImprint(imprint, CommonConfig.MAX_IMPRINTS_PER_CHUNK.get());
-            wrote = true;
-        }
-        if (!wrote) {
-            return false;
         }
         if (throttled) {
             memory.markWritten(now);
@@ -114,23 +104,11 @@ public final class ImprintWriter {
         if (memory == null || memory.imprintCount() == 0) {
             return memory != null ? thisOrNeighbors(level, pos, player, memory) : Optional.empty();
         }
-        Optional<Imprint> removed = memory.removeHighest();
+        Optional<Imprint> removed = takeHighest(chunk, memory);
         if (removed.isEmpty()) {
             return Optional.empty();
         }
-        memory.setArchival(true);
-        MemoryPressure.recompute(chunk, memory);
-        Imprint imprint = removed.get();
-        if (player != null) {
-            ItemStack slip = new ItemStack(ModItems.IMPRINT_SLIP.get());
-            slip.set(ModDataComponents.IMPRINT_CAST.get(), ImprintCast.from(imprint));
-            if (!player.getInventory().add(slip)) {
-                player.drop(slip, false);
-            }
-            DiscoveryNotes.noteTag(player, imprint.tag());
-        }
-        level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
-        MemoryFx.extract(level, pos);
+        giveSlip(level, pos, player, removed.get());
         return removed;
     }
 
@@ -154,12 +132,10 @@ public final class ImprintWriter {
                 if (memory == null || memory.imprintCount() == 0) {
                     continue;
                 }
-                Optional<Imprint> removed = memory.removeHighest();
+                Optional<Imprint> removed = takeHighest(chunk, memory);
                 if (removed.isEmpty()) {
                     continue;
                 }
-                memory.setArchival(true);
-                MemoryPressure.recompute(chunk, memory);
                 giveSlip(level, neighbor, player, removed.get());
                 Mnemolith.LOGGER.info("Mnemolith extract reach at {},{},{}", neighbor.getX(), neighbor.getY(), neighbor.getZ());
                 return removed;
@@ -168,13 +144,25 @@ public final class ImprintWriter {
         return Optional.empty();
     }
 
-    private static void giveSlip(ServerLevel level, BlockPos pos, ServerPlayer player, Imprint imprint) {
-        ItemStack slip = new ItemStack(ModItems.IMPRINT_SLIP.get());
-        slip.set(ModDataComponents.IMPRINT_CAST.get(), ImprintCast.from(imprint));
-        if (!player.getInventory().add(slip)) {
-            player.drop(slip, false);
+    /** Removes the strongest imprint and marks the chunk archival. Empty when nothing could be removed. */
+    private static Optional<Imprint> takeHighest(LevelChunk chunk, ChunkMemory memory) {
+        Optional<Imprint> removed = memory.removeHighest();
+        if (removed.isPresent()) {
+            memory.setArchival(true);
+            MemoryPressure.recompute(chunk, memory);
         }
-        DiscoveryNotes.noteTag(player, imprint.tag());
+        return removed;
+    }
+
+    /** Hands the slip to the player (if any), notes the tag, then plays the extract sound and particles. */
+    private static void giveSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
+        if (player != null) {
+            ItemStack slip = ImprintSlips.of(imprint);
+            if (!player.getInventory().add(slip)) {
+                player.drop(slip, false);
+            }
+            DiscoveryNotes.noteTag(player, imprint.tag());
+        }
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         MemoryFx.extract(level, pos);
     }
@@ -206,9 +194,5 @@ public final class ImprintWriter {
         List<ImprintTag> withSilence = new ArrayList<>(tags);
         withSilence.add(ImprintTag.SILENCE);
         return withSilence;
-    }
-
-    public static @Nullable UUID playerId(@Nullable Player player) {
-        return player == null ? null : player.getUUID();
     }
 }
