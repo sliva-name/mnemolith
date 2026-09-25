@@ -1,11 +1,8 @@
 package com.mnemolith.content.block;
 
-import org.jspecify.annotations.Nullable;
-
 import com.mnemolith.content.ModBlockEntities;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.ImprintConstants;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;

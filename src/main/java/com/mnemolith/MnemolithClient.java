@@ -10,7 +10,7 @@ import com.mnemolith.client.particle.ClientParticles;
 import com.mnemolith.client.render.ClientRender;
 import com.mnemolith.client.render.ModEntityRenderers;
 import com.mnemolith.client.render.PressureClient;
-import com.mnemolith.config.ClientConfig;
+import com.mnemolith.client.config.ClientConfig;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;

@@ -23,20 +23,23 @@ Later content, not built yet:
 | `com.mnemolith.pressure` | both | `MemoryPressure` and `PressureBand` |
 | `com.mnemolith.entity` | both | Effects, entity types, attributes, spawn gates, `MemoryMob` |
 | `com.mnemolith.entity.mob` | both | Echo strider, archivist, moment replicant |
-| `com.mnemolith.entity.ai` | both | Path ledger and the replicant's action window |
+| `com.mnemolith.entity.ai` | both | Path ledger, the replicant's action window, and the three mobs' goals |
 | `com.mnemolith.client.model` | physical client | Placeholder models |
 | `com.mnemolith.client.render` | physical client | Entity renderers. Registered from `MnemolithClient` |
 | `com.mnemolith.world` | both | `LoadedChunkMemory` and `ChunkState` |
 | `com.mnemolith.worldgen` | both | Vein and mute-pocket features, observatory structure type, processor |
 | `com.mnemolith.worldgen.feature` | both | `ArchivalVeinFeature`, `MutePocketFeature` |
 | `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
-| `com.mnemolith.event` | both | Vanilla listeners and `/mnemolith` |
+| `com.mnemolith.event` | both | Vanilla listeners. `/mnemolith` is registered here and implemented in `command` |
+| `com.mnemolith.command` | both | `/mnemolith` subcommands. Not loaded as client screens |
+| `com.mnemolith.command.qa` | both | `/mnemolith qa` checklist |
 | `com.mnemolith.network` | both | Lens request, pressure snapshot, and the catalog-open payload. Client handlers are registered from `MnemolithClient` |
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
 | `com.mnemolith.data` | both | Data component register |
 | `com.mnemolith.audio` | both | Sound event register |
 | `com.mnemolith.particle` | both | Particle types and edge-triggered `MemoryFx` bursts. Providers stay in `com.mnemolith.client.particle` |
-| `com.mnemolith.config` | mixed | Common and server specs are common types. `ClientConfig` is referenced only from the client entry |
+| `com.mnemolith.config` | both | Common and server specs. Client values live in `com.mnemolith.client.config` |
+| `com.mnemolith.client.config` | physical client | `ClientConfig`. Registered from `MnemolithClient` |
 | `com.mnemolith.client.*` | physical client | Render, particles, audio playback, screens |
 | `com.mnemolith.server` | dedicated server | Dedicated-server entry |
 

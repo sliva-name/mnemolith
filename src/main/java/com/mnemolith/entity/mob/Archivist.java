@@ -1,9 +1,10 @@
 package com.mnemolith.entity.mob;
 
-import java.util.EnumSet;
-
+import com.mnemolith.entity.ai.StunGoal;
+import com.mnemolith.entity.ai.BaitGoal;
+import com.mnemolith.entity.ai.FleeGoal;
+import com.mnemolith.entity.ai.StalkGoal;
 import org.jspecify.annotations.Nullable;
-
 import com.mnemolith.Mnemolith;
 import com.mnemolith.audio.ModSounds;
 import com.mnemolith.content.ModItems;
@@ -13,11 +14,9 @@ import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.entity.MemoryMob;
 import com.mnemolith.entity.MobActions;
 import com.mnemolith.entity.MobTuning;
-import com.mnemolith.entity.ai.PathLedger;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.particle.ModParticles;
 import com.mnemolith.world.LoadedChunkMemory;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -34,7 +33,6 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,15 +45,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 /** Stalks an open container or a held slip, takes one, then runs for a louder chunk. */
 public class Archivist extends MemoryMob {
-    private int stealCooldown;
-    private int fleeTicks;
-    private int stunTicks;
-    private @Nullable ServerPlayer interest;
-    private @Nullable ItemEntity dropped;
+    public int stealCooldown;
+    public int fleeTicks;
+    public int stunTicks;
+    public @Nullable ServerPlayer interest;
+    public @Nullable ItemEntity dropped;
     private ItemStack carried = ItemStack.EMPTY;
 
     public Archivist(EntityType<? extends Archivist> type, Level level) {
@@ -147,7 +144,7 @@ public class Archivist extends MemoryMob {
         return true;
     }
 
-    private void finishSteal(ServerLevel level, @Nullable ServerPlayer player, ItemStack stolen) {
+    public void finishSteal(ServerLevel level, @Nullable ServerPlayer player, ItemStack stolen) {
         this.carried = stolen;
         this.stealCooldown = MobTuning.stealCooldown();
         this.fleeTicks = 80;
@@ -214,7 +211,7 @@ public class Archivist extends MemoryMob {
         return stolen;
     }
 
-    private @Nullable ItemEntity nearestBait() {
+    public @Nullable ItemEntity nearestBait() {
         AABB box = this.getBoundingBox().inflate(MobTuning.BAIT_RANGE);
         ItemEntity best = null;
         double bestDist = Double.MAX_VALUE;
@@ -308,144 +305,4 @@ public class Archivist extends MemoryMob {
         return SoundSource.NEUTRAL;
     }
 
-    private static final class StunGoal extends Goal {
-        private final Archivist archivist;
-
-        private StunGoal(Archivist archivist) {
-            this.archivist = archivist;
-            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
-        }
-
-        @Override
-        public boolean canUse() {
-            return this.archivist.stunTicks > 0;
-        }
-    }
-
-    private static final class BaitGoal extends Goal {
-        private final Archivist archivist;
-        private @Nullable ItemEntity bait;
-
-        private BaitGoal(Archivist archivist) {
-            this.archivist = archivist;
-            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
-        }
-
-        @Override
-        public boolean canUse() {
-            if (!MobTuning.archivistEnabled() || this.archivist.stunTicks > 0 || this.archivist.fleeTicks > 0) {
-                return false;
-            }
-            this.bait = this.archivist.nearestBait();
-            return this.bait != null;
-        }
-
-        @Override
-        public void tick() {
-            ItemEntity bait = this.bait;
-            if (bait == null || !bait.isAlive()) {
-                return;
-            }
-            if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
-                this.archivist.getNavigation().moveTo(bait, 1.1D);
-            }
-            this.archivist.getLookControl().setLookAt(bait, 30.0F, 30.0F);
-            if (this.archivist.distanceToSqr(bait) < 2.0D) {
-                bait.getItem().shrink(1);
-                if (bait.getItem().isEmpty()) {
-                    bait.discard();
-                }
-                this.archivist.stunTicks = 100;
-                this.archivist.interest = null;
-                this.archivist.dropped = null;
-                this.archivist.setAction(MobActions.IDLE);
-                this.archivist.serverLevel().sendParticles(ParticleTypes.HAPPY_VILLAGER, bait.getX(), bait.getY(), bait.getZ(), 6, 0.2D, 0.2D, 0.2D, 0.0D);
-            }
-        }
-    }
-
-    private static final class FleeGoal extends Goal {
-        private final Archivist archivist;
-        private @Nullable BlockPos nest;
-
-        private FleeGoal(Archivist archivist) {
-            this.archivist = archivist;
-            this.setFlags(EnumSet.of(Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
-            if (this.archivist.stunTicks > 0) {
-                return false;
-            }
-            if (this.archivist.fleeTicks > 0) {
-                return true;
-            }
-            return this.archivist.getLastHurtByMob() != null && this.archivist.tickCount - this.archivist.getLastHurtByMobTimestamp() < 40;
-        }
-
-        @Override
-        public void start() {
-            this.archivist.setAction(MobActions.FLEE);
-        }
-
-        @Override
-        public void tick() {
-            this.archivist.setAction(MobActions.FLEE);
-            if (!MobTuning.sensorDue(this.archivist.tickCount, this.nest == null || this.archivist.getNavigation().isDone())) {
-                return;
-            }
-            ServerLevel level = this.archivist.serverLevel();
-            this.nest = PathLedger.higherPressure(level, this.archivist.blockPosition());
-            if (this.nest == null) {
-                Vec3 look = this.archivist.getLookAngle();
-                this.nest = BlockPos.containing(this.archivist.getX() + look.x * 8.0D, this.archivist.getY(), this.archivist.getZ() + look.z * 8.0D);
-            }
-            this.archivist.getNavigation().moveTo(this.nest.getX() + 0.5D, this.nest.getY(), this.nest.getZ() + 0.5D, 1.3D);
-        }
-    }
-
-    private static final class StalkGoal extends Goal {
-        private final Archivist archivist;
-
-        private StalkGoal(Archivist archivist) {
-            this.archivist = archivist;
-            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
-        }
-
-        @Override
-        public boolean canUse() {
-            return MobTuning.archivistEnabled()
-                    && this.archivist.stunTicks <= 0
-                    && this.archivist.fleeTicks <= 0
-                    && (this.archivist.interest != null || this.archivist.dropped != null);
-        }
-
-        @Override
-        public void tick() {
-            if (this.archivist.dropped != null && this.archivist.dropped.isAlive() && ImprintSlips.isSlip(this.archivist.dropped.getItem())) {
-                ItemEntity drop = this.archivist.dropped;
-                if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
-                    this.archivist.getNavigation().moveTo(drop, 1.05D);
-                }
-                if (this.archivist.distanceToSqr(drop) < 2.0D && this.archivist.stealCooldown <= 0) {
-                    ItemStack stolen = drop.getItem().split(1);
-                    if (drop.getItem().isEmpty()) {
-                        drop.discard();
-                    }
-                    this.archivist.finishSteal(this.archivist.serverLevel(), null, stolen);
-                }
-                return;
-            }
-            ServerPlayer player = this.archivist.interest;
-            if (player == null || !player.isAlive()) {
-                this.archivist.interest = null;
-                return;
-            }
-            this.archivist.getLookControl().setLookAt(player, 30.0F, 30.0F);
-            if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
-                this.archivist.getNavigation().moveTo(player, 0.95D);
-            }
-        }
-    }
 }

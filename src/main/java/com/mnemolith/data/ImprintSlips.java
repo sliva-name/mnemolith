@@ -8,6 +8,8 @@ import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /** Builds an imprint slip with a cast. Commands and mob loot share this. */
@@ -23,6 +25,21 @@ public final class ImprintSlips {
 
     public static boolean isSlip(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() == ModItems.IMPRINT_SLIP.get() && stack.get(ModDataComponents.IMPRINT_CAST.get()) != null;
+    }
+
+    public static boolean holdsTag(Player player, ImprintTag tag) {
+        Container inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (!isSlip(stack)) {
+                continue;
+            }
+            ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
+            if (cast != null && cast.tag() == tag) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static int weight(ItemStack stack) {

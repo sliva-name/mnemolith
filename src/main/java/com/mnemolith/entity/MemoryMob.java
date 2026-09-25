@@ -68,7 +68,7 @@ public abstract class MemoryMob extends Monster {
         super.aiStep();
     }
 
-    protected final ServerLevel serverLevel() {
+    public final ServerLevel serverLevel() {
         return (ServerLevel) this.level();
     }
 }

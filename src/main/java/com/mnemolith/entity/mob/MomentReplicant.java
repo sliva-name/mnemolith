@@ -1,12 +1,11 @@
 package com.mnemolith.entity.mob;
 
+import com.mnemolith.entity.ai.BlindGoal;
+import com.mnemolith.entity.ai.ApproachGoal;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-
 import org.jspecify.annotations.Nullable;
-
 import com.mnemolith.Mnemolith;
 import com.mnemolith.audio.ModSounds;
 import com.mnemolith.content.ModItems;
@@ -19,7 +18,6 @@ import com.mnemolith.entity.ai.CopiedActionKind;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.particle.ModParticles;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -35,14 +33,15 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,11 +49,11 @@ import net.minecraft.world.phys.Vec3;
 
 /** Telegraphs, then replays the last whitelisted thing a nearby player did. */
 public class MomentReplicant extends MemoryMob {
-    private int telegraphTicks;
+    public int telegraphTicks;
     private int blindTicks;
     private int executeTicks;
     private ActionMemory.@Nullable CopiedAction pending;
-    private @Nullable ServerPlayer focus;
+    public @Nullable ServerPlayer focus;
 
     public MomentReplicant(EntityType<? extends MomentReplicant> type, Level level) {
         super(type, level);
@@ -268,56 +267,16 @@ public class MomentReplicant extends MemoryMob {
         return ModSounds.REPLICANT_DEATH.get();
     }
 
-    private static final class BlindGoal extends Goal {
-        private final MomentReplicant replicant;
-
-        private BlindGoal(MomentReplicant replicant) {
-            this.replicant = replicant;
-            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
-        }
-
-        @Override
-        public boolean canUse() {
-            return this.replicant.blinded();
-        }
-
-        @Override
-        public void tick() {
-            Player player = this.replicant.level().getNearestPlayer(this.replicant, 12.0D);
-            Vec3 away = player == null ? this.replicant.getLookAngle().scale(-1.0D) : this.replicant.position().subtract(player.position());
-            if (away.lengthSqr() < 0.01D) {
-                away = new Vec3(1.0D, 0.0D, 0.0D);
-            }
-            away = away.normalize();
-            if (MobTuning.sensorDue(this.replicant.tickCount, this.replicant.getNavigation().isDone())) {
-                this.replicant.getNavigation().moveTo(this.replicant.getX() + away.x * 6.0D, this.replicant.getY(), this.replicant.getZ() + away.z * 6.0D, 1.2D);
-            }
-            this.replicant.setAction(MobActions.FLEE);
-        }
+    public static List<MomentReplicant> inColumn(ServerLevel level, BlockPos pos) {
+        ChunkPos chunk = ChunkPos.containing(pos);
+        AABB column = new AABB(
+                chunk.getMinBlockX(),
+                level.getMinY(),
+                chunk.getMinBlockZ(),
+                chunk.getMaxBlockX() + 1.0D,
+                level.getMaxY(),
+                chunk.getMaxBlockZ() + 1.0D);
+        return level.getEntitiesOfClass(MomentReplicant.class, column);
     }
 
-    private static final class ApproachGoal extends Goal {
-        private final MomentReplicant replicant;
-
-        private ApproachGoal(MomentReplicant replicant) {
-            this.replicant = replicant;
-            this.setFlags(EnumSet.of(Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
-            return MobTuning.replicantEnabled() && !this.replicant.blinded() && this.replicant.telegraphTicks <= 0;
-        }
-
-        @Override
-        public void tick() {
-            Player player = this.replicant.focus != null ? this.replicant.focus : this.replicant.level().getNearestPlayer(this.replicant, 16.0D);
-            if (player == null) {
-                return;
-            }
-            if (this.replicant.distanceToSqr(player) > 9.0D && MobTuning.sensorDue(this.replicant.tickCount, this.replicant.getNavigation().isDone())) {
-                this.replicant.getNavigation().moveTo(player, 0.9D);
-            }
-        }
-    }
 }

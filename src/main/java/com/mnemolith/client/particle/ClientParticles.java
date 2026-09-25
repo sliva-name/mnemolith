@@ -1,7 +1,8 @@
 package com.mnemolith.client.particle;
 
 import com.mnemolith.Mnemolith;
-import com.mnemolith.config.ClientConfig;
+import com.mnemolith.client.config.ClientConfig;
+import com.mnemolith.common.MemoryPalette;
 import com.mnemolith.particle.ModParticles;
 
 import net.minecraft.client.Minecraft;
@@ -20,15 +21,15 @@ public final class ClientParticles {
     }
 
     public static void register(RegisterParticleProvidersEvent event) {
-        sprite(event, ModParticles.IMPRINT_SHIMMER.get(), 0x6E7CC4, 0.14F, 18);
-        sprite(event, ModParticles.IMPRINT_EXTRACT.get(), 0xE6DCC8, 0.16F, 16);
-        sprite(event, ModParticles.COMPOSE_SUCCESS.get(), 0x3E8E7E, 0.18F, 20);
-        sprite(event, ModParticles.COMPOSE_FAIL.get(), 0xE07A4A, 0.16F, 16);
-        sprite(event, ModParticles.PRESSURE_WARN.get(), 0xE07A4A, 0.22F, 14);
-        sprite(event, ModParticles.MUTE_HAZE.get(), 0x3D4A8A, 0.28F, 28);
-        sprite(event, ModParticles.STRIDER_TRAIL.get(), 0x7ED0C2, 0.16F, 14);
-        sprite(event, ModParticles.ARCHIVIST_SNATCH.get(), 0xE6DCC8, 0.18F, 16);
-        sprite(event, ModParticles.REPLICANT_TELEGRAPH.get(), 0xC45A6A, 0.18F, 16);
+        sprite(event, ModParticles.IMPRINT_SHIMMER.get(), MemoryPalette.SHIMMER, 0.14F, 18);
+        sprite(event, ModParticles.IMPRINT_EXTRACT.get(), MemoryPalette.BONE, 0.16F, 16);
+        sprite(event, ModParticles.COMPOSE_SUCCESS.get(), MemoryPalette.PIGMENT, 0.18F, 20);
+        sprite(event, ModParticles.COMPOSE_FAIL.get(), MemoryPalette.EMBER, 0.16F, 16);
+        sprite(event, ModParticles.PRESSURE_WARN.get(), MemoryPalette.EMBER, 0.22F, 14);
+        sprite(event, ModParticles.MUTE_HAZE.get(), MemoryPalette.INDIGO, 0.28F, 28);
+        sprite(event, ModParticles.STRIDER_TRAIL.get(), MemoryPalette.TRAIL, 0.16F, 14);
+        sprite(event, ModParticles.ARCHIVIST_SNATCH.get(), MemoryPalette.BONE, 0.18F, 16);
+        sprite(event, ModParticles.REPLICANT_TELEGRAPH.get(), MemoryPalette.TELEGRAPH, 0.18F, 16);
     }
 
     public static void shimmer(LocalPlayer player, ChunkPos chunk) {

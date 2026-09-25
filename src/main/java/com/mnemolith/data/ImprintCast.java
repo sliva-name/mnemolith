@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -17,14 +16,8 @@ import com.mnemolith.imprint.ImprintTag;
 
 /** Portable copy of an imprint, stored on an imprint slip. */
 public record ImprintCast(ImprintTag tag, int intensity, BlockPos origin, Optional<UUID> player, int contextHash, long writtenAt) {
-    public static final Codec<ImprintCast> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ImprintTag.CODEC.fieldOf("tag").forGetter(ImprintCast::tag),
-            Codec.INT.fieldOf("intensity").forGetter(ImprintCast::intensity),
-            BlockPos.CODEC.fieldOf("origin").forGetter(ImprintCast::origin),
-            UUIDUtil.CODEC.optionalFieldOf("player").forGetter(ImprintCast::player),
-            Codec.INT.fieldOf("context_hash").forGetter(ImprintCast::contextHash),
-            Codec.LONG.fieldOf("written_at").forGetter(ImprintCast::writtenAt)
-    ).apply(instance, ImprintCast::new));
+    /** Same fields and names as {@link Imprint#CODEC}, so a saved slip still loads. */
+    public static final Codec<ImprintCast> CODEC = Imprint.CODEC.xmap(ImprintCast::from, ImprintCast::toImprint);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ImprintCast> STREAM_CODEC = StreamCodec.composite(
             ImprintTag.STREAM_CODEC, ImprintCast::tag,
@@ -37,5 +30,9 @@ public record ImprintCast(ImprintTag tag, int intensity, BlockPos origin, Option
 
     public static ImprintCast from(Imprint imprint) {
         return new ImprintCast(imprint.tag(), imprint.intensity(), imprint.origin(), imprint.player(), imprint.contextHash(), imprint.writtenAt());
+    }
+
+    public Imprint toImprint() {
+        return new Imprint(this.tag, this.intensity, this.origin, this.player, this.contextHash, this.writtenAt);
     }
 }

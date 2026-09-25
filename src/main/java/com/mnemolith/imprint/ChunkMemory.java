@@ -249,14 +249,7 @@ public final class ChunkMemory {
     }
 
     public boolean addMuteStone(BlockPos pos) {
-        if (this.muteStones.size() >= ImprintConstants.ABSOLUTE_LIST_CAP) {
-            return false;
-        }
-        if (this.muteStones.contains(pos)) {
-            return false;
-        }
-        this.muteStones.add(pos.immutable());
-        return true;
+        return addMark(this.muteStones, pos);
     }
 
     public boolean removeMuteStone(BlockPos pos) {
@@ -272,14 +265,7 @@ public final class ChunkMemory {
     }
 
     public boolean addResonator(BlockPos pos) {
-        if (this.resonators.size() >= ImprintConstants.ABSOLUTE_LIST_CAP) {
-            return false;
-        }
-        if (this.resonators.contains(pos)) {
-            return false;
-        }
-        this.resonators.add(pos.immutable());
-        return true;
+        return addMark(this.resonators, pos);
     }
 
     public boolean removeResonator(BlockPos pos) {
@@ -295,10 +281,14 @@ public final class ChunkMemory {
     }
 
     public boolean noteStratum(BlockPos pos) {
-        if (this.strata.contains(pos) || this.strata.size() >= ImprintConstants.ABSOLUTE_LIST_CAP) {
+        return addMark(this.strata, pos);
+    }
+
+    private static boolean addMark(List<BlockPos> marks, BlockPos pos) {
+        if (marks.size() >= ImprintConstants.ABSOLUTE_LIST_CAP || marks.contains(pos)) {
             return false;
         }
-        this.strata.add(pos.immutable());
+        marks.add(pos.immutable());
         return true;
     }
 
