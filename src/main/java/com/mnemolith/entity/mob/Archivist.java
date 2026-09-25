@@ -134,7 +134,7 @@ public class Archivist extends MemoryMob {
             if (!stealableFromEcho(stack)) {
                 continue;
             }
-            long score = (long) ImprintSlips.weight(stack) * 1000L + stack.getCount();
+            long score = (long) Math.max(0, ImprintSlips.weight(stack)) * 1000L + stack.getCount();
             if (score > bestScore) {
                 bestScore = score;
                 best = slot;

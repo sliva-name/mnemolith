@@ -68,6 +68,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("jobqa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.JobQa::run))
+                .then(Commands.literal("echo3qa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.Echo3Qa::run))
                 .then(Commands.literal("qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MnemolithQa::run)));

@@ -193,7 +193,7 @@ public class EchoStrider extends MemoryMob {
         return this.level() instanceof ServerLevel level ? this.shadowedEcho(level) : null;
     }
 
-    private int shadowNoticeTick = Integer.MIN_VALUE;
+    private int shadowNoticeTick = -100000;
 
     /**
      * Stage 3: a working echo walks a fresh path over and over, so the strider treats it as a recorded path and trails

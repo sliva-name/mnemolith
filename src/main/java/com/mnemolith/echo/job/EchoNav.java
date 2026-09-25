@@ -216,8 +216,8 @@ public final class EchoNav {
         }
 
         /**
-         * {@code walkAxis} is set for a plain walk to the side: only then may the feet cell be shallow water and the
-         * cells be a doorway whose passage runs along that axis.
+         * Only the feet cell (index 0) may be shallow water. {@code walkAxis} is set for a plain walk to the side: only
+         * then may the cells be a doorway whose passage runs along that axis.
          */
         private void tryMove(Node from, BlockPos feet, BlockPos[] clear, float cost, Direction.@Nullable Axis walkAxis) {
             if (!supported(this.level, feet)) {
@@ -235,7 +235,7 @@ public final class EchoNav {
                 }
                 if (kind == WATER) {
                     // Shallow water only: the feet may wade, the head stays in the air.
-                    if (i != 0 || walkAxis == null) {
+                    if (i != 0) {
                         return;
                     }
                     cost += WATER_COST;

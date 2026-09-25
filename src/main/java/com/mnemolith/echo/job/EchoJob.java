@@ -393,6 +393,17 @@ public final class EchoJob {
         return this.strain;
     }
 
+    /** Misfires so far (skips, wrong blocks, extra breaks, wrong seeds), for QA and the log. */
+    public int misfireCount() {
+        return this.misfires;
+    }
+
+    /** Sets the point a RETURN order walks to (the job start point); used by QA and when an echo is moved by command. */
+    public void setWorkAnchor(@Nullable BlockPos anchor) {
+        this.workAnchor = anchor == null ? null : anchor.immutable();
+        this.dirty = true;
+    }
+
     public int misfiredCount() {
         return this.misfired.size();
     }
