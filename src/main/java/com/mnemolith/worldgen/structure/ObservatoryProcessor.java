@@ -41,7 +41,7 @@ public final class ObservatoryProcessor implements StructureProcessor {
             ChunkAccess chunk = level.getChunk(processedBlockInfo.pos());
             if (LoadedChunkMemory.markObservatory(chunk)) {
                 BlockPos pos = processedBlockInfo.pos();
-                Mnemolith.LOGGER.info("Mnemolith observatory at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+                Mnemolith.LOGGER.debug("Mnemolith observatory at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
             }
         } catch (RuntimeException ignored) {
             // The piece can touch a chunk the region has not opened yet. The reel block still places.

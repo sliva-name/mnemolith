@@ -215,7 +215,7 @@ public final class ImprintEvents {
             return;
         }
         MemoryPressure.recompute(chunk, memory);
-        Mnemolith.LOGGER.info(
+        Mnemolith.LOGGER.debug(
                 "Mnemolith pressure cool chunk {} {} pressure={} instability={}",
                 chunk.getPos().x(),
                 chunk.getPos().z(),

@@ -81,7 +81,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
-`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (32 chunks, separation 12 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost and cooldown, instability decay, quiet fade, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `visuals.particleDensity`, `visuals.maxParticlesPerTick`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Density 0 stops custom particles before the cap. The default cap is 48. `gameplay.veinShimmerTicks` (default 40) spaces vein particles while a lens snapshot is unchanged. `mobs.sensorInterval` (default 10) spaces resonator scans, flee scans, and idle repaths. A charge still aims every tick. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
+`worldGen.structuresEnabled` and `worldGen.observatoryEnabled` apply the next time a world loads. Together they allow the chronicle observatory. `worldGen.structureSpacing` records the datapack spacing (32 chunks, separation 12 in `data/mnemolith/worldgen/structure_set/chronicle_observatory.json`). Changing the toml number does not move structures. Vein and mute-pocket toggles, chances, and Y ranges apply to chunks generated after the config is read. Bleed and the archivist and strider bias flags apply the next time pressure is scored or a mob tries to spawn. Gameplay values (write toggles, debounce, thresholds, extraction cost and cooldown, instability decay, quiet fade, composition, `catalogEnabled`, `discoveryHints`) apply the next time that action runs. `visuals.lensOverlay`, `visuals.overlayOpacity`, and `visuals.showNumericPressure` apply the next time the pill is drawn. `gameplay.allowAmbientPressure` (default false) is the server rule for pressure snapshots without a held lens. `visuals.particleDensity`, `visuals.maxParticlesPerTick`, `visuals.ambientWithoutLens`, and `visuals.lensPollInterval` apply on the client. Ambient shimmer is drawn only when the client toggle is on and the server rule allows the snapshot. Density 0 stops custom particles before the cap. The default cap is 48. `gameplay.veinShimmerTicks` (default 40) spaces vein particles while a lens snapshot is unchanged. `mobs.sensorInterval` (default 10) spaces resonator scans, flee scans, and idle repaths. A charge still aims every tick. Ambient shimmer does not reveal vein marks. `visuals.memoryAudioVolume` scales the local lens chime. Server-played imprint sounds use the blocks and players sound categories.
 
 ## Performance
 
@@ -153,11 +153,14 @@ com.mnemolith
   common/                shared names
   content/               blocks, items, creative tabs
   imprint/  pressure/    chunk memory and pressure bands
-  entity/  entity/mob/  entity/ai/
+  echo/  echo/job/       recording, replay, possession, mine/build/farm jobs
+  entity/  entity/mob/  entity/ai/  entity/echo/
   world/  worldgen/    veins, mute pockets, observatory
   event/
+  command/  command/qa/  /mnemolith
   network/  data/  audio/  particle/
   config/                common, client, and server specs
+  client/echo/           echo renderer, HUD, inventory screen
   client/render|particle|audio|gui
   server/                dedicated server @Mod
 ```

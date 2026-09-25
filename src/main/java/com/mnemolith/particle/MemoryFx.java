@@ -21,17 +21,17 @@ public final class MemoryFx {
 
     public static void extract(ServerLevel level, BlockPos pos) {
         burst(level, ModParticles.IMPRINT_EXTRACT.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10, 0.35D);
-        Mnemolith.LOGGER.info("Mnemolith fx extract at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith fx extract at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static void composeSuccess(ServerLevel level, BlockPos pos) {
         burst(level, ModParticles.COMPOSE_SUCCESS.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 12, 0.4D);
-        Mnemolith.LOGGER.info("Mnemolith fx compose_success at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith fx compose_success at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static void composeFail(ServerLevel level, BlockPos pos) {
         burst(level, ModParticles.COMPOSE_FAIL.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10, 0.3D);
-        Mnemolith.LOGGER.info("Mnemolith fx compose_fail at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith fx compose_fail at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
     /** Formula landing burst. The compose path already logs its own line. */
@@ -55,12 +55,12 @@ public final class MemoryFx {
                     0.01D);
         }
         level.playSound(null, pos, ModSounds.PRESSURE_WARN.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
-        Mnemolith.LOGGER.info("Mnemolith fx pressure at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith fx pressure at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static void mute(ServerLevel level, BlockPos pos) {
         burst(level, ModParticles.MUTE_HAZE.get(), pos.getX() + 0.5D, pos.getY() + 0.8D, pos.getZ() + 0.5D, 8, 0.45D);
-        Mnemolith.LOGGER.info("Mnemolith fx mute at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith fx mute at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static void mob(ServerLevel level, SimpleParticleType type, double x, double y, double z, int count) {

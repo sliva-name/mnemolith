@@ -6,8 +6,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /**
- * Client asks for nearby chunk pressure. {@code ambient} is set only when the client
- * wants saturated shimmer without a lens. Vein marks still require the lens.
+ * Client asks for nearby chunk pressure. {@code ambient} is what the client hopes to do
+ * (saturated shimmer without a lens). The server does not treat that bit as permission:
+ * a snapshot is sent when the player holds a chronicle lens, or when
+ * {@code gameplay.allowAmbientPressure} is on. Vein marks still require the lens.
  */
 public record RequestPressurePayload(boolean ambient) implements CustomPacketPayload {
     public static final Type<RequestPressurePayload> TYPE = PayloadIds.type("request_pressure");

@@ -38,12 +38,15 @@ public final class PressureSync {
             return;
         }
         boolean lens = holdsLens(player);
-        if (!lens && !payload.ambient()) {
+        // payload.ambient() is not permission. Ambient snapshots exist only when the common config allows them.
+        boolean ambient = !lens && CommonConfig.ALLOW_AMBIENT_PRESSURE.get();
+        if (!lens && !ambient) {
+            refuse(player, level);
             return;
         }
         ChunkPos origin = ChunkPos.containing(player.blockPosition());
         Stamp stamp = LensPollCache.get(player.getUUID());
-        if (stamp != null && stamp.matches(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), lens, payload.ambient())) {
+        if (stamp != null && stamp.matches(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), lens, ambient)) {
             int interval = CommonConfig.VEIN_SHIMMER_TICKS.get();
             if (lens && interval > 0 && level.getGameTime() - stamp.shimmer() >= interval) {
                 VeinShimmer.send(level, player, origin);
@@ -55,8 +58,22 @@ public final class PressureSync {
         if (lens) {
             VeinShimmer.send(level, player, origin);
         }
-        LensPollCache.put(player.getUUID(), new Stamp(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), lens, payload.ambient(), level.getGameTime()));
+        LensPollCache.put(player.getUUID(), new Stamp(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), lens, ambient, level.getGameTime()));
         PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
+    }
+
+    /**
+     * A request with no lens and no server ambient rule gets no chunk walk. One empty snapshot clears a lens
+     * reading the client may still be drawing; repeats for the same chunk and memory epoch are not resent.
+     */
+    private static void refuse(ServerPlayer player, ServerLevel level) {
+        ChunkPos origin = ChunkPos.containing(player.blockPosition());
+        Stamp stamp = LensPollCache.get(player.getUUID());
+        if (stamp != null && stamp.matches(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), false, false)) {
+            return;
+        }
+        LensPollCache.put(player.getUUID(), new Stamp(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), false, false, level.getGameTime()));
+        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.of()));
     }
 
     /**

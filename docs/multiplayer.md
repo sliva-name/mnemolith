@@ -17,8 +17,8 @@ Payloads are registered as version `1` in `ModNetwork`:
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |
-| `mnemolith:request_pressure` | client to server | One boolean, ambient or lens. The server answers only for a live player who holds a lens, or who asked for the ambient read. It does not write memory |
-| `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and lens or ambient flag are unchanged |
+| `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match. The server ignores it as permission. It answers only for a live player who holds a lens, or when `gameplay.allowAmbientPressure` is true. It does not write memory |
+| `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and the server's lens or ambient decision are unchanged |
 | `mnemolith:open_catalog` | server to that player | That player's tag and formula bits. The screen class is client-only |
 
 Logout and a dimension change drop the saved lens stamp. The client also drops its snapshot when the dimension changes, so matching chunk coordinates in another dimension cannot keep the previous band on screen. Overworld teleports already miss the stamp because the chunk coordinates are part of it.
@@ -58,7 +58,7 @@ This is one server process. It does not open two Minecraft clients, so it does n
 ## Known limits
 
 - No Scar, no new dimension, and no proxy-specific handshake.
-- Ambient lens reads trust the client's boolean. They are read-only. A client cannot create an imprint by sending a payload.
+- Ambient pressure reads are allowed only by `gameplay.allowAmbientPressure` on the server. A client that sets the request bit without a lens, and without that config, gets no snapshot. The read is still read-only: a client cannot create an imprint by sending a payload.
 - Two players can share one reel. They see the same three slots, the same way they would share a chest. Separate reels do not share slots.
 - Disconnect closes the menu. Slips stay in the reel. A button packet for a menu that is no longer open does not compose.
 - `mpsmoke` does not connect a second game. A two-client check is still a manual join of the same dedicated server.
