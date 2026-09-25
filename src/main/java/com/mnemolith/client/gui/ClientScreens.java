@@ -16,5 +16,6 @@ public final class ClientScreens {
 
     public static void registerMenus(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COMPOSITION.get(), CompositionScreen::new);
+        event.register(ModMenus.ECHO.get(), com.mnemolith.client.echo.EchoInventoryScreen::new);
     }
 }

@@ -20,6 +20,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue LENS_OVERLAY;
     public static final ModConfigSpec.DoubleValue OVERLAY_OPACITY;
     public static final ModConfigSpec.BooleanValue SHOW_NUMERIC_PRESSURE;
+    public static final ModConfigSpec.BooleanValue THERMAL_VIEW;
+    public static final ModConfigSpec.DoubleValue ECHO_AIM_ASSIST;
+    public static final ModConfigSpec.BooleanValue ECHO_HINTS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -37,6 +40,9 @@ public final class ClientConfig {
         LENS_OVERLAY = SpecValues.bool(builder, "lensOverlay", "Whether the chronicle lens draws the pressure pill above the hotbar.", true);
         OVERLAY_OPACITY = SpecValues.decimal(builder, "overlayOpacity", "Opacity, from 0.2 to 1.0, of the lens pressure pill. The band name stays readable.", 0.85D, 0.2D, 1.0D);
         SHOW_NUMERIC_PRESSURE = SpecValues.bool(builder, "showNumericPressure", "Whether the lens pill includes the numeric pressure beside the band name.", true);
+        THERMAL_VIEW = SpecValues.bool(builder, "thermalView", "Whether holding use with the chronicle lens tints the view dark pink. Echo outlines and targeting stay on either way.", true);
+        ECHO_AIM_ASSIST = SpecValues.decimal(builder, "echoAimAssist", "Aim assist cone, in degrees, for targeting your echo through the lens.", 6.0D, 0.0D, 20.0D);
+        ECHO_HINTS = SpecValues.bool(builder, "echoHints", "Whether the lens and possession draw short key hints.", true);
         builder.pop();
 
         SPEC = builder.build();

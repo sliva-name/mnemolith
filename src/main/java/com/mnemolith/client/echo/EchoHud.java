@@ -1,0 +1,67 @@
+package com.mnemolith.client.echo;
+
+import com.mnemolith.Mnemolith;
+import com.mnemolith.client.config.ClientConfig;
+import com.mnemolith.client.gui.GuiArt;
+import com.mnemolith.echo.EchoView;
+
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+
+/** Small hints: "LMB — possess" under the crosshair on a targeted echo, and "V — return" while possessing. */
+public final class EchoHud {
+    public static final Identifier LAYER = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "echo_hints");
+    private static final int PINK = 0xFFFFC6E6;
+    private static final int CHIP = 0xB0200A18;
+
+    private EchoHud() {}
+
+    public static void register(RegisterGuiLayersEvent event) {
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, LAYER, EchoHud::render);
+    }
+
+    private static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        if (!ClientConfig.ECHO_HINTS.get()) {
+            return;
+        }
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui.screen() != null || minecraft.player == null || minecraft.level == null) {
+            return;
+        }
+        Font font = minecraft.font;
+        int centerX = graphics.guiWidth() / 2;
+        if (EchoView.possessed()) {
+            Component line = Component.translatable("mnemolith.hud.unpossess_hint", ThermalClient.UNPOSSESS.getTranslatedKeyMessage());
+            chip(graphics, font, line, centerX, 8);
+            return;
+        }
+        if (!EchoView.thermal()) {
+            return;
+        }
+        int target = EchoView.targetId();
+        Entity entity = target < 0 ? null : minecraft.level.getEntity(target);
+        if (entity == null) {
+            chip(graphics, font, Component.translatable("mnemolith.hud.thermal"), centerX, graphics.guiHeight() / 2 + 14);
+            return;
+        }
+        int distance = (int) Math.round(Math.sqrt(entity.distanceToSqr(minecraft.player)));
+        Component line = Component.translatable("mnemolith.hud.possess_hint", minecraft.options.keyAttack.getTranslatedKeyMessage());
+        Component detail = Component.translatable("mnemolith.hud.target", entity.getDisplayName(), distance);
+        chip(graphics, font, line, centerX, graphics.guiHeight() / 2 + 14);
+        chip(graphics, font, detail, centerX, graphics.guiHeight() / 2 + 28);
+    }
+
+    private static void chip(GuiGraphicsExtractor graphics, Font font, Component text, int centerX, int y) {
+        int width = font.width(text);
+        int x = centerX - width / 2;
+        graphics.fill(x - 4, y - 2, x + width + 4, y + 10, CHIP);
+        GuiArt.label(graphics, font, text, x, y, PINK);
+    }
+}
