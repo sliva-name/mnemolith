@@ -22,6 +22,7 @@ public final class ModNetwork {
                 .playToServer(EchoUnpossessPayload.TYPE, EchoUnpossessPayload.STREAM_CODEC, EchoNetwork::handleUnpossess)
                 .playToClient(EchoStatePayload.TYPE, EchoStatePayload.STREAM_CODEC)
                 .playToServer(EchoJobPayload.TYPE, EchoJobPayload.STREAM_CODEC, EchoNetwork::handleJob)
-                .playToClient(EchoGhostPayload.TYPE, EchoGhostPayload.STREAM_CODEC);
+                .playToClient(EchoGhostPayload.TYPE, EchoGhostPayload.STREAM_CODEC)
+                .playToServer(EchoCommandPayload.TYPE, EchoCommandPayload.STREAM_CODEC, EchoNetwork::handleCommand);
     }
 }

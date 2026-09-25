@@ -21,6 +21,14 @@ public final class ApproachGoal extends Goal {
 
     @Override
     public void tick() {
+        var echo = this.replicant.mimicEcho();
+        if (echo != null) {
+            // Stage 3: keeps close to the echo it mimics.
+            if (this.replicant.distanceToSqr(echo) > 9.0D && MobTuning.sensorDue(this.replicant.tickCount, this.replicant.getNavigation().isDone())) {
+                this.replicant.getNavigation().moveTo(echo, 0.9D);
+            }
+            return;
+        }
         Player focus = this.replicant.focus();
         Player player = focus != null ? focus : this.replicant.level().getNearestPlayer(this.replicant, 16.0D);
         if (player == null) {

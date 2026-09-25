@@ -56,7 +56,9 @@ public final class EchoJob {
         IDLE,
         REPLAY,
         MINE,
-        BUILD;
+        BUILD,
+        /** Stage 3: harvest mature taught crops, replant, deposit. */
+        FARM;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -73,7 +75,7 @@ public final class EchoJob {
 
     /** The saved part of a job. */
     public record Saved(Mode mode, EchoLesson lesson, Optional<BlockPos> workAnchor, int radius, Optional<BlockPos> chest, Optional<BlockPos> buildAnchor,
-            Rotation rotation, int mined, JobStatus status) {
+            Rotation rotation, int mined, JobStatus status, Stage3 stage3) {
         public static final Codec<Saved> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Mode.CODEC.optionalFieldOf("mode", Mode.IDLE).forGetter(Saved::mode),
                 EchoLesson.CODEC.optionalFieldOf("lesson", EchoLesson.NONE).forGetter(Saved::lesson),
@@ -83,8 +85,54 @@ public final class EchoJob {
                 BlockPos.CODEC.optionalFieldOf("build_anchor").forGetter(Saved::buildAnchor),
                 Rotation.CODEC.optionalFieldOf("rotation", Rotation.NONE).forGetter(Saved::rotation),
                 Codec.INT.optionalFieldOf("mined", 0).forGetter(Saved::mined),
-                JobStatus.CODEC.optionalFieldOf("status", JobStatus.IDLE).forGetter(Saved::status))
+                JobStatus.CODEC.optionalFieldOf("status", JobStatus.IDLE).forGetter(Saved::status),
+                Stage3.CODEC.optionalFieldOf("stage3", Stage3.EMPTY).forGetter(Saved::stage3))
                 .apply(instance, Saved::new));
+    }
+
+    /** A block placed by a misfire, to be taken back and replaced with the right one. */
+    public record Misfire(BlockPos pos, BlockState state) {
+        public static final Codec<Misfire> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                BlockPos.CODEC.fieldOf("pos").forGetter(Misfire::pos),
+                BlockState.CODEC.fieldOf("state").forGetter(Misfire::state))
+                .apply(instance, Misfire::new));
+    }
+
+    /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
+    public record Stage3(List<Misfire> misfired, int workActions, com.mnemolith.echo.FarmLesson farm, int harvested, Order order) {
+        public static final Stage3 EMPTY = new Stage3(List.of(), 0, com.mnemolith.echo.FarmLesson.NONE, 0, Order.NONE);
+        public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
+                Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions),
+                com.mnemolith.echo.FarmLesson.CODEC.optionalFieldOf("farm", com.mnemolith.echo.FarmLesson.NONE).forGetter(Stage3::farm),
+                Codec.INT.optionalFieldOf("harvested", 0).forGetter(Stage3::harvested),
+                Order.CODEC.optionalFieldOf("order", Order.NONE).forGetter(Stage3::order))
+                .apply(instance, Stage3::new));
+    }
+
+    /** Stage 3 lens orders (stay, follow me, return to the work point). Ids are the ordinals: only append. */
+    public enum Order implements StringRepresentable {
+        NONE("none"),
+        STAY("stay"),
+        FOLLOW("follow"),
+        RETURN("return");
+
+        public static final Codec<Order> CODEC = StringRepresentable.fromEnum(Order::values);
+        private final String name;
+
+        Order(String name) {
+            this.name = name;
+        }
+
+        public static Order byId(int id) {
+            Order[] values = values();
+            return id >= 0 && id < values.length ? values[id] : NONE;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name;
+        }
     }
 
     private enum Phase {
@@ -101,7 +149,9 @@ public final class EchoJob {
     private enum DigFor {
         TUNNEL,
         TARGET,
-        CLEAR
+        CLEAR,
+        /** Stage 3: take back a misfired block, then place the right one. */
+        FIX
     }
 
     private static final int CANDIDATE_CAP = 256;
@@ -161,6 +211,47 @@ public final class EchoJob {
     private int digTicks;
     private int digTotal;
     private boolean dirty = true;
+    // ---- stage 3: interruptions (transient) ----
+    private final EchoMover mover = new EchoMover();
+    /** Opens and closes doors and gates on job walks (stage 3 navigation). */
+    private final EchoNav.Walker walker = new EchoNav.Walker();
+    /** Running from, or hiding after, an attack. The job keeps its mode and resumes when it is calm again. */
+    private boolean alarmed;
+    private int calmTicks;
+    private @Nullable Vec3 threat;
+    /** A short line shown instead of the status (a theft, a mimic, a misfire); the job keeps running under it. */
+    private @Nullable JobStatus notice;
+    private int noticeTicks;
+    // moment replicant mimic
+    private int mimicTicks;
+    private int mimicLeft;
+    private int mimicCount;
+    private int mimicPlaced;
+    private java.util.@Nullable UUID mimicBy;
+    private @Nullable BlockPos undoPos;
+    private @Nullable BlockState undoState;
+    private int undoDelay;
+    private int stumbleTicks;
+    // ---- stage 3: lens orders ----
+    private Order order = Order.NONE;
+    private int orderRetry;
+    // ---- stage 3: pressure from work ----
+    private com.mnemolith.pressure.PressureBand strain = com.mnemolith.pressure.PressureBand.CALM;
+    private long workChunk = Long.MIN_VALUE;
+    private int workActions;
+    private int misfires;
+    /** Misfired blocks (saved): world position to the wrong state the echo put there. */
+    private final Map<Long, BlockState> misfired = new LinkedHashMap<>();
+    // ---- stage 3: farming ----
+    private com.mnemolith.echo.FarmLesson farm = com.mnemolith.echo.FarmLesson.NONE;
+    private int harvested;
+    private final List<BlockPos> farmTasks = new ArrayList<>();
+    private final LongOpenHashSet farmRefused = new LongOpenHashSet();
+    private int farmScanIndex;
+    private int fieldSize;
+    private @Nullable BlockPos farmTarget;
+    /** QA: overrides {@code echoMisfireChance} when set. */
+    public static @Nullable Double qaMisfireChance;
 
     public EchoJob() {}
 
@@ -220,6 +311,7 @@ public final class EchoJob {
     public void setLesson(EchoLesson lesson) {
         this.lesson = lesson;
         this.buildAnchor = null;
+        this.misfired.clear();
         this.dirty = true;
     }
 
@@ -237,12 +329,14 @@ public final class EchoJob {
     }
 
     public void setBlueprintAnchor(BlockPos anchor, Rotation rotation) {
+        this.misfired.clear();
         this.buildAnchor = anchor.immutable();
         this.rotation = rotation;
         this.dirty = true;
     }
 
     public void clearBlueprintAnchor() {
+        this.misfired.clear();
         this.buildAnchor = null;
         this.dirty = true;
     }
@@ -254,8 +348,115 @@ public final class EchoJob {
         }
     }
 
+    /** What the label shows: a live notice over the status, when there is one. */
+    public JobStatus shownStatus() {
+        return this.notice != null && this.noticeTicks > 0 ? this.notice : this.status;
+    }
+
+    /** Shows {@code line} over the status for {@code ticks} ticks. */
+    public void notice(JobStatus line, int ticks) {
+        this.notice = line;
+        this.noticeTicks = Math.max(1, ticks);
+        this.dirty = true;
+    }
+
+    /** A job that works in the world: mobs may hunt it, the replicant may mimic it, the work writes imprints. */
+    public boolean isWorking() {
+        return this.hasWorkMode() && this.order == Order.NONE;
+    }
+
+    /** MINE, BUILD or FARM, also while a lens order pauses it. */
+    public boolean hasWorkMode() {
+        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM;
+    }
+
+    public Order order() {
+        return this.order;
+    }
+
+    public com.mnemolith.echo.FarmLesson farmLesson() {
+        return this.farm;
+    }
+
+    /** The farming lesson from a recording (stage 3). A new recording always replaces it, also with none. */
+    public void setFarmLesson(com.mnemolith.echo.FarmLesson farm) {
+        this.farm = farm;
+        this.dirty = true;
+    }
+
+    public int harvested() {
+        return this.harvested;
+    }
+
+    /** Memory band of the chunk the echo works in (updated once a second while it works). */
+    public com.mnemolith.pressure.PressureBand strain() {
+        return this.strain;
+    }
+
+    /** Misfires so far (skips, wrong blocks, extra breaks, wrong seeds), for QA and the log. */
+    public int misfireCount() {
+        return this.misfires;
+    }
+
+    /** Sets the point a RETURN order walks to (the job start point); used by QA and when an echo is moved by command. */
+    public void setWorkAnchor(@Nullable BlockPos anchor) {
+        this.workAnchor = anchor == null ? null : anchor.immutable();
+        this.dirty = true;
+    }
+
+    public int misfiredCount() {
+        return this.misfired.size();
+    }
+
+    /** Doors and gates this echo opened on its walks (job and lens orders), for QA. */
+    public int doorsOpened() {
+        return this.walker.doorsOpened() + this.mover.walker().doorsOpened();
+    }
+
+    public boolean alarmed() {
+        return this.alarmed;
+    }
+
+    public boolean mimicked() {
+        return this.mimicTicks > 0;
+    }
+
+    public int mimicUndone() {
+        return this.mimicCount;
+    }
+
+    /** Clears every stage 3 interruption (attack alarm, mimic, notices) when the job changes or stops. */
+    private void clearInterruptions(EchoEntity echo) {
+        if (this.alarmed || this.mover.active()) {
+            if (echo.level() instanceof ServerLevel level) {
+                this.mover.stop(level, echo);
+            }
+        }
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        this.mimicTicks = 0;
+        this.mimicLeft = 0;
+        this.mimicBy = null;
+        this.undoPos = null;
+        this.undoState = null;
+        this.stumbleTicks = 0;
+        this.order = Order.NONE;
+        this.orderRetry = 0;
+        if (this.notice != null) {
+            this.notice = null;
+            this.noticeTicks = 0;
+            this.dirty = true;
+        }
+    }
+
     /** Replay of the recording started (stage 1 behaviour); the job waits until it ends. */
     public void beginReplay() {
+        this.alarmed = false;
+        this.order = Order.NONE;
+        this.mimicTicks = 0;
+        this.undoPos = null;
+        this.notice = null;
         this.mode = Mode.REPLAY;
         this.setStatus(JobStatus.REPLAY);
         this.restartPhase();
@@ -264,6 +465,7 @@ public final class EchoJob {
 
     public void stop(EchoEntity echo) {
         boolean wasBuilding = this.mode == Mode.BUILD;
+        this.clearInterruptions(echo);
         this.mode = Mode.IDLE;
         this.setStatus(JobStatus.IDLE);
         this.release(echo);
@@ -275,6 +477,7 @@ public final class EchoJob {
 
     /** Starts mining around the echo. Returns false (with a stop status) when there is nothing to mine with. */
     public boolean startMining(EchoEntity echo) {
+        this.clearInterruptions(echo);
         this.release(echo);
         if (!this.lesson.teachesMining()) {
             this.mode = Mode.IDLE;
@@ -291,6 +494,7 @@ public final class EchoJob {
     }
 
     public boolean startBuilding(EchoEntity echo) {
+        this.clearInterruptions(echo);
         this.release(echo);
         if (!this.lesson.teachesBuilding()) {
             this.mode = Mode.IDLE;
@@ -308,6 +512,24 @@ public final class EchoJob {
         this.dirty = true;
         // The owner sees the pink ghost of what is still missing for as long as the build runs.
         echo.sendGhostToOwner();
+        return true;
+    }
+
+    /** Starts farming around the echo (stage 3). False, with a stop status, when it was not taught farming. */
+    public boolean startFarming(EchoEntity echo) {
+        this.clearInterruptions(echo);
+        this.release(echo);
+        if (!this.farm.teaches()) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return false;
+        }
+        this.mode = Mode.FARM;
+        this.workAnchor = echo.blockPosition();
+        this.harvested = 0;
+        this.restartPhase();
+        this.setStatus(new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), 0, 0));
+        this.dirty = true;
         return true;
     }
 
@@ -332,7 +554,11 @@ public final class EchoJob {
         this.placeFailures.clear();
         this.target = null;
         this.buildTarget = null;
+        this.farmTarget = null;
+        this.farmTasks.clear();
+        this.farmRefused.clear();
         this.digPos = null;
+        this.walker.forget();
         this.unreachableInRow = 0;
         this.replans = 0;
         this.waitTicks = 0;
@@ -341,6 +567,9 @@ public final class EchoJob {
     /** Stops moving and clears a crack overlay. */
     public void release(EchoEntity echo) {
         echo.setMoveTarget(null);
+        if (echo.level() instanceof ServerLevel level) {
+            this.walker.reset(level, echo);
+        }
         if (this.digPos != null && echo.level() instanceof ServerLevel level) {
             level.destroyBlockProgress(echo.getId(), this.digPos, -1);
         }
@@ -351,6 +580,7 @@ public final class EchoJob {
 
     private void halt(EchoEntity echo, JobStatus why) {
         boolean wasBuilding = this.mode == Mode.BUILD;
+        this.clearInterruptions(echo);
         this.release(echo);
         this.mode = Mode.IDLE;
         if (wasBuilding) {
@@ -365,7 +595,15 @@ public final class EchoJob {
 
     public Saved save() {
         return new Saved(this.mode, this.lesson, Optional.ofNullable(this.workAnchor), this.radius(), Optional.ofNullable(this.chest), Optional.ofNullable(this.buildAnchor),
-                this.rotation, this.mined, this.status);
+                this.rotation, this.mined, this.status, this.saveStage3());
+    }
+
+    private Stage3 saveStage3() {
+        List<Misfire> list = new ArrayList<>();
+        for (Map.Entry<Long, BlockState> entry : this.misfired.entrySet()) {
+            list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
+        }
+        return new Stage3(list, this.workActions, this.farm, this.harvested, this.order);
     }
 
     public void load(Saved saved) {
@@ -378,6 +616,14 @@ public final class EchoJob {
         this.rotation = saved.rotation();
         this.mined = saved.mined();
         this.status = saved.status();
+        this.misfired.clear();
+        for (Misfire misfire : saved.stage3().misfired()) {
+            this.misfired.put(misfire.pos().asLong(), misfire.state());
+        }
+        this.workActions = saved.stage3().workActions();
+        this.farm = saved.stage3().farm();
+        this.harvested = saved.stage3().harvested();
+        this.order = saved.stage3().order();
         this.restartPhase();
         this.dirty = true;
     }
@@ -385,9 +631,33 @@ public final class EchoJob {
     // ---- tick ----
 
     public void tick(ServerLevel level, EchoEntity echo) {
+        if (this.noticeTicks > 0 && --this.noticeTicks == 0) {
+            this.notice = null;
+            this.dirty = true;
+        }
+        if (this.mimicTicks > 0) {
+            this.tickMimic(level, echo);
+        }
+        if (echo.tickCount % 20 == 3) {
+            this.refreshStrain(level, echo);
+        }
+        if (this.order != Order.NONE) {
+            this.tickOrder(level, echo);
+            return;
+        }
+        if (this.alarmed) {
+            this.tickAlarm(level, echo);
+            return;
+        }
+        if (this.stumbleTicks > 0) {
+            this.stumbleTicks--;
+            echo.setMoveTarget(null);
+            return;
+        }
         switch (this.mode) {
             case MINE -> this.tickMining(level, echo);
             case BUILD -> this.tickBuilding(level, echo);
+            case FARM -> this.tickFarming(level, echo);
             case REPLAY -> {
                 if (!echo.isReplaying()) {
                     this.mode = Mode.IDLE;
@@ -397,6 +667,728 @@ public final class EchoJob {
             default -> {
             }
         }
+    }
+
+    // ================= attacks (stage 3) =================
+
+    /**
+     * A hostile mob hurt the echo. A working echo drops what it was doing, runs {@code echoFleeDistance} blocks away
+     * from the attacker and waits; it never hits back. The job keeps its mode, so it resumes after a calm spell.
+     */
+    public void onAttacked(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.LivingEntity attacker) {
+        if (!this.isWorking()) {
+            return;
+        }
+        this.calmTicks = 0;
+        this.threat = attacker.position();
+        if (!this.alarmed) {
+            this.alarmed = true;
+            this.release(echo);
+            this.stumbleTicks = 0;
+            this.setStatus(JobStatus.of(JobStatus.Kind.ATTACKED));
+            Mnemolith.LOGGER.info("Mnemolith echo attacked owner={} by={} at {}", echo.ownerName(),
+                    net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(attacker.getType()), echo.blockPosition().toShortString());
+            this.flee(level, echo);
+        } else if (!this.mover.active()) {
+            this.flee(level, echo);
+        }
+    }
+
+    private void flee(ServerLevel level, EchoEntity echo) {
+        Vec3 from = this.threat == null ? echo.position() : this.threat;
+        BlockPos origin = BlockPos.containing(from);
+        int distance = CommonConfig.ECHO_FLEE_DISTANCE.get();
+        this.mover.start(level, echo, new EchoNav.Goal() {
+            @Override
+            public boolean reached(BlockPos feet) {
+                return feet.distSqr(origin) >= (double) distance * distance;
+            }
+
+            @Override
+            public double estimate(BlockPos feet) {
+                return Math.max(0.0D, distance - Math.sqrt(feet.distSqr(origin)));
+            }
+        });
+    }
+
+    private void tickAlarm(ServerLevel level, EchoEntity echo) {
+        this.calmTicks++;
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.RUNNING) {
+            return;
+        }
+        if (this.calmTicks % 10 != 0) {
+            return;
+        }
+        net.minecraft.world.entity.Mob hunter = hunter(level, echo);
+        if (hunter != null) {
+            // Still hunted: keep out of its way, and do not count this as calm.
+            this.threat = hunter.position();
+            if (hunter.distanceToSqr(echo) < 36.0D) {
+                this.flee(level, echo);
+            }
+            this.calmTicks = Math.min(this.calmTicks, CommonConfig.ECHO_FLEE_SAFE_TICKS.get() / 2);
+            return;
+        }
+        if (this.calmTicks >= CommonConfig.ECHO_FLEE_SAFE_TICKS.get()) {
+            this.resume(echo);
+        }
+    }
+
+    /** The nearest mob within 12 blocks that has this echo as its target. */
+    public static net.minecraft.world.entity.@Nullable Mob hunter(ServerLevel level, EchoEntity echo) {
+        net.minecraft.world.entity.Mob best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, echo.getBoundingBox().inflate(12.0D),
+                mob -> mob.isAlive() && mob.getTarget() == echo)) {
+            double distance = mob.distanceToSqr(echo);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = mob;
+            }
+        }
+        return best;
+    }
+
+    private void resume(EchoEntity echo) {
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        echo.setMoveTarget(null);
+        this.restartPhase();
+        this.setStatus(this.workingStatus());
+        Mnemolith.LOGGER.info("Mnemolith echo resumed owner={} mode={} at {}", echo.ownerName(), this.mode.getSerializedName(), echo.blockPosition().toShortString());
+    }
+
+    /** The status a working job shows when it (re)starts its loop. */
+    private JobStatus workingStatus() {
+        return switch (this.mode) {
+            case MINE -> new JobStatus(JobStatus.Kind.MINING, this.lesson.mining().isEmpty() ? "" : key(this.lesson.mining().get(0).block()), this.mined, 0);
+            case BUILD -> JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
+            case FARM -> new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), this.harvested, 0);
+            default -> JobStatus.IDLE;
+        };
+    }
+
+    // ================= lens orders (stage 3) =================
+
+    /**
+     * The owner gave a lens order. STAY pauses whatever the echo does (the job keeps its mode), FOLLOW walks after the
+     * owner, RETURN walks back to the work point and then resumes the job. Returns false with a stop status when there
+     * is no point to return to.
+     */
+    public boolean command(ServerLevel level, EchoEntity echo, Order order) {
+        if (order == Order.NONE) {
+            return false;
+        }
+        if (this.mode == Mode.REPLAY) {
+            this.mode = Mode.IDLE;
+        }
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        this.stumbleTicks = 0;
+        this.mover.stop(level, echo);
+        this.release(echo);
+        this.orderRetry = 0;
+        if (order == Order.RETURN && this.workPoint() == null) {
+            this.order = Order.NONE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_POINT));
+            this.dirty = true;
+            return false;
+        }
+        this.order = order;
+        this.setStatus(JobStatus.of(switch (order) {
+            case STAY -> JobStatus.Kind.STAY;
+            case FOLLOW -> JobStatus.Kind.FOLLOW;
+            default -> JobStatus.Kind.RETURNING;
+        }));
+        this.dirty = true;
+        return true;
+    }
+
+    /** Where RETURN walks to: the build anchor for a build, else where the job was started. */
+    public @Nullable BlockPos workPoint() {
+        if (this.mode == Mode.BUILD && this.buildAnchor != null) {
+            return this.buildAnchor;
+        }
+        return this.workAnchor != null ? this.workAnchor : this.buildAnchor;
+    }
+
+    private void tickOrder(ServerLevel level, EchoEntity echo) {
+        switch (this.order) {
+            case STAY -> {
+                if (this.mover.active()) {
+                    this.mover.stop(level, echo);
+                }
+                echo.setMoveTarget(null);
+            }
+            case FOLLOW -> this.tickFollow(level, echo);
+            case RETURN -> this.tickReturn(level, echo);
+            default -> this.order = Order.NONE;
+        }
+    }
+
+    private void tickFollow(ServerLevel level, EchoEntity echo) {
+        net.minecraft.server.level.ServerPlayer owner = echo.ownerId() == null ? null : level.getServer().getPlayerList().getPlayer(echo.ownerId());
+        if (owner == null && echo.ownerId() != null) {
+            owner = com.mnemolith.entity.echo.MemoryAvatar.STAND_INS.get(echo.ownerId());
+        }
+        double lost = CommonConfig.ECHO_FOLLOW_LOST_DISTANCE.get();
+        if (owner == null || owner.level() != level || !owner.isAlive() || owner.distanceToSqr(echo) > lost * lost) {
+            this.mover.stop(level, echo);
+            this.order = Order.STAY;
+            this.setStatus(JobStatus.of(JobStatus.Kind.LOST_OWNER));
+            Mnemolith.LOGGER.info("Mnemolith echo lost its owner owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+            return;
+        }
+        double distance = owner.distanceToSqr(echo);
+        if (distance <= 9.0D) {
+            if (this.mover.active()) {
+                this.mover.stop(level, echo);
+            }
+            if (echo.tickCount % 5 == 0) {
+                echo.lookAt(owner.getEyePosition());
+            }
+            return;
+        }
+        if (this.orderRetry > 0) {
+            this.orderRetry--;
+        }
+        BlockPos target = owner.blockPosition();
+        if (!this.mover.active() || (echo.tickCount % 20 == 0 && this.orderRetry == 0)) {
+            this.mover.start(level, echo, new EchoNav.Goal() {
+                @Override
+                public boolean reached(BlockPos feet) {
+                    return feet.distSqr(target) <= 5.0D;
+                }
+
+                @Override
+                public double estimate(BlockPos feet) {
+                    return Math.max(0.0D, Math.sqrt(feet.distSqr(target)) - 2.0D);
+                }
+            });
+        }
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.FAILED) {
+            // No way to the owner right now: wait a little and try again (it keeps its FOLLOW status).
+            this.orderRetry = 40;
+        }
+    }
+
+    private void tickReturn(ServerLevel level, EchoEntity echo) {
+        BlockPos point = this.workPoint();
+        if (point == null) {
+            this.mover.stop(level, echo);
+            this.order = Order.NONE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_POINT));
+            return;
+        }
+        if (!this.mover.active()) {
+            if (echo.blockPosition().distSqr(point) <= 9.0D) {
+                this.arrived(level, echo);
+                return;
+            }
+            this.mover.start(level, echo, new EchoNav.Goal() {
+                @Override
+                public boolean reached(BlockPos feet) {
+                    return feet.distSqr(point) <= 9.0D;
+                }
+
+                @Override
+                public double estimate(BlockPos feet) {
+                    return Math.max(0.0D, Math.sqrt(feet.distSqr(point)) - 3.0D);
+                }
+            });
+        }
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.ARRIVED) {
+            this.arrived(level, echo);
+        } else if (result == EchoMover.Result.FAILED) {
+            this.mover.stop(level, echo);
+            this.order = Order.STAY;
+            this.setStatus(JobStatus.of(JobStatus.Kind.UNREACHABLE));
+        }
+    }
+
+    private void arrived(ServerLevel level, EchoEntity echo) {
+        this.mover.stop(level, echo);
+        this.order = Order.NONE;
+        if (this.hasWorkMode()) {
+            this.restartPhase();
+            this.setStatus(this.workingStatus());
+        } else {
+            this.setStatus(JobStatus.of(JobStatus.Kind.AT_POINT));
+        }
+        Mnemolith.LOGGER.info("Mnemolith echo back at its point owner={} mode={} at {}", echo.ownerName(), this.mode.getSerializedName(), echo.blockPosition().toShortString());
+    }
+
+    // ================= moment replicant mimic (stage 3) =================
+
+    /**
+     * A moment replicant copies this job for {@code ticks}. While it lasts, every other block the builder places is
+     * pulled back by the replicant (the block item goes back into the echo, so the builder simply places it again),
+     * and a miner stumbles for a moment after a block. At most {@code undoMax} such tricks per mimic.
+     */
+    public void beginMimic(java.util.UUID replicant, int ticks, int undoMax) {
+        if (!this.isWorking() || ticks <= 0) {
+            return;
+        }
+        this.mimicBy = replicant;
+        this.mimicTicks = ticks;
+        this.mimicLeft = undoMax;
+        this.mimicCount = 0;
+        this.mimicPlaced = 0;
+        this.notice(JobStatus.of(JobStatus.Kind.MIMIC, 0, 0), ticks);
+    }
+
+    private void tickMimic(ServerLevel level, EchoEntity echo) {
+        this.mimicTicks--;
+        net.minecraft.world.entity.Entity by = this.mimicBy == null ? null : level.getEntity(this.mimicBy);
+        if (by == null || !by.isAlive() || !this.isWorking()
+                || (by instanceof com.mnemolith.entity.mob.MomentReplicant replicant && !replicant.isMimicking(echo))) {
+            this.endMimic();
+            return;
+        }
+        BlockPos pos = this.undoPos;
+        BlockState state = this.undoState;
+        if (pos != null && state != null && --this.undoDelay <= 0) {
+            this.undoPos = null;
+            this.undoState = null;
+            if (EchoHands.takeBack(level, echo, pos, state)) {
+                this.mimicLeft--;
+                this.mimicCount++;
+                if (by instanceof net.minecraft.world.entity.LivingEntity living) {
+                    living.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                }
+                level.sendParticles(com.mnemolith.particle.ModParticles.REPLICANT_TELEGRAPH.get(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 10, 0.3D, 0.3D, 0.3D, 0.01D);
+                level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.HOSTILE, 0.6F, 0.6F);
+                this.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
+                Mnemolith.LOGGER.info("Mnemolith replicant undid echo block owner={} at {} undone={}", echo.ownerName(), pos.toShortString(), this.mimicCount);
+            }
+        }
+        if (this.mimicTicks <= 0) {
+            this.endMimic();
+        }
+    }
+
+    private void endMimic() {
+        this.mimicTicks = 0;
+        this.mimicBy = null;
+        this.undoPos = null;
+        this.undoState = null;
+        if (this.notice != null && this.notice.kind() == JobStatus.Kind.MIMIC) {
+            this.noticeTicks = Math.min(this.noticeTicks, 20);
+        }
+    }
+
+    /** Called after a block the job placed; a mimicking replicant may pull it back a moment later. */
+    private void mimicAfterPlace(BlockPos pos, BlockState state) {
+        if (this.mimicTicks <= 0 || this.mimicLeft <= 0 || this.undoPos != null) {
+            return;
+        }
+        if (this.mimicPlaced++ % 2 == 0) {
+            this.undoPos = pos.immutable();
+            this.undoState = state;
+            this.undoDelay = 10;
+        }
+    }
+
+    /** Called after a block the job broke or harvested; a mimicking replicant makes the echo stumble. */
+    private void mimicAfterBreak() {
+        if (this.mimicTicks <= 0 || this.mimicLeft <= 0) {
+            return;
+        }
+        this.mimicLeft--;
+        this.mimicCount++;
+        this.stumbleTicks = 30;
+        this.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
+    }
+
+    // ================= pressure from work (stage 3) =================
+
+    /** Reads the band of the echo's chunk; a working echo stops in a fracture. */
+    public void refreshStrain(ServerLevel level, EchoEntity echo) {
+        com.mnemolith.pressure.PressureBand band = com.mnemolith.pressure.PressureBand.CALM;
+        if (this.isWorking()) {
+            com.mnemolith.imprint.ChunkMemory memory = com.mnemolith.world.LoadedChunkMemory.existing(level.getChunkAt(echo.blockPosition()));
+            band = memory == null ? band : com.mnemolith.pressure.MemoryPressure.band(memory.cachedPressure());
+        }
+        if (band != this.strain) {
+            this.strain = band;
+            this.dirty = true;
+        }
+        if (band == com.mnemolith.pressure.PressureBand.FRACTURE && this.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get()) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.FRACTURED));
+        }
+    }
+
+    /**
+     * One finished piece of work (a mined, placed or harvested block). Every {@code echoWorkImprintEvery} pieces in the
+     * same chunk the work leaves a build imprint by the owner there, plus {@code echoWorkInstability}; a muted chunk
+     * refuses the write, and then no instability is added either.
+     */
+    private void onWorkAction(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        int every = CommonConfig.ECHO_WORK_IMPRINT_EVERY.get();
+        if (every <= 0) {
+            return;
+        }
+        long chunk = net.minecraft.world.level.ChunkPos.pack(pos);
+        if (chunk != this.workChunk) {
+            this.workChunk = chunk;
+            this.workActions = 0;
+        }
+        if (++this.workActions < every) {
+            return;
+        }
+        this.workActions = 0;
+        boolean written = com.mnemolith.imprint.ImprintWriter.write(level, pos, List.of(com.mnemolith.imprint.ImprintTag.BUILD), echo.ownerId(), false);
+        int instability = CommonConfig.ECHO_WORK_INSTABILITY.get();
+        if (written && instability > 0) {
+            com.mnemolith.imprint.ImprintWriter.spike(level, pos, instability);
+        }
+        Mnemolith.LOGGER.info("Mnemolith echo work imprint owner={} at {} written={}", echo.ownerName(), pos.toShortString(), written);
+    }
+
+    /** True when this action misfires: only in an overloaded chunk, with {@code echoMisfireChance}. */
+    private boolean misfire(EchoEntity echo) {
+        if (this.strain != com.mnemolith.pressure.PressureBand.OVERLOADED) {
+            return false;
+        }
+        double chance = qaMisfireChance != null ? qaMisfireChance : CommonConfig.ECHO_MISFIRE_CHANCE.get();
+        return chance > 0.0D && echo.getRandom().nextDouble() < chance;
+    }
+
+    private void misfireNotice(EchoEntity echo, String kind, BlockPos pos) {
+        this.notice(JobStatus.of(JobStatus.Kind.MISFIRE, kind), 60);
+        Mnemolith.LOGGER.info("Mnemolith echo misfire owner={} kind={} at {}", echo.ownerName(), kind, pos.toShortString());
+    }
+
+    /**
+     * Puts another block of the blueprint that the echo carries at {@code entry}'s spot instead of the right one. The
+     * spot is remembered and fixed first on the next pick: the wrong block goes back into the echo (exactly one item),
+     * then the right one is placed. Only simple blocks, and never next to fluids, so the take-back cannot be refused.
+     */
+    private boolean placeWrong(ServerLevel level, EchoEntity echo, EchoLesson.Entry entry) {
+        BlockPos pos = entry.offset();
+        for (Direction side : Direction.values()) {
+            if (!level.getFluidState(pos.relative(side)).isEmpty()) {
+                return false;
+            }
+        }
+        Set<Item> tried = new HashSet<>();
+        tried.add(entry.item());
+        for (EchoLesson.Entry other : this.plan) {
+            Item item = other.item();
+            if (!tried.add(item) || echo.inventory().find(item) < 0) {
+                continue;
+            }
+            BlockState wrong = other.state();
+            if (wrong.hasBlockEntity() || !simpleBlock(wrong) || !wrong.canSurvive(level, pos)) {
+                continue;
+            }
+            if (EchoHands.placeForJob(level, echo, pos, wrong) == EchoHands.Outcome.DONE) {
+                this.misfired.put(pos.asLong(), level.getBlockState(pos));
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private static boolean simpleBlock(BlockState state) {
+        return !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.BED_PART)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.CHEST_TYPE);
+    }
+
+    /** A miner's misfire: also breaks one natural block next to the target (drops go to the echo as usual). */
+    private boolean breakExtra(ServerLevel level, EchoEntity echo, BlockPos target) {
+        BlockPos feet = echo.blockPosition();
+        for (Direction side : Direction.values()) {
+            BlockPos pos = target.relative(side);
+            if (pos.equals(feet) || pos.equals(feet.above()) || pos.equals(feet.below()) || !level.isLoaded(pos)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(pos);
+            if (state.isAir() || this.isTarget(state) || !EchoWork.canTunnel(level, echo, pos, state) || !EchoWork.safeToBreak(level, echo, pos)) {
+                continue;
+            }
+            int tool = EchoWork.bestTool(echo.inventory(), state);
+            if (tool < 0 && EchoWork.needsTool(state)) {
+                continue;
+            }
+            return EchoHands.breakForJob(level, echo, pos, tool).outcome() == EchoHands.Outcome.DONE;
+        }
+        return false;
+    }
+
+    // ================= farming (stage 3) =================
+
+    private String farmCropKey() {
+        return this.farm.crops().isEmpty() ? "" : key(this.farm.crops().get(0));
+    }
+
+    private int farmRadius() {
+        return Math.max(2, Math.min(this.radius(), CommonConfig.ECHO_FARM_MAX_RADIUS.get()));
+    }
+
+    private java.util.Set<Item> seedItems() {
+        java.util.Set<Item> seeds = new HashSet<>();
+        for (Block crop : this.farm.crops()) {
+            seeds.add(com.mnemolith.echo.FarmLesson.seedFor(crop));
+        }
+        return seeds;
+    }
+
+    private void tickFarming(ServerLevel level, EchoEntity echo) {
+        BlockPos anchor = this.workAnchor;
+        if (anchor == null) {
+            anchor = echo.blockPosition();
+            this.workAnchor = anchor;
+        }
+        if (!level.isLoaded(anchor)) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.UNLOADED));
+            return;
+        }
+        if (this.placeCooldown > 0) {
+            this.placeCooldown--;
+            return;
+        }
+        switch (this.phase) {
+            case START -> {
+                this.farmTasks.clear();
+                this.farmScanIndex = 0;
+                this.fieldSize = 0;
+                this.phase = Phase.SCAN;
+            }
+            case SCAN -> {
+                if (this.scanFarm(level, anchor, CommonConfig.ECHO_SCAN_BUDGET.get())) {
+                    this.phase = Phase.SELECT;
+                }
+            }
+            case SELECT -> this.selectFarmTask(level, echo);
+            case PATH -> this.tickPath(level, echo);
+            case WALK -> this.tickWalk(level, echo);
+            case TO_CHEST -> this.atChest(level, echo);
+            case WAIT -> {
+                if (++this.waitTicks % CommonConfig.ECHO_FARM_POLL_TICKS.get() == 0) {
+                    this.phase = Phase.START;
+                }
+            }
+            default -> this.phase = Phase.SELECT;
+        }
+    }
+
+    /** Reads up to {@code budget} positions of the field box. True once the whole box was read. */
+    private boolean scanFarm(ServerLevel level, BlockPos anchor, int budget) {
+        int r = this.farmRadius();
+        int side = r * 2 + 1;
+        int height = 7;
+        int total = side * side * height;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int work = 0;
+        while (this.farmScanIndex < total && work < budget) {
+            int i = this.farmScanIndex++;
+            work++;
+            int dx = i % side - r;
+            int dz = (i / side) % side - r;
+            int dy = i / (side * side) - 3;
+            cursor.set(anchor.getX() + dx, anchor.getY() + dy, anchor.getZ() + dz);
+            if (!level.isLoaded(cursor)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(cursor);
+            if (state.getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
+                this.fieldSize++;
+                if (this.farm.knows(state.getBlock()) && com.mnemolith.echo.FarmLesson.isMature(state) && this.farmTasks.size() < CANDIDATE_CAP) {
+                    this.farmTasks.add(cursor.immutable());
+                }
+            } else if (state.is(net.minecraft.world.level.block.Blocks.FARMLAND)) {
+                this.fieldSize++;
+                if (level.getBlockState(cursor.above()).isAir() && this.farmTasks.size() < CANDIDATE_CAP) {
+                    this.farmTasks.add(cursor.above().immutable());
+                }
+            }
+        }
+        return this.farmScanIndex >= total;
+    }
+
+    /** A harvest (mature taught crop) or a planting spot (air over farmland, and the echo carries a taught seed). */
+    private boolean farmTaskValid(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        if (!level.isLoaded(pos) || this.farmRefused.contains(pos.asLong())) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (com.mnemolith.echo.FarmLesson.isMature(state)) {
+            return this.farm.knows(state.getBlock());
+        }
+        return state.isAir() && level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.FARMLAND) && this.seedToPlant(echo, null) != null;
+    }
+
+    /** The crop to plant: {@code preferred} when the echo carries its seed, else the first taught crop it has seeds for. */
+    private @Nullable Block seedToPlant(EchoEntity echo, @Nullable Block preferred) {
+        if (preferred != null && this.farm.knows(preferred) && echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(preferred)) >= 0) {
+            return preferred;
+        }
+        for (Block crop : this.farm.crops()) {
+            if (echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(crop)) >= 0) {
+                return crop;
+            }
+        }
+        return null;
+    }
+
+    /** Harvest and extra planting items above what it keeps for replanting. */
+    private int farmProduce(EchoEntity echo) {
+        java.util.Set<Item> seeds = this.seedItems();
+        Map<Item, Integer> seedCounts = new LinkedHashMap<>();
+        int produce = 0;
+        for (int i = 0; i < EchoInventory.MAIN; i++) {
+            ItemStack stack = echo.inventory().getItem(i);
+            if (stack.isEmpty() || stack.isDamageableItem() || stack.has(net.minecraft.core.component.DataComponents.TOOL)
+                    || stack.has(net.minecraft.core.component.DataComponents.EQUIPPABLE)) {
+                continue;
+            }
+            if (seeds.contains(stack.getItem())) {
+                seedCounts.merge(stack.getItem(), stack.getCount(), Integer::sum);
+            } else {
+                produce += stack.getCount();
+            }
+        }
+        for (int count : seedCounts.values()) {
+            produce += Math.max(0, count - 64);
+        }
+        return produce;
+    }
+
+    private void selectFarmTask(ServerLevel level, EchoEntity echo) {
+        if (this.needsDropOff(echo)) {
+            if (this.chest == null) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.INVENTORY_FULL));
+            } else {
+                this.goToChest(level, echo);
+            }
+            return;
+        }
+        if (this.unreachableInRow >= UNREACHABLE_GIVE_UP) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.UNREACHABLE));
+            return;
+        }
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        var iterator = this.farmTasks.iterator();
+        while (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            if (!this.farmTaskValid(level, echo, pos)) {
+                iterator.remove();
+                continue;
+            }
+            double distance = pos.distToCenterSqr(echo.position());
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = pos;
+            }
+        }
+        if (best == null) {
+            if (this.fieldSize == 0) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.NO_FIELD));
+                return;
+            }
+            if (this.chest != null && this.farmProduce(echo) > 0) {
+                this.goToChest(level, echo);
+                return;
+            }
+            this.release(echo);
+            this.setStatus(new JobStatus(JobStatus.Kind.FARM_WAIT, this.farmCropKey(), this.harvested, 0));
+            this.phase = Phase.WAIT;
+            this.waitTicks = 0;
+            this.farmRefused.clear();
+            return;
+        }
+        this.farmTarget = best;
+        BlockState state = level.getBlockState(best);
+        String crop = state.getBlock() instanceof net.minecraft.world.level.block.CropBlock ? key(state.getBlock()) : this.farmCropKey();
+        this.setStatus(new JobStatus(JobStatus.Kind.FARMING, crop, this.harvested, 0));
+        BlockPos goalPos = best;
+        this.startPath(level, echo, new EchoNav.Goal() {
+            @Override
+            public boolean reached(BlockPos feet) {
+                return canWorkOn(level, feet, goalPos);
+            }
+
+            @Override
+            public double estimate(BlockPos feet) {
+                return Math.max(0.0D, Math.sqrt(feet.distSqr(goalPos)) - 3.0D);
+            }
+        }, null, 0, false);
+    }
+
+    /** At the spot: harvest a mature crop and replant it from the echo's own seeds, or plant empty farmland. */
+    private void farmAct(ServerLevel level, EchoEntity echo) {
+        BlockPos pos = this.farmTarget;
+        this.farmTarget = null;
+        this.phase = Phase.SELECT;
+        if (pos == null) {
+            return;
+        }
+        BlockState state = level.getBlockState(pos);
+        echo.lookAt(Vec3.atCenterOf(pos));
+        if (com.mnemolith.echo.FarmLesson.isMature(state) && this.farm.knows(state.getBlock())) {
+            if (this.misfire(echo)) {
+                echo.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                this.misfireNotice(echo, "skip", pos);
+                this.placeCooldown = 20;
+                return;
+            }
+            if (!EchoWork.safeToBreak(level, echo, pos)) {
+                this.farmRefused.add(pos.asLong());
+                return;
+            }
+            Block crop = state.getBlock();
+            EchoHands.JobBreak result = EchoHands.breakForJob(level, echo, pos, -1);
+            if (result.outcome() != EchoHands.Outcome.DONE) {
+                this.farmRefused.add(pos.asLong());
+                return;
+            }
+            this.harvested++;
+            this.unreachableInRow = 0;
+            this.onWorkAction(level, echo, pos);
+            this.plant(level, echo, pos, crop);
+            this.setStatus(new JobStatus(JobStatus.Kind.FARMING, key(crop), this.harvested, 0));
+            this.placeCooldown = PLACE_INTERVAL;
+            this.mimicAfterBreak();
+            return;
+        }
+        if (state.isAir() && level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.FARMLAND)) {
+            if (!this.plant(level, echo, pos, null)) {
+                this.farmRefused.add(pos.asLong());
+            }
+            this.placeCooldown = PLACE_INTERVAL;
+        }
+    }
+
+    /** Plants a taught crop at {@code pos} from the echo's own seeds. In overload it may pick another taught seed. */
+    private boolean plant(ServerLevel level, EchoEntity echo, BlockPos pos, @Nullable Block preferred) {
+        Block crop = this.seedToPlant(echo, preferred);
+        if (crop == null) {
+            return false;
+        }
+        if (this.farm.crops().size() > 1 && this.misfire(echo) && this.misfires++ % 2 == 1) {
+            for (Block other : this.farm.crops()) {
+                if (other != crop && echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(other)) >= 0) {
+                    crop = other;
+                    this.misfireNotice(echo, "seed", pos);
+                    break;
+                }
+            }
+        }
+        boolean planted = EchoHands.placeForJob(level, echo, pos, crop.defaultBlockState()) == EchoHands.Outcome.DONE;
+        if (planted) {
+            this.unreachableInRow = 0;
+            this.onWorkAction(level, echo, pos);
+        }
+        return planted;
     }
 
     // ================= mining =================
@@ -678,6 +1670,7 @@ public final class EchoJob {
         int done = 0;
         EchoLesson.Entry pick = null;
         EchoLesson.Entry clear = null;
+        EchoLesson.Entry fix = null;
         Map<Item, Integer> remaining = new LinkedHashMap<>();
         boolean anyUnloaded = false;
         for (EchoLesson.Entry entry : this.plan) {
@@ -686,11 +1679,21 @@ public final class EchoJob {
                 anyUnloaded = true;
                 continue;
             }
+            long key = pos.asLong();
+            BlockState wrong = this.misfired.get(key);
+            if (wrong != null) {
+                if (level.getBlockState(pos).getBlock() == wrong.getBlock()) {
+                    if (fix == null) {
+                        fix = entry;
+                    }
+                    continue;
+                }
+                this.misfired.remove(key);
+            }
             if (this.placedCorrectly(level, entry)) {
                 done++;
                 continue;
             }
-            long key = pos.asLong();
             if (this.blocked.contains(key)) {
                 continue;
             }
@@ -722,6 +1725,9 @@ public final class EchoJob {
         }
         if (clear != null && pick == null) {
             pick = clear;
+        }
+        if (fix != null) {
+            pick = fix;
         }
         if (pick == null) {
             if (remaining.isEmpty()) {
@@ -762,7 +1768,7 @@ public final class EchoJob {
         this.buildTarget = pick;
         this.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, done, total));
         BlockPos goalPos = pick.offset();
-        this.digFor = pick == clear ? DigFor.CLEAR : DigFor.TARGET;
+        this.digFor = pick == fix ? DigFor.FIX : pick == clear ? DigFor.CLEAR : DigFor.TARGET;
         this.startPath(level, echo, new EchoNav.Goal() {
             @Override
             public boolean reached(BlockPos feet) {
@@ -826,6 +1832,18 @@ public final class EchoJob {
             return;
         }
         BlockPos pos = entry.offset();
+        if (this.misfire(echo)) {
+            if (this.misfires++ % 2 == 1 && this.placeWrong(level, echo, entry)) {
+                this.misfireNotice(echo, "wrong", pos);
+                this.placeCooldown = PLACE_INTERVAL;
+            } else {
+                echo.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                this.misfireNotice(echo, "skip", pos);
+                this.placeCooldown = 20;
+            }
+            this.phase = Phase.SELECT;
+            return;
+        }
         EchoHands.Outcome outcome = EchoHands.placeForJob(level, echo, pos, entry.state());
         switch (outcome) {
             case DONE -> {
@@ -834,6 +1852,8 @@ public final class EchoJob {
                 this.builtCount++;
                 this.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.plan.size()));
                 this.placeCooldown = PLACE_INTERVAL;
+                this.mimicAfterPlace(pos, entry.state());
+                this.onWorkAction(level, echo, pos);
             }
             case SKIPPED_CHANGED -> this.skipped.add(pos.asLong());
             case REFUSED -> {
@@ -864,6 +1884,8 @@ public final class EchoJob {
         }
         if (this.mode == Mode.MINE) {
             this.setStatus(JobStatus.of(JobStatus.Kind.DEPOSIT, this.mined, 0));
+        } else if (this.mode == Mode.FARM) {
+            this.setStatus(JobStatus.of(JobStatus.Kind.DEPOSIT, this.harvested, 0));
         }
         this.startPath(level, echo, new EchoNav.Goal() {
             @Override
@@ -897,6 +1919,14 @@ public final class EchoJob {
                 return;
             }
             this.setStatus(new JobStatus(JobStatus.Kind.MINING, this.target == null ? key(this.lesson.mining().get(0).block()) : key(level.getBlockState(this.target).getBlock()), this.mined, 0));
+        } else if (this.mode == Mode.FARM) {
+            int moved = EchoWork.depositFarm(echo, container, this.seedItems(), 64);
+            Mnemolith.LOGGER.info("Mnemolith echo farm deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
+            if (this.needsDropOff(echo)) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.CHEST_FULL));
+                return;
+            }
+            this.setStatus(new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), this.harvested, 0));
         } else if (this.mode == Mode.BUILD) {
             Map<Item, Integer> wanted = new LinkedHashMap<>();
             for (EchoLesson.Entry entry : this.plan) {
@@ -926,7 +1956,7 @@ public final class EchoJob {
             return;
         }
         int budget = CommonConfig.ECHO_PATH_BUDGET.get();
-        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16);
+        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16).avoid(this.walker.refused());
         this.pathToChest = toChest;
         this.phase = Phase.PATH;
     }
@@ -968,6 +1998,9 @@ public final class EchoJob {
         } else if (this.mode == Mode.BUILD && this.buildTarget != null) {
             this.skipped.add(this.buildTarget.offset().asLong());
             this.buildTarget = null;
+        } else if (this.mode == Mode.FARM && this.farmTarget != null) {
+            this.farmRefused.add(this.farmTarget.asLong());
+            this.farmTarget = null;
         }
         this.digFor = DigFor.TARGET;
         this.phase = Phase.SELECT;
@@ -999,12 +2032,18 @@ public final class EchoJob {
             this.beginDig(level, echo, cell, DigFor.TUNNEL);
             return;
         }
+        if (!this.walker.prepare(level, echo, step)) {
+            // A door or gate on the way would not open (protection): search again around it.
+            this.replan(level, echo);
+            return;
+        }
         Vec3 goal = Vec3.atBottomCenterOf(step.feet());
         double dx = goal.x - echo.getX();
         double dz = goal.z - echo.getZ();
         double horizontal = Math.sqrt(dx * dx + dz * dz);
         double dy = goal.y - echo.getY();
         if (horizontal < 0.3D && dy > -0.6D && dy < 0.6D) {
+            this.walker.passed(level, echo, step);
             this.pathIndex++;
             this.stuckTicks = 0;
             this.bestDistance = Double.MAX_VALUE;
@@ -1040,6 +2079,8 @@ public final class EchoJob {
             this.target = null;
         } else if (this.mode == Mode.BUILD) {
             this.buildTarget = null;
+        } else if (this.mode == Mode.FARM) {
+            this.farmTarget = null;
         }
     }
 
@@ -1049,6 +2090,10 @@ public final class EchoJob {
         if (this.pathToChest) {
             this.pathToChest = false;
             this.phase = Phase.TO_CHEST;
+            return;
+        }
+        if (this.mode == Mode.FARM) {
+            this.farmAct(level, echo);
             return;
         }
         if (this.mode == Mode.MINE) {
@@ -1067,6 +2112,18 @@ public final class EchoJob {
             if (this.digFor == DigFor.CLEAR) {
                 this.beginDig(level, echo, entry.offset(), DigFor.CLEAR);
                 return;
+            }
+            if (this.digFor == DigFor.FIX) {
+                this.digFor = DigFor.TARGET;
+                BlockState wrong = this.misfired.remove(entry.offset().asLong());
+                if (wrong != null && !EchoHands.takeBack(level, echo, entry.offset(), wrong)) {
+                    // Someone protects or changed it: leave it, the builder reports it as blocked.
+                    this.blocked.add(entry.offset().asLong());
+                    this.buildTarget = null;
+                    this.phase = Phase.SELECT;
+                    return;
+                }
+                this.notice(JobStatus.of(JobStatus.Kind.MISFIRE, "fix"), 40);
             }
             this.placeBuildTarget(level, echo);
         }
@@ -1118,6 +2175,16 @@ public final class EchoJob {
         if (this.digTicks < this.digTotal) {
             return;
         }
+        if (this.digFor == DigFor.TARGET && this.misfire(echo)) {
+            if (this.misfires++ % 2 == 1 && this.breakExtra(level, echo, pos)) {
+                this.misfireNotice(echo, "extra", pos);
+            } else {
+                // Fumbled: the dig starts over.
+                this.digTicks = 0;
+                this.misfireNotice(echo, "skip", pos);
+                return;
+            }
+        }
         level.destroyBlockProgress(echo.getId(), pos, -1);
         this.digPos = null;
         if (!EchoWork.safeToBreak(level, echo, pos)) {
@@ -1153,6 +2220,8 @@ public final class EchoJob {
                 this.target = null;
                 this.setStatus(new JobStatus(JobStatus.Kind.MINING, this.targetState == null ? "" : key(this.targetState.getBlock()), this.mined, 0));
                 this.phase = Phase.SELECT;
+                this.mimicAfterBreak();
+                this.onWorkAction(level, echo, pos);
             }
         }
         if (toolBroke && this.mode == Mode.MINE) {
@@ -1172,7 +2241,7 @@ public final class EchoJob {
                 this.phase = Phase.SELECT;
             }
             case TUNNEL -> this.replan(level, echo);
-            case CLEAR -> {
+            case CLEAR, FIX -> {
                 this.digFor = DigFor.TARGET;
                 this.blocked.add(pos.asLong());
                 this.buildTarget = null;
@@ -1200,8 +2269,9 @@ public final class EchoJob {
 
     /** Debug line for QA logs. */
     public String describe() {
-        return "mode=" + this.mode.getSerializedName() + " phase=" + this.phase + " status=" + this.status.kind().getSerializedName() + " mined=" + this.mined
-                + " built=" + this.builtCount + "/" + this.plan.size() + " candidates=" + this.candidates.size() + " refused=" + this.refused.size();
+        return "mode=" + this.mode.getSerializedName() + " phase=" + this.phase + " status=" + this.status.kind().getSerializedName()
+                + " shown=" + this.shownStatus().kind().getSerializedName() + (this.alarmed ? " alarmed" : "") + " mined=" + this.mined
+                + " harvested=" + this.harvested + " built=" + this.builtCount + "/" + this.plan.size() + " candidates=" + this.candidates.size() + " refused=" + this.refused.size();
     }
 
     /** Direction the job looks for a build anchor preview; kept here so client and server share the rule. */

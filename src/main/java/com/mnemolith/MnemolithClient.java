@@ -42,6 +42,7 @@ public final class MnemolithClient {
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(LensOverlay::onSystemMessage);
         NeoForge.EVENT_BUS.addListener(FieldGuideClient::onRightClick);
         modEventBus.addListener(com.mnemolith.client.echo.ThermalClient::registerKeys);
         modEventBus.addListener(com.mnemolith.client.echo.EchoHud::register);

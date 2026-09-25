@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:echo_slip",
+    "mnemolith:unstable_slip",
+    "mnemolith:archival_tablet",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "mnemolith:echo_chorus_slip",
+    "count": 1
+  }
+}

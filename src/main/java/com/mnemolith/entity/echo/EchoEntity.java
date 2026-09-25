@@ -61,8 +61,13 @@ public class EchoEntity extends MemoryAvatar {
     private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_CHEST = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_ANCHOR = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Byte> DATA_LESSON = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
+    /** Stage 3: memory band of the chunk the echo works in (ordinal of PressureBand). */
+    private static final EntityDataAccessor<Byte> DATA_STRAIN = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
     public static final int LESSON_MINING = 1;
     public static final int LESSON_BUILDING = 2;
+    /** Stage 3: the echo knows farming; {@link #DATA_FARM} names the crops. */
+    public static final int LESSON_FARMING = 4;
+    private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
     /** Set by the physical client so client-side echoes carry a skin. Null on a dedicated server. */
     public static EntityType.@Nullable EntityFactory<EchoEntity> clientFactory;
@@ -79,6 +84,8 @@ public class EchoEntity extends MemoryAvatar {
     private final EchoJob job = new EchoJob();
     /** Where the job wants the body to walk this tick; null when standing. Server only. */
     private @Nullable Vec3 moveTarget;
+    /** Stage 3: extra max health from the owner's sturdy body upgrades (saved). */
+    private double bonusHealth;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -108,6 +115,8 @@ public class EchoEntity extends MemoryAvatar {
         entityData.define(DATA_JOB_CHEST, Optional.empty());
         entityData.define(DATA_JOB_ANCHOR, Optional.empty());
         entityData.define(DATA_LESSON, (byte) 0);
+        entityData.define(DATA_STRAIN, (byte) 0);
+        entityData.define(DATA_FARM, Component.empty());
     }
 
     // ---- inventory ----
@@ -273,11 +282,36 @@ public class EchoEntity extends MemoryAvatar {
             if (this.job.consumeDirty()) {
                 this.syncJob();
             }
+            if (this.tickCount % 100 == 11 && this.ownerId() != null && level.getServer().getPlayerList().getPlayer(this.ownerId()) instanceof ServerPlayer owner) {
+                // Keeps the body in step with the owner's sturdy upgrades (also for echoes that were unloaded).
+                double bonus = com.mnemolith.echo.EchoProgress.bonusHealth(owner);
+                if (bonus != this.bonusHealth) {
+                    this.applyBonusHealth(bonus);
+                }
+            }
+            if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
+                this.releaseHunters(level);
+            }
             if (!this.isReplaying() && this.tickCount % 100 == 0 && this.getHealth() < this.getMaxHealth() && this.isAlive()) {
                 this.heal(1.0F);
             }
         }
         super.tick();
+    }
+
+    // ---- threats (stage 3) ----
+
+    /** Whether hostile mobs may pick this echo as a target: only while it works in the world. */
+    public boolean attractsMobs() {
+        return this.isAlive() && !this.isReplaying() && this.job.isWorking() && CommonConfig.ECHO_MOB_AGGRO.get();
+    }
+
+    /** Mobs that still hunt an echo that no longer works lose interest. */
+    private void releaseHunters(ServerLevel level) {
+        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, this.getBoundingBox().inflate(24.0D),
+                mob -> mob.getTarget() == this && mob instanceof net.minecraft.world.entity.monster.Enemy)) {
+            mob.setTarget(null);
+        }
     }
 
     // ---- jobs (stage 2) ----
@@ -352,14 +386,24 @@ public class EchoEntity extends MemoryAvatar {
         }
     }
 
+    /** Pushes the job display state to clients now (stage 3 lens orders). */
+    public void syncJobNow() {
+        this.job.consumeDirty();
+        this.syncJob();
+    }
+
     private void syncJob() {
-        this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (this.job.status().kind().isStop() ? JOB_STOPPED : 0)));
-        this.entityData.set(DATA_JOB_STATUS, this.job.status().component());
+        var shown = this.job.shownStatus();
+        this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (shown.kind().isStop() ? JOB_STOPPED : 0)));
+        this.entityData.set(DATA_JOB_STATUS, shown.component());
         this.entityData.set(DATA_JOB_RADIUS, this.job.radius());
         this.entityData.set(DATA_JOB_CHEST, Optional.ofNullable(this.job.chest()));
         this.entityData.set(DATA_JOB_ANCHOR, Optional.ofNullable(this.job.buildAnchor()));
+        this.entityData.set(DATA_STRAIN, (byte) this.job.strain().ordinal());
         EchoLesson lesson = this.job.lesson();
-        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)));
+        boolean farming = this.job.farmLesson().teaches();
+        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0) | (farming ? LESSON_FARMING : 0)));
+        this.entityData.set(DATA_FARM, farming ? this.job.farmLesson().cropNames() : Component.empty());
     }
 
     /** Synced job mode (client and server). */
@@ -387,6 +431,22 @@ public class EchoEntity extends MemoryAvatar {
 
     public Optional<BlockPos> jobAnchor() {
         return this.entityData.get(DATA_JOB_ANCHOR);
+    }
+
+    /** Synced memory band of the chunk the echo works in; CALM when it does not work. */
+    public com.mnemolith.pressure.PressureBand strain() {
+        return com.mnemolith.pressure.PressureBand.byOrdinal(this.entityData.get(DATA_STRAIN));
+    }
+
+    /** Synced crop names of the farming lesson ("Wheat, Carrots"); empty without one. */
+    public Component farmCrops() {
+        return this.entityData.get(DATA_FARM);
+    }
+
+    /** Stage 3: an echo never tramples farmland, also when it jumps onto it. */
+    @Override
+    public boolean canTrample(ServerLevel level, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, double fallDistance) {
+        return false;
     }
 
     public int lessonFlags() {
@@ -419,7 +479,9 @@ public class EchoEntity extends MemoryAvatar {
         this.setSpeed((float) (this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.3D));
         this.xxa = 0.0F;
         this.zza = horizontal > 0.05D ? (float) Math.min(1.0D, horizontal * 3.0D) : 0.0F;
-        this.setJumping(dy > 0.5D && this.onGround() && (this.horizontalCollision || horizontal < 1.3D));
+        // Stage 3: climb a ladder or vine and wade out of water by "jumping" (vanilla climbing and swimming).
+        boolean climbOrSwim = dy > 0.3D && (this.onClimbable() || this.isInWater());
+        this.setJumping(climbOrSwim || dy > 0.5D && this.onGround() && (this.horizontalCollision || horizontal < 1.3D));
     }
 
     /** Removes this body without drops and without touching the registry. */
@@ -453,8 +515,8 @@ public class EchoEntity extends MemoryAvatar {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
-        if (this.job.mode() == EchoJob.Mode.MINE || this.job.mode() == EchoJob.Mode.BUILD) {
-            serverPlayer.sendSystemMessage(this.job.status().component(), true);
+        if (this.job.hasWorkMode() || this.job.order() != com.mnemolith.echo.job.EchoJob.Order.NONE) {
+            serverPlayer.sendSystemMessage(this.job.shownStatus().component(), true);
             return InteractionResult.SUCCESS_SERVER;
         }
         serverPlayer.sendSystemMessage(Component.translatable(
@@ -487,7 +549,14 @@ public class EchoEntity extends MemoryAvatar {
         if (source.getDirectEntity() instanceof Player player && this.isOwnedBy(player) && !player.isShiftKeyDown()) {
             return false;
         }
-        return super.hurtServer(level, source, damage);
+        boolean hurt = super.hurtServer(level, source, damage);
+        if (hurt && this.isAlive() && source.getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && attacker instanceof net.minecraft.world.entity.monster.Enemy) {
+            // Stage 3: a working echo never fights back; it runs and resumes later.
+            this.job.onAttacked(level, this, attacker);
+            this.syncJob();
+        }
+        return hurt;
     }
 
     @Override
@@ -574,6 +643,9 @@ public class EchoEntity extends MemoryAvatar {
         }
         output.putInt("echo_replay_tick", this.replayTick);
         output.store("echo_job", EchoJob.Saved.CODEC, this.job.save());
+        if (this.bonusHealth > 0.0D) {
+            output.putDouble("echo_bonus_health", this.bonusHealth);
+        }
     }
 
     @Override
@@ -594,6 +666,8 @@ public class EchoEntity extends MemoryAvatar {
         this.recording = input.read("echo_recording", EchoRecording.CODEC).orElse(null);
         this.replayTick = input.getIntOr("echo_replay_tick", -1);
         input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
+        this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
+        this.applyConfiguredHealth();
         if (this.recording != null && this.replayTick >= 0 && this.replayTick < this.recording.length()) {
             this.nextAction = 0;
             List<EchoAction> actions = this.recording.actions();
@@ -611,7 +685,23 @@ public class EchoEntity extends MemoryAvatar {
     public void applyConfiguredHealth() {
         var attribute = this.getAttribute(Attributes.MAX_HEALTH);
         if (attribute != null) {
-            attribute.setBaseValue(CommonConfig.ECHO_MAX_HEALTH.get());
+            attribute.setBaseValue(CommonConfig.ECHO_MAX_HEALTH.get() + this.bonusHealth);
+        }
+    }
+
+    public double bonusHealth() {
+        return this.bonusHealth;
+    }
+
+    /** Stage 3 sturdy body: sets the extra max health; current health grows by the same amount when it goes up. */
+    public void applyBonusHealth(double bonus) {
+        double gained = bonus - this.bonusHealth;
+        this.bonusHealth = Math.max(0.0D, bonus);
+        this.applyConfiguredHealth();
+        if (gained > 0.0D) {
+            this.heal((float) gained);
+        } else if (this.getHealth() > this.getMaxHealth()) {
+            this.setHealth(this.getMaxHealth());
         }
     }
 }

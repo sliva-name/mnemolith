@@ -54,6 +54,11 @@ public class MomentReplicant extends MemoryMob {
     private int executeTicks;
     private ActionMemory.@Nullable CopiedAction pending;
     private @Nullable ServerPlayer focus;
+    // Stage 3: copying a working echo's job for a while (see EchoJob#beginMimic).
+    private com.mnemolith.entity.echo.@Nullable EchoEntity pendingEcho;
+    private com.mnemolith.entity.echo.@Nullable EchoEntity mimicEcho;
+    private int mimicTicks;
+    private int mimicCooldown;
 
     public MomentReplicant(EntityType<? extends MomentReplicant> type, Level level) {
         super(type, level);
@@ -93,6 +98,9 @@ public class MomentReplicant extends MemoryMob {
 
     public void blind() {
         this.pending = null;
+        this.pendingEcho = null;
+        this.mimicEcho = null;
+        this.mimicTicks = 0;
         this.telegraphTicks = 0;
         this.executeTicks = 0;
         this.blindTicks = MobTuning.BLIND_TICKS;
@@ -128,6 +136,82 @@ public class MomentReplicant extends MemoryMob {
         return this.focus;
     }
 
+    public com.mnemolith.entity.echo.@Nullable EchoEntity mimicEcho() {
+        return this.mimicEcho;
+    }
+
+    public boolean isMimicking(com.mnemolith.entity.echo.EchoEntity echo) {
+        return this.mimicEcho == echo && this.mimicTicks > 0;
+    }
+
+    private boolean canMimic(com.mnemolith.entity.echo.EchoEntity echo) {
+        return echo.isAlive() && !echo.isReplaying() && echo.job().isWorking() && !echo.job().alarmed() && !echo.job().mimicked();
+    }
+
+    /** Looks for a working echo within 12 blocks and starts the telegraph before copying its job. */
+    private void tryMimicEcho(ServerLevel level) {
+        if (this.mimicCooldown > 0 || com.mnemolith.config.CommonConfig.ECHO_REPLICANT_MIMIC_TICKS.get() <= 0) {
+            return;
+        }
+        com.mnemolith.entity.echo.EchoEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (com.mnemolith.entity.echo.EchoEntity echo : level.getEntitiesOfClass(com.mnemolith.entity.echo.EchoEntity.class, this.getBoundingBox().inflate(12.0D), this::canMimic)) {
+            double distance = this.distanceToSqr(echo);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = echo;
+            }
+        }
+        if (best == null) {
+            return;
+        }
+        this.pendingEcho = best;
+        this.telegraphTicks = MobTuning.REPLICANT_TELEGRAPH_TICKS;
+        this.setAction(MobActions.TELEGRAPH);
+        BlockPos at = this.blockPosition();
+        Mnemolith.LOGGER.info("Mnemolith replicant telegraph=echo_job owner={} at {},{},{}", best.ownerName(), at.getX(), at.getY(), at.getZ());
+        this.playSound(ModSounds.REPLICANT_TELEGRAPH.get(), 1.0F, 0.9F);
+        MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 10);
+    }
+
+    /** Starts copying {@code echo}'s job right away (after the telegraph; QA calls it directly). */
+    public boolean startMimic(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo) {
+        this.pendingEcho = null;
+        if (!this.canMimic(echo) || this.distanceToSqr(echo) > 16.0D * 16.0D) {
+            this.setAction(MobActions.IDLE);
+            this.mimicCooldown = 200;
+            return false;
+        }
+        int ticks = com.mnemolith.config.CommonConfig.ECHO_REPLICANT_MIMIC_TICKS.get();
+        this.mimicEcho = echo;
+        this.mimicTicks = ticks;
+        echo.job().beginMimic(this.getUUID(), ticks, com.mnemolith.config.CommonConfig.ECHO_REPLICANT_UNDO_MAX.get());
+        this.setAction(MobActions.IDLE);
+        MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), echo.getX(), echo.getY() + 1.2D, echo.getZ(), 12);
+        Mnemolith.LOGGER.info("Mnemolith replicant mimics echo owner={} mode={} ticks={}", echo.ownerName(), echo.job().mode().getSerializedName(), ticks);
+        return true;
+    }
+
+    private void tickMimic(ServerLevel level) {
+        com.mnemolith.entity.echo.EchoEntity echo = this.mimicEcho;
+        if (echo == null || !echo.isAlive() || !echo.job().mimicked() || --this.mimicTicks <= 0) {
+            this.mimicEcho = null;
+            this.mimicTicks = 0;
+            this.mimicCooldown = 600;
+            this.setAction(MobActions.IDLE);
+            return;
+        }
+        // Mirrors the echo: looks where it looks and swings when it swings.
+        Vec3 look = echo.getEyePosition().add(echo.getLookAngle().scale(3.0D));
+        this.getLookControl().setLookAt(look.x, look.y, look.z, 30.0F, 30.0F);
+        if (echo.swinging && !this.swinging) {
+            this.swing(InteractionHand.MAIN_HAND);
+        }
+        if (this.tickCount % 10 == 0) {
+            MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.4D, this.getZ(), 2);
+        }
+    }
+
     @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
@@ -136,16 +220,28 @@ public class MomentReplicant extends MemoryMob {
             this.setAction(MobActions.FLEE);
             return;
         }
-        if (!MobTuning.replicantEnabled() && this.telegraphTicks <= 0 && this.pending == null) {
+        if (this.mimicCooldown > 0) {
+            this.mimicCooldown--;
+        }
+        if (!MobTuning.replicantEnabled() && this.telegraphTicks <= 0 && this.pending == null && this.mimicTicks <= 0) {
             return;
         }
         if (this.telegraphTicks > 0) {
             this.telegraphTicks--;
             this.setAction(MobActions.TELEGRAPH);
             if (this.telegraphTicks == 0) {
-                this.executeTicks = 30;
-                this.replay(level);
+                com.mnemolith.entity.echo.EchoEntity echo = this.pendingEcho;
+                if (echo != null) {
+                    this.startMimic(level, echo);
+                } else {
+                    this.executeTicks = 30;
+                    this.replay(level);
+                }
             }
+            return;
+        }
+        if (this.mimicTicks > 0) {
+            this.tickMimic(level);
             return;
         }
         if (this.executeTicks > 0) {
@@ -158,11 +254,13 @@ public class MomentReplicant extends MemoryMob {
         }
         ServerPlayer chosen = this.choosePlayer(level);
         if (chosen == null) {
+            this.tryMimicEcho(level);
             return;
         }
         this.focus = chosen;
         Optional<ActionMemory.CopiedAction> recent = ActionMemory.recent(level, chosen);
         if (recent.isEmpty()) {
+            this.tryMimicEcho(level);
             return;
         }
         ActionMemory.CopiedAction action = recent.get();

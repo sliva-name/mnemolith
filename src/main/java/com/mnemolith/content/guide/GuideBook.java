@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 /**
  * Static pages of the field guide. Text lives in the language files.
  * The screen that draws these pages is client-only.
- * Dedicated QA expects {@link #pageCount()} to stay 18.
+ * Dedicated QA expects {@link #pageCount()} to stay 19 (stage 3 added the echo page).
  */
 public final class GuideBook {
     public static final String ITEM_ID = "field_guide";
@@ -30,6 +30,7 @@ public final class GuideBook {
             "strider",
             "archivist",
             "replicant",
+            "echoes",
             "world",
             "players",
             "reference"

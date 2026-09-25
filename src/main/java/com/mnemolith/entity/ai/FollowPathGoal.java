@@ -18,6 +18,7 @@ public final class FollowPathGoal extends Goal {
     private @Nullable UUID pathOwner;
     private @Nullable BlockPos waypoint;
     private @Nullable BlockPos lastImprint;
+    private boolean shadowing;
 
     public FollowPathGoal(EchoStrider strider) {
         this.strider = strider;
@@ -36,6 +37,9 @@ public final class FollowPathGoal extends Goal {
 
     @Override
     public void tick() {
+        if (this.shadowing && this.strider.tickCount % 40 == 0) {
+            this.pick();
+        }
         if (this.waypoint == null || this.strider.distanceToSqr(Vec3.atLowerCornerOf(this.waypoint).add(0.5D, 0.0D, 0.5D)) < MobTuning.PATH_ARRIVE_SQR) {
             if (this.pathOwner != null && this.waypoint != null) {
                 PathLedger.consume(this.pathOwner, this.waypoint);
@@ -56,6 +60,14 @@ public final class FollowPathGoal extends Goal {
         ServerLevel level = getServerLevel(this.strider);
         List<UUID> owners = PathLedger.owners();
         this.waypoint = null;
+        this.shadowing = false;
+        var echo = this.strider.shadowedEcho(level);
+        if (echo != null) {
+            this.pathOwner = null;
+            this.waypoint = this.strider.shadowPoint(echo);
+            this.shadowing = true;
+            return;
+        }
         if (!owners.isEmpty()) {
             int count = this.strider.twin() ? Math.min(2, owners.size()) : 1;
             for (int attempt = 0; attempt < count; attempt++) {

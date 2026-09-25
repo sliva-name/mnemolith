@@ -26,6 +26,11 @@ public final class ModDataComponents {
             "echo_lesson",
             builder -> builder.persistent(com.mnemolith.echo.EchoLesson.CODEC).networkSynchronized(com.mnemolith.echo.EchoLesson.STREAM_CODEC));
 
+    /** Stage 3: what a filled recording teaches about farming. Separate from {@link #ECHO_LESSON}, whose codec stays. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.FarmLesson>> ECHO_FARM = DATA_COMPONENTS.registerComponentType(
+            "echo_farm",
+            builder -> builder.persistent(com.mnemolith.echo.FarmLesson.CODEC).networkSynchronized(com.mnemolith.echo.FarmLesson.STREAM_CODEC));
+
     private ModDataComponents() {}
 
     public static void register(IEventBus modEventBus) {

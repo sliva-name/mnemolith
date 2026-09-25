@@ -53,6 +53,8 @@ public final class EchoRecorder {
         final List<BlockState> broken = new ArrayList<>();
         /** Every block the player placed, in order, with the tick it happened (for the building lesson). */
         final List<Placed> placed = new ArrayList<>();
+        /** Stage 3 farming: hoe uses that turned dirt into farmland. */
+        int tilled;
         int count;
 
         Session(ResourceKey<Level> dimension, Vec3 origin, int maxFrames) {
@@ -95,7 +97,7 @@ public final class EchoRecorder {
         if (isRecording(player)) {
             return false;
         }
-        int frames = Math.min(EchoRecording.MAX_FRAMES, CommonConfig.ECHO_RECORD_SECONDS.get() * 20);
+        int frames = EchoProgress.recordFrames(player);
         SESSIONS.put(player.getUUID(), new Session(player.level().dimension(), player.position(), frames));
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8F, 1.3F);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_start", frames / 20), true);
@@ -147,6 +149,9 @@ public final class EchoRecorder {
                 add(session, EchoAction.of(pending.tick, EchoAction.Kind.PLACE, pending.hit, pending.hand == InteractionHand.OFF_HAND, pending.before.getBlock(), pending.item));
             } else {
                 BlockState after = player.level().getBlockState(pos);
+                if (after.is(net.minecraft.world.level.block.Blocks.FARMLAND) && !pending.before.is(net.minecraft.world.level.block.Blocks.FARMLAND)) {
+                    session.tilled++;
+                }
                 if (after != pending.before && !pending.before.isAir()) {
                     add(session, EchoAction.of(pending.tick, EchoAction.Kind.USE, pending.hit, pending.hand == InteractionHand.OFF_HAND, pending.before.getBlock(), null));
                 }
@@ -215,6 +220,12 @@ public final class EchoRecorder {
             result.set(ModDataComponents.ECHO_RECORDING.get(), recording);
             EchoLesson lesson = analyze(player, session, recording);
             result.set(ModDataComponents.ECHO_LESSON.get(), lesson);
+            FarmLesson farm = analyzeFarm(session);
+            if (farm.teaches()) {
+                result.set(ModDataComponents.ECHO_FARM.get(), farm);
+            }
+            Mnemolith.LOGGER.info("Mnemolith echo farm lesson player={} crops={} tilled={} planted={} harvested={}", player.getGameProfile().name(),
+                    farm.crops().size(), farm.tilled(), farm.planted(), farm.harvested());
             Mnemolith.LOGGER.info("Mnemolith echo lesson player={} mining={} blueprint={}", player.getGameProfile().name(),
                     lesson.mining().size(), lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
             player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_done", recording.seconds(), recording.actions().size()), true);
@@ -237,7 +248,8 @@ public final class EchoRecorder {
         Map<Block, Integer> counts = new java.util.LinkedHashMap<>();
         int total = 0;
         for (BlockState state : session.broken) {
-            if (state.hasBlockEntity() || state.getDestroySpeed(player.level(), player.blockPosition()) < 0.0F || state.isAir()) {
+            if (state.hasBlockEntity() || state.getDestroySpeed(player.level(), player.blockPosition()) < 0.0F || state.isAir()
+                    || state.getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
                 continue;
             }
             counts.merge(state.getBlock(), 1, Integer::sum);
@@ -259,7 +271,8 @@ public final class EchoRecorder {
         List<Placed> kept = new ArrayList<>();
         for (Placed placed : standing.values()) {
             BlockState now = player.level().getBlockState(placed.pos());
-            if (!now.isAir() && now.getBlock() == placed.state().getBlock() && EchoLesson.itemFor(now) != net.minecraft.world.item.Items.AIR) {
+            if (!now.isAir() && now.getBlock() == placed.state().getBlock() && EchoLesson.itemFor(now) != net.minecraft.world.item.Items.AIR
+                    && !(now.getBlock() instanceof net.minecraft.world.level.block.CropBlock)) {
                 kept.add(new Placed(placed.tick(), placed.pos(), now));
             }
         }
@@ -281,6 +294,31 @@ public final class EchoRecorder {
         }
         return new EchoLesson(recording.length(), (int) recording.countActions(EchoAction.Kind.BREAK), (int) recording.countActions(EchoAction.Kind.PLACE),
                 (int) recording.countActions(EchoAction.Kind.USE), mining, blueprint);
+    }
+
+    /**
+     * Stage 3 farming lesson: mature crops broken (harvests), crops planted, and dirt tilled with a hoe. Crops are
+     * ordered by how often they were handled. Crops never count for the mining lesson or the blueprint.
+     */
+    static FarmLesson analyzeFarm(Session session) {
+        Map<Block, Integer> crops = new java.util.LinkedHashMap<>();
+        int harvested = 0;
+        int planted = 0;
+        for (BlockState state : session.broken) {
+            if (FarmLesson.isMature(state)) {
+                crops.merge(state.getBlock(), 1, Integer::sum);
+                harvested++;
+            }
+        }
+        for (Placed placed : session.placed) {
+            if (placed.state().getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
+                crops.merge(placed.state().getBlock(), 1, Integer::sum);
+                planted++;
+            }
+        }
+        List<Block> order = new ArrayList<>(crops.keySet());
+        order.sort((a, b) -> Integer.compare(crops.get(b), crops.get(a)));
+        return new FarmLesson(order, session.tilled, planted, harvested);
     }
 
     /** Server stopped: forget unsaved sessions (players were already handed their recordings on logout). */

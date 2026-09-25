@@ -8,6 +8,7 @@ import com.mnemolith.network.ChunkPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.ChunkState;
 
+import net.minecraft.util.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -15,6 +16,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -25,7 +27,24 @@ public final class LensOverlay {
     private static Component cachedDetail = Component.empty();
     private static int cachedKey = Integer.MIN_VALUE;
 
+    /** Vanilla shows an action-bar message for 60 ticks at guiHeight - 68, right where the pill sits. */
+    private static final long OVERLAY_MESSAGE_MILLIS = 3200L;
+    /** How far the pill (and the echo hint above it) moves up while an action-bar message is shown. */
+    public static final int MESSAGE_LIFT = 22;
+    private static long overlayMessageUntil;
+
     private LensOverlay() {}
+
+    public static void onSystemMessage(ClientChatReceivedEvent.System event) {
+        if (event.isOverlay()) {
+            overlayMessageUntil = Util.getMillis() + OVERLAY_MESSAGE_MILLIS;
+        }
+    }
+
+    /** Extra upward offset while an action-bar message would otherwise sit on top of the pill. */
+    public static int messageLift() {
+        return Util.getMillis() < overlayMessageUntil ? MESSAGE_LIFT : 0;
+    }
 
     public static void register(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, LAYER, LensOverlay::render);
@@ -61,7 +80,7 @@ public final class LensOverlay {
         int boxWidth = textWidth + 16;
         int boxHeight = detail == null ? 16 : 26;
         int x = (minecraft.getWindow().getGuiScaledWidth() - boxWidth) / 2;
-        int y = minecraft.getWindow().getGuiScaledHeight() - 68;
+        int y = minecraft.getWindow().getGuiScaledHeight() - 68 - messageLift();
         int alpha = (int) Math.round(ClientConfig.OVERLAY_OPACITY.get() * 255.0D);
         alpha = Math.max(48, Math.min(255, alpha));
         graphics.fill(x, y, x + boxWidth, y + boxHeight, (alpha << 24) | (GuiArt.INK & 0xFFFFFF));

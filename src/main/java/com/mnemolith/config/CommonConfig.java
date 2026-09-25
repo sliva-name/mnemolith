@@ -77,6 +77,26 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue ECHO_BUILD_CLEARS_TERRAIN;
     public static final ModConfigSpec.IntValue ECHO_SCAN_BUDGET;
     public static final ModConfigSpec.IntValue ECHO_PATH_BUDGET;
+    public static final ModConfigSpec.BooleanValue ECHO_MOB_AGGRO;
+    public static final ModConfigSpec.IntValue ECHO_FLEE_DISTANCE;
+    public static final ModConfigSpec.IntValue ECHO_FLEE_SAFE_TICKS;
+    public static final ModConfigSpec.BooleanValue ECHO_ARCHIVIST_STEAL;
+    public static final ModConfigSpec.IntValue ECHO_ARCHIVIST_STEAL_MAX;
+    public static final ModConfigSpec.IntValue ECHO_REPLICANT_MIMIC_TICKS;
+    public static final ModConfigSpec.IntValue ECHO_REPLICANT_UNDO_MAX;
+    public static final ModConfigSpec.BooleanValue ECHO_STRIDER_SHADOW;
+    public static final ModConfigSpec.IntValue ECHO_MAX_PER_PLAYER_CAP;
+    public static final ModConfigSpec.IntValue ECHO_RECORD_BONUS_SECONDS;
+    public static final ModConfigSpec.IntValue ECHO_RECORD_UPGRADE_MAX;
+    public static final ModConfigSpec.DoubleValue ECHO_STURDY_HEALTH_BONUS;
+    public static final ModConfigSpec.IntValue ECHO_STURDY_UPGRADE_MAX;
+    public static final ModConfigSpec.IntValue ECHO_FARM_MAX_RADIUS;
+    public static final ModConfigSpec.IntValue ECHO_FARM_POLL_TICKS;
+    public static final ModConfigSpec.IntValue ECHO_WORK_IMPRINT_EVERY;
+    public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
+    public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
+    public static final ModConfigSpec.BooleanValue ECHO_FRACTURE_STOPS;
+    public static final ModConfigSpec.IntValue ECHO_FOLLOW_LOST_DISTANCE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -169,6 +189,26 @@ public final class CommonConfig {
         ECHO_BUILD_CLEARS_TERRAIN = SpecValues.bool(builder, "echoBuildClearsTerrain", "Whether a building echo may break natural terrain (stone, dirt, sand, gravel, plants) that stands where the blueprint needs a block. Other blocks are never overwritten.", false);
         ECHO_SCAN_BUDGET = SpecValues.integer(builder, "echoScanBudget", "Block positions a mining echo may inspect per tick while searching for targets.", 4096, 256, 65536);
         ECHO_PATH_BUDGET = SpecValues.integer(builder, "echoPathBudget", "Path nodes an echo may expand per tick. A search gives up after 16 times this many.", 400, 50, 4000);
+        ECHO_MOB_AGGRO = SpecValues.bool(builder, "echoMobAggro", "Whether hostile mobs (not creepers, neutral mobs or memory mobs) may pick a working echo as a target. The echo never fights back: it flees and resumes later.", true);
+        ECHO_FLEE_DISTANCE = SpecValues.integer(builder, "echoFleeDistance", "How far, in blocks, an attacked echo runs from its attacker before it waits.", 8, 3, 24);
+        ECHO_FLEE_SAFE_TICKS = SpecValues.integer(builder, "echoFleeSafeTicks", "Ticks without a hit, and without a hostile mob targeting it nearby, before an attacked echo goes back to work.", 100, 20, 1200);
+        ECHO_ARCHIVIST_STEAL = SpecValues.bool(builder, "echoArchivistSteal", "Whether an archivist may steal one non-tool stack from a working echo. It keeps the loot until it is killed, and then always drops it.", true);
+        ECHO_ARCHIVIST_STEAL_MAX = SpecValues.integer(builder, "echoArchivistStealMax", "Most items an archivist takes from one echo stack.", 8, 1, 64);
+        ECHO_REPLICANT_MIMIC_TICKS = SpecValues.integer(builder, "echoReplicantMimicTicks", "How long, in ticks, a moment replicant mimics a working echo's job. 0 turns the mimic off.", 200, 0, 1200);
+        ECHO_REPLICANT_UNDO_MAX = SpecValues.integer(builder, "echoReplicantUndoMax", "Most blocks a mimicking replicant pulls back from one build (the item goes back to the echo), or stumbles a miner or farmer.", 3, 0, 16);
+        ECHO_STRIDER_SHADOW = SpecValues.bool(builder, "echoStriderShadow", "Whether echo striders shadow a working echo like a recorded path, and charge it when its chunk is overloaded.", true);
+        ECHO_MAX_PER_PLAYER_CAP = SpecValues.integer(builder, "echoMaxPerPlayerCap", "Most echoes one player may own with chorus slips. Each chorus slip adds one above echoMaxPerPlayer, up to this cap.", 3, 1, 8);
+        ECHO_RECORD_BONUS_SECONDS = SpecValues.integer(builder, "echoRecordBonusSeconds", "Seconds each long take slip adds to a recording (a recording never exceeds 60 seconds).", 10, 0, 30);
+        ECHO_RECORD_UPGRADE_MAX = SpecValues.integer(builder, "echoRecordUpgradeMax", "How many long take slips one player may absorb.", 2, 0, 5);
+        ECHO_STURDY_HEALTH_BONUS = SpecValues.decimal(builder, "echoSturdyHealthBonus", "Max health each sturdy body slip adds to the player's echoes.", 10.0D, 0.0D, 50.0D);
+        ECHO_STURDY_UPGRADE_MAX = SpecValues.integer(builder, "echoSturdyUpgradeMax", "How many sturdy body slips one player may absorb.", 2, 0, 5);
+        ECHO_FARM_MAX_RADIUS = SpecValues.integer(builder, "echoFarmMaxRadius", "Largest radius a farming echo tends around its work point (the job radius is capped to this). Three blocks up and down are scanned too.", 12, 2, 32);
+        ECHO_FARM_POLL_TICKS = SpecValues.integer(builder, "echoFarmPollTicks", "Ticks a farming echo waits between two looks at its field when nothing is ripe.", 100, 20, 1200);
+        ECHO_WORK_IMPRINT_EVERY = SpecValues.integer(builder, "echoWorkImprintEvery", "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns work imprints off.", 20, 0, 1000);
+        ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
+        ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
+        ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
+        ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
         builder.pop();
 
         SPEC = builder.build();

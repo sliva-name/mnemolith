@@ -57,6 +57,9 @@ public class Archivist extends MemoryMob {
     // Same-tick cache for nearestBait(): BaitGoal can ask twice in one AI step (continue check, then start check).
     private int baitTick = Integer.MIN_VALUE;
     private @Nullable ItemEntity bait;
+    /** Stage 3: a working echo it is sneaking up on, and what it took from one (always dropped on death, saved). */
+    private com.mnemolith.entity.echo.@Nullable EchoEntity echoTarget;
+    private ItemStack echoLoot = ItemStack.EMPTY;
 
     public Archivist(EntityType<? extends Archivist> type, Level level) {
         super(type, level);
@@ -106,6 +109,83 @@ public class Archivist extends MemoryMob {
 
     public void loseInterest() {
         this.interest = null;
+    }
+
+    public com.mnemolith.entity.echo.@Nullable EchoEntity echoTarget() {
+        return this.echoTarget;
+    }
+
+    public ItemStack echoLoot() {
+        return this.echoLoot;
+    }
+
+    /** A stack an archivist may take from an echo: never tools, weapons, armor or anything with durability. */
+    public static boolean stealableFromEcho(ItemStack stack) {
+        return !stack.isEmpty() && !stack.isDamageableItem() && !stack.has(net.minecraft.core.component.DataComponents.TOOL)
+                && !stack.has(net.minecraft.core.component.DataComponents.WEAPON) && !stack.has(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+    }
+
+    /** The main slot it would steal from: the most valuable slip first, then the largest stack. -1 when nothing fits. */
+    public static int echoStealSlot(com.mnemolith.entity.echo.EchoInventory inventory) {
+        int best = -1;
+        long bestScore = -1;
+        for (int slot = 0; slot < com.mnemolith.entity.echo.EchoInventory.MAIN; slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (!stealableFromEcho(stack)) {
+                continue;
+            }
+            long score = (long) Math.max(0, ImprintSlips.weight(stack)) * 1000L + stack.getCount();
+            if (score > bestScore) {
+                bestScore = score;
+                best = slot;
+            }
+        }
+        return best;
+    }
+
+    private boolean canTargetEcho(com.mnemolith.entity.echo.EchoEntity echo) {
+        return echo.isAlive() && !echo.isRemoved() && echo.level() == this.level() && echo.job().isWorking() && !echo.isReplaying()
+                && this.distanceToSqr(echo) <= MobTuning.INTEREST_RANGE * MobTuning.INTEREST_RANGE * 1.5D && echoStealSlot(echo.inventory()) >= 0;
+    }
+
+    /**
+     * Takes up to {@code echoArchivistStealMax} items of one stack from a working echo. The loot stays with the
+     * archivist (saved) and always drops when it dies, so nothing is lost; players are never robbed this way.
+     */
+    public boolean stealFromEcho(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo) {
+        this.echoTarget = null;
+        if (!this.echoLoot.isEmpty() || this.stunTicks > 0 || !com.mnemolith.config.CommonConfig.ECHO_ARCHIVIST_STEAL.get()) {
+            return false;
+        }
+        int slot = echoStealSlot(echo.inventory());
+        if (slot < 0) {
+            return false;
+        }
+        ItemStack stack = echo.inventory().getItem(slot);
+        ItemStack stolen = echo.inventory().removeItem(slot, Math.min(stack.getCount(), com.mnemolith.config.CommonConfig.ECHO_ARCHIVIST_STEAL_MAX.get()));
+        if (stolen.isEmpty()) {
+            return false;
+        }
+        this.echoLoot = stolen;
+        this.setPersistenceRequired();
+        this.stealCooldown = MobTuning.stealCooldown();
+        this.fleeTicks = 80;
+        this.dropped = null;
+        this.setAction(MobActions.FLEE);
+        this.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        BlockPos at = echo.blockPosition();
+        level.playSound(null, at, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 1.1F);
+        MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), echo.getX(), echo.getY() + 1.2D, echo.getZ(), 14);
+        MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 8);
+        String detail = com.mnemolith.echo.job.JobStatus.missingDetail(java.util.Map.of(stolen.getItem(), stolen.getCount()));
+        echo.job().notice(com.mnemolith.echo.job.JobStatus.of(com.mnemolith.echo.job.JobStatus.Kind.STOLEN, detail), 120);
+        if (echo.ownerId() != null && level.getServer().getPlayerList().getPlayer(echo.ownerId()) instanceof ServerPlayer owner
+                && owner.distanceToSqr(echo) <= 64.0D * 64.0D) {
+            owner.sendOverlayMessage(Component.translatable("mnemolith.message.echo_stolen", stolen.getCount(), stolen.getHoverName()));
+        }
+        Mnemolith.LOGGER.info("Mnemolith archivist stole from echo owner={} item={} count={} at {}", echo.ownerName(),
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stolen.getItem()), stolen.getCount(), at.toShortString());
+        return true;
     }
 
     public @Nullable ItemEntity dropped() {
@@ -311,6 +391,21 @@ public class Archivist extends MemoryMob {
                 }
             }
         }
+        if (this.echoTarget != null && !this.canTargetEcho(this.echoTarget)) {
+            this.echoTarget = null;
+        }
+        if (this.echoTarget == null && this.echoLoot.isEmpty() && this.stealCooldown <= 0 && this.interest == null
+                && com.mnemolith.config.CommonConfig.ECHO_ARCHIVIST_STEAL.get()) {
+            double bestDistance = Double.MAX_VALUE;
+            for (com.mnemolith.entity.echo.EchoEntity echo : level.getEntitiesOfClass(com.mnemolith.entity.echo.EchoEntity.class,
+                    this.getBoundingBox().inflate(MobTuning.INTEREST_RANGE), this::canTargetEcho)) {
+                double distance = this.distanceToSqr(echo);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    this.echoTarget = echo;
+                }
+            }
+        }
         if (this.dropped == null || !this.dropped.isAlive()) {
             AABB box = this.getBoundingBox().inflate(8.0D);
             for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, box, item -> ImprintSlips.isSlip(item.getItem()))) {
@@ -326,6 +421,39 @@ public class Archivist extends MemoryMob {
         if (!this.carried.isEmpty() && this.random.nextFloat() < 0.5F) {
             this.spawnAtLocation(level, this.carried.copy());
         }
+    }
+
+    @Override
+    protected void dropEquipment(ServerLevel level) {
+        super.dropEquipment(level);
+        if (!this.echoLoot.isEmpty()) {
+            // What it took from an echo always comes back, whatever the loot rules say.
+            this.spawnAtLocation(level, this.echoLoot);
+            this.echoLoot = ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (reason == RemovalReason.DISCARDED && !this.echoLoot.isEmpty() && this.level() instanceof ServerLevel level) {
+            this.spawnAtLocation(level, this.echoLoot);
+            this.echoLoot = ItemStack.EMPTY;
+        }
+        super.remove(reason);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        if (!this.echoLoot.isEmpty()) {
+            output.store("echo_loot", ItemStack.CODEC, this.echoLoot);
+        }
+    }
+
+    @Override
+    protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.echoLoot = input.read("echo_loot", ItemStack.CODEC).orElse(ItemStack.EMPTY);
     }
 
     @Override
