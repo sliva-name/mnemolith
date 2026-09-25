@@ -48,6 +48,7 @@ public final class MnemolithClient {
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onAfterLevel);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.ThermalClient::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, false, net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre.class, com.mnemolith.client.echo.EchoRenderer::onRenderPlayerPre);
     }
 
     @SubscribeEvent

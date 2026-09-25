@@ -45,17 +45,19 @@ public final class EchoHud {
         if (!EchoView.thermal()) {
             return;
         }
+        // Below the figure, above the hotbar and the pressure pill, so the hint never covers the echo itself.
+        int hintY = Math.max(graphics.guiHeight() / 2 + 40, graphics.guiHeight() - 100);
         int target = EchoView.targetId();
         Entity entity = target < 0 ? null : minecraft.level.getEntity(target);
         if (entity == null) {
-            chip(graphics, font, Component.translatable("mnemolith.hud.thermal"), centerX, graphics.guiHeight() / 2 + 14);
+            chip(graphics, font, Component.translatable("mnemolith.hud.thermal"), centerX, hintY);
             return;
         }
         int distance = (int) Math.round(Math.sqrt(entity.distanceToSqr(minecraft.player)));
         Component line = Component.translatable("mnemolith.hud.possess_hint", minecraft.options.keyAttack.getTranslatedKeyMessage());
         Component detail = Component.translatable("mnemolith.hud.target", entity.getDisplayName(), distance);
-        chip(graphics, font, line, centerX, graphics.guiHeight() / 2 + 14);
-        chip(graphics, font, detail, centerX, graphics.guiHeight() / 2 + 28);
+        chip(graphics, font, line, centerX, hintY);
+        chip(graphics, font, detail, centerX, hintY + 14);
     }
 
     private static void chip(GuiGraphicsExtractor graphics, Font font, Component text, int centerX, int y) {
