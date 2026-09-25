@@ -114,6 +114,8 @@ public final class Composition {
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         MemoryFx.composeFail(level, pos);
         if (player != null) {
+            // Needed for the invalid-item path, which reaches fail() before compose() notes the tags.
+            // On a formula miss the tags are already noted; noteTag is idempotent (no second sync or message).
             for (ImprintTag tag : tags) {
                 DiscoveryNotes.noteTag(player, tag);
             }
