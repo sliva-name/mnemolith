@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:echo_slip",
+    "mnemolith:archivist_husk",
+    "minecraft:clock"
+  ],
+  "result": {
+    "id": "mnemolith:echo_long_slip",
+    "count": 1
+  }
+}

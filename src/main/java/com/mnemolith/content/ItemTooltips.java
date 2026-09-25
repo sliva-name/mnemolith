@@ -32,6 +32,18 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
             } else if (stack.getItem() == ModItems.ECHO_SLIP.get()) {
                 builder.accept(Component.translatable("item.mnemolith.echo_slip.hint"));
+            } else if (stack.getItem() instanceof com.mnemolith.content.item.EchoUpgradeItem upgrade) {
+                String id = switch (upgrade.kind()) {
+                    case CHORUS -> "echo_chorus_slip";
+                    case LONG_TAKE -> "echo_long_slip";
+                    case STURDY -> "echo_sturdy_slip";
+                };
+                builder.accept(Component.translatable("item.mnemolith." + id + ".hint"));
+                if (player != null) {
+                    builder.accept(Component.translatable("item.mnemolith.echo_upgrade.level",
+                            com.mnemolith.echo.EchoProgress.of(player).level(upgrade.kind()), com.mnemolith.echo.EchoProgress.maxLevel(upgrade.kind()))
+                            .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
             } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
             }

@@ -55,6 +55,12 @@ public final class ModItems {
             "echo_recording",
             EchoRecordingItem::new,
             properties -> properties.stacksTo(1).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
+    public static final DeferredItem<com.mnemolith.content.item.EchoUpgradeItem> ECHO_CHORUS_SLIP = ITEMS.registerItem(
+            "echo_chorus_slip", properties -> new com.mnemolith.content.item.EchoUpgradeItem(com.mnemolith.echo.EchoProgress.Kind.CHORUS, properties), stackTo(16));
+    public static final DeferredItem<com.mnemolith.content.item.EchoUpgradeItem> ECHO_LONG_SLIP = ITEMS.registerItem(
+            "echo_long_slip", properties -> new com.mnemolith.content.item.EchoUpgradeItem(com.mnemolith.echo.EchoProgress.Kind.LONG_TAKE, properties), stackTo(16));
+    public static final DeferredItem<com.mnemolith.content.item.EchoUpgradeItem> ECHO_STURDY_SLIP = ITEMS.registerItem(
+            "echo_sturdy_slip", properties -> new com.mnemolith.content.item.EchoUpgradeItem(com.mnemolith.echo.EchoProgress.Kind.STURDY, properties), stackTo(16));
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

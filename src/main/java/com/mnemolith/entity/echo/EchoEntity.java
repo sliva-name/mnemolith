@@ -81,6 +81,8 @@ public class EchoEntity extends MemoryAvatar {
     private final EchoJob job = new EchoJob();
     /** Where the job wants the body to walk this tick; null when standing. Server only. */
     private @Nullable Vec3 moveTarget;
+    /** Stage 3: extra max health from the owner's sturdy body upgrades (saved). */
+    private double bonusHealth;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -275,6 +277,13 @@ public class EchoEntity extends MemoryAvatar {
             }
             if (this.job.consumeDirty()) {
                 this.syncJob();
+            }
+            if (this.tickCount % 100 == 11 && this.ownerId() != null && level.getServer().getPlayerList().getPlayer(this.ownerId()) instanceof ServerPlayer owner) {
+                // Keeps the body in step with the owner's sturdy upgrades (also for echoes that were unloaded).
+                double bonus = com.mnemolith.echo.EchoProgress.bonusHealth(owner);
+                if (bonus != this.bonusHealth) {
+                    this.applyBonusHealth(bonus);
+                }
             }
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
@@ -609,6 +618,9 @@ public class EchoEntity extends MemoryAvatar {
         }
         output.putInt("echo_replay_tick", this.replayTick);
         output.store("echo_job", EchoJob.Saved.CODEC, this.job.save());
+        if (this.bonusHealth > 0.0D) {
+            output.putDouble("echo_bonus_health", this.bonusHealth);
+        }
     }
 
     @Override
@@ -629,6 +641,8 @@ public class EchoEntity extends MemoryAvatar {
         this.recording = input.read("echo_recording", EchoRecording.CODEC).orElse(null);
         this.replayTick = input.getIntOr("echo_replay_tick", -1);
         input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
+        this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
+        this.applyConfiguredHealth();
         if (this.recording != null && this.replayTick >= 0 && this.replayTick < this.recording.length()) {
             this.nextAction = 0;
             List<EchoAction> actions = this.recording.actions();
@@ -646,7 +660,23 @@ public class EchoEntity extends MemoryAvatar {
     public void applyConfiguredHealth() {
         var attribute = this.getAttribute(Attributes.MAX_HEALTH);
         if (attribute != null) {
-            attribute.setBaseValue(CommonConfig.ECHO_MAX_HEALTH.get());
+            attribute.setBaseValue(CommonConfig.ECHO_MAX_HEALTH.get() + this.bonusHealth);
+        }
+    }
+
+    public double bonusHealth() {
+        return this.bonusHealth;
+    }
+
+    /** Stage 3 sturdy body: sets the extra max health; current health grows by the same amount when it goes up. */
+    public void applyBonusHealth(double bonus) {
+        double gained = bonus - this.bonusHealth;
+        this.bonusHealth = Math.max(0.0D, bonus);
+        this.applyConfiguredHealth();
+        if (gained > 0.0D) {
+            this.heal((float) gained);
+        } else if (this.getHealth() > this.getMaxHealth()) {
+            this.setHealth(this.getMaxHealth());
         }
     }
 }

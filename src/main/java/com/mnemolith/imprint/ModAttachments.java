@@ -34,6 +34,15 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** Stage 3 echo upgrades absorbed by a player. Saved, kept through death, synced only to that player. */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<com.mnemolith.echo.EchoProgress>> ECHO_PROGRESS = ATTACHMENT_TYPES.register(
+            "echo_progress",
+            () -> AttachmentType.builder(() -> com.mnemolith.echo.EchoProgress.NONE)
+                    .serialize(com.mnemolith.echo.EchoProgress.CODEC, progress -> !progress.isEmpty())
+                    .copyOnDeath()
+                    .sync((holder, player) -> holder == player, com.mnemolith.echo.EchoProgress.STREAM_CODEC)
+                    .build());
+
     private ModAttachments() {}
 
     public static void register(IEventBus modEventBus) {

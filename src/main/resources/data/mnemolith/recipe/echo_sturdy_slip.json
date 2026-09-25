@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:echo_slip",
+    "mnemolith:archival_stratum",
+    "minecraft:iron_ingot"
+  ],
+  "result": {
+    "id": "mnemolith:echo_sturdy_slip",
+    "count": 1
+  }
+}

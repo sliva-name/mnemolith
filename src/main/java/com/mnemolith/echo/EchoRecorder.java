@@ -95,7 +95,7 @@ public final class EchoRecorder {
         if (isRecording(player)) {
             return false;
         }
-        int frames = Math.min(EchoRecording.MAX_FRAMES, CommonConfig.ECHO_RECORD_SECONDS.get() * 20);
+        int frames = EchoProgress.recordFrames(player);
         SESSIONS.put(player.getUUID(), new Session(player.level().dimension(), player.position(), frames));
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8F, 1.3F);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_start", frames / 20), true);

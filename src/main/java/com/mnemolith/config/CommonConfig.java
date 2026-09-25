@@ -85,6 +85,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_REPLICANT_MIMIC_TICKS;
     public static final ModConfigSpec.IntValue ECHO_REPLICANT_UNDO_MAX;
     public static final ModConfigSpec.BooleanValue ECHO_STRIDER_SHADOW;
+    public static final ModConfigSpec.IntValue ECHO_MAX_PER_PLAYER_CAP;
+    public static final ModConfigSpec.IntValue ECHO_RECORD_BONUS_SECONDS;
+    public static final ModConfigSpec.IntValue ECHO_RECORD_UPGRADE_MAX;
+    public static final ModConfigSpec.DoubleValue ECHO_STURDY_HEALTH_BONUS;
+    public static final ModConfigSpec.IntValue ECHO_STURDY_UPGRADE_MAX;
     public static final ModConfigSpec.IntValue ECHO_WORK_IMPRINT_EVERY;
     public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
     public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
@@ -189,6 +194,11 @@ public final class CommonConfig {
         ECHO_REPLICANT_MIMIC_TICKS = SpecValues.integer(builder, "echoReplicantMimicTicks", "How long, in ticks, a moment replicant mimics a working echo's job. 0 turns the mimic off.", 200, 0, 1200);
         ECHO_REPLICANT_UNDO_MAX = SpecValues.integer(builder, "echoReplicantUndoMax", "Most blocks a mimicking replicant pulls back from one build (the item goes back to the echo), or stumbles a miner or farmer.", 3, 0, 16);
         ECHO_STRIDER_SHADOW = SpecValues.bool(builder, "echoStriderShadow", "Whether echo striders shadow a working echo like a recorded path, and charge it when its chunk is overloaded.", true);
+        ECHO_MAX_PER_PLAYER_CAP = SpecValues.integer(builder, "echoMaxPerPlayerCap", "Most echoes one player may own with chorus slips. Each chorus slip adds one above echoMaxPerPlayer, up to this cap.", 3, 1, 8);
+        ECHO_RECORD_BONUS_SECONDS = SpecValues.integer(builder, "echoRecordBonusSeconds", "Seconds each long take slip adds to a recording (a recording never exceeds 60 seconds).", 10, 0, 30);
+        ECHO_RECORD_UPGRADE_MAX = SpecValues.integer(builder, "echoRecordUpgradeMax", "How many long take slips one player may absorb.", 2, 0, 5);
+        ECHO_STURDY_HEALTH_BONUS = SpecValues.decimal(builder, "echoSturdyHealthBonus", "Max health each sturdy body slip adds to the player's echoes.", 10.0D, 0.0D, 50.0D);
+        ECHO_STURDY_UPGRADE_MAX = SpecValues.integer(builder, "echoSturdyUpgradeMax", "How many sturdy body slips one player may absorb.", 2, 0, 5);
         ECHO_WORK_IMPRINT_EVERY = SpecValues.integer(builder, "echoWorkImprintEvery", "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns work imprints off.", 20, 0, 1000);
         ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);

@@ -68,7 +68,7 @@ public final class EchoLife {
             return SpawnResult.EMPTY;
         }
         SpawnResult check = canActivate(player, recording);
-        if (check == SpawnResult.SPAWNED && EchoRegistry.get(player.level().getServer()).count(player.getUUID()) >= CommonConfig.ECHO_MAX_PER_PLAYER.get()) {
+        if (check == SpawnResult.SPAWNED && EchoRegistry.get(player.level().getServer()).count(player.getUUID()) >= EchoProgress.echoLimit(player)) {
             check = SpawnResult.LIMIT;
         }
         if (check != SpawnResult.SPAWNED) {
@@ -96,7 +96,7 @@ public final class EchoLife {
             return null;
         }
         echo.setOwner(owner);
-        echo.applyConfiguredHealth();
+        echo.applyBonusHealth(EchoProgress.bonusHealth(owner));
         echo.setHealth(echo.getMaxHealth());
         echo.setGeneration(EchoRegistry.get(level.getServer()).put(owner.getUUID(), echo.getUUID()));
         echo.job().setLesson(lesson);
