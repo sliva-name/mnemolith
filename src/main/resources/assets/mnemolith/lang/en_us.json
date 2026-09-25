@@ -440,6 +440,7 @@
   "mnemolith.job.follow": "Following you",
   "mnemolith.job.returning": "Returning to its point",
   "mnemolith.job.at_point": "At its point",
+  "mnemolith.job.strain": "Memory: %s",
   "mnemolith.job.msg.too_far": "Your echo is too far away",
   "mnemolith.job.msg.no_recording": "Your echo has no recording",
   "mnemolith.job.msg.not_container": "That isn't a chest",
@@ -508,5 +509,13 @@
   "mnemolith.configuration.echoReplicantUndoMax": "Replicant tricks",
   "mnemolith.configuration.echoReplicantUndoMax.tooltip": "How many placed blocks a replicant may pull back (the block returns to the echo), or how often it trips a miner, per mimic.",
   "mnemolith.configuration.echoStriderShadow": "Striders shadow echoes",
-  "mnemolith.configuration.echoStriderShadow.tooltip": "Echo striders trail a working echo like a recorded path, and charge it in an overloaded chunk."
+  "mnemolith.configuration.echoStriderShadow.tooltip": "Echo striders trail a working echo like a recorded path, and charge it in an overloaded chunk.",
+  "mnemolith.configuration.echoWorkImprintEvery": "Work imprint interval",
+  "mnemolith.configuration.echoWorkImprintEvery.tooltip": "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns it off.",
+  "mnemolith.configuration.echoWorkInstability": "Work instability",
+  "mnemolith.configuration.echoWorkInstability.tooltip": "Instability added with each work imprint (on top of the imprint).",
+  "mnemolith.configuration.echoMisfireChance": "Misfire chance in overload",
+  "mnemolith.configuration.echoMisfireChance.tooltip": "Chance per action that an echo in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later). Items are never lost or duplicated.",
+  "mnemolith.configuration.echoFractureStops": "Fracture stops work",
+  "mnemolith.configuration.echoFractureStops.tooltip": "Whether an echo stops in a chunk that reached the fracture band."
 }

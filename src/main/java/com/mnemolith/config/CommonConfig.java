@@ -85,6 +85,10 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_REPLICANT_MIMIC_TICKS;
     public static final ModConfigSpec.IntValue ECHO_REPLICANT_UNDO_MAX;
     public static final ModConfigSpec.BooleanValue ECHO_STRIDER_SHADOW;
+    public static final ModConfigSpec.IntValue ECHO_WORK_IMPRINT_EVERY;
+    public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
+    public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
+    public static final ModConfigSpec.BooleanValue ECHO_FRACTURE_STOPS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -185,6 +189,10 @@ public final class CommonConfig {
         ECHO_REPLICANT_MIMIC_TICKS = SpecValues.integer(builder, "echoReplicantMimicTicks", "How long, in ticks, a moment replicant mimics a working echo's job. 0 turns the mimic off.", 200, 0, 1200);
         ECHO_REPLICANT_UNDO_MAX = SpecValues.integer(builder, "echoReplicantUndoMax", "Most blocks a mimicking replicant pulls back from one build (the item goes back to the echo), or stumbles a miner or farmer.", 3, 0, 16);
         ECHO_STRIDER_SHADOW = SpecValues.bool(builder, "echoStriderShadow", "Whether echo striders shadow a working echo like a recorded path, and charge it when its chunk is overloaded.", true);
+        ECHO_WORK_IMPRINT_EVERY = SpecValues.integer(builder, "echoWorkImprintEvery", "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns work imprints off.", 20, 0, 1000);
+        ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
+        ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
+        ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
         builder.pop();
 
         SPEC = builder.build();

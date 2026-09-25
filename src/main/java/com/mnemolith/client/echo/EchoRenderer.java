@@ -154,6 +154,18 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
         float x = -minecraft.font.width(text) / 2.0F;
         int color = echo.jobStopped() ? LABEL_STOPPED : LABEL_TEXT;
         collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, x, 0.0F, text, FULL_BRIGHT, color, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
+        // Stage 3: a second line with the memory band of the chunk it works in, from saturation up.
+        com.mnemolith.pressure.PressureBand strain = echo.strain();
+        if (strain.ordinal() >= com.mnemolith.pressure.PressureBand.SATURATED.ordinal()) {
+            Component line = Component.translatable("mnemolith.job.strain", Component.translatable(strain.translationKey()));
+            float lx = -minecraft.font.width(line) / 2.0F;
+            int lineColor = switch (strain) {
+                case SATURATED -> 0xFFFFE08A;
+                case OVERLOADED -> 0xFFFFA060;
+                default -> 0xFFFF7080;
+            };
+            collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, lx, 10.0F, line, FULL_BRIGHT, lineColor, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
+        }
         poseStack.popPose();
     }
 

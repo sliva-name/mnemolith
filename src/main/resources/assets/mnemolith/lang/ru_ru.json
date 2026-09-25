@@ -440,6 +440,7 @@
   "mnemolith.job.follow": "Идёт за вами",
   "mnemolith.job.returning": "Возвращается к точке",
   "mnemolith.job.at_point": "На точке",
+  "mnemolith.job.strain": "Память: %s",
   "mnemolith.job.msg.too_far": "Отголосок слишком далеко",
   "mnemolith.job.msg.no_recording": "У отголоска нет записи",
   "mnemolith.job.msg.not_container": "Это не сундук",
@@ -508,5 +509,13 @@
   "mnemolith.configuration.echoReplicantUndoMax": "Проделки репликанта",
   "mnemolith.configuration.echoReplicantUndoMax.tooltip": "Сколько поставленных блоков репликант может разобрать обратно (блок возвращается отголоску) или сколько раз сбить шахтёра за одно передразнивание.",
   "mnemolith.configuration.echoStriderShadow": "Эхо-странник идёт следом",
-  "mnemolith.configuration.echoStriderShadow.tooltip": "Эхо-странники ходят за работающим отголоском, как по записанному пути, а в перегруженном чанке бросаются на него."
+  "mnemolith.configuration.echoStriderShadow.tooltip": "Эхо-странники ходят за работающим отголоском, как по записанному пути, а в перегруженном чанке бросаются на него.",
+  "mnemolith.configuration.echoWorkImprintEvery": "Отпечаток от работы",
+  "mnemolith.configuration.echoWorkImprintEvery.tooltip": "Сколько блоков отголосок добывает, ставит или собирает в одном чанке, прежде чем работа оставит там отпечаток стройки (от имени хозяина). 0 — без отпечатков.",
+  "mnemolith.configuration.echoWorkInstability": "Нестабильность от работы",
+  "mnemolith.configuration.echoWorkInstability.tooltip": "Сколько нестабильности добавляет каждый отпечаток работы (сверх самого отпечатка).",
+  "mnemolith.configuration.echoMisfireChance": "Шанс сбоя в перегрузке",
+  "mnemolith.configuration.echoMisfireChance.tooltip": "Шанс на действие, что отголосок в перегруженном чанке ошибётся: пропустит блок или поставит не тот (потом заберёт и исправит). Предметы не теряются и не множатся.",
+  "mnemolith.configuration.echoFractureStops": "Разлом останавливает работу",
+  "mnemolith.configuration.echoFractureStops.tooltip": "Останавливается ли отголосок в чанке, дошедшем до разлома."
 }

@@ -61,6 +61,8 @@ public class EchoEntity extends MemoryAvatar {
     private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_CHEST = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Optional<BlockPos>> DATA_JOB_ANCHOR = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Byte> DATA_LESSON = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
+    /** Stage 3: memory band of the chunk the echo works in (ordinal of PressureBand). */
+    private static final EntityDataAccessor<Byte> DATA_STRAIN = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
     public static final int LESSON_MINING = 1;
     public static final int LESSON_BUILDING = 2;
     private static final int JOB_STOPPED = 0x40;
@@ -108,6 +110,7 @@ public class EchoEntity extends MemoryAvatar {
         entityData.define(DATA_JOB_CHEST, Optional.empty());
         entityData.define(DATA_JOB_ANCHOR, Optional.empty());
         entityData.define(DATA_LESSON, (byte) 0);
+        entityData.define(DATA_STRAIN, (byte) 0);
     }
 
     // ---- inventory ----
@@ -377,6 +380,7 @@ public class EchoEntity extends MemoryAvatar {
         this.entityData.set(DATA_JOB_RADIUS, this.job.radius());
         this.entityData.set(DATA_JOB_CHEST, Optional.ofNullable(this.job.chest()));
         this.entityData.set(DATA_JOB_ANCHOR, Optional.ofNullable(this.job.buildAnchor()));
+        this.entityData.set(DATA_STRAIN, (byte) this.job.strain().ordinal());
         EchoLesson lesson = this.job.lesson();
         this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)));
     }
@@ -406,6 +410,11 @@ public class EchoEntity extends MemoryAvatar {
 
     public Optional<BlockPos> jobAnchor() {
         return this.entityData.get(DATA_JOB_ANCHOR);
+    }
+
+    /** Synced memory band of the chunk the echo works in; CALM when it does not work. */
+    public com.mnemolith.pressure.PressureBand strain() {
+        return com.mnemolith.pressure.PressureBand.byOrdinal(this.entityData.get(DATA_STRAIN));
     }
 
     public int lessonFlags() {

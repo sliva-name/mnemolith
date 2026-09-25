@@ -73,7 +73,7 @@ public final class EchoJob {
 
     /** The saved part of a job. */
     public record Saved(Mode mode, EchoLesson lesson, Optional<BlockPos> workAnchor, int radius, Optional<BlockPos> chest, Optional<BlockPos> buildAnchor,
-            Rotation rotation, int mined, JobStatus status) {
+            Rotation rotation, int mined, JobStatus status, Stage3 stage3) {
         public static final Codec<Saved> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Mode.CODEC.optionalFieldOf("mode", Mode.IDLE).forGetter(Saved::mode),
                 EchoLesson.CODEC.optionalFieldOf("lesson", EchoLesson.NONE).forGetter(Saved::lesson),
@@ -83,8 +83,26 @@ public final class EchoJob {
                 BlockPos.CODEC.optionalFieldOf("build_anchor").forGetter(Saved::buildAnchor),
                 Rotation.CODEC.optionalFieldOf("rotation", Rotation.NONE).forGetter(Saved::rotation),
                 Codec.INT.optionalFieldOf("mined", 0).forGetter(Saved::mined),
-                JobStatus.CODEC.optionalFieldOf("status", JobStatus.IDLE).forGetter(Saved::status))
+                JobStatus.CODEC.optionalFieldOf("status", JobStatus.IDLE).forGetter(Saved::status),
+                Stage3.CODEC.optionalFieldOf("stage3", Stage3.EMPTY).forGetter(Saved::stage3))
                 .apply(instance, Saved::new));
+    }
+
+    /** A block placed by a misfire, to be taken back and replaced with the right one. */
+    public record Misfire(BlockPos pos, BlockState state) {
+        public static final Codec<Misfire> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                BlockPos.CODEC.fieldOf("pos").forGetter(Misfire::pos),
+                BlockState.CODEC.fieldOf("state").forGetter(Misfire::state))
+                .apply(instance, Misfire::new));
+    }
+
+    /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
+    public record Stage3(List<Misfire> misfired, int workActions) {
+        public static final Stage3 EMPTY = new Stage3(List.of(), 0);
+        public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
+                Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions))
+                .apply(instance, Stage3::new));
     }
 
     private enum Phase {
@@ -101,7 +119,9 @@ public final class EchoJob {
     private enum DigFor {
         TUNNEL,
         TARGET,
-        CLEAR
+        CLEAR,
+        /** Stage 3: take back a misfired block, then place the right one. */
+        FIX
     }
 
     private static final int CANDIDATE_CAP = 256;
@@ -180,6 +200,15 @@ public final class EchoJob {
     private @Nullable BlockState undoState;
     private int undoDelay;
     private int stumbleTicks;
+    // ---- stage 3: pressure from work ----
+    private com.mnemolith.pressure.PressureBand strain = com.mnemolith.pressure.PressureBand.CALM;
+    private long workChunk = Long.MIN_VALUE;
+    private int workActions;
+    private int misfires;
+    /** Misfired blocks (saved): world position to the wrong state the echo put there. */
+    private final Map<Long, BlockState> misfired = new LinkedHashMap<>();
+    /** QA: overrides {@code echoMisfireChance} when set. */
+    public static @Nullable Double qaMisfireChance;
 
     public EchoJob() {}
 
@@ -239,6 +268,7 @@ public final class EchoJob {
     public void setLesson(EchoLesson lesson) {
         this.lesson = lesson;
         this.buildAnchor = null;
+        this.misfired.clear();
         this.dirty = true;
     }
 
@@ -256,12 +286,14 @@ public final class EchoJob {
     }
 
     public void setBlueprintAnchor(BlockPos anchor, Rotation rotation) {
+        this.misfired.clear();
         this.buildAnchor = anchor.immutable();
         this.rotation = rotation;
         this.dirty = true;
     }
 
     public void clearBlueprintAnchor() {
+        this.misfired.clear();
         this.buildAnchor = null;
         this.dirty = true;
     }
@@ -288,6 +320,15 @@ public final class EchoJob {
     /** A job that works in the world: mobs may hunt it, the replicant may mimic it, the work writes imprints. */
     public boolean isWorking() {
         return this.mode == Mode.MINE || this.mode == Mode.BUILD;
+    }
+
+    /** Memory band of the chunk the echo works in (updated once a second while it works). */
+    public com.mnemolith.pressure.PressureBand strain() {
+        return this.strain;
+    }
+
+    public int misfiredCount() {
+        return this.misfired.size();
     }
 
     public boolean alarmed() {
@@ -444,7 +485,15 @@ public final class EchoJob {
 
     public Saved save() {
         return new Saved(this.mode, this.lesson, Optional.ofNullable(this.workAnchor), this.radius(), Optional.ofNullable(this.chest), Optional.ofNullable(this.buildAnchor),
-                this.rotation, this.mined, this.status);
+                this.rotation, this.mined, this.status, this.saveStage3());
+    }
+
+    private Stage3 saveStage3() {
+        List<Misfire> list = new ArrayList<>();
+        for (Map.Entry<Long, BlockState> entry : this.misfired.entrySet()) {
+            list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
+        }
+        return new Stage3(list, this.workActions);
     }
 
     public void load(Saved saved) {
@@ -457,6 +506,11 @@ public final class EchoJob {
         this.rotation = saved.rotation();
         this.mined = saved.mined();
         this.status = saved.status();
+        this.misfired.clear();
+        for (Misfire misfire : saved.stage3().misfired()) {
+            this.misfired.put(misfire.pos().asLong(), misfire.state());
+        }
+        this.workActions = saved.stage3().workActions();
         this.restartPhase();
         this.dirty = true;
     }
@@ -470,6 +524,12 @@ public final class EchoJob {
         }
         if (this.mimicTicks > 0) {
             this.tickMimic(level, echo);
+        }
+        if (echo.tickCount % 20 == 3) {
+            this.refreshStrain(level, echo);
+            if (!this.isWorking()) {
+                return;
+            }
         }
         if (this.alarmed) {
             this.tickAlarm(level, echo);
@@ -674,6 +734,124 @@ public final class EchoJob {
         this.mimicCount++;
         this.stumbleTicks = 30;
         this.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
+    }
+
+    // ================= pressure from work (stage 3) =================
+
+    /** Reads the band of the echo's chunk; a working echo stops in a fracture. */
+    public void refreshStrain(ServerLevel level, EchoEntity echo) {
+        com.mnemolith.pressure.PressureBand band = com.mnemolith.pressure.PressureBand.CALM;
+        if (this.isWorking()) {
+            com.mnemolith.imprint.ChunkMemory memory = com.mnemolith.world.LoadedChunkMemory.existing(level.getChunkAt(echo.blockPosition()));
+            band = memory == null ? band : com.mnemolith.pressure.MemoryPressure.band(memory.cachedPressure());
+        }
+        if (band != this.strain) {
+            this.strain = band;
+            this.dirty = true;
+        }
+        if (band == com.mnemolith.pressure.PressureBand.FRACTURE && this.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get()) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.FRACTURED));
+        }
+    }
+
+    /**
+     * One finished piece of work (a mined, placed or harvested block). Every {@code echoWorkImprintEvery} pieces in the
+     * same chunk the work leaves a build imprint by the owner there, plus {@code echoWorkInstability}; a muted chunk
+     * refuses the write, and then no instability is added either.
+     */
+    private void onWorkAction(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        int every = CommonConfig.ECHO_WORK_IMPRINT_EVERY.get();
+        if (every <= 0) {
+            return;
+        }
+        long chunk = net.minecraft.world.level.ChunkPos.pack(pos);
+        if (chunk != this.workChunk) {
+            this.workChunk = chunk;
+            this.workActions = 0;
+        }
+        if (++this.workActions < every) {
+            return;
+        }
+        this.workActions = 0;
+        boolean written = com.mnemolith.imprint.ImprintWriter.write(level, pos, List.of(com.mnemolith.imprint.ImprintTag.BUILD), echo.ownerId(), false);
+        int instability = CommonConfig.ECHO_WORK_INSTABILITY.get();
+        if (written && instability > 0) {
+            com.mnemolith.imprint.ImprintWriter.spike(level, pos, instability);
+        }
+        Mnemolith.LOGGER.info("Mnemolith echo work imprint owner={} at {} written={}", echo.ownerName(), pos.toShortString(), written);
+    }
+
+    /** True when this action misfires: only in an overloaded chunk, with {@code echoMisfireChance}. */
+    private boolean misfire(EchoEntity echo) {
+        if (this.strain != com.mnemolith.pressure.PressureBand.OVERLOADED) {
+            return false;
+        }
+        double chance = qaMisfireChance != null ? qaMisfireChance : CommonConfig.ECHO_MISFIRE_CHANCE.get();
+        return chance > 0.0D && echo.getRandom().nextDouble() < chance;
+    }
+
+    private void misfireNotice(EchoEntity echo, String kind, BlockPos pos) {
+        this.notice(JobStatus.of(JobStatus.Kind.MISFIRE, kind), 60);
+        Mnemolith.LOGGER.info("Mnemolith echo misfire owner={} kind={} at {}", echo.ownerName(), kind, pos.toShortString());
+    }
+
+    /**
+     * Puts another block of the blueprint that the echo carries at {@code entry}'s spot instead of the right one. The
+     * spot is remembered and fixed first on the next pick: the wrong block goes back into the echo (exactly one item),
+     * then the right one is placed. Only simple blocks, and never next to fluids, so the take-back cannot be refused.
+     */
+    private boolean placeWrong(ServerLevel level, EchoEntity echo, EchoLesson.Entry entry) {
+        BlockPos pos = entry.offset();
+        for (Direction side : Direction.values()) {
+            if (!level.getFluidState(pos.relative(side)).isEmpty()) {
+                return false;
+            }
+        }
+        Set<Item> tried = new HashSet<>();
+        tried.add(entry.item());
+        for (EchoLesson.Entry other : this.plan) {
+            Item item = other.item();
+            if (!tried.add(item) || echo.inventory().find(item) < 0) {
+                continue;
+            }
+            BlockState wrong = other.state();
+            if (wrong.hasBlockEntity() || !simpleBlock(wrong) || !wrong.canSurvive(level, pos)) {
+                continue;
+            }
+            if (EchoHands.placeForJob(level, echo, pos, wrong) == EchoHands.Outcome.DONE) {
+                this.misfired.put(pos.asLong(), level.getBlockState(pos));
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private static boolean simpleBlock(BlockState state) {
+        return !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.BED_PART)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.CHEST_TYPE);
+    }
+
+    /** A miner's misfire: also breaks one natural block next to the target (drops go to the echo as usual). */
+    private boolean breakExtra(ServerLevel level, EchoEntity echo, BlockPos target) {
+        BlockPos feet = echo.blockPosition();
+        for (Direction side : Direction.values()) {
+            BlockPos pos = target.relative(side);
+            if (pos.equals(feet) || pos.equals(feet.above()) || pos.equals(feet.below()) || !level.isLoaded(pos)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(pos);
+            if (state.isAir() || this.isTarget(state) || !EchoWork.canTunnel(level, echo, pos, state) || !EchoWork.safeToBreak(level, echo, pos)) {
+                continue;
+            }
+            int tool = EchoWork.bestTool(echo.inventory(), state);
+            if (tool < 0 && EchoWork.needsTool(state)) {
+                continue;
+            }
+            return EchoHands.breakForJob(level, echo, pos, tool).outcome() == EchoHands.Outcome.DONE;
+        }
+        return false;
     }
 
     // ================= mining =================
@@ -955,6 +1133,7 @@ public final class EchoJob {
         int done = 0;
         EchoLesson.Entry pick = null;
         EchoLesson.Entry clear = null;
+        EchoLesson.Entry fix = null;
         Map<Item, Integer> remaining = new LinkedHashMap<>();
         boolean anyUnloaded = false;
         for (EchoLesson.Entry entry : this.plan) {
@@ -963,11 +1142,21 @@ public final class EchoJob {
                 anyUnloaded = true;
                 continue;
             }
+            long key = pos.asLong();
+            BlockState wrong = this.misfired.get(key);
+            if (wrong != null) {
+                if (level.getBlockState(pos).getBlock() == wrong.getBlock()) {
+                    if (fix == null) {
+                        fix = entry;
+                    }
+                    continue;
+                }
+                this.misfired.remove(key);
+            }
             if (this.placedCorrectly(level, entry)) {
                 done++;
                 continue;
             }
-            long key = pos.asLong();
             if (this.blocked.contains(key)) {
                 continue;
             }
@@ -999,6 +1188,9 @@ public final class EchoJob {
         }
         if (clear != null && pick == null) {
             pick = clear;
+        }
+        if (fix != null) {
+            pick = fix;
         }
         if (pick == null) {
             if (remaining.isEmpty()) {
@@ -1039,7 +1231,7 @@ public final class EchoJob {
         this.buildTarget = pick;
         this.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, done, total));
         BlockPos goalPos = pick.offset();
-        this.digFor = pick == clear ? DigFor.CLEAR : DigFor.TARGET;
+        this.digFor = pick == fix ? DigFor.FIX : pick == clear ? DigFor.CLEAR : DigFor.TARGET;
         this.startPath(level, echo, new EchoNav.Goal() {
             @Override
             public boolean reached(BlockPos feet) {
@@ -1103,6 +1295,18 @@ public final class EchoJob {
             return;
         }
         BlockPos pos = entry.offset();
+        if (this.misfire(echo)) {
+            if (this.misfires++ % 2 == 1 && this.placeWrong(level, echo, entry)) {
+                this.misfireNotice(echo, "wrong", pos);
+                this.placeCooldown = PLACE_INTERVAL;
+            } else {
+                echo.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                this.misfireNotice(echo, "skip", pos);
+                this.placeCooldown = 20;
+            }
+            this.phase = Phase.SELECT;
+            return;
+        }
         EchoHands.Outcome outcome = EchoHands.placeForJob(level, echo, pos, entry.state());
         switch (outcome) {
             case DONE -> {
@@ -1112,6 +1316,7 @@ public final class EchoJob {
                 this.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.plan.size()));
                 this.placeCooldown = PLACE_INTERVAL;
                 this.mimicAfterPlace(pos, entry.state());
+                this.onWorkAction(level, echo, pos);
             }
             case SKIPPED_CHANGED -> this.skipped.add(pos.asLong());
             case REFUSED -> {
@@ -1346,6 +1551,18 @@ public final class EchoJob {
                 this.beginDig(level, echo, entry.offset(), DigFor.CLEAR);
                 return;
             }
+            if (this.digFor == DigFor.FIX) {
+                this.digFor = DigFor.TARGET;
+                BlockState wrong = this.misfired.remove(entry.offset().asLong());
+                if (wrong != null && !EchoHands.takeBack(level, echo, entry.offset(), wrong)) {
+                    // Someone protects or changed it: leave it, the builder reports it as blocked.
+                    this.blocked.add(entry.offset().asLong());
+                    this.buildTarget = null;
+                    this.phase = Phase.SELECT;
+                    return;
+                }
+                this.notice(JobStatus.of(JobStatus.Kind.MISFIRE, "fix"), 40);
+            }
             this.placeBuildTarget(level, echo);
         }
     }
@@ -1396,6 +1613,16 @@ public final class EchoJob {
         if (this.digTicks < this.digTotal) {
             return;
         }
+        if (this.digFor == DigFor.TARGET && this.misfire(echo)) {
+            if (this.misfires++ % 2 == 1 && this.breakExtra(level, echo, pos)) {
+                this.misfireNotice(echo, "extra", pos);
+            } else {
+                // Fumbled: the dig starts over.
+                this.digTicks = 0;
+                this.misfireNotice(echo, "skip", pos);
+                return;
+            }
+        }
         level.destroyBlockProgress(echo.getId(), pos, -1);
         this.digPos = null;
         if (!EchoWork.safeToBreak(level, echo, pos)) {
@@ -1432,6 +1659,7 @@ public final class EchoJob {
                 this.setStatus(new JobStatus(JobStatus.Kind.MINING, this.targetState == null ? "" : key(this.targetState.getBlock()), this.mined, 0));
                 this.phase = Phase.SELECT;
                 this.mimicAfterBreak();
+                this.onWorkAction(level, echo, pos);
             }
         }
         if (toolBroke && this.mode == Mode.MINE) {
@@ -1451,7 +1679,7 @@ public final class EchoJob {
                 this.phase = Phase.SELECT;
             }
             case TUNNEL -> this.replan(level, echo);
-            case CLEAR -> {
+            case CLEAR, FIX -> {
                 this.digFor = DigFor.TARGET;
                 this.blocked.add(pos.asLong());
                 this.buildTarget = null;
