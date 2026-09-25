@@ -114,6 +114,10 @@ public final class EchoNetwork {
                 echo.stopReplayIfRunning();
                 job.startBuilding(echo);
             }
+            case MODE_FARM -> {
+                echo.stopReplayIfRunning();
+                job.startFarming(echo);
+            }
             case STOP -> {
                 echo.stopReplayIfRunning();
                 job.stop(echo);

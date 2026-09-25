@@ -225,6 +225,50 @@ public final class EchoWork {
         return moved;
     }
 
+    /**
+     * Stage 3 farm drop-off: moves the harvest (food included) into the chest and keeps tools, armor and up to
+     * {@code keepSeeds} of each planting item in {@code seeds} for replanting. Returns the number of items moved;
+     * what does not fit stays with the echo.
+     */
+    public static int depositFarm(EchoEntity echo, Container chest, java.util.Set<Item> seeds, int keepSeeds) {
+        int moved = 0;
+        EchoInventory inventory = echo.inventory();
+        Map<Item, Integer> kept = new LinkedHashMap<>();
+        for (int i = 0; i < EchoInventory.MAIN; i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.isEmpty() || stack.isDamageableItem() || stack.has(DataComponents.TOOL) || stack.has(DataComponents.EQUIPPABLE)) {
+                continue;
+            }
+            int move = stack.getCount();
+            if (seeds.contains(stack.getItem())) {
+                int already = kept.getOrDefault(stack.getItem(), 0);
+                int keep = Math.max(0, Math.min(stack.getCount(), keepSeeds - already));
+                kept.put(stack.getItem(), already + keep);
+                move = stack.getCount() - keep;
+            }
+            if (move <= 0) {
+                continue;
+            }
+            ItemStack taken = inventory.removeItem(i, move);
+            int before = taken.getCount();
+            ItemStack rest = HopperBlockEntity.addItem(null, chest, taken, null);
+            moved += before - rest.getCount();
+            if (!rest.isEmpty()) {
+                // Put back what did not fit (same slot if it is empty now, else anywhere; never dropped).
+                ItemStack now = inventory.getItem(i);
+                if (now.isEmpty()) {
+                    inventory.setItem(i, rest);
+                } else {
+                    now.grow(rest.getCount());
+                }
+            }
+        }
+        if (moved > 0) {
+            chest.setChanged();
+        }
+        return moved;
+    }
+
     /** Takes up to {@code wanted} of each item from the chest into the echo. Returns the number of items taken. */
     public static int take(EchoEntity echo, Container chest, Map<Item, Integer> wanted) {
         int taken = 0;

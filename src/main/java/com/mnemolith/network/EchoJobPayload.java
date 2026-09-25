@@ -20,7 +20,9 @@ public record EchoJobPayload(int entityId, Action action, BlockPos pos, int valu
         LINK_CHEST,
         UNLINK_CHEST,
         PLACE_BLUEPRINT,
-        CLEAR_BLUEPRINT;
+        CLEAR_BLUEPRINT,
+        /** Stage 3: appended so the ordinals above stay. */
+        MODE_FARM;
 
         private static final Action[] VALUES = values();
 

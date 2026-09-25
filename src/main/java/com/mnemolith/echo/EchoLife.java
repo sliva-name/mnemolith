@@ -75,7 +75,8 @@ public final class EchoLife {
             player.sendSystemMessage(Component.translatable("mnemolith.echo.activate_" + check.name().toLowerCase(java.util.Locale.ROOT)), true);
             return check;
         }
-        EchoEntity echo = spawn(player.level(), player, recording, stack.getOrDefault(ModDataComponents.ECHO_LESSON.get(), EchoLesson.NONE));
+        EchoEntity echo = spawn(player.level(), player, recording, stack.getOrDefault(ModDataComponents.ECHO_LESSON.get(), EchoLesson.NONE),
+                stack.getOrDefault(ModDataComponents.ECHO_FARM.get(), FarmLesson.NONE));
         if (echo == null) {
             return SpawnResult.EMPTY;
         }
@@ -91,6 +92,11 @@ public final class EchoLife {
 
     /** As {@link #spawn(ServerLevel, ServerPlayer, EchoRecording)}, and the echo also learns {@code lesson} for jobs. */
     public static @Nullable EchoEntity spawn(ServerLevel level, ServerPlayer owner, EchoRecording recording, EchoLesson lesson) {
+        return spawn(level, owner, recording, lesson, FarmLesson.NONE);
+    }
+
+    /** As above, with a stage 3 farming lesson too. */
+    public static @Nullable EchoEntity spawn(ServerLevel level, ServerPlayer owner, EchoRecording recording, EchoLesson lesson, FarmLesson farm) {
         EchoEntity echo = ModEntities.ECHO.get().create(level, EntitySpawnReason.MOB_SUMMONED);
         if (echo == null) {
             return null;
@@ -100,6 +106,7 @@ public final class EchoLife {
         echo.setHealth(echo.getMaxHealth());
         echo.setGeneration(EchoRegistry.get(level.getServer()).put(owner.getUUID(), echo.getUUID()));
         echo.job().setLesson(lesson);
+        echo.job().setFarmLesson(farm);
         echo.startReplay(recording);
         level.addFreshEntity(echo);
         level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.9F, 0.7F);
@@ -119,6 +126,7 @@ public final class EchoLife {
             player.sendSystemMessage(Component.translatable("mnemolith.echo.activate_" + check.name().toLowerCase(java.util.Locale.ROOT)), true);
             return false;
         }
+        echo.job().setFarmLesson(stack.getOrDefault(ModDataComponents.ECHO_FARM.get(), FarmLesson.NONE));
         echo.teachLesson(stack.getOrDefault(ModDataComponents.ECHO_LESSON.get(), EchoLesson.NONE));
         echo.startReplay(recording);
         stack.shrink(1);

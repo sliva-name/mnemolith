@@ -65,6 +65,9 @@ public class EchoEntity extends MemoryAvatar {
     private static final EntityDataAccessor<Byte> DATA_STRAIN = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.BYTE);
     public static final int LESSON_MINING = 1;
     public static final int LESSON_BUILDING = 2;
+    /** Stage 3: the echo knows farming; {@link #DATA_FARM} names the crops. */
+    public static final int LESSON_FARMING = 4;
+    private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
     /** Set by the physical client so client-side echoes carry a skin. Null on a dedicated server. */
     public static EntityType.@Nullable EntityFactory<EchoEntity> clientFactory;
@@ -113,6 +116,7 @@ public class EchoEntity extends MemoryAvatar {
         entityData.define(DATA_JOB_ANCHOR, Optional.empty());
         entityData.define(DATA_LESSON, (byte) 0);
         entityData.define(DATA_STRAIN, (byte) 0);
+        entityData.define(DATA_FARM, Component.empty());
     }
 
     // ---- inventory ----
@@ -391,7 +395,9 @@ public class EchoEntity extends MemoryAvatar {
         this.entityData.set(DATA_JOB_ANCHOR, Optional.ofNullable(this.job.buildAnchor()));
         this.entityData.set(DATA_STRAIN, (byte) this.job.strain().ordinal());
         EchoLesson lesson = this.job.lesson();
-        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)));
+        boolean farming = this.job.farmLesson().teaches();
+        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0) | (farming ? LESSON_FARMING : 0)));
+        this.entityData.set(DATA_FARM, farming ? this.job.farmLesson().cropNames() : Component.empty());
     }
 
     /** Synced job mode (client and server). */
@@ -424,6 +430,17 @@ public class EchoEntity extends MemoryAvatar {
     /** Synced memory band of the chunk the echo works in; CALM when it does not work. */
     public com.mnemolith.pressure.PressureBand strain() {
         return com.mnemolith.pressure.PressureBand.byOrdinal(this.entityData.get(DATA_STRAIN));
+    }
+
+    /** Synced crop names of the farming lesson ("Wheat, Carrots"); empty without one. */
+    public Component farmCrops() {
+        return this.entityData.get(DATA_FARM);
+    }
+
+    /** Stage 3: an echo never tramples farmland, also when it jumps onto it. */
+    @Override
+    public boolean canTrample(ServerLevel level, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, double fallDistance) {
+        return false;
     }
 
     public int lessonFlags() {

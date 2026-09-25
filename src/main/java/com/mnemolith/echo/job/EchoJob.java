@@ -56,7 +56,9 @@ public final class EchoJob {
         IDLE,
         REPLAY,
         MINE,
-        BUILD;
+        BUILD,
+        /** Stage 3: harvest mature taught crops, replant, deposit. */
+        FARM;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -97,11 +99,13 @@ public final class EchoJob {
     }
 
     /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
-    public record Stage3(List<Misfire> misfired, int workActions) {
-        public static final Stage3 EMPTY = new Stage3(List.of(), 0);
+    public record Stage3(List<Misfire> misfired, int workActions, com.mnemolith.echo.FarmLesson farm, int harvested) {
+        public static final Stage3 EMPTY = new Stage3(List.of(), 0, com.mnemolith.echo.FarmLesson.NONE, 0);
         public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
-                Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions))
+                Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions),
+                com.mnemolith.echo.FarmLesson.CODEC.optionalFieldOf("farm", com.mnemolith.echo.FarmLesson.NONE).forGetter(Stage3::farm),
+                Codec.INT.optionalFieldOf("harvested", 0).forGetter(Stage3::harvested))
                 .apply(instance, Stage3::new));
     }
 
@@ -207,6 +211,14 @@ public final class EchoJob {
     private int misfires;
     /** Misfired blocks (saved): world position to the wrong state the echo put there. */
     private final Map<Long, BlockState> misfired = new LinkedHashMap<>();
+    // ---- stage 3: farming ----
+    private com.mnemolith.echo.FarmLesson farm = com.mnemolith.echo.FarmLesson.NONE;
+    private int harvested;
+    private final List<BlockPos> farmTasks = new ArrayList<>();
+    private final LongOpenHashSet farmRefused = new LongOpenHashSet();
+    private int farmScanIndex;
+    private int fieldSize;
+    private @Nullable BlockPos farmTarget;
     /** QA: overrides {@code echoMisfireChance} when set. */
     public static @Nullable Double qaMisfireChance;
 
@@ -319,7 +331,21 @@ public final class EchoJob {
 
     /** A job that works in the world: mobs may hunt it, the replicant may mimic it, the work writes imprints. */
     public boolean isWorking() {
-        return this.mode == Mode.MINE || this.mode == Mode.BUILD;
+        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM;
+    }
+
+    public com.mnemolith.echo.FarmLesson farmLesson() {
+        return this.farm;
+    }
+
+    /** The farming lesson from a recording (stage 3). A new recording always replaces it, also with none. */
+    public void setFarmLesson(com.mnemolith.echo.FarmLesson farm) {
+        this.farm = farm;
+        this.dirty = true;
+    }
+
+    public int harvested() {
+        return this.harvested;
     }
 
     /** Memory band of the chunk the echo works in (updated once a second while it works). */
@@ -430,6 +456,24 @@ public final class EchoJob {
         return true;
     }
 
+    /** Starts farming around the echo (stage 3). False, with a stop status, when it was not taught farming. */
+    public boolean startFarming(EchoEntity echo) {
+        this.clearInterruptions(echo);
+        this.release(echo);
+        if (!this.farm.teaches()) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return false;
+        }
+        this.mode = Mode.FARM;
+        this.workAnchor = echo.blockPosition();
+        this.harvested = 0;
+        this.restartPhase();
+        this.setStatus(new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), 0, 0));
+        this.dirty = true;
+        return true;
+    }
+
     /** World positions and states the build places (rotated, bottom-up). Empty when no blueprint is placed. */
     public List<EchoLesson.Entry> plan() {
         if (this.buildAnchor == null || this.lesson.blueprint().isEmpty()) {
@@ -451,6 +495,9 @@ public final class EchoJob {
         this.placeFailures.clear();
         this.target = null;
         this.buildTarget = null;
+        this.farmTarget = null;
+        this.farmTasks.clear();
+        this.farmRefused.clear();
         this.digPos = null;
         this.unreachableInRow = 0;
         this.replans = 0;
@@ -493,7 +540,7 @@ public final class EchoJob {
         for (Map.Entry<Long, BlockState> entry : this.misfired.entrySet()) {
             list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
         }
-        return new Stage3(list, this.workActions);
+        return new Stage3(list, this.workActions, this.farm, this.harvested);
     }
 
     public void load(Saved saved) {
@@ -511,6 +558,8 @@ public final class EchoJob {
             this.misfired.put(misfire.pos().asLong(), misfire.state());
         }
         this.workActions = saved.stage3().workActions();
+        this.farm = saved.stage3().farm();
+        this.harvested = saved.stage3().harvested();
         this.restartPhase();
         this.dirty = true;
     }
@@ -543,6 +592,7 @@ public final class EchoJob {
         switch (this.mode) {
             case MINE -> this.tickMining(level, echo);
             case BUILD -> this.tickBuilding(level, echo);
+            case FARM -> this.tickFarming(level, echo);
             case REPLAY -> {
                 if (!echo.isReplaying()) {
                     this.mode = Mode.IDLE;
@@ -650,6 +700,7 @@ public final class EchoJob {
         return switch (this.mode) {
             case MINE -> new JobStatus(JobStatus.Kind.MINING, this.lesson.mining().isEmpty() ? "" : key(this.lesson.mining().get(0).block()), this.mined, 0);
             case BUILD -> JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
+            case FARM -> new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), this.harvested, 0);
             default -> JobStatus.IDLE;
         };
     }
@@ -852,6 +903,274 @@ public final class EchoJob {
             return EchoHands.breakForJob(level, echo, pos, tool).outcome() == EchoHands.Outcome.DONE;
         }
         return false;
+    }
+
+    // ================= farming (stage 3) =================
+
+    private String farmCropKey() {
+        return this.farm.crops().isEmpty() ? "" : key(this.farm.crops().get(0));
+    }
+
+    private int farmRadius() {
+        return Math.max(2, Math.min(this.radius(), CommonConfig.ECHO_FARM_MAX_RADIUS.get()));
+    }
+
+    private java.util.Set<Item> seedItems() {
+        java.util.Set<Item> seeds = new HashSet<>();
+        for (Block crop : this.farm.crops()) {
+            seeds.add(com.mnemolith.echo.FarmLesson.seedFor(crop));
+        }
+        return seeds;
+    }
+
+    private void tickFarming(ServerLevel level, EchoEntity echo) {
+        BlockPos anchor = this.workAnchor;
+        if (anchor == null) {
+            anchor = echo.blockPosition();
+            this.workAnchor = anchor;
+        }
+        if (!level.isLoaded(anchor)) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.UNLOADED));
+            return;
+        }
+        if (this.placeCooldown > 0) {
+            this.placeCooldown--;
+            return;
+        }
+        switch (this.phase) {
+            case START -> {
+                this.farmTasks.clear();
+                this.farmScanIndex = 0;
+                this.fieldSize = 0;
+                this.phase = Phase.SCAN;
+            }
+            case SCAN -> {
+                if (this.scanFarm(level, anchor, CommonConfig.ECHO_SCAN_BUDGET.get())) {
+                    this.phase = Phase.SELECT;
+                }
+            }
+            case SELECT -> this.selectFarmTask(level, echo);
+            case PATH -> this.tickPath(level, echo);
+            case WALK -> this.tickWalk(level, echo);
+            case TO_CHEST -> this.atChest(level, echo);
+            case WAIT -> {
+                if (++this.waitTicks % CommonConfig.ECHO_FARM_POLL_TICKS.get() == 0) {
+                    this.phase = Phase.START;
+                }
+            }
+            default -> this.phase = Phase.SELECT;
+        }
+    }
+
+    /** Reads up to {@code budget} positions of the field box. True once the whole box was read. */
+    private boolean scanFarm(ServerLevel level, BlockPos anchor, int budget) {
+        int r = this.farmRadius();
+        int side = r * 2 + 1;
+        int height = 7;
+        int total = side * side * height;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int work = 0;
+        while (this.farmScanIndex < total && work < budget) {
+            int i = this.farmScanIndex++;
+            work++;
+            int dx = i % side - r;
+            int dz = (i / side) % side - r;
+            int dy = i / (side * side) - 3;
+            cursor.set(anchor.getX() + dx, anchor.getY() + dy, anchor.getZ() + dz);
+            if (!level.isLoaded(cursor)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(cursor);
+            if (state.getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
+                this.fieldSize++;
+                if (this.farm.knows(state.getBlock()) && com.mnemolith.echo.FarmLesson.isMature(state) && this.farmTasks.size() < CANDIDATE_CAP) {
+                    this.farmTasks.add(cursor.immutable());
+                }
+            } else if (state.is(net.minecraft.world.level.block.Blocks.FARMLAND)) {
+                this.fieldSize++;
+                if (level.getBlockState(cursor.above()).isAir() && this.farmTasks.size() < CANDIDATE_CAP) {
+                    this.farmTasks.add(cursor.above().immutable());
+                }
+            }
+        }
+        return this.farmScanIndex >= total;
+    }
+
+    /** A harvest (mature taught crop) or a planting spot (air over farmland, and the echo carries a taught seed). */
+    private boolean farmTaskValid(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        if (!level.isLoaded(pos) || this.farmRefused.contains(pos.asLong())) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (com.mnemolith.echo.FarmLesson.isMature(state)) {
+            return this.farm.knows(state.getBlock());
+        }
+        return state.isAir() && level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.FARMLAND) && this.seedToPlant(echo, null) != null;
+    }
+
+    /** The crop to plant: {@code preferred} when the echo carries its seed, else the first taught crop it has seeds for. */
+    private @Nullable Block seedToPlant(EchoEntity echo, @Nullable Block preferred) {
+        if (preferred != null && this.farm.knows(preferred) && echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(preferred)) >= 0) {
+            return preferred;
+        }
+        for (Block crop : this.farm.crops()) {
+            if (echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(crop)) >= 0) {
+                return crop;
+            }
+        }
+        return null;
+    }
+
+    /** Harvest and extra planting items above what it keeps for replanting. */
+    private int farmProduce(EchoEntity echo) {
+        java.util.Set<Item> seeds = this.seedItems();
+        Map<Item, Integer> seedCounts = new LinkedHashMap<>();
+        int produce = 0;
+        for (int i = 0; i < EchoInventory.MAIN; i++) {
+            ItemStack stack = echo.inventory().getItem(i);
+            if (stack.isEmpty() || stack.isDamageableItem() || stack.has(net.minecraft.core.component.DataComponents.TOOL)
+                    || stack.has(net.minecraft.core.component.DataComponents.EQUIPPABLE)) {
+                continue;
+            }
+            if (seeds.contains(stack.getItem())) {
+                seedCounts.merge(stack.getItem(), stack.getCount(), Integer::sum);
+            } else {
+                produce += stack.getCount();
+            }
+        }
+        for (int count : seedCounts.values()) {
+            produce += Math.max(0, count - 64);
+        }
+        return produce;
+    }
+
+    private void selectFarmTask(ServerLevel level, EchoEntity echo) {
+        if (this.needsDropOff(echo)) {
+            if (this.chest == null) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.INVENTORY_FULL));
+            } else {
+                this.goToChest(level, echo);
+            }
+            return;
+        }
+        if (this.unreachableInRow >= UNREACHABLE_GIVE_UP) {
+            this.halt(echo, JobStatus.of(JobStatus.Kind.UNREACHABLE));
+            return;
+        }
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        var iterator = this.farmTasks.iterator();
+        while (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            if (!this.farmTaskValid(level, echo, pos)) {
+                iterator.remove();
+                continue;
+            }
+            double distance = pos.distToCenterSqr(echo.position());
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = pos;
+            }
+        }
+        if (best == null) {
+            if (this.fieldSize == 0) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.NO_FIELD));
+                return;
+            }
+            if (this.chest != null && this.farmProduce(echo) > 0) {
+                this.goToChest(level, echo);
+                return;
+            }
+            this.release(echo);
+            this.setStatus(new JobStatus(JobStatus.Kind.FARM_WAIT, this.farmCropKey(), this.harvested, 0));
+            this.phase = Phase.WAIT;
+            this.waitTicks = 0;
+            this.farmRefused.clear();
+            return;
+        }
+        this.farmTarget = best;
+        BlockState state = level.getBlockState(best);
+        String crop = state.getBlock() instanceof net.minecraft.world.level.block.CropBlock ? key(state.getBlock()) : this.farmCropKey();
+        this.setStatus(new JobStatus(JobStatus.Kind.FARMING, crop, this.harvested, 0));
+        BlockPos goalPos = best;
+        this.startPath(level, echo, new EchoNav.Goal() {
+            @Override
+            public boolean reached(BlockPos feet) {
+                return canWorkOn(level, feet, goalPos);
+            }
+
+            @Override
+            public double estimate(BlockPos feet) {
+                return Math.max(0.0D, Math.sqrt(feet.distSqr(goalPos)) - 3.0D);
+            }
+        }, null, 0, false);
+    }
+
+    /** At the spot: harvest a mature crop and replant it from the echo's own seeds, or plant empty farmland. */
+    private void farmAct(ServerLevel level, EchoEntity echo) {
+        BlockPos pos = this.farmTarget;
+        this.farmTarget = null;
+        this.phase = Phase.SELECT;
+        if (pos == null) {
+            return;
+        }
+        BlockState state = level.getBlockState(pos);
+        echo.lookAt(Vec3.atCenterOf(pos));
+        if (com.mnemolith.echo.FarmLesson.isMature(state) && this.farm.knows(state.getBlock())) {
+            if (this.misfire(echo)) {
+                echo.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                this.misfireNotice(echo, "skip", pos);
+                this.placeCooldown = 20;
+                return;
+            }
+            if (!EchoWork.safeToBreak(level, echo, pos)) {
+                this.farmRefused.add(pos.asLong());
+                return;
+            }
+            Block crop = state.getBlock();
+            EchoHands.JobBreak result = EchoHands.breakForJob(level, echo, pos, -1);
+            if (result.outcome() != EchoHands.Outcome.DONE) {
+                this.farmRefused.add(pos.asLong());
+                return;
+            }
+            this.harvested++;
+            this.unreachableInRow = 0;
+            this.onWorkAction(level, echo, pos);
+            this.plant(level, echo, pos, crop);
+            this.setStatus(new JobStatus(JobStatus.Kind.FARMING, key(crop), this.harvested, 0));
+            this.placeCooldown = PLACE_INTERVAL;
+            this.mimicAfterBreak();
+            return;
+        }
+        if (state.isAir() && level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.FARMLAND)) {
+            if (!this.plant(level, echo, pos, null)) {
+                this.farmRefused.add(pos.asLong());
+            }
+            this.placeCooldown = PLACE_INTERVAL;
+        }
+    }
+
+    /** Plants a taught crop at {@code pos} from the echo's own seeds. In overload it may pick another taught seed. */
+    private boolean plant(ServerLevel level, EchoEntity echo, BlockPos pos, @Nullable Block preferred) {
+        Block crop = this.seedToPlant(echo, preferred);
+        if (crop == null) {
+            return false;
+        }
+        if (this.farm.crops().size() > 1 && this.misfire(echo) && this.misfires++ % 2 == 1) {
+            for (Block other : this.farm.crops()) {
+                if (other != crop && echo.inventory().find(com.mnemolith.echo.FarmLesson.seedFor(other)) >= 0) {
+                    crop = other;
+                    this.misfireNotice(echo, "seed", pos);
+                    break;
+                }
+            }
+        }
+        boolean planted = EchoHands.placeForJob(level, echo, pos, crop.defaultBlockState()) == EchoHands.Outcome.DONE;
+        if (planted) {
+            this.unreachableInRow = 0;
+            this.onWorkAction(level, echo, pos);
+        }
+        return planted;
     }
 
     // ================= mining =================
@@ -1347,6 +1666,8 @@ public final class EchoJob {
         }
         if (this.mode == Mode.MINE) {
             this.setStatus(JobStatus.of(JobStatus.Kind.DEPOSIT, this.mined, 0));
+        } else if (this.mode == Mode.FARM) {
+            this.setStatus(JobStatus.of(JobStatus.Kind.DEPOSIT, this.harvested, 0));
         }
         this.startPath(level, echo, new EchoNav.Goal() {
             @Override
@@ -1380,6 +1701,14 @@ public final class EchoJob {
                 return;
             }
             this.setStatus(new JobStatus(JobStatus.Kind.MINING, this.target == null ? key(this.lesson.mining().get(0).block()) : key(level.getBlockState(this.target).getBlock()), this.mined, 0));
+        } else if (this.mode == Mode.FARM) {
+            int moved = EchoWork.depositFarm(echo, container, this.seedItems(), 64);
+            Mnemolith.LOGGER.info("Mnemolith echo farm deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
+            if (this.needsDropOff(echo)) {
+                this.halt(echo, JobStatus.of(JobStatus.Kind.CHEST_FULL));
+                return;
+            }
+            this.setStatus(new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), this.harvested, 0));
         } else if (this.mode == Mode.BUILD) {
             Map<Item, Integer> wanted = new LinkedHashMap<>();
             for (EchoLesson.Entry entry : this.plan) {
@@ -1451,6 +1780,9 @@ public final class EchoJob {
         } else if (this.mode == Mode.BUILD && this.buildTarget != null) {
             this.skipped.add(this.buildTarget.offset().asLong());
             this.buildTarget = null;
+        } else if (this.mode == Mode.FARM && this.farmTarget != null) {
+            this.farmRefused.add(this.farmTarget.asLong());
+            this.farmTarget = null;
         }
         this.digFor = DigFor.TARGET;
         this.phase = Phase.SELECT;
@@ -1523,6 +1855,8 @@ public final class EchoJob {
             this.target = null;
         } else if (this.mode == Mode.BUILD) {
             this.buildTarget = null;
+        } else if (this.mode == Mode.FARM) {
+            this.farmTarget = null;
         }
     }
 
@@ -1532,6 +1866,10 @@ public final class EchoJob {
         if (this.pathToChest) {
             this.pathToChest = false;
             this.phase = Phase.TO_CHEST;
+            return;
+        }
+        if (this.mode == Mode.FARM) {
+            this.farmAct(level, echo);
             return;
         }
         if (this.mode == Mode.MINE) {
@@ -1709,7 +2047,7 @@ public final class EchoJob {
     public String describe() {
         return "mode=" + this.mode.getSerializedName() + " phase=" + this.phase + " status=" + this.status.kind().getSerializedName()
                 + " shown=" + this.shownStatus().kind().getSerializedName() + (this.alarmed ? " alarmed" : "") + " mined=" + this.mined
-                + " built=" + this.builtCount + "/" + this.plan.size() + " candidates=" + this.candidates.size() + " refused=" + this.refused.size();
+                + " harvested=" + this.harvested + " built=" + this.builtCount + "/" + this.plan.size() + " candidates=" + this.candidates.size() + " refused=" + this.refused.size();
     }
 
     /** Direction the job looks for a build anchor preview; kept here so client and server share the rule. */
