@@ -409,7 +409,7 @@
   "mnemolith.command.jobqa": "Проверка работы отголосков: %s из %s",
   "mnemolith.command.echo3qa": "Проверка отголосков, этап 3: %s из %s",
   "mnemolith.command.order.stay": "Отголосок: «Стою»",
-  "mnemolith.command.order.follow": "Отголосок: «Иду за тобой»",
+  "mnemolith.command.order.follow": "Отголосок: «Иду за вами»",
   "mnemolith.command.order.return": "Отголосок: «Иду к точке»",
   "mnemolith.lesson.mining": "Урок: добыча — %s",
   "mnemolith.lesson.building": "Урок: стройка — %s блоков",

@@ -71,6 +71,13 @@ public final class ModGameEvents {
                 .then(Commands.literal("echo3qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.Echo3Qa::run))
+                .then(Commands.literal("echodemo")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .then(Commands.literal("farm").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "farm")))
+                        .then(Commands.literal("overload").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "overload")))
+                        .then(Commands.literal("door").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "door")))
+                        .then(Commands.literal("gate").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "gate")))
+                        .then(Commands.literal("ladder").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "ladder"))))
                 .then(Commands.literal("qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MnemolithQa::run)));

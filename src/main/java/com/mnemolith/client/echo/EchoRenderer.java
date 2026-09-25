@@ -153,10 +153,12 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
         Matrix4f pose = new Matrix4f(poseStack.last().pose());
         float x = -minecraft.font.width(text) / 2.0F;
         int color = echo.jobStopped() ? LABEL_STOPPED : LABEL_TEXT;
-        collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, x, 0.0F, text, FULL_BRIGHT, color, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
         // Stage 3: a second line with the memory band of the chunk it works in, from saturation up.
+        // With two lines the status moves up one row so the lower line, not the status, sits just above the head.
         com.mnemolith.pressure.PressureBand strain = echo.strain();
-        if (strain.ordinal() >= com.mnemolith.pressure.PressureBand.SATURATED.ordinal()) {
+        boolean strained = strain.ordinal() >= com.mnemolith.pressure.PressureBand.SATURATED.ordinal();
+        collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, x, strained ? -10.0F : 0.0F, text, FULL_BRIGHT, color, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
+        if (strained) {
             Component line = Component.translatable("mnemolith.job.strain", Component.translatable(strain.translationKey()));
             float lx = -minecraft.font.width(line) / 2.0F;
             int lineColor = switch (strain) {
@@ -164,7 +166,7 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
                 case OVERLOADED -> 0xFFFFA060;
                 default -> 0xFFFF7080;
             };
-            collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, lx, 10.0F, line, FULL_BRIGHT, lineColor, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
+            collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, lx, 0.0F, line, FULL_BRIGHT, lineColor, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
         }
         poseStack.popPose();
     }

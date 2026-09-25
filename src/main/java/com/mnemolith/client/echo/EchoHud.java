@@ -45,8 +45,9 @@ public final class EchoHud {
         if (!EchoView.thermal()) {
             return;
         }
-        // Below the figure, above the hotbar and the pressure pill, so the hint never covers the echo itself.
-        int hintY = Math.max(graphics.guiHeight() / 2 + 40, graphics.guiHeight() - 100);
+        // Below the figure and above the pressure pill (guiHeight - 68, lifted while an action-bar message shows):
+        // three chip rows end 4 px above the pill.
+        int hintY = Math.max(graphics.guiHeight() / 2 + 16, graphics.guiHeight() - 112 - com.mnemolith.client.gui.LensOverlay.messageLift());
         int target = EchoView.targetId();
         Entity entity = target < 0 ? null : minecraft.level.getEntity(target);
         if (entity == null) {

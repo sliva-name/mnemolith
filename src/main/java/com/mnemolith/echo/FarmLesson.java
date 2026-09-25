@@ -69,6 +69,26 @@ public record FarmLesson(List<Block> crops, int tilled, int planted, int harvest
         return state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state);
     }
 
+    /**
+     * What a player calls the crop: the harvest item for the vanilla crops ("Wheat", not the block's "Wheat Crops"),
+     * else the block name.
+     */
+    public static Component cropName(Block crop) {
+        if (crop == net.minecraft.world.level.block.Blocks.WHEAT) {
+            return new net.minecraft.world.item.ItemStack(Items.WHEAT).getHoverName();
+        }
+        if (crop == net.minecraft.world.level.block.Blocks.CARROTS) {
+            return new net.minecraft.world.item.ItemStack(Items.CARROT).getHoverName();
+        }
+        if (crop == net.minecraft.world.level.block.Blocks.POTATOES) {
+            return new net.minecraft.world.item.ItemStack(Items.POTATO).getHoverName();
+        }
+        if (crop == net.minecraft.world.level.block.Blocks.BEETROOTS) {
+            return new net.minecraft.world.item.ItemStack(Items.BEETROOT).getHoverName();
+        }
+        return crop.getName();
+    }
+
     /** "Wheat, Carrots" for the label and tooltips. */
     public Component cropNames() {
         MutableComponent out = Component.empty();
@@ -76,7 +96,7 @@ public record FarmLesson(List<Block> crops, int tilled, int planted, int harvest
             if (i > 0) {
                 out.append(", ");
             }
-            out.append(this.crops.get(i).getName());
+            out.append(cropName(this.crops.get(i)));
         }
         return out;
     }

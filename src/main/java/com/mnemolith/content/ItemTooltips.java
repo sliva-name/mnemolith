@@ -82,6 +82,10 @@ public final class ItemTooltips {
         event.registerComponentAppenderBeforeAll(ModDataComponents.IMPRINT_CAST, (stack, context, display, player, flag, builder) -> {
             ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
             if (cast == null) {
+                // The appender runs for every stack; only a blank imprint slip is an "empty slip".
+                if (!stack.is(ModItems.IMPRINT_SLIP.get())) {
+                    return;
+                }
                 builder.accept(Component.translatable("item.mnemolith.imprint_slip.empty"));
                 return;
             }

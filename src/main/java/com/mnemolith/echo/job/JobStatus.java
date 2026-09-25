@@ -126,8 +126,8 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             case MIMIC -> Component.translatable("mnemolith.job.mimic", this.a);
             case STRIDER -> Component.translatable("mnemolith.job.strider");
             case MISFIRE -> Component.translatable("mnemolith.job.misfire." + (this.detail.isEmpty() ? "skip" : this.detail));
-            case FARMING -> Component.translatable("mnemolith.job.farming", blockName(this.detail), this.a);
-            case FARM_WAIT -> Component.translatable("mnemolith.job.farm_wait", blockName(this.detail), this.a);
+            case FARMING -> Component.translatable("mnemolith.job.farming", cropName(this.detail), this.a);
+            case FARM_WAIT -> Component.translatable("mnemolith.job.farm_wait", cropName(this.detail), this.a);
             case STAY -> Component.translatable("mnemolith.job.stay");
             case FOLLOW -> Component.translatable("mnemolith.job.follow");
             case RETURNING -> Component.translatable("mnemolith.job.returning");
@@ -138,6 +138,14 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
 
     private static Component stop(Component reason) {
         return Component.translatable("mnemolith.job.stop", reason);
+    }
+
+    private static Component cropName(String id) {
+        Identifier key = Identifier.tryParse(id);
+        if (key == null) {
+            return Component.literal(id);
+        }
+        return BuiltInRegistries.BLOCK.getOptional(key).map(com.mnemolith.echo.FarmLesson::cropName).orElse(Component.literal(id));
     }
 
     private static Component blockName(String id) {
