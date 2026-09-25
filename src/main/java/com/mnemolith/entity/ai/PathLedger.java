@@ -79,6 +79,20 @@ public final class PathLedger {
         }
     }
 
+    /** Drops everything recorded for one player (logout). Server thread only. */
+    public static void forget(UUID id) {
+        PATHS.remove(id);
+        LAST_STEP.remove(id);
+        LAST_WRITE.remove(id);
+    }
+
+    /** Drops all players' paths (server stopped). */
+    public static void clearAll() {
+        PATHS.clear();
+        LAST_STEP.clear();
+        LAST_WRITE.clear();
+    }
+
     public static List<UUID> owners() {
         return List.copyOf(PATHS.keySet());
     }

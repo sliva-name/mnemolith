@@ -15,6 +15,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 /**
  * Common game events. Fires on the integrated server and the dedicated server.
@@ -29,6 +30,12 @@ public final class ModGameEvents {
                 "Mnemolith logical server starting; allowRecollectionStorms={} maxStormsPerDimension={}",
                 ServerConfig.ALLOW_RECOLLECTION_STORMS.get(),
                 ServerConfig.MAX_STORMS_PER_DIMENSION.get());
+    }
+
+    /** Static per-player maps outlive the server in single player; start the next world clean. */
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        MobEvents.clearAll();
     }
 
     @SubscribeEvent
