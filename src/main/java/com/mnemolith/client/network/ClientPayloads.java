@@ -16,6 +16,7 @@ public final class ClientPayloads {
     public static void register(RegisterClientPayloadHandlersEvent event) {
         event.register(PressureSnapshotPayload.TYPE, (payload, context) -> context.enqueueWork(() -> PressureClient.accept(payload)));
         event.register(com.mnemolith.network.EchoStatePayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.echo.EchoView.setPossessed(payload.possessed())));
+        event.register(com.mnemolith.network.EchoGhostPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.echo.EchoJobClient.acceptGhost(payload)));
         event.register(OpenCatalogPayload.TYPE, (payload, context) -> context.enqueueWork(() -> {
             if (!CommonConfig.CATALOG_ENABLED.get()) {
                 return;
