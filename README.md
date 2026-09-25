@@ -11,7 +11,7 @@ This repository is **Phase 12**: the core memory loop, three mobs, three worldge
 | Java | 25 |
 | Mod id | `mnemolith` |
 | Package | `com.mnemolith` |
-| License | MIT (`LICENSE`). The NeoForge MDK template files remain under `TEMPLATE_LICENSE.txt`. |
+| License | All Rights Reserved (`LICENSE`). The NeoForge MDK template files remain under `TEMPLATE_LICENSE.txt`. |
 
 Mappings are Mojang's official names. The Gradle project is the [ModDevGradle 26.2 MDK](https://github.com/NeoForgeMDKs/MDK-26.2-ModDevGradle).
 

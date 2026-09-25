@@ -1,6 +1,6 @@
 # Asset pipeline
 
-Phase 8 art for the objects the player actually holds, places, and fights. Phase 12 redraws the key item and block textures in place and replaces the short tones for extract, compose success, mute, pressure warning, and the lens band chime. Those files are original work under the mod MIT license; see [assets.md](assets.md). UV regions below are unchanged. Geometry stays Minecraft-shaped. Hierarchy and palette do the work. There is no GeckoLib dependency and no `AnimationDefinition` clip. Mob motion is `EntityModel.setupAnim` posing the parts already synced through `MobActions`.
+Phase 8 art for the objects the player actually holds, places, and fights. Phase 12 redraws the key item and block textures in place and replaces the short tones for extract, compose success, mute, pressure warning, and the lens band chime. Those files are original work under the mod's All Rights Reserved license; see [assets.md](assets.md). UV regions below are unchanged. Geometry stays Minecraft-shaped. Hierarchy and palette do the work. There is no GeckoLib dependency and no `AnimationDefinition` clip. Mob motion is `EntityModel.setupAnim` posing the parts already synced through `MobActions`.
 
 ## Palette
 
