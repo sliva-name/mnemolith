@@ -386,6 +386,12 @@ public class EchoEntity extends MemoryAvatar {
         }
     }
 
+    /** Pushes the job display state to clients now (stage 3 lens orders). */
+    public void syncJobNow() {
+        this.job.consumeDirty();
+        this.syncJob();
+    }
+
     private void syncJob() {
         var shown = this.job.shownStatus();
         this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (shown.kind().isStop() ? JOB_STOPPED : 0)));
@@ -507,7 +513,7 @@ public class EchoEntity extends MemoryAvatar {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
-        if (this.job.isWorking()) {
+        if (this.job.hasWorkMode() || this.job.order() != com.mnemolith.echo.job.EchoJob.Order.NONE) {
             serverPlayer.sendSystemMessage(this.job.shownStatus().component(), true);
             return InteractionResult.SUCCESS_SERVER;
         }

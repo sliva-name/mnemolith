@@ -57,6 +57,53 @@ public final class EchoNetwork {
         }
     }
 
+    public static void handleCommand(EchoCommandPayload payload, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player) {
+            applyCommand(player, payload.entityId(), payload.order(), true);
+        }
+    }
+
+    /**
+     * Stage 3 lens order. With {@code requireLens} (every network request) the player must hold the lens raised and aim
+     * at their own echo within possession range, as for possessing. Returns true when the echo took the order.
+     * Public for {@code /mnemolith echo3qa}.
+     */
+    public static boolean applyCommand(ServerPlayer player, int entityId, EchoJob.Order order, boolean requireLens) {
+        if (player.hasDisconnected() || player.isRemoved() || !player.isAlive() || order == EchoJob.Order.NONE) {
+            return false;
+        }
+        if (requireLens && !ChronicleLensItem.isFocusing(player)) {
+            return false;
+        }
+        if (!(player.level() instanceof ServerLevel level) || !(level.getEntity(entityId) instanceof EchoEntity echo) || !echo.isAlive()) {
+            return false;
+        }
+        if (!echo.isOwnedBy(player)) {
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.not_yours", echo.ownerName()), true);
+            return false;
+        }
+        double range = CommonConfig.ECHO_POSSESS_RANGE.get() + 2.0D;
+        Vec3 toEcho = echo.getBoundingBox().getCenter().subtract(player.getEyePosition());
+        if (toEcho.lengthSqr() > range * range) {
+            player.sendSystemMessage(Component.translatable("mnemolith.job.msg.too_far"), true);
+            return false;
+        }
+        if (requireLens) {
+            double angle = Math.toDegrees(Math.acos(Math.max(-1.0D, Math.min(1.0D, toEcho.normalize().dot(player.getLookAngle())))));
+            if (angle > MAX_ANGLE) {
+                return false;
+            }
+        }
+        echo.stopReplayIfRunning();
+        boolean accepted = echo.job().command(level, echo, order);
+        echo.syncJobNow();
+        if (accepted) {
+            player.sendSystemMessage(Component.translatable("mnemolith.command.order." + order.getSerializedName()), true);
+        }
+        Mnemolith.LOGGER.info("Mnemolith echo order owner={} order={} accepted={}", echo.ownerName(), order.getSerializedName(), accepted);
+        return accepted;
+    }
+
     public static void handleUnpossess(EchoUnpossessPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player && !player.hasDisconnected() && !player.isRemoved() && player.isAlive()) {
             EchoPossession.unpossess(player, EchoPossession.Reason.KEY);

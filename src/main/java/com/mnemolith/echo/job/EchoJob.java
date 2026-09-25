@@ -99,14 +99,40 @@ public final class EchoJob {
     }
 
     /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
-    public record Stage3(List<Misfire> misfired, int workActions, com.mnemolith.echo.FarmLesson farm, int harvested) {
-        public static final Stage3 EMPTY = new Stage3(List.of(), 0, com.mnemolith.echo.FarmLesson.NONE, 0);
+    public record Stage3(List<Misfire> misfired, int workActions, com.mnemolith.echo.FarmLesson farm, int harvested, Order order) {
+        public static final Stage3 EMPTY = new Stage3(List.of(), 0, com.mnemolith.echo.FarmLesson.NONE, 0, Order.NONE);
         public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
                 Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions),
                 com.mnemolith.echo.FarmLesson.CODEC.optionalFieldOf("farm", com.mnemolith.echo.FarmLesson.NONE).forGetter(Stage3::farm),
-                Codec.INT.optionalFieldOf("harvested", 0).forGetter(Stage3::harvested))
+                Codec.INT.optionalFieldOf("harvested", 0).forGetter(Stage3::harvested),
+                Order.CODEC.optionalFieldOf("order", Order.NONE).forGetter(Stage3::order))
                 .apply(instance, Stage3::new));
+    }
+
+    /** Stage 3 lens orders (stay, follow me, return to the work point). Ids are the ordinals: only append. */
+    public enum Order implements StringRepresentable {
+        NONE("none"),
+        STAY("stay"),
+        FOLLOW("follow"),
+        RETURN("return");
+
+        public static final Codec<Order> CODEC = StringRepresentable.fromEnum(Order::values);
+        private final String name;
+
+        Order(String name) {
+            this.name = name;
+        }
+
+        public static Order byId(int id) {
+            Order[] values = values();
+            return id >= 0 && id < values.length ? values[id] : NONE;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name;
+        }
     }
 
     private enum Phase {
@@ -204,6 +230,9 @@ public final class EchoJob {
     private @Nullable BlockState undoState;
     private int undoDelay;
     private int stumbleTicks;
+    // ---- stage 3: lens orders ----
+    private Order order = Order.NONE;
+    private int orderRetry;
     // ---- stage 3: pressure from work ----
     private com.mnemolith.pressure.PressureBand strain = com.mnemolith.pressure.PressureBand.CALM;
     private long workChunk = Long.MIN_VALUE;
@@ -331,7 +360,16 @@ public final class EchoJob {
 
     /** A job that works in the world: mobs may hunt it, the replicant may mimic it, the work writes imprints. */
     public boolean isWorking() {
+        return this.hasWorkMode() && this.order == Order.NONE;
+    }
+
+    /** MINE, BUILD or FARM, also while a lens order pauses it. */
+    public boolean hasWorkMode() {
         return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM;
+    }
+
+    public Order order() {
+        return this.order;
     }
 
     public com.mnemolith.echo.FarmLesson farmLesson() {
@@ -385,6 +423,8 @@ public final class EchoJob {
         this.undoPos = null;
         this.undoState = null;
         this.stumbleTicks = 0;
+        this.order = Order.NONE;
+        this.orderRetry = 0;
         if (this.notice != null) {
             this.notice = null;
             this.noticeTicks = 0;
@@ -395,6 +435,7 @@ public final class EchoJob {
     /** Replay of the recording started (stage 1 behaviour); the job waits until it ends. */
     public void beginReplay() {
         this.alarmed = false;
+        this.order = Order.NONE;
         this.mimicTicks = 0;
         this.undoPos = null;
         this.notice = null;
@@ -540,7 +581,7 @@ public final class EchoJob {
         for (Map.Entry<Long, BlockState> entry : this.misfired.entrySet()) {
             list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
         }
-        return new Stage3(list, this.workActions, this.farm, this.harvested);
+        return new Stage3(list, this.workActions, this.farm, this.harvested, this.order);
     }
 
     public void load(Saved saved) {
@@ -560,6 +601,7 @@ public final class EchoJob {
         this.workActions = saved.stage3().workActions();
         this.farm = saved.stage3().farm();
         this.harvested = saved.stage3().harvested();
+        this.order = saved.stage3().order();
         this.restartPhase();
         this.dirty = true;
     }
@@ -576,9 +618,10 @@ public final class EchoJob {
         }
         if (echo.tickCount % 20 == 3) {
             this.refreshStrain(level, echo);
-            if (!this.isWorking()) {
-                return;
-            }
+        }
+        if (this.order != Order.NONE) {
+            this.tickOrder(level, echo);
+            return;
         }
         if (this.alarmed) {
             this.tickAlarm(level, echo);
@@ -703,6 +746,159 @@ public final class EchoJob {
             case FARM -> new JobStatus(JobStatus.Kind.FARMING, this.farmCropKey(), this.harvested, 0);
             default -> JobStatus.IDLE;
         };
+    }
+
+    // ================= lens orders (stage 3) =================
+
+    /**
+     * The owner gave a lens order. STAY pauses whatever the echo does (the job keeps its mode), FOLLOW walks after the
+     * owner, RETURN walks back to the work point and then resumes the job. Returns false with a stop status when there
+     * is no point to return to.
+     */
+    public boolean command(ServerLevel level, EchoEntity echo, Order order) {
+        if (order == Order.NONE) {
+            return false;
+        }
+        if (this.mode == Mode.REPLAY) {
+            this.mode = Mode.IDLE;
+        }
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        this.stumbleTicks = 0;
+        this.mover.stop(level, echo);
+        this.release(echo);
+        this.orderRetry = 0;
+        if (order == Order.RETURN && this.workPoint() == null) {
+            this.order = Order.NONE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_POINT));
+            this.dirty = true;
+            return false;
+        }
+        this.order = order;
+        this.setStatus(JobStatus.of(switch (order) {
+            case STAY -> JobStatus.Kind.STAY;
+            case FOLLOW -> JobStatus.Kind.FOLLOW;
+            default -> JobStatus.Kind.RETURNING;
+        }));
+        this.dirty = true;
+        return true;
+    }
+
+    /** Where RETURN walks to: the build anchor for a build, else where the job was started. */
+    public @Nullable BlockPos workPoint() {
+        if (this.mode == Mode.BUILD && this.buildAnchor != null) {
+            return this.buildAnchor;
+        }
+        return this.workAnchor != null ? this.workAnchor : this.buildAnchor;
+    }
+
+    private void tickOrder(ServerLevel level, EchoEntity echo) {
+        switch (this.order) {
+            case STAY -> {
+                if (this.mover.active()) {
+                    this.mover.stop(level, echo);
+                }
+                echo.setMoveTarget(null);
+            }
+            case FOLLOW -> this.tickFollow(level, echo);
+            case RETURN -> this.tickReturn(level, echo);
+            default -> this.order = Order.NONE;
+        }
+    }
+
+    private void tickFollow(ServerLevel level, EchoEntity echo) {
+        net.minecraft.server.level.ServerPlayer owner = echo.ownerId() == null ? null : level.getServer().getPlayerList().getPlayer(echo.ownerId());
+        if (owner == null && echo.ownerId() != null) {
+            owner = com.mnemolith.entity.echo.MemoryAvatar.STAND_INS.get(echo.ownerId());
+        }
+        double lost = CommonConfig.ECHO_FOLLOW_LOST_DISTANCE.get();
+        if (owner == null || owner.level() != level || !owner.isAlive() || owner.distanceToSqr(echo) > lost * lost) {
+            this.mover.stop(level, echo);
+            this.order = Order.STAY;
+            this.setStatus(JobStatus.of(JobStatus.Kind.LOST_OWNER));
+            Mnemolith.LOGGER.info("Mnemolith echo lost its owner owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+            return;
+        }
+        double distance = owner.distanceToSqr(echo);
+        if (distance <= 9.0D) {
+            if (this.mover.active()) {
+                this.mover.stop(level, echo);
+            }
+            if (echo.tickCount % 5 == 0) {
+                echo.lookAt(owner.getEyePosition());
+            }
+            return;
+        }
+        if (this.orderRetry > 0) {
+            this.orderRetry--;
+        }
+        BlockPos target = owner.blockPosition();
+        if (!this.mover.active() || (echo.tickCount % 20 == 0 && this.orderRetry == 0)) {
+            this.mover.start(level, echo, new EchoNav.Goal() {
+                @Override
+                public boolean reached(BlockPos feet) {
+                    return feet.distSqr(target) <= 5.0D;
+                }
+
+                @Override
+                public double estimate(BlockPos feet) {
+                    return Math.max(0.0D, Math.sqrt(feet.distSqr(target)) - 2.0D);
+                }
+            });
+        }
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.FAILED) {
+            // No way to the owner right now: wait a little and try again (it keeps its FOLLOW status).
+            this.orderRetry = 40;
+        }
+    }
+
+    private void tickReturn(ServerLevel level, EchoEntity echo) {
+        BlockPos point = this.workPoint();
+        if (point == null) {
+            this.mover.stop(level, echo);
+            this.order = Order.NONE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_POINT));
+            return;
+        }
+        if (!this.mover.active()) {
+            if (echo.blockPosition().distSqr(point) <= 9.0D) {
+                this.arrived(level, echo);
+                return;
+            }
+            this.mover.start(level, echo, new EchoNav.Goal() {
+                @Override
+                public boolean reached(BlockPos feet) {
+                    return feet.distSqr(point) <= 9.0D;
+                }
+
+                @Override
+                public double estimate(BlockPos feet) {
+                    return Math.max(0.0D, Math.sqrt(feet.distSqr(point)) - 3.0D);
+                }
+            });
+        }
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.ARRIVED) {
+            this.arrived(level, echo);
+        } else if (result == EchoMover.Result.FAILED) {
+            this.mover.stop(level, echo);
+            this.order = Order.STAY;
+            this.setStatus(JobStatus.of(JobStatus.Kind.UNREACHABLE));
+        }
+    }
+
+    private void arrived(ServerLevel level, EchoEntity echo) {
+        this.mover.stop(level, echo);
+        this.order = Order.NONE;
+        if (this.hasWorkMode()) {
+            this.restartPhase();
+            this.setStatus(this.workingStatus());
+        } else {
+            this.setStatus(JobStatus.of(JobStatus.Kind.AT_POINT));
+        }
+        Mnemolith.LOGGER.info("Mnemolith echo back at its point owner={} mode={} at {}", echo.ownerName(), this.mode.getSerializedName(), echo.blockPosition().toShortString());
     }
 
     // ================= moment replicant mimic (stage 3) =================

@@ -96,6 +96,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
     public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
     public static final ModConfigSpec.BooleanValue ECHO_FRACTURE_STOPS;
+    public static final ModConfigSpec.IntValue ECHO_FOLLOW_LOST_DISTANCE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -207,6 +208,7 @@ public final class CommonConfig {
         ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
         ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
+        ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
         builder.pop();
 
         SPEC = builder.build();

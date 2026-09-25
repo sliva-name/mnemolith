@@ -15,7 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-/** Small hints: "LMB — possess" under the crosshair on a targeted echo, and "V — return" while possessing. */
+/** Small hints: "LMB — possess" and the lens orders (Z/R/B) on a targeted echo, and "V — return" while possessing. */
 public final class EchoHud {
     public static final Identifier LAYER = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "echo_hints");
     private static final int PINK = 0xFFFFC6E6;
@@ -56,8 +56,11 @@ public final class EchoHud {
         int distance = (int) Math.round(Math.sqrt(entity.distanceToSqr(minecraft.player)));
         Component line = Component.translatable("mnemolith.hud.possess_hint", minecraft.options.keyAttack.getTranslatedKeyMessage());
         Component detail = Component.translatable("mnemolith.hud.target", entity.getDisplayName(), distance);
+        Component orders = Component.translatable("mnemolith.hud.command_hint", ThermalClient.CMD_STAY.getTranslatedKeyMessage(),
+                ThermalClient.CMD_FOLLOW.getTranslatedKeyMessage(), ThermalClient.CMD_RETURN.getTranslatedKeyMessage());
         chip(graphics, font, line, centerX, hintY);
-        chip(graphics, font, detail, centerX, hintY + 14);
+        chip(graphics, font, orders, centerX, hintY + 14);
+        chip(graphics, font, detail, centerX, hintY + 28);
     }
 
     private static void chip(GuiGraphicsExtractor graphics, Font font, Component text, int centerX, int y) {

@@ -8,6 +8,8 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.echo.EchoView;
 import com.mnemolith.entity.echo.EchoEntity;
+import com.mnemolith.echo.job.EchoJob;
+import com.mnemolith.network.EchoCommandPayload;
 import com.mnemolith.network.EchoPossessPayload;
 import com.mnemolith.network.EchoUnpossessPayload;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
@@ -39,6 +41,10 @@ public final class ThermalClient {
     public static final Identifier EFFECT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "thermal");
     public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "echo"));
     public static final KeyMapping UNPOSSESS = new KeyMapping("key.mnemolith.unpossess", GLFW.GLFW_KEY_V, CATEGORY);
+    /** Stage 3 lens orders: only act while the lens is raised and aimed at an own echo. */
+    public static final KeyMapping CMD_STAY = new KeyMapping("key.mnemolith.cmd_stay", GLFW.GLFW_KEY_Z, CATEGORY);
+    public static final KeyMapping CMD_FOLLOW = new KeyMapping("key.mnemolith.cmd_follow", GLFW.GLFW_KEY_R, CATEGORY);
+    public static final KeyMapping CMD_RETURN = new KeyMapping("key.mnemolith.cmd_return", GLFW.GLFW_KEY_B, CATEGORY);
 
     private static boolean chainMissingLogged;
 
@@ -47,6 +53,9 @@ public final class ThermalClient {
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
         event.register(UNPOSSESS);
+        event.register(CMD_STAY);
+        event.register(CMD_FOLLOW);
+        event.register(CMD_RETURN);
     }
 
     public static void onClientTick(ClientTickEvent.Pre event) {
@@ -71,11 +80,27 @@ public final class ThermalClient {
                 }
             }
         }
+        EchoJob.Order order = EchoJob.Order.NONE;
+        order = consume(CMD_STAY, EchoJob.Order.STAY, order);
+        order = consume(CMD_FOLLOW, EchoJob.Order.FOLLOW, order);
+        order = consume(CMD_RETURN, EchoJob.Order.RETURN, order);
+        if (active && order != EchoJob.Order.NONE && EchoView.targetId() >= 0) {
+            ClientPacketDistributor.sendToServer(new EchoCommandPayload(EchoView.targetId(), order));
+        }
         while (UNPOSSESS.consumeClick()) {
             if (EchoView.possessed()) {
                 ClientPacketDistributor.sendToServer(EchoUnpossessPayload.INSTANCE);
             }
         }
+    }
+
+    /** Drains a key's clicks (so presses without the lens never queue up) and keeps the last pressed order. */
+    private static EchoJob.Order consume(KeyMapping key, EchoJob.Order order, EchoJob.Order current) {
+        EchoJob.Order result = current;
+        while (key.consumeClick()) {
+            result = order;
+        }
+        return result;
     }
 
     /** Own echo with the smallest angle to the crosshair, inside the aim-assist cone (widened for close echoes). */
