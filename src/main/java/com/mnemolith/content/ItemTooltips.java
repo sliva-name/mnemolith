@@ -21,6 +21,7 @@ public final class ItemTooltips {
         event.registerAppender(TooltipLocation.POST_CUSTOM, (stack, context, display, player, flag, builder) -> {
             if (stack.getItem() == ModItems.CHRONICLE_LENS.get()) {
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.hint"));
+                builder.accept(Component.translatable("item.mnemolith.chronicle_lens.echo_hint"));
             } else if (stack.getItem() == ModItems.ARCHIVIST_BAIT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archivist_bait.hint"));
             } else if (stack.getItem() == ModItems.EXTRACTION_NEEDLE.get()) {
@@ -29,9 +30,25 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
+            } else if (stack.getItem() == ModItems.ECHO_SLIP.get()) {
+                builder.accept(Component.translatable("item.mnemolith.echo_slip.hint"));
             } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
             }
+        });
+        event.registerComponentAppenderBeforeAll(ModDataComponents.ECHO_RECORDING, (stack, context, display, player, flag, builder) -> {
+            com.mnemolith.echo.EchoRecording recording = stack.get(ModDataComponents.ECHO_RECORDING.get());
+            if (recording == null) {
+                return;
+            }
+            builder.accept(Component.translatable("item.mnemolith.echo_recording.owner", recording.ownerName()));
+            builder.accept(Component.translatable(
+                    "item.mnemolith.echo_recording.summary",
+                    recording.seconds(),
+                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.BREAK),
+                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.PLACE),
+                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.USE)));
+            builder.accept(Component.translatable("item.mnemolith.echo_recording.hint"));
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.IMPRINT_CAST, (stack, context, display, player, flag, builder) -> {
             ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());

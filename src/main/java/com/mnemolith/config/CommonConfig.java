@@ -62,6 +62,14 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue OBSERVATORY_ENABLED;
     public static final ModConfigSpec.BooleanValue ARCHIVIST_OBSERVATORY_BIAS;
     public static final ModConfigSpec.BooleanValue STRIDER_PATH_BIAS;
+    public static final ModConfigSpec.BooleanValue ECHOES_ENABLED;
+    public static final ModConfigSpec.IntValue ECHO_RECORD_SECONDS;
+    public static final ModConfigSpec.IntValue ECHO_MAX_PER_PLAYER;
+    public static final ModConfigSpec.IntValue ECHO_ACTIVATE_RANGE;
+    public static final ModConfigSpec.IntValue ECHO_POSSESS_RANGE;
+    public static final ModConfigSpec.DoubleValue ECHO_MAX_HEALTH;
+    public static final ModConfigSpec.IntValue ECHO_DEATH_PRESSURE_SPIKE;
+    public static final ModConfigSpec.IntValue ECHO_SHELL_AGGRO_RADIUS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -136,6 +144,17 @@ public final class CommonConfig {
         ARCHIVIST_MIN_PRESSURE = SpecValues.integer(builder, "archivistMinPressure", "Minimum cached pressure before an archivist can spawn naturally. Defaults to the overloaded band.", 50, 0, 10_000);
         REPLICANT_MIN_PRESSURE = SpecValues.integer(builder, "replicantMinPressure", "Minimum cached pressure before a moment replicant can spawn naturally. Defaults to the fracture band.", 80, 0, 10_000);
         SENSOR_INTERVAL = SpecValues.integer(builder, "sensorInterval", "Ticks between archivist resonator scans, flee pressure scans, and idle strider repaths. A charge still aims every tick. 1 checks every tick.", 10, 1, 100);
+        builder.pop();
+
+        SpecValues.section(builder, "echo", "Echoes: self-recordings that replay as a helper body you can possess.");
+        ECHOES_ENABLED = SpecValues.bool(builder, "echoesEnabled", "Whether echo slips record, recordings spawn echoes, and the lens can possess an echo.", true);
+        ECHO_RECORD_SECONDS = SpecValues.integer(builder, "echoRecordSeconds", "Length, in seconds, of one self-recording.", 25, 5, 60);
+        ECHO_MAX_PER_PLAYER = SpecValues.integer(builder, "echoMaxPerPlayer", "Echoes one player may own at once. Stage 1 is tuned for 1.", 1, 1, 4);
+        ECHO_ACTIVATE_RANGE = SpecValues.integer(builder, "echoActivateRange", "Furthest distance, in blocks, from the recording's start at which a recording can be activated.", 48, 8, 256);
+        ECHO_POSSESS_RANGE = SpecValues.integer(builder, "echoPossessRange", "Furthest distance, in blocks, at which the lens can possess your echo.", 32, 4, 64);
+        ECHO_MAX_HEALTH = SpecValues.decimal(builder, "echoMaxHealth", "Maximum health of an echo body.", 20.0D, 1.0D, 100.0D);
+        ECHO_DEATH_PRESSURE_SPIKE = SpecValues.integer(builder, "echoDeathPressureSpike", "Instability added to the chunk where an echo body dies.", 24, 0, 200);
+        ECHO_SHELL_AGGRO_RADIUS = SpecValues.integer(builder, "echoShellAggroRadius", "Radius, in blocks, in which idle hostile mobs notice the empty shell you leave while possessing. 0 turns it off.", 12, 0, 32);
         builder.pop();
 
         SPEC = builder.build();

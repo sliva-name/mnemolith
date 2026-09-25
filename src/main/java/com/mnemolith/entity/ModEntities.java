@@ -1,17 +1,20 @@
 package com.mnemolith.entity;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.entity.echo.EchoEntity;
+import com.mnemolith.entity.echo.EchoShell;
 import com.mnemolith.entity.mob.Archivist;
 import com.mnemolith.entity.mob.EchoStrider;
 import com.mnemolith.entity.mob.MomentReplicant;
 
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The three memory mobs. The Scar stays unregistered. */
+/** The three memory mobs, plus the echo body and the shell left behind while a player possesses it. The Scar stays unregistered. */
 public final class ModEntities {
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Mnemolith.MOD_ID);
 
@@ -30,6 +33,17 @@ public final class ModEntities {
             MomentReplicant::new,
             MobCategory.MONSTER,
             builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(8).notInPeaceful());
+
+    public static final DeferredHolder<EntityType<?>, EntityType<EchoEntity>> ECHO = ENTITY_TYPES.registerEntityType(
+            "echo",
+            EchoEntity::create,
+            MobCategory.MISC,
+            builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(10).updateInterval(2).noLootTable());
+    public static final DeferredHolder<EntityType<?>, EntityType<EchoShell>> ECHO_SHELL = ENTITY_TYPES.registerEntityType(
+            "echo_shell",
+            EchoShell::create,
+            MobCategory.MISC,
+            builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(10).updateInterval(2).noLootTable());
 
     private ModEntities() {}
 

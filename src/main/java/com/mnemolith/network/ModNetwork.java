@@ -17,6 +17,9 @@ public final class ModNetwork {
         event.registrar("1")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
-                .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC);
+                .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)
+                .playToServer(EchoPossessPayload.TYPE, EchoPossessPayload.STREAM_CODEC, EchoNetwork::handlePossess)
+                .playToServer(EchoUnpossessPayload.TYPE, EchoUnpossessPayload.STREAM_CODEC, EchoNetwork::handleUnpossess)
+                .playToClient(EchoStatePayload.TYPE, EchoStatePayload.STREAM_CODEC);
     }
 }

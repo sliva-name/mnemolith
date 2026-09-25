@@ -26,6 +26,14 @@ public final class ModAttachments {
                     .sync((holder, player) -> holder == player, Discovery.STREAM_CODEC)
                     .build());
 
+    /** Real body of a player who is inside an echo. Saved with the player; kept through death so nothing is lost. */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<com.mnemolith.echo.PossessionState>> ECHO_POSSESSION = ATTACHMENT_TYPES.register(
+            "echo_possession",
+            () -> AttachmentType.builder(() -> new com.mnemolith.echo.PossessionState())
+                    .serialize(com.mnemolith.echo.PossessionState.MAP_CODEC, com.mnemolith.echo.PossessionState::isActive)
+                    .copyOnDeath()
+                    .build());
+
     private ModAttachments() {}
 
     public static void register(IEventBus modEventBus) {
