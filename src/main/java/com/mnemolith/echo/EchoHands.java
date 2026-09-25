@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
@@ -122,6 +123,18 @@ public final class EchoHands {
         if (state.requiresCorrectToolForDrops() && !tool.isCorrectToolForDrops(state)) {
             return Outcome.SKIPPED_TOOL;
         }
+        boolean broken = destroyWith(level, echo, hand, pos, slot);
+        echo.swing(InteractionHand.MAIN_HAND);
+        return broken ? Outcome.DONE : Outcome.REFUSED;
+    }
+
+    /**
+     * Lends the echo's stack in {@code slot} to the fake player for one {@code destroyBlock} call, then puts whatever is
+     * in the fake hand back into that slot. Drops are held until the tool is back, then go into the echo's inventory;
+     * what does not fit falls at the echo.
+     */
+    private static boolean destroyWith(ServerLevel level, EchoEntity echo, FakePlayer hand, BlockPos pos, int slot) {
+        ItemStack tool = echo.inventory().getItem(slot);
         hand.getInventory().setSelectedSlot(slot);
         hand.getInventory().setItem(slot, tool);
         echo.inventory().setItem(slot, ItemStack.EMPTY);
@@ -146,8 +159,176 @@ public final class EchoHands {
             }
             CAPTURED.clear();
         }
+        return broken;
+    }
+
+    /** Result of a job break: what happened, and whether the tool used for it broke. */
+    public record JobBreak(Outcome outcome, boolean toolBroke) {}
+
+    /**
+     * A job break (mining, tunnelling, clearing): the caller already chose the tool slot ({@code -1}: bare hand) and
+     * checked that the block is safe to break. The tool is moved into the held hotbar slot first, so the echo visibly
+     * holds it. The owner's fake player breaks the block, so protection events apply.
+     */
+    public static JobBreak breakForJob(ServerLevel level, EchoEntity echo, BlockPos pos, int toolSlot) {
+        UUID owner = echo.ownerId();
+        if (owner == null || !level.isLoaded(pos)) {
+            return new JobBreak(Outcome.REFUSED, false);
+        }
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir() || state.getDestroySpeed(level, pos) < 0.0F) {
+            return new JobBreak(Outcome.SKIPPED_CHANGED, false);
+        }
+        EchoInventory inventory = echo.inventory();
+        int slot = echo.selectedSlot();
+        if (toolSlot >= 0 && toolSlot != slot) {
+            if (toolSlot < Inventory.getSelectionSize()) {
+                echo.setSelectedSlot(toolSlot);
+            } else {
+                ItemStack moved = inventory.removeItemNoUpdate(toolSlot);
+                inventory.setItem(toolSlot, inventory.removeItemNoUpdate(slot));
+                inventory.setItem(slot, moved);
+            }
+            slot = echo.selectedSlot();
+        } else if (toolSlot < 0 && !inventory.getItem(slot).isEmpty()) {
+            // Bare hand: hold an empty hotbar slot if there is one.
+            int empty = firstEmptyHotbar(inventory);
+            if (empty >= 0) {
+                echo.setSelectedSlot(empty);
+                slot = empty;
+            }
+        }
+        ItemStack tool = inventory.getItem(slot);
+        boolean damageable = !tool.isEmpty() && tool.isDamageableItem();
+        net.minecraft.world.item.Item toolItem = tool.getItem();
+        FakePlayer hand = hand(level, owner, echo.ownerName());
+        aim(hand, echo, net.minecraft.world.phys.Vec3.atCenterOf(pos));
+        hand.setShiftKeyDown(false);
+        sweep(level, echo, hand);
+        boolean broken;
+        try {
+            broken = destroyWith(level, echo, hand, pos, slot);
+        } finally {
+            sweep(level, echo, hand);
+            breaking = null;
+            breakingHand = null;
+        }
         echo.swing(InteractionHand.MAIN_HAND);
-        return broken ? Outcome.DONE : Outcome.REFUSED;
+        boolean toolBroke = damageable && !inventory.getItem(slot).is(toolItem);
+        Mnemolith.LOGGER.debug("Mnemolith echo job break {} at {} -> {} toolBroke={}", echo.ownerName(), pos.toShortString(), broken, toolBroke);
+        return new JobBreak(broken ? Outcome.DONE : Outcome.REFUSED, toolBroke);
+    }
+
+    /**
+     * A job placement: the owner's fake player uses the echo's own block item on a neighbouring face (sneaking, so no
+     * block is "used"), which fires the normal place events. If the block came out with other properties than the
+     * blueprint asks for (facing, axis, half), the properties are set to the blueprint state afterwards; the block
+     * itself is never swapped, and multi-block parts (doors, beds, double chests) are left as placed.
+     */
+    public static Outcome placeForJob(ServerLevel level, EchoEntity echo, BlockPos pos, BlockState target) {
+        UUID owner = echo.ownerId();
+        if (owner == null || !level.isLoaded(pos)) {
+            return Outcome.REFUSED;
+        }
+        net.minecraft.world.item.Item item = com.mnemolith.echo.EchoLesson.itemFor(target);
+        EchoInventory inventory = echo.inventory();
+        int slot = inventory.getItem(echo.selectedSlot()).is(item) ? echo.selectedSlot() : inventory.find(item);
+        if (slot < 0) {
+            return Outcome.SKIPPED_NO_ITEM;
+        }
+        BlockHitResult hit = supportHit(level, pos);
+        if (hit == null) {
+            return Outcome.SKIPPED_CHANGED;
+        }
+        if (slot >= Inventory.getSelectionSize()) {
+            int held = echo.selectedSlot();
+            ItemStack moved = inventory.removeItemNoUpdate(slot);
+            inventory.setItem(slot, inventory.removeItemNoUpdate(held));
+            inventory.setItem(held, moved);
+            slot = held;
+        } else {
+            echo.setSelectedSlot(slot);
+        }
+        FakePlayer hand = hand(level, owner, echo.ownerName());
+        aim(hand, echo, hit.getLocation());
+        hand.setShiftKeyDown(true);
+        sweep(level, echo, hand);
+        int handSlot = 0;
+        ItemStack stack = inventory.getItem(slot);
+        InteractionResult result;
+        try {
+            hand.getInventory().setSelectedSlot(handSlot);
+            hand.getInventory().setItem(handSlot, stack);
+            inventory.setItem(slot, ItemStack.EMPTY);
+            try {
+                result = hand.gameMode.useItemOn(hand, level, stack, InteractionHand.MAIN_HAND, hit);
+            } finally {
+                ItemStack after = hand.getInventory().getItem(handSlot);
+                hand.getInventory().setItem(handSlot, ItemStack.EMPTY);
+                inventory.setItem(slot, after);
+            }
+        } finally {
+            hand.setShiftKeyDown(false);
+            sweep(level, echo, hand);
+        }
+        echo.swing(InteractionHand.MAIN_HAND);
+        BlockState now = level.getBlockState(pos);
+        if (!result.consumesAction() || now.getBlock() != target.getBlock()) {
+            Mnemolith.LOGGER.debug("Mnemolith echo job place {} at {} -> refused ({}, now {})", echo.ownerName(), pos.toShortString(), result, now);
+            return Outcome.REFUSED;
+        }
+        if (now != target && correctable(target) && target.canSurvive(level, pos)) {
+            level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
+        }
+        return Outcome.DONE;
+    }
+
+    private static boolean correctable(BlockState state) {
+        return !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.BED_PART)
+                && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.CHEST_TYPE)
+                && !state.hasBlockEntity();
+    }
+
+    /** A face of a solid neighbour that points at {@code pos}: below first, then the sides, then above. Null when nothing holds it. */
+    public static @Nullable BlockHitResult supportHit(ServerLevel level, BlockPos pos) {
+        net.minecraft.core.Direction[] order = {net.minecraft.core.Direction.DOWN, net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.SOUTH,
+                net.minecraft.core.Direction.WEST, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.UP};
+        for (net.minecraft.core.Direction side : order) {
+            BlockPos support = pos.relative(side);
+            if (!level.isLoaded(support)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(support);
+            if (state.isAir() || state.canBeReplaced() || state.getCollisionShape(level, support).isEmpty()) {
+                continue;
+            }
+            net.minecraft.core.Direction face = side.getOpposite();
+            net.minecraft.world.phys.Vec3 location = net.minecraft.world.phys.Vec3.atCenterOf(support).add(face.getStepX() * 0.5D, face.getStepY() * 0.5D, face.getStepZ() * 0.5D);
+            return new BlockHitResult(location, face, support, false);
+        }
+        return null;
+    }
+
+    private static void aim(FakePlayer hand, EchoEntity echo, net.minecraft.world.phys.Vec3 at) {
+        net.minecraft.world.phys.Vec3 eye = echo.getEyePosition();
+        net.minecraft.world.phys.Vec3 d = at.subtract(eye);
+        float yaw = (float) (net.minecraft.util.Mth.atan2(d.z, d.x) * (180.0D / Math.PI)) - 90.0F;
+        float pitch = (float) -(net.minecraft.util.Mth.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)) * (180.0D / Math.PI));
+        hand.snapTo(echo.getX(), echo.getY(), echo.getZ(), yaw, pitch);
+        hand.setYHeadRot(yaw);
+        echo.setYRot(yaw);
+        echo.setYHeadRot(yaw);
+        echo.setXRot(pitch);
+    }
+
+    private static int firstEmptyHotbar(EchoInventory inventory) {
+        for (int i = 0; i < Inventory.getSelectionSize(); i++) {
+            if (inventory.getItem(i).isEmpty()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static boolean suits(ItemStack tool, BlockState state) {

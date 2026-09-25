@@ -53,12 +53,18 @@ public final class PossessionState {
                 .apply(instance, Anchor::new));
     }
 
-    public record Body(UUID echo, float maxHealth, Optional<EchoRecording> recording) {
+    /** The borrowed echo body. {@code job} (lesson, linked chest, blueprint anchor) was added in stage 2 and is optional in old saves. */
+    public record Body(UUID echo, float maxHealth, Optional<EchoRecording> recording, Optional<com.mnemolith.echo.job.EchoJob.Saved> job) {
         static final Codec<Body> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("echo").forGetter(Body::echo),
                 Codec.FLOAT.optionalFieldOf("max_health", 20.0F).forGetter(Body::maxHealth),
-                EchoRecording.CODEC.optionalFieldOf("recording").forGetter(Body::recording))
+                EchoRecording.CODEC.optionalFieldOf("recording").forGetter(Body::recording),
+                com.mnemolith.echo.job.EchoJob.Saved.CODEC.optionalFieldOf("job").forGetter(Body::job))
                 .apply(instance, Body::new));
+
+        public Body(UUID echo, float maxHealth, Optional<EchoRecording> recording) {
+            this(echo, maxHealth, recording, Optional.empty());
+        }
     }
 
     public record Data(Real real, Anchor anchor, Body body) {

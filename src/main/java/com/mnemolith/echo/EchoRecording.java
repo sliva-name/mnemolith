@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
  * short yaw, pitch and head yaw (360 degrees over 65536), then a flag byte. Actions carry the block edits.
  * Stored on the filled echo recording item and inside the echo entity.
  */
-public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dimension, Vec3 origin, byte[] frames, List<EchoAction> actions) {
+public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dimension, Vec3 origin, byte[] frames, List<EchoAction> actions, long networkKey) {
     public static final int FRAME_BYTES = 19;
     public static final int FLAG_SNEAK = 1;
     public static final int FLAG_SPRINT = 2;
@@ -58,6 +58,43 @@ public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dim
             ByteBufCodecs.byteArray(MAX_FRAMES * FRAME_BYTES), EchoRecording::frames,
             EchoAction.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_ACTIONS)), EchoRecording::actions,
             EchoRecording::new);
+
+    /**
+     * What goes over the network inside an item: the header and a content key, never the frames. The encoding side
+     * remembers the full recording under that key, so a stack that comes back from a creative-mode client (which only
+     * ever saw the header) is restored in full on the server. A client that never had the frames gets an empty stub;
+     * it reads the {@link EchoLesson} component instead.
+     */
+    public static final StreamCodec<RegistryFriendlyByteBuf, EchoRecording> NETWORK_CODEC = StreamCodec.of(
+            (buf, recording) -> {
+                UUIDUtil.STREAM_CODEC.encode(buf, recording.owner());
+                ByteBufCodecs.stringUtf8(64).encode(buf, recording.ownerName());
+                ResourceKey.streamCodec(Registries.DIMENSION).encode(buf, recording.dimension());
+                Vec3.STREAM_CODEC.encode(buf, recording.origin());
+                // A stub (a client copy without frames) sends back the key of the recording it stands for.
+                long key = recording.length() > 0 ? recording.contentKey() : recording.networkKey();
+                buf.writeLong(key);
+                if (recording.length() > 0) {
+                    RecordingCache.remember(key, recording);
+                }
+            },
+            buf -> {
+                UUID owner = UUIDUtil.STREAM_CODEC.decode(buf);
+                String name = ByteBufCodecs.stringUtf8(64).decode(buf);
+                ResourceKey<Level> dimension = ResourceKey.streamCodec(Registries.DIMENSION).decode(buf);
+                Vec3 origin = Vec3.STREAM_CODEC.decode(buf);
+                long key = buf.readLong();
+                EchoRecording full = RecordingCache.find(key);
+                if (full != null && full.owner().equals(owner) && full.dimension().equals(dimension)) {
+                    return full;
+                }
+                return new EchoRecording(owner, name, dimension, origin, new byte[0], List.of(), key);
+            });
+
+    /** A recording as it is saved and recorded. {@code networkKey} is only set on client-side stubs. */
+    public EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dimension, Vec3 origin, byte[] frames, List<EchoAction> actions) {
+        this(owner, ownerName, dimension, origin, frames, actions, 0L);
+    }
 
     public EchoRecording {
         actions = List.copyOf(actions);
@@ -102,6 +139,51 @@ public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dim
         return packed * 360.0F / 65536.0F;
     }
 
+    /** 64-bit FNV-1a over the owner, origin, frames, and actions. Used as the network cache key. */
+    public long contentKey() {
+        long hash = 0xcbf29ce484222325L;
+        hash = mix(hash, this.owner.getMostSignificantBits());
+        hash = mix(hash, this.owner.getLeastSignificantBits());
+        hash = mix(hash, Double.doubleToLongBits(this.origin.x));
+        hash = mix(hash, Double.doubleToLongBits(this.origin.y));
+        hash = mix(hash, Double.doubleToLongBits(this.origin.z));
+        for (byte b : this.frames) {
+            hash ^= b & 0xFF;
+            hash *= 0x100000001b3L;
+        }
+        hash = mix(hash, this.actions.hashCode());
+        return mix(hash, this.frames.length);
+    }
+
+    private static long mix(long hash, long value) {
+        for (int i = 0; i < 8; i++) {
+            hash ^= (value >>> (i * 8)) & 0xFF;
+            hash *= 0x100000001b3L;
+        }
+        return hash;
+    }
+
+    /** Recently sent full recordings by content key. Bounded; shared by the logical sides of one JVM. */
+    static final class RecordingCache {
+        private static final int SIZE = 512;
+        private static final java.util.Map<Long, EchoRecording> CACHE = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>(64, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(java.util.Map.Entry<Long, EchoRecording> eldest) {
+                return this.size() > SIZE;
+            }
+        });
+
+        private RecordingCache() {}
+
+        static void remember(long key, EchoRecording recording) {
+            CACHE.put(key, recording);
+        }
+
+        static @org.jspecify.annotations.Nullable EchoRecording find(long key) {
+            return CACHE.get(key);
+        }
+    }
+
     public int seconds() {
         return (this.length() + 19) / 20;
     }
@@ -118,7 +200,8 @@ public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dim
                 && this.dimension.equals(that.dimension)
                 && this.origin.equals(that.origin)
                 && Arrays.equals(this.frames, that.frames)
-                && this.actions.equals(that.actions);
+                && this.actions.equals(that.actions)
+                && this.networkKey == that.networkKey;
     }
 
     @Override
@@ -127,7 +210,8 @@ public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dim
         hash = hash * 31 + this.dimension.hashCode();
         hash = hash * 31 + this.origin.hashCode();
         hash = hash * 31 + Arrays.hashCode(this.frames);
-        return hash * 31 + this.actions.hashCode();
+        hash = hash * 31 + this.actions.hashCode();
+        return hash * 31 + Long.hashCode(this.networkKey);
     }
 
     @Override

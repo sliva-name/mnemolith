@@ -27,11 +27,13 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * The lens "thermal" view. While the lens is raised (use held, not sneaking) the world is re-tinted dark pink by a
- * post chain, every echo gets a light pink outline that shows through walls, and the closest own echo inside a small
- * aim-assist cone becomes the target. Attack on a target asks the server to possess it.
+ * post chain, every echo gets a filled light-pink silhouette that shows through walls ({@link EchoRenderer}), and the
+ * closest own echo inside a small aim-assist cone becomes the target (near-white pulsing fill plus an outline).
+ * Attack on a target asks the server to possess it.
  * <p>
- * The post chain runs at {@link RenderLevelStageEvent.AfterLevel}: after the world, before the held item and before the
- * entity outlines are composited, so the hand and the pink outlines keep their own colors.
+ * The post chain runs at {@link RenderLevelStageEvent.AfterWeather}: after the world and the weather, but before the
+ * always-on-top pass (silhouettes and status labels), the held item and the entity outline composite, so all of those
+ * keep their own colors instead of being tinted.
  */
 public final class ThermalClient {
     public static final Identifier EFFECT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "thermal");
@@ -103,7 +105,7 @@ public final class ThermalClient {
         return best;
     }
 
-    public static void onAfterLevel(RenderLevelStageEvent.AfterLevel event) {
+    public static void onAfterWeather(RenderLevelStageEvent.AfterWeather event) {
         if (!EchoView.thermal() || !ClientConfig.THERMAL_VIEW.get()) {
             return;
         }

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -48,6 +49,10 @@ public final class EchoRecorder {
         final ByteBuffer frames;
         final List<EchoAction> actions = new ArrayList<>();
         final List<Pending> pending = new ArrayList<>();
+        /** Every block the player broke, in order (for the mining lesson). */
+        final List<BlockState> broken = new ArrayList<>();
+        /** Every block the player placed, in order, with the tick it happened (for the building lesson). */
+        final List<Placed> placed = new ArrayList<>();
         int count;
 
         Session(ResourceKey<Level> dimension, Vec3 origin, int maxFrames) {
@@ -74,6 +79,8 @@ public final class EchoRecorder {
             this.item = item;
         }
     }
+
+    private record Placed(int tick, BlockPos pos, BlockState state) {}
 
     public static boolean isRecording(ServerPlayer player) {
         return SESSIONS.containsKey(player.getUUID());
@@ -161,6 +168,9 @@ public final class EchoRecorder {
         }
         BlockHitResult hit = new BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
         add(session, EchoAction.of(session.count, EchoAction.Kind.BREAK, hit, false, state.getBlock(), null));
+        if (session.broken.size() < EchoRecording.MAX_ACTIONS) {
+            session.broken.add(state);
+        }
     }
 
     public static void onRightClickBlock(ServerPlayer player, InteractionHand hand, BlockHitResult hit) {
@@ -172,9 +182,15 @@ public final class EchoRecorder {
         session.pending.add(new Pending(session.count, hand, hit, before, player.getItemInHand(hand).getItem()));
     }
 
-    public static void onPlace(ServerPlayer player, BlockState placed) {
+    public static void onPlace(ServerPlayer player, BlockPos pos, BlockState placed) {
         Session session = SESSIONS.get(player.getUUID());
-        if (session == null || session.pending.isEmpty()) {
+        if (session == null) {
+            return;
+        }
+        if (session.placed.size() < EchoRecording.MAX_ACTIONS) {
+            session.placed.add(new Placed(session.count, pos.immutable(), placed));
+        }
+        if (session.pending.isEmpty()) {
             return;
         }
         Pending last = session.pending.get(session.pending.size() - 1);
@@ -197,6 +213,10 @@ public final class EchoRecorder {
             EchoRecording recording = new EchoRecording(player.getUUID(), player.getGameProfile().name(), session.dimension, session.origin, frames, session.actions);
             result = new ItemStack(ModItems.ECHO_RECORDING.get());
             result.set(ModDataComponents.ECHO_RECORDING.get(), recording);
+            EchoLesson lesson = analyze(player, session, recording);
+            result.set(ModDataComponents.ECHO_LESSON.get(), lesson);
+            Mnemolith.LOGGER.info("Mnemolith echo lesson player={} mining={} blueprint={}", player.getGameProfile().name(),
+                    lesson.mining().size(), lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
             player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_done", recording.seconds(), recording.actions().size()), true);
             player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.8F, 1.1F);
         }
@@ -206,6 +226,61 @@ public final class EchoRecorder {
             player.drop(result, false);
         }
         return given;
+    }
+
+    /**
+     * Turns what happened during the recording into a lesson. Mining: at least 2 broken blocks (no block entities,
+     * nothing unbreakable), types sorted by count. Building: placed blocks still standing now, relative to the lowest,
+     * first-placed one, with the player's facing at the first placement.
+     */
+    static EchoLesson analyze(ServerPlayer player, Session session, EchoRecording recording) {
+        Map<Block, Integer> counts = new java.util.LinkedHashMap<>();
+        int total = 0;
+        for (BlockState state : session.broken) {
+            if (state.hasBlockEntity() || state.getDestroySpeed(player.level(), player.blockPosition()) < 0.0F || state.isAir()) {
+                continue;
+            }
+            counts.merge(state.getBlock(), 1, Integer::sum);
+            total++;
+        }
+        List<EchoLesson.MineTarget> mining = new ArrayList<>();
+        if (total >= 2) {
+            counts.entrySet().stream()
+                    .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                    .limit(EchoLesson.MAX_MINE_TARGETS)
+                    .forEach(entry -> mining.add(new EchoLesson.MineTarget(entry.getKey(), entry.getValue())));
+        }
+        // Last placement at a position wins; keep only what is still there.
+        Map<BlockPos, Placed> standing = new java.util.LinkedHashMap<>();
+        for (Placed placed : session.placed) {
+            standing.remove(placed.pos());
+            standing.put(placed.pos(), placed);
+        }
+        List<Placed> kept = new ArrayList<>();
+        for (Placed placed : standing.values()) {
+            BlockState now = player.level().getBlockState(placed.pos());
+            if (!now.isAir() && now.getBlock() == placed.state().getBlock() && EchoLesson.itemFor(now) != net.minecraft.world.item.Items.AIR) {
+                kept.add(new Placed(placed.tick(), placed.pos(), now));
+            }
+        }
+        Optional<EchoLesson.Blueprint> blueprint = Optional.empty();
+        if (!kept.isEmpty()) {
+            Placed anchor = kept.get(0);
+            for (Placed placed : kept) {
+                if (placed.pos().getY() < anchor.pos().getY()) {
+                    anchor = placed;
+                }
+            }
+            int firstTick = kept.stream().mapToInt(Placed::tick).min().orElse(0);
+            net.minecraft.core.Direction facing = net.minecraft.core.Direction.fromYRot(recording.frame(Math.max(0, firstTick - 1)).yRot());
+            List<EchoLesson.Entry> entries = new ArrayList<>(kept.size());
+            for (Placed placed : kept) {
+                entries.add(new EchoLesson.Entry(placed.pos().subtract(anchor.pos()), placed.state()));
+            }
+            blueprint = Optional.of(new EchoLesson.Blueprint(facing, entries));
+        }
+        return new EchoLesson(recording.length(), (int) recording.countActions(EchoAction.Kind.BREAK), (int) recording.countActions(EchoAction.Kind.PLACE),
+                (int) recording.countActions(EchoAction.Kind.USE), mining, blueprint);
     }
 
     /** Server stopped: forget unsaved sessions (players were already handed their recordings on logout). */
