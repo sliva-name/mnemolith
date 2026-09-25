@@ -68,7 +68,7 @@ public final class EchoEvents {
             EchoHands.lastEventActor = fake.getUUID();
         }
         if (!event.isCanceled() && realPlayer(event.getEntity())) {
-            EchoRecorder.onPlace((ServerPlayer) event.getEntity(), event.getPlacedBlock());
+            EchoRecorder.onPlace((ServerPlayer) event.getEntity(), event.getPos(), event.getPlacedBlock());
         }
     }
 

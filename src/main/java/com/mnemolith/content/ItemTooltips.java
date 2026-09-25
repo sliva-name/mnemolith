@@ -42,12 +42,21 @@ public final class ItemTooltips {
                 return;
             }
             builder.accept(Component.translatable("item.mnemolith.echo_recording.owner", recording.ownerName()));
-            builder.accept(Component.translatable(
-                    "item.mnemolith.echo_recording.summary",
-                    recording.seconds(),
-                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.BREAK),
-                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.PLACE),
-                    recording.countActions(com.mnemolith.echo.EchoAction.Kind.USE)));
+            // The client only receives the lesson summary; the frames stay on the server.
+            com.mnemolith.echo.EchoLesson lesson = stack.get(ModDataComponents.ECHO_LESSON.get());
+            if (lesson != null) {
+                builder.accept(Component.translatable("item.mnemolith.echo_recording.summary", lesson.seconds(), lesson.breaks(), lesson.places(), lesson.uses()));
+                for (Component line : lesson.describe()) {
+                    builder.accept(line.copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+            } else if (recording.length() > 0) {
+                builder.accept(Component.translatable(
+                        "item.mnemolith.echo_recording.summary",
+                        recording.seconds(),
+                        recording.countActions(com.mnemolith.echo.EchoAction.Kind.BREAK),
+                        recording.countActions(com.mnemolith.echo.EchoAction.Kind.PLACE),
+                        recording.countActions(com.mnemolith.echo.EchoAction.Kind.USE)));
+            }
             builder.accept(Component.translatable("item.mnemolith.echo_recording.hint"));
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.IMPRINT_CAST, (stack, context, display, player, flag, builder) -> {

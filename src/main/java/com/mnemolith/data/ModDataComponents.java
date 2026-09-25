@@ -19,7 +19,12 @@ public final class ModDataComponents {
     /** A filled echo recording: frames and world actions of one self-recording. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.EchoRecording>> ECHO_RECORDING = DATA_COMPONENTS.registerComponentType(
             "echo_recording",
-            builder -> builder.persistent(com.mnemolith.echo.EchoRecording.CODEC).networkSynchronized(com.mnemolith.echo.EchoRecording.STREAM_CODEC));
+            builder -> builder.persistent(com.mnemolith.echo.EchoRecording.CODEC).networkSynchronized(com.mnemolith.echo.EchoRecording.NETWORK_CODEC));
+
+    /** What a filled recording teaches (mining targets, blueprint). Small; this is what the client reads. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.EchoLesson>> ECHO_LESSON = DATA_COMPONENTS.registerComponentType(
+            "echo_lesson",
+            builder -> builder.persistent(com.mnemolith.echo.EchoLesson.CODEC).networkSynchronized(com.mnemolith.echo.EchoLesson.STREAM_CODEC));
 
     private ModDataComponents() {}
 
