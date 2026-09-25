@@ -273,11 +273,29 @@ public class EchoEntity extends MemoryAvatar {
             if (this.job.consumeDirty()) {
                 this.syncJob();
             }
+            if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
+                this.releaseHunters(level);
+            }
             if (!this.isReplaying() && this.tickCount % 100 == 0 && this.getHealth() < this.getMaxHealth() && this.isAlive()) {
                 this.heal(1.0F);
             }
         }
         super.tick();
+    }
+
+    // ---- threats (stage 3) ----
+
+    /** Whether hostile mobs may pick this echo as a target: only while it works in the world. */
+    public boolean attractsMobs() {
+        return this.isAlive() && !this.isReplaying() && this.job.isWorking() && CommonConfig.ECHO_MOB_AGGRO.get();
+    }
+
+    /** Mobs that still hunt an echo that no longer works lose interest. */
+    private void releaseHunters(ServerLevel level) {
+        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, this.getBoundingBox().inflate(24.0D),
+                mob -> mob.getTarget() == this && mob instanceof net.minecraft.world.entity.monster.Enemy)) {
+            mob.setTarget(null);
+        }
     }
 
     // ---- jobs (stage 2) ----
@@ -353,8 +371,9 @@ public class EchoEntity extends MemoryAvatar {
     }
 
     private void syncJob() {
-        this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (this.job.status().kind().isStop() ? JOB_STOPPED : 0)));
-        this.entityData.set(DATA_JOB_STATUS, this.job.status().component());
+        var shown = this.job.shownStatus();
+        this.entityData.set(DATA_JOB_MODE, (byte) (this.job.mode().ordinal() | (shown.kind().isStop() ? JOB_STOPPED : 0)));
+        this.entityData.set(DATA_JOB_STATUS, shown.component());
         this.entityData.set(DATA_JOB_RADIUS, this.job.radius());
         this.entityData.set(DATA_JOB_CHEST, Optional.ofNullable(this.job.chest()));
         this.entityData.set(DATA_JOB_ANCHOR, Optional.ofNullable(this.job.buildAnchor()));
@@ -453,8 +472,8 @@ public class EchoEntity extends MemoryAvatar {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
-        if (this.job.mode() == EchoJob.Mode.MINE || this.job.mode() == EchoJob.Mode.BUILD) {
-            serverPlayer.sendSystemMessage(this.job.status().component(), true);
+        if (this.job.isWorking()) {
+            serverPlayer.sendSystemMessage(this.job.shownStatus().component(), true);
             return InteractionResult.SUCCESS_SERVER;
         }
         serverPlayer.sendSystemMessage(Component.translatable(
@@ -487,7 +506,14 @@ public class EchoEntity extends MemoryAvatar {
         if (source.getDirectEntity() instanceof Player player && this.isOwnedBy(player) && !player.isShiftKeyDown()) {
             return false;
         }
-        return super.hurtServer(level, source, damage);
+        boolean hurt = super.hurtServer(level, source, damage);
+        if (hurt && this.isAlive() && source.getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && attacker instanceof net.minecraft.world.entity.monster.Enemy) {
+            // Stage 3: a working echo never fights back; it runs and resumes later.
+            this.job.onAttacked(level, this, attacker);
+            this.syncJob();
+        }
+        return hurt;
     }
 
     @Override

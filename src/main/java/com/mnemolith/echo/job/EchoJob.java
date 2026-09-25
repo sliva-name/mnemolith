@@ -161,6 +161,25 @@ public final class EchoJob {
     private int digTicks;
     private int digTotal;
     private boolean dirty = true;
+    // ---- stage 3: interruptions (transient) ----
+    private final EchoMover mover = new EchoMover();
+    /** Running from, or hiding after, an attack. The job keeps its mode and resumes when it is calm again. */
+    private boolean alarmed;
+    private int calmTicks;
+    private @Nullable Vec3 threat;
+    /** A short line shown instead of the status (a theft, a mimic, a misfire); the job keeps running under it. */
+    private @Nullable JobStatus notice;
+    private int noticeTicks;
+    // moment replicant mimic
+    private int mimicTicks;
+    private int mimicLeft;
+    private int mimicCount;
+    private int mimicPlaced;
+    private java.util.@Nullable UUID mimicBy;
+    private @Nullable BlockPos undoPos;
+    private @Nullable BlockState undoState;
+    private int undoDelay;
+    private int stumbleTicks;
 
     public EchoJob() {}
 
@@ -254,8 +273,64 @@ public final class EchoJob {
         }
     }
 
+    /** What the label shows: a live notice over the status, when there is one. */
+    public JobStatus shownStatus() {
+        return this.notice != null && this.noticeTicks > 0 ? this.notice : this.status;
+    }
+
+    /** Shows {@code line} over the status for {@code ticks} ticks. */
+    public void notice(JobStatus line, int ticks) {
+        this.notice = line;
+        this.noticeTicks = Math.max(1, ticks);
+        this.dirty = true;
+    }
+
+    /** A job that works in the world: mobs may hunt it, the replicant may mimic it, the work writes imprints. */
+    public boolean isWorking() {
+        return this.mode == Mode.MINE || this.mode == Mode.BUILD;
+    }
+
+    public boolean alarmed() {
+        return this.alarmed;
+    }
+
+    public boolean mimicked() {
+        return this.mimicTicks > 0;
+    }
+
+    public int mimicUndone() {
+        return this.mimicCount;
+    }
+
+    /** Clears every stage 3 interruption (attack alarm, mimic, notices) when the job changes or stops. */
+    private void clearInterruptions(EchoEntity echo) {
+        if (this.alarmed || this.mover.active()) {
+            if (echo.level() instanceof ServerLevel level) {
+                this.mover.stop(level, echo);
+            }
+        }
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        this.mimicTicks = 0;
+        this.mimicLeft = 0;
+        this.mimicBy = null;
+        this.undoPos = null;
+        this.undoState = null;
+        this.stumbleTicks = 0;
+        if (this.notice != null) {
+            this.notice = null;
+            this.noticeTicks = 0;
+            this.dirty = true;
+        }
+    }
+
     /** Replay of the recording started (stage 1 behaviour); the job waits until it ends. */
     public void beginReplay() {
+        this.alarmed = false;
+        this.mimicTicks = 0;
+        this.undoPos = null;
+        this.notice = null;
         this.mode = Mode.REPLAY;
         this.setStatus(JobStatus.REPLAY);
         this.restartPhase();
@@ -264,6 +339,7 @@ public final class EchoJob {
 
     public void stop(EchoEntity echo) {
         boolean wasBuilding = this.mode == Mode.BUILD;
+        this.clearInterruptions(echo);
         this.mode = Mode.IDLE;
         this.setStatus(JobStatus.IDLE);
         this.release(echo);
@@ -275,6 +351,7 @@ public final class EchoJob {
 
     /** Starts mining around the echo. Returns false (with a stop status) when there is nothing to mine with. */
     public boolean startMining(EchoEntity echo) {
+        this.clearInterruptions(echo);
         this.release(echo);
         if (!this.lesson.teachesMining()) {
             this.mode = Mode.IDLE;
@@ -291,6 +368,7 @@ public final class EchoJob {
     }
 
     public boolean startBuilding(EchoEntity echo) {
+        this.clearInterruptions(echo);
         this.release(echo);
         if (!this.lesson.teachesBuilding()) {
             this.mode = Mode.IDLE;
@@ -351,6 +429,7 @@ public final class EchoJob {
 
     private void halt(EchoEntity echo, JobStatus why) {
         boolean wasBuilding = this.mode == Mode.BUILD;
+        this.clearInterruptions(echo);
         this.release(echo);
         this.mode = Mode.IDLE;
         if (wasBuilding) {
@@ -385,6 +464,22 @@ public final class EchoJob {
     // ---- tick ----
 
     public void tick(ServerLevel level, EchoEntity echo) {
+        if (this.noticeTicks > 0 && --this.noticeTicks == 0) {
+            this.notice = null;
+            this.dirty = true;
+        }
+        if (this.mimicTicks > 0) {
+            this.tickMimic(level, echo);
+        }
+        if (this.alarmed) {
+            this.tickAlarm(level, echo);
+            return;
+        }
+        if (this.stumbleTicks > 0) {
+            this.stumbleTicks--;
+            echo.setMoveTarget(null);
+            return;
+        }
         switch (this.mode) {
             case MINE -> this.tickMining(level, echo);
             case BUILD -> this.tickBuilding(level, echo);
@@ -397,6 +492,188 @@ public final class EchoJob {
             default -> {
             }
         }
+    }
+
+    // ================= attacks (stage 3) =================
+
+    /**
+     * A hostile mob hurt the echo. A working echo drops what it was doing, runs {@code echoFleeDistance} blocks away
+     * from the attacker and waits; it never hits back. The job keeps its mode, so it resumes after a calm spell.
+     */
+    public void onAttacked(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.LivingEntity attacker) {
+        if (!this.isWorking()) {
+            return;
+        }
+        this.calmTicks = 0;
+        this.threat = attacker.position();
+        if (!this.alarmed) {
+            this.alarmed = true;
+            this.release(echo);
+            this.stumbleTicks = 0;
+            this.setStatus(JobStatus.of(JobStatus.Kind.ATTACKED));
+            Mnemolith.LOGGER.info("Mnemolith echo attacked owner={} by={} at {}", echo.ownerName(),
+                    net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(attacker.getType()), echo.blockPosition().toShortString());
+            this.flee(level, echo);
+        } else if (!this.mover.active()) {
+            this.flee(level, echo);
+        }
+    }
+
+    private void flee(ServerLevel level, EchoEntity echo) {
+        Vec3 from = this.threat == null ? echo.position() : this.threat;
+        BlockPos origin = BlockPos.containing(from);
+        int distance = CommonConfig.ECHO_FLEE_DISTANCE.get();
+        this.mover.start(level, echo, new EchoNav.Goal() {
+            @Override
+            public boolean reached(BlockPos feet) {
+                return feet.distSqr(origin) >= (double) distance * distance;
+            }
+
+            @Override
+            public double estimate(BlockPos feet) {
+                return Math.max(0.0D, distance - Math.sqrt(feet.distSqr(origin)));
+            }
+        });
+    }
+
+    private void tickAlarm(ServerLevel level, EchoEntity echo) {
+        this.calmTicks++;
+        EchoMover.Result result = this.mover.tick(level, echo);
+        if (result == EchoMover.Result.RUNNING) {
+            return;
+        }
+        if (this.calmTicks % 10 != 0) {
+            return;
+        }
+        net.minecraft.world.entity.Mob hunter = hunter(level, echo);
+        if (hunter != null) {
+            // Still hunted: keep out of its way, and do not count this as calm.
+            this.threat = hunter.position();
+            if (hunter.distanceToSqr(echo) < 36.0D) {
+                this.flee(level, echo);
+            }
+            this.calmTicks = Math.min(this.calmTicks, CommonConfig.ECHO_FLEE_SAFE_TICKS.get() / 2);
+            return;
+        }
+        if (this.calmTicks >= CommonConfig.ECHO_FLEE_SAFE_TICKS.get()) {
+            this.resume(echo);
+        }
+    }
+
+    /** The nearest mob within 12 blocks that has this echo as its target. */
+    public static net.minecraft.world.entity.@Nullable Mob hunter(ServerLevel level, EchoEntity echo) {
+        net.minecraft.world.entity.Mob best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, echo.getBoundingBox().inflate(12.0D),
+                mob -> mob.isAlive() && mob.getTarget() == echo)) {
+            double distance = mob.distanceToSqr(echo);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = mob;
+            }
+        }
+        return best;
+    }
+
+    private void resume(EchoEntity echo) {
+        this.alarmed = false;
+        this.threat = null;
+        this.calmTicks = 0;
+        echo.setMoveTarget(null);
+        this.restartPhase();
+        this.setStatus(this.workingStatus());
+        Mnemolith.LOGGER.info("Mnemolith echo resumed owner={} mode={} at {}", echo.ownerName(), this.mode.getSerializedName(), echo.blockPosition().toShortString());
+    }
+
+    /** The status a working job shows when it (re)starts its loop. */
+    private JobStatus workingStatus() {
+        return switch (this.mode) {
+            case MINE -> new JobStatus(JobStatus.Kind.MINING, this.lesson.mining().isEmpty() ? "" : key(this.lesson.mining().get(0).block()), this.mined, 0);
+            case BUILD -> JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
+            default -> JobStatus.IDLE;
+        };
+    }
+
+    // ================= moment replicant mimic (stage 3) =================
+
+    /**
+     * A moment replicant copies this job for {@code ticks}. While it lasts, every other block the builder places is
+     * pulled back by the replicant (the block item goes back into the echo, so the builder simply places it again),
+     * and a miner stumbles for a moment after a block. At most {@code undoMax} such tricks per mimic.
+     */
+    public void beginMimic(java.util.UUID replicant, int ticks, int undoMax) {
+        if (!this.isWorking() || ticks <= 0) {
+            return;
+        }
+        this.mimicBy = replicant;
+        this.mimicTicks = ticks;
+        this.mimicLeft = undoMax;
+        this.mimicCount = 0;
+        this.mimicPlaced = 0;
+        this.notice(JobStatus.of(JobStatus.Kind.MIMIC, 0, 0), ticks);
+    }
+
+    private void tickMimic(ServerLevel level, EchoEntity echo) {
+        this.mimicTicks--;
+        net.minecraft.world.entity.Entity by = this.mimicBy == null ? null : level.getEntity(this.mimicBy);
+        if (by == null || !by.isAlive() || !this.isWorking()
+                || (by instanceof com.mnemolith.entity.mob.MomentReplicant replicant && !replicant.isMimicking(echo))) {
+            this.endMimic();
+            return;
+        }
+        BlockPos pos = this.undoPos;
+        BlockState state = this.undoState;
+        if (pos != null && state != null && --this.undoDelay <= 0) {
+            this.undoPos = null;
+            this.undoState = null;
+            if (EchoHands.takeBack(level, echo, pos, state)) {
+                this.mimicLeft--;
+                this.mimicCount++;
+                if (by instanceof net.minecraft.world.entity.LivingEntity living) {
+                    living.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                }
+                level.sendParticles(com.mnemolith.particle.ModParticles.REPLICANT_TELEGRAPH.get(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 10, 0.3D, 0.3D, 0.3D, 0.01D);
+                level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.HOSTILE, 0.6F, 0.6F);
+                this.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
+                Mnemolith.LOGGER.info("Mnemolith replicant undid echo block owner={} at {} undone={}", echo.ownerName(), pos.toShortString(), this.mimicCount);
+            }
+        }
+        if (this.mimicTicks <= 0) {
+            this.endMimic();
+        }
+    }
+
+    private void endMimic() {
+        this.mimicTicks = 0;
+        this.mimicBy = null;
+        this.undoPos = null;
+        this.undoState = null;
+        if (this.notice != null && this.notice.kind() == JobStatus.Kind.MIMIC) {
+            this.noticeTicks = Math.min(this.noticeTicks, 20);
+        }
+    }
+
+    /** Called after a block the job placed; a mimicking replicant may pull it back a moment later. */
+    private void mimicAfterPlace(BlockPos pos, BlockState state) {
+        if (this.mimicTicks <= 0 || this.mimicLeft <= 0 || this.undoPos != null) {
+            return;
+        }
+        if (this.mimicPlaced++ % 2 == 0) {
+            this.undoPos = pos.immutable();
+            this.undoState = state;
+            this.undoDelay = 10;
+        }
+    }
+
+    /** Called after a block the job broke or harvested; a mimicking replicant makes the echo stumble. */
+    private void mimicAfterBreak() {
+        if (this.mimicTicks <= 0 || this.mimicLeft <= 0) {
+            return;
+        }
+        this.mimicLeft--;
+        this.mimicCount++;
+        this.stumbleTicks = 30;
+        this.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
     }
 
     // ================= mining =================
@@ -834,6 +1111,7 @@ public final class EchoJob {
                 this.builtCount++;
                 this.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.plan.size()));
                 this.placeCooldown = PLACE_INTERVAL;
+                this.mimicAfterPlace(pos, entry.state());
             }
             case SKIPPED_CHANGED -> this.skipped.add(pos.asLong());
             case REFUSED -> {
@@ -1153,6 +1431,7 @@ public final class EchoJob {
                 this.target = null;
                 this.setStatus(new JobStatus(JobStatus.Kind.MINING, this.targetState == null ? "" : key(this.targetState.getBlock()), this.mined, 0));
                 this.phase = Phase.SELECT;
+                this.mimicAfterBreak();
             }
         }
         if (toolBroke && this.mode == Mode.MINE) {
@@ -1200,7 +1479,8 @@ public final class EchoJob {
 
     /** Debug line for QA logs. */
     public String describe() {
-        return "mode=" + this.mode.getSerializedName() + " phase=" + this.phase + " status=" + this.status.kind().getSerializedName() + " mined=" + this.mined
+        return "mode=" + this.mode.getSerializedName() + " phase=" + this.phase + " status=" + this.status.kind().getSerializedName()
+                + " shown=" + this.shownStatus().kind().getSerializedName() + (this.alarmed ? " alarmed" : "") + " mined=" + this.mined
                 + " built=" + this.builtCount + "/" + this.plan.size() + " candidates=" + this.candidates.size() + " refused=" + this.refused.size();
     }
 

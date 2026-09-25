@@ -185,7 +185,50 @@ public class EchoStrider extends MemoryMob {
         if (this.getLastHurtByMob() instanceof Player player && player.isAlive()) {
             return player;
         }
-        return this.level().getNearestPlayer(this, 16.0D);
+        Player nearest = this.level().getNearestPlayer(this, 16.0D);
+        if (nearest != null) {
+            return nearest;
+        }
+        // Stage 3: with no player around, an overloaded chunk turns the strider on the echo whose work it trails.
+        return this.level() instanceof ServerLevel level ? this.shadowedEcho(level) : null;
+    }
+
+    private int shadowNoticeTick = Integer.MIN_VALUE;
+
+    /**
+     * Stage 3: a working echo walks a fresh path over and over, so the strider treats it as a recorded path and trails
+     * it. Returns the nearest working echo within 16 blocks, or null.
+     */
+    public com.mnemolith.entity.echo.@Nullable EchoEntity shadowedEcho(ServerLevel level) {
+        if (!com.mnemolith.config.CommonConfig.ECHO_STRIDER_SHADOW.get()) {
+            return null;
+        }
+        com.mnemolith.entity.echo.EchoEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (com.mnemolith.entity.echo.EchoEntity echo : level.getEntitiesOfClass(com.mnemolith.entity.echo.EchoEntity.class, this.getBoundingBox().inflate(16.0D),
+                echo -> echo.isAlive() && !echo.isReplaying() && echo.job().isWorking())) {
+            double distance = this.distanceToSqr(echo);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = echo;
+            }
+        }
+        return best;
+    }
+
+    /** Where to walk to trail {@code echo}: about three blocks behind it. Shows the echo a notice now and then. */
+    public BlockPos shadowPoint(com.mnemolith.entity.echo.EchoEntity echo) {
+        if (this.tickCount - this.shadowNoticeTick > 600) {
+            this.shadowNoticeTick = this.tickCount;
+            echo.job().notice(com.mnemolith.echo.job.JobStatus.of(com.mnemolith.echo.job.JobStatus.Kind.STRIDER), 80);
+            if (this.level() instanceof ServerLevel server) {
+                MemoryFx.mob(server, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 6);
+            }
+            Mnemolith.LOGGER.info("Mnemolith strider shadows echo owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+        }
+        Vec3 back = echo.getLookAngle().multiply(1.0D, 0.0D, 1.0D);
+        back = back.lengthSqr() < 1.0E-4D ? Vec3.ZERO : back.normalize().scale(-3.0D);
+        return BlockPos.containing(echo.getX() + back.x, echo.getY(), echo.getZ() + back.z);
     }
 
     @Override

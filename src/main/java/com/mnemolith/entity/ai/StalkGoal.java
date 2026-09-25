@@ -22,7 +22,7 @@ public final class StalkGoal extends Goal {
         return MobTuning.archivistEnabled()
                 && !this.archivist.isStunned()
                 && !this.archivist.isFleeing()
-                && (this.archivist.interest() != null || this.archivist.dropped() != null);
+                && (this.archivist.interest() != null || this.archivist.dropped() != null || this.archivist.echoTarget() != null);
     }
 
     @Override
@@ -42,6 +42,18 @@ public final class StalkGoal extends Goal {
             return;
         }
         ServerPlayer player = this.archivist.interest();
+        com.mnemolith.entity.echo.EchoEntity echo = this.archivist.echoTarget();
+        if (player == null && echo != null) {
+            // Stage 3: sneaks up on a working echo and takes one stack.
+            this.archivist.getLookControl().setLookAt(echo, 30.0F, 30.0F);
+            if (MobTuning.sensorDue(this.archivist.tickCount, this.archivist.getNavigation().isDone())) {
+                this.archivist.getNavigation().moveTo(echo, 1.05D);
+            }
+            if (this.archivist.distanceToSqr(echo) < 6.25D && this.archivist.stealReady()) {
+                this.archivist.stealFromEcho(getServerLevel(this.archivist), echo);
+            }
+            return;
+        }
         if (player == null || !player.isAlive()) {
             this.archivist.loseInterest();
             return;

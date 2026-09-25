@@ -219,6 +219,20 @@ public final class EchoNav {
         }
     }
 
+    /**
+     * Per-walk helper for things a step needs besides walking (stage 3 navigation hooks). {@link #prepare} runs before
+     * the body moves into a step and may refuse it; {@link #passed} runs once the body stands on it.
+     */
+    public static final class Walker {
+        public void reset(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo) {}
+
+        public boolean prepare(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo, Step step) {
+            return true;
+        }
+
+        public void passed(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo, Step step) {}
+    }
+
     public static final int OPEN = 0;
     public static final int DIG = 1;
     public static final int BLOCKED = 2;

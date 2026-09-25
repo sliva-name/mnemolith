@@ -41,7 +41,23 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
         BLOCKED(true),
         NO_SUPPORT(true),
         NO_LESSON(true),
-        NO_BLUEPRINT(true);
+        NO_BLUEPRINT(true),
+        // Stage 3. Appended: kinds are saved by name, but keep the order stable anyway.
+        ATTACKED(true),
+        STOLEN(true),
+        MIMIC(true),
+        STRIDER(false),
+        MISFIRE(true),
+        FRACTURED(true),
+        FARMING(false),
+        FARM_WAIT(false),
+        NO_FIELD(true),
+        STAY(false),
+        FOLLOW(false),
+        RETURNING(false),
+        AT_POINT(false),
+        NO_POINT(true),
+        LOST_OWNER(true);
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         private final boolean stop;
@@ -106,6 +122,16 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             case WAIT_MISSING -> Component.translatable("mnemolith.job.missing", missingList(this.detail));
             case NO_TOOL -> stop(Component.translatable("mnemolith.job.reason.no_tool." + (this.detail.isEmpty() ? "tool" : this.detail)));
             case BLOCKED -> stop(Component.translatable("mnemolith.job.reason.blocked", this.a));
+            case STOLEN -> Component.translatable("mnemolith.job.stolen", missingList(this.detail));
+            case MIMIC -> Component.translatable("mnemolith.job.mimic", this.a);
+            case STRIDER -> Component.translatable("mnemolith.job.strider");
+            case MISFIRE -> Component.translatable("mnemolith.job.misfire." + (this.detail.isEmpty() ? "skip" : this.detail));
+            case FARMING -> Component.translatable("mnemolith.job.farming", blockName(this.detail), this.a);
+            case FARM_WAIT -> Component.translatable("mnemolith.job.farm_wait", blockName(this.detail), this.a);
+            case STAY -> Component.translatable("mnemolith.job.stay");
+            case FOLLOW -> Component.translatable("mnemolith.job.follow");
+            case RETURNING -> Component.translatable("mnemolith.job.returning");
+            case AT_POINT -> Component.translatable("mnemolith.job.at_point");
             default -> stop(Component.translatable("mnemolith.job.reason." + this.kind.getSerializedName()));
         };
     }

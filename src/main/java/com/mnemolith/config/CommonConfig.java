@@ -77,6 +77,14 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue ECHO_BUILD_CLEARS_TERRAIN;
     public static final ModConfigSpec.IntValue ECHO_SCAN_BUDGET;
     public static final ModConfigSpec.IntValue ECHO_PATH_BUDGET;
+    public static final ModConfigSpec.BooleanValue ECHO_MOB_AGGRO;
+    public static final ModConfigSpec.IntValue ECHO_FLEE_DISTANCE;
+    public static final ModConfigSpec.IntValue ECHO_FLEE_SAFE_TICKS;
+    public static final ModConfigSpec.BooleanValue ECHO_ARCHIVIST_STEAL;
+    public static final ModConfigSpec.IntValue ECHO_ARCHIVIST_STEAL_MAX;
+    public static final ModConfigSpec.IntValue ECHO_REPLICANT_MIMIC_TICKS;
+    public static final ModConfigSpec.IntValue ECHO_REPLICANT_UNDO_MAX;
+    public static final ModConfigSpec.BooleanValue ECHO_STRIDER_SHADOW;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -169,6 +177,14 @@ public final class CommonConfig {
         ECHO_BUILD_CLEARS_TERRAIN = SpecValues.bool(builder, "echoBuildClearsTerrain", "Whether a building echo may break natural terrain (stone, dirt, sand, gravel, plants) that stands where the blueprint needs a block. Other blocks are never overwritten.", false);
         ECHO_SCAN_BUDGET = SpecValues.integer(builder, "echoScanBudget", "Block positions a mining echo may inspect per tick while searching for targets.", 4096, 256, 65536);
         ECHO_PATH_BUDGET = SpecValues.integer(builder, "echoPathBudget", "Path nodes an echo may expand per tick. A search gives up after 16 times this many.", 400, 50, 4000);
+        ECHO_MOB_AGGRO = SpecValues.bool(builder, "echoMobAggro", "Whether hostile mobs (not creepers, neutral mobs or memory mobs) may pick a working echo as a target. The echo never fights back: it flees and resumes later.", true);
+        ECHO_FLEE_DISTANCE = SpecValues.integer(builder, "echoFleeDistance", "How far, in blocks, an attacked echo runs from its attacker before it waits.", 8, 3, 24);
+        ECHO_FLEE_SAFE_TICKS = SpecValues.integer(builder, "echoFleeSafeTicks", "Ticks without a hit, and without a hostile mob targeting it nearby, before an attacked echo goes back to work.", 100, 20, 1200);
+        ECHO_ARCHIVIST_STEAL = SpecValues.bool(builder, "echoArchivistSteal", "Whether an archivist may steal one non-tool stack from a working echo. It keeps the loot until it is killed, and then always drops it.", true);
+        ECHO_ARCHIVIST_STEAL_MAX = SpecValues.integer(builder, "echoArchivistStealMax", "Most items an archivist takes from one echo stack.", 8, 1, 64);
+        ECHO_REPLICANT_MIMIC_TICKS = SpecValues.integer(builder, "echoReplicantMimicTicks", "How long, in ticks, a moment replicant mimics a working echo's job. 0 turns the mimic off.", 200, 0, 1200);
+        ECHO_REPLICANT_UNDO_MAX = SpecValues.integer(builder, "echoReplicantUndoMax", "Most blocks a mimicking replicant pulls back from one build (the item goes back to the echo), or stumbles a miner or farmer.", 3, 0, 16);
+        ECHO_STRIDER_SHADOW = SpecValues.bool(builder, "echoStriderShadow", "Whether echo striders shadow a working echo like a recorded path, and charge it when its chunk is overloaded.", true);
         builder.pop();
 
         SPEC = builder.build();

@@ -283,6 +283,43 @@ public final class EchoHands {
         return Outcome.DONE;
     }
 
+    /**
+     * Pulls back a block the echo placed itself (stage 3: a mimicking replicant, or a misfired block the echo takes
+     * back). The block turns to air without drops and exactly one block item goes back into the echo (or falls at it),
+     * so nothing is duplicated or lost. The owner's fake player fires the normal break event first, so protection
+     * mods can refuse it. Multi-part blocks and block entities are never touched.
+     */
+    public static boolean takeBack(ServerLevel level, EchoEntity echo, BlockPos pos, BlockState expected) {
+        UUID owner = echo.ownerId();
+        if (owner == null || !level.isLoaded(pos)) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() != expected.getBlock() || state.hasBlockEntity() || !correctable(state)) {
+            return false;
+        }
+        net.minecraft.world.item.Item item = com.mnemolith.echo.EchoLesson.itemFor(state);
+        if (item == net.minecraft.world.item.Items.AIR || !com.mnemolith.echo.job.EchoWork.safeToBreak(level, echo, pos)) {
+            return false;
+        }
+        FakePlayer hand = hand(level, owner, echo.ownerName());
+        aim(hand, echo, net.minecraft.world.phys.Vec3.atCenterOf(pos));
+        sweep(level, echo, hand);
+        var event = net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, GameType.SURVIVAL, hand, pos, state);
+        if (event.isCanceled()) {
+            return false;
+        }
+        if (!level.removeBlock(pos, false)) {
+            return false;
+        }
+        ItemStack back = new ItemStack(item);
+        echo.inventory().insert(back);
+        if (!back.isEmpty()) {
+            echo.spawnAtLocation(level, back);
+        }
+        return true;
+    }
+
     private static boolean correctable(BlockState state) {
         return !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF)
                 && !state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.BED_PART)
