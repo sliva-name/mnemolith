@@ -20,13 +20,18 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Lens polling and the latest pressure snapshot. Loaded only from the client entrypoint. */
+/**
+ * Lens polling and the latest pressure snapshot. Loaded only from the client entrypoint.
+ * Fracture feel reuses this snapshot. It does not scan chunks.
+ */
 public final class PressureClient {
     private static List<ChunkPressure> snapshot = List.of();
     private static ResourceKey<Level> snapshotDimension;
     private static int ticksUntilPoll;
     private static int ticksUntilShimmer;
     private static int lastChimeBand = -1;
+    private static int polledChunkX = Integer.MIN_VALUE;
+    private static int polledChunkZ = Integer.MIN_VALUE;
 
     private PressureClient() {}
 
@@ -35,7 +40,7 @@ public final class PressureClient {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         snapshotDimension = player == null || player.level() == null ? null : player.level().dimension();
-        if (player == null || !ClientConfig.IMPRINT_PARTICLES.get()) {
+        if (player == null || !holdsLens(player) || !ClientConfig.IMPRINT_PARTICLES.get()) {
             return;
         }
         float volume = ClientConfig.MEMORY_AUDIO_VOLUME.get().floatValue();
@@ -55,23 +60,39 @@ public final class PressureClient {
         if (player == null || minecraft.level == null) {
             snapshot = List.of();
             snapshotDimension = null;
+            polledChunkX = Integer.MIN_VALUE;
+            polledChunkZ = Integer.MIN_VALUE;
+            FractureFeel.reset();
             return;
         }
         if (snapshotDimension != null && !player.level().dimension().equals(snapshotDimension)) {
             snapshot = List.of();
             snapshotDimension = null;
             lastChimeBand = -1;
+            polledChunkX = Integer.MIN_VALUE;
+            polledChunkZ = Integer.MIN_VALUE;
+            FractureFeel.reset();
         }
         boolean lens = holdsLens(player);
         boolean ambient = ClientConfig.AMBIENT_WITHOUT_LENS.get();
-        if (!lens && !ambient) {
-            snapshot = List.of();
-            snapshotDimension = null;
+        boolean feel = FractureFeel.wantsSnapshot();
+        if (!lens) {
             lastChimeBand = -1;
+        }
+        if (lens || ambient) {
+            shimmerCached(player);
+        }
+        if (!lens && !ambient && !feel) {
             ticksUntilPoll = 0;
             return;
         }
-        shimmerCached(player);
+        int chunkX = player.blockPosition().getX() >> 4;
+        int chunkZ = player.blockPosition().getZ() >> 4;
+        if (chunkX != polledChunkX || chunkZ != polledChunkZ) {
+            ticksUntilPoll = 0;
+            polledChunkX = chunkX;
+            polledChunkZ = chunkZ;
+        }
         if (ticksUntilPoll > 0) {
             ticksUntilPoll--;
             return;
