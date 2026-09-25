@@ -479,7 +479,9 @@ public class EchoEntity extends MemoryAvatar {
         this.setSpeed((float) (this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.3D));
         this.xxa = 0.0F;
         this.zza = horizontal > 0.05D ? (float) Math.min(1.0D, horizontal * 3.0D) : 0.0F;
-        this.setJumping(dy > 0.5D && this.onGround() && (this.horizontalCollision || horizontal < 1.3D));
+        // Stage 3: climb a ladder or vine and wade out of water by "jumping" (vanilla climbing and swimming).
+        boolean climbOrSwim = dy > 0.3D && (this.onClimbable() || this.isInWater());
+        this.setJumping(climbOrSwim || dy > 0.5D && this.onGround() && (this.horizontalCollision || horizontal < 1.3D));
     }
 
     /** Removes this body without drops and without touching the registry. */

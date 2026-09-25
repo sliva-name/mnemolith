@@ -39,7 +39,14 @@ public final class EchoMover {
         return this.active;
     }
 
+    public EchoNav.Walker walker() {
+        return this.walker;
+    }
+
     public void start(ServerLevel level, EchoEntity echo, EchoNav.Goal goal) {
+        if (!this.active) {
+            this.walker.forget();
+        }
         this.goal = goal;
         this.replans = 0;
         this.begin(level, echo);
@@ -62,7 +69,7 @@ public final class EchoMover {
             this.search = null;
             return;
         }
-        this.search = new EchoNav.Search(level, start, target, null, 0, CommonConfig.ECHO_PATH_BUDGET.get() * 16);
+        this.search = new EchoNav.Search(level, start, target, null, 0, CommonConfig.ECHO_PATH_BUDGET.get() * 16).avoid(this.walker.refused());
     }
 
     public void stop(ServerLevel level, EchoEntity echo) {

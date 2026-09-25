@@ -213,6 +213,8 @@ public final class EchoJob {
     private boolean dirty = true;
     // ---- stage 3: interruptions (transient) ----
     private final EchoMover mover = new EchoMover();
+    /** Opens and closes doors and gates on job walks (stage 3 navigation). */
+    private final EchoNav.Walker walker = new EchoNav.Walker();
     /** Running from, or hiding after, an attack. The job keeps its mode and resumes when it is calm again. */
     private boolean alarmed;
     private int calmTicks;
@@ -395,6 +397,11 @@ public final class EchoJob {
         return this.misfired.size();
     }
 
+    /** Doors and gates this echo opened on its walks (job and lens orders), for QA. */
+    public int doorsOpened() {
+        return this.walker.doorsOpened() + this.mover.walker().doorsOpened();
+    }
+
     public boolean alarmed() {
         return this.alarmed;
     }
@@ -540,6 +547,7 @@ public final class EchoJob {
         this.farmTasks.clear();
         this.farmRefused.clear();
         this.digPos = null;
+        this.walker.forget();
         this.unreachableInRow = 0;
         this.replans = 0;
         this.waitTicks = 0;
@@ -548,6 +556,9 @@ public final class EchoJob {
     /** Stops moving and clears a crack overlay. */
     public void release(EchoEntity echo) {
         echo.setMoveTarget(null);
+        if (echo.level() instanceof ServerLevel level) {
+            this.walker.reset(level, echo);
+        }
         if (this.digPos != null && echo.level() instanceof ServerLevel level) {
             level.destroyBlockProgress(echo.getId(), this.digPos, -1);
         }
@@ -1934,7 +1945,7 @@ public final class EchoJob {
             return;
         }
         int budget = CommonConfig.ECHO_PATH_BUDGET.get();
-        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16);
+        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16).avoid(this.walker.refused());
         this.pathToChest = toChest;
         this.phase = Phase.PATH;
     }
@@ -2010,12 +2021,18 @@ public final class EchoJob {
             this.beginDig(level, echo, cell, DigFor.TUNNEL);
             return;
         }
+        if (!this.walker.prepare(level, echo, step)) {
+            // A door or gate on the way would not open (protection): search again around it.
+            this.replan(level, echo);
+            return;
+        }
         Vec3 goal = Vec3.atBottomCenterOf(step.feet());
         double dx = goal.x - echo.getX();
         double dz = goal.z - echo.getZ();
         double horizontal = Math.sqrt(dx * dx + dz * dz);
         double dy = goal.y - echo.getY();
         if (horizontal < 0.3D && dy > -0.6D && dy < 0.6D) {
+            this.walker.passed(level, echo, step);
             this.pathIndex++;
             this.stuckTicks = 0;
             this.bestDistance = Double.MAX_VALUE;
