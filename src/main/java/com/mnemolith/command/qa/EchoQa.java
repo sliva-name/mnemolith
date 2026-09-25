@@ -179,6 +179,7 @@ public final class EchoQa {
             int instabilityBefore = memory(level, returned.blockPosition()).instability();
             int bodyItems = returned.inventory().totalCount();
             BlockPos deathAt = returned.blockPosition();
+            clearGround(level, deathAt);
             EchoPossession.possess(owner, returned);
             CommonHooks.onLivingDeath(owner, level.damageSources().generic());
             int dropped = groundCount(level, deathAt);

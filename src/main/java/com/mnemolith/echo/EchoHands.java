@@ -36,6 +36,7 @@ public final class EchoHands {
     private static @Nullable FakePlayer breakingHand;
     /** Profile id of the last fake player seen by the break or place event. Read by {@code /mnemolith echoqa}. */
     public static volatile @Nullable UUID lastEventActor;
+    private static final java.util.List<ItemStack> CAPTURED = new java.util.ArrayList<>();
 
     private EchoHands() {}
 
@@ -126,6 +127,7 @@ public final class EchoHands {
         echo.inventory().setItem(slot, ItemStack.EMPTY);
         breaking = echo;
         breakingHand = hand;
+        CAPTURED.clear();
         boolean broken;
         try {
             broken = hand.gameMode.destroyBlock(pos);
@@ -133,6 +135,16 @@ public final class EchoHands {
             ItemStack after = hand.getInventory().getItem(slot);
             hand.getInventory().setItem(slot, ItemStack.EMPTY);
             echo.inventory().setItem(slot, after);
+            breaking = null;
+            breakingHand = null;
+            // Drops are held until the tool is back in its slot, so the lent slot is never mistaken for an empty one.
+            for (ItemStack drop : CAPTURED) {
+                echo.inventory().insert(drop);
+                if (!drop.isEmpty()) {
+                    echo.spawnAtLocation(level, drop);
+                }
+            }
+            CAPTURED.clear();
         }
         echo.swing(InteractionHand.MAIN_HAND);
         return broken ? Outcome.DONE : Outcome.REFUSED;
@@ -214,22 +226,22 @@ public final class EchoHands {
         }
     }
 
-    /** Blocks an echo breaks go into its own inventory first. Leftovers fall as usual. */
+    /**
+     * Blocks an echo breaks go into its own inventory first. The drops are taken out of the event here and handed to
+     * the echo once the break call returns; whatever does not fit falls at the echo.
+     */
     public static void onBlockDrops(BlockDropsEvent event) {
-        EchoEntity echo = breaking;
-        if (echo == null || event.getBreaker() != breakingHand) {
+        if (breaking == null || event.getBreaker() != breakingHand || event.isCanceled()) {
             return;
         }
         var iterator = event.getDrops().iterator();
         while (iterator.hasNext()) {
             ItemEntity drop = iterator.next();
             ItemStack stack = drop.getItem();
-            echo.inventory().insert(stack);
-            if (stack.isEmpty()) {
-                iterator.remove();
-            } else {
-                drop.setItem(stack);
+            if (!stack.isEmpty()) {
+                CAPTURED.add(stack.copy());
             }
+            iterator.remove();
         }
     }
 
