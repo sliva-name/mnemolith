@@ -245,6 +245,9 @@ public final class EchoHands {
         if (hit == null) {
             return Outcome.SKIPPED_CHANGED;
         }
+        if (!stepOutOf(level, echo, pos)) {
+            return Outcome.SKIPPED_CHANGED;
+        }
         if (slot >= Inventory.getSelectionSize()) {
             int held = echo.selectedSlot();
             ItemStack moved = inventory.removeItemNoUpdate(slot);
@@ -286,6 +289,29 @@ public final class EchoHands {
             level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
         }
         return Outcome.DONE;
+    }
+
+    /**
+     * Makes sure the echo's own body is not in the cell it is about to fill. Reach is judged by block cells, but a
+     * 0.6-wide body standing near the edge of its cell pokes into the next one, and the placement then fails on the
+     * echo itself; two such failures marked the spot "in the way" and stopped the build. The echo steps to the centre
+     * of the cell it stands in (free, since it stands there). False when that still overlaps (the cell is above its
+     * head), so the caller skips the spot for now.
+     */
+    static boolean stepOutOf(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        net.minecraft.world.phys.AABB cell = new net.minecraft.world.phys.AABB(pos);
+        if (!echo.getBoundingBox().intersects(cell)) {
+            return true;
+        }
+        BlockPos feet = echo.blockPosition();
+        double x = feet.getX() + 0.5D;
+        double z = feet.getZ() + 0.5D;
+        net.minecraft.world.phys.AABB centred = echo.getBoundingBox().move(x - echo.getX(), 0.0D, z - echo.getZ());
+        if (centred.intersects(cell) || !level.noCollision(echo, centred)) {
+            return false;
+        }
+        echo.setPos(x, echo.getY(), z);
+        return true;
     }
 
     /**

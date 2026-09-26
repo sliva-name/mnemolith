@@ -108,7 +108,7 @@ Server options in `mnemolith-server.toml` are authoritative and are synced to co
 - No Scar boss, no new biome, and no strikethrough shafts. Fracture logs, and it can spawn a moment replicant. It does not start a recollection storm.
 - Observatory spacing is the structure set, not `worldGen.structureSpacing`.
 - Fracture feel is client-side and follows the synced band. `visuals.pressureVignette` darkens the edge in an overloaded or fractured chunk. `visuals.stormScreenShake` shakes the camera there. The name is the old storm knob; a storm is still not started. `visuals.fractureFringe` desaturates the fractured chunk under you with one fullscreen pass, the same post-chain path as the lens thermal view. If that chain fails to load, the log says so once and the vignette and shake still run. Particles, item glint, and archival stratum light are unchanged.
-- The `gameTestServer` run crashes until a game test is registered. That is the MDK default. `build` does not run it.
+- The game test world has structure generation off (hard-coded in `GameTestServer`), so the `qa` `locate` check is waived there; run `/mnemolith qa` on a real world for it.
 - A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.
 - On a machine with no audio device, the client logs `Failed to open OpenAL device` and continues with sounds disabled. That message comes from the sound engine.
 
@@ -120,6 +120,7 @@ Requirements: JDK 25 (the Gradle toolchain can download it), Git, and a 64-bit J
 ./gradlew build
 ./gradlew runClient
 ./gradlew runServer
+./gradlew runGameTestServer   # all QA suites and live residue tests, headless; non-zero exit on failure
 ```
 
 On Windows, use `gradlew.bat`.
@@ -147,9 +148,13 @@ A successful dedicated-server log contains `Mnemolith dedicated server setup` an
 
 `./gradlew runClient` opens the Minecraft client. The main menu and the mod list should show Mnemolith without a registry crash. The client log contains `Mnemolith client setup`.
 
+### Game tests
+
+`./gradlew runGameTestServer` boots a headless game test server in `run/gametest`, runs every Mnemolith game test and exits with the number of failures (about 20 seconds after a build). The seven `/mnemolith ...qa` suites run as one test each, calling the same code as the commands. Live residue tests use real server players ticked like connected clients, covering formation, lashes, sneaking, lens reading, the needle, festers, mute stones and the observatory seed. The report is `build/gametest/report.xml`. In a dev client or server, `/test runmultiple mnemolith:` runs them by hand. Coverage and what stays manual: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci). The `/mnemolith ...qa` commands still work on any server.
+
 ### CI
 
-`.github/workflows/build.yml` runs `./gradlew build` on Ubuntu with Temurin JDK 25.
+`.github/workflows/build.yml` runs `./gradlew build`, then `./gradlew runGameTestServer`, on Ubuntu with Temurin JDK 25. A failing game test fails the job. The report and server log are uploaded as the `gametest-report` artifact.
 
 ## Layout
 
@@ -164,7 +169,8 @@ com.mnemolith
   entity/  entity/mob/  entity/ai/  entity/echo/
   world/  worldgen/    veins, mute pockets, observatory
   event/
-  command/  command/qa/  /mnemolith
+  command/  command/qa/  /mnemolith and the QA suites
+  gametest/              game tests (suites + live residue tests)
   network/  data/  audio/  particle/
   config/                common, client, and server specs
   client/echo/           echo renderer, HUD, inventory screen
@@ -240,5 +246,7 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 ```
 
 Готовый файл: `build/libs/mnemolith-<версия>.jar`.
+
+`./gradlew runGameTestServer` запускает автотесты без клиента: все наборы `/mnemolith ...qa` и живые тесты осадков с настоящими серверными игроками. Код завершения равен числу упавших тестов. CI запускает эту задачу после `build`, и упавший тест роняет сборку. Что покрыто и что осталось ручным: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci).
 
 Если `runServer` остановится и создаст `run/server/eula.txt`, поставьте `eula=true` и запустите снова. Для входа дев-аккаунтом в `server.properties` укажите `online-mode=false`. В журнале выделенного сервера должны быть строки `Mnemolith dedicated server setup` и `Mnemolith logical server starting`, и не должно быть `Mnemolith client setup`.

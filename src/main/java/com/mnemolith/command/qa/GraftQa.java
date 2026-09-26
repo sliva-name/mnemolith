@@ -1,7 +1,6 @@
 package com.mnemolith.command.qa;
 
 import static com.mnemolith.command.qa.QaSupport.column;
-import static com.mnemolith.command.qa.QaSupport.count;
 import static com.mnemolith.command.qa.QaSupport.hasTag;
 import static com.mnemolith.command.qa.QaSupport.releaseColumn;
 import static com.mnemolith.command.qa.QaSupport.tickColumn;
@@ -44,7 +43,6 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
@@ -76,7 +74,6 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  * (effect, charge, return) and save/reload. Echoes and mobs are ticked through the level's own entity tick.
  */
 public final class GraftQa {
-    private static final int CHECKS = 12;
     private static final UUID OWNER = UUID.fromString("99999999-7777-7777-7777-777777777777");
     private static int salt;
 
@@ -84,9 +81,12 @@ public final class GraftQa {
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        return check(source.getLevel(), BlockPos.containing(source.getPosition())).send(source, true);
+    }
+
+    /** Runs the suite near {@code spawn} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos spawn) {
         salt++;
-        BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos a = column(level, (spawn.getX() >> 4) + 40 + salt * 4, (spawn.getZ() >> 4) - 30);
         BlockPos b = a.offset(16, 0, 0);
         for (BlockPos p : List.of(a, b)) {
@@ -110,7 +110,7 @@ public final class GraftQa {
             EchoEntity near = EchoLife.spawn(level, owner, plainRecording(level, a.offset(3, 0, 0)), EchoLesson.NONE);
             if (echo == null || near == null) {
                 notes.add("spawn failed echo=" + (echo != null) + " near=" + (near != null));
-                return report(source, notes);
+                return report(notes);
             }
             echo.stopReplay();
             near.stopReplay();
@@ -329,26 +329,13 @@ public final class GraftQa {
                 releaseColumn(level, ChunkPos.containing(p));
             }
         }
-        return report(source, notes, rules, hush, replace, kindled, unpick, burst, plunge, decoy, fracture, archivist, possession, persistence);
+        return report(notes, rules, hush, replace, kindled, unpick, burst, plunge, decoy, fracture, archivist, possession, persistence);
     }
 
-    private static int report(CommandSourceStack source, List<String> notes, boolean... checks) {
-        int passed = count(checks);
+    private static QaReport report(List<String> notes, boolean... checks) {
         String[] names = {"rules", "hush", "replace", "kindled", "unpick", "volatileBurst", "plunge", "graveDecoy", "fractureReject", "archivistSteal",
                 "possession", "persistence"};
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < names.length; i++) {
-            line.append(names[i]).append('=').append(i < checks.length && checks[i]).append(' ');
-        }
-        Mnemolith.LOGGER.info("Mnemolith graftqa {}", line.toString().trim());
-        for (String note : notes) {
-            Mnemolith.LOGGER.info("Mnemolith graftqa note {}", note);
-            source.sendSuccess(() -> Component.literal(note), false);
-        }
-        String summary = line.toString().trim();
-        source.sendSuccess(() -> Component.literal(summary), false);
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.graftqa", passed, CHECKS), true);
-        return passed;
+        return new QaReport("graftqa", names, checks, notes).log();
     }
 
     // ---------- helpers ----------

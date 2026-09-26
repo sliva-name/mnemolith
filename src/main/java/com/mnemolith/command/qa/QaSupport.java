@@ -87,7 +87,7 @@ public final class QaSupport {
         return LoadedChunkMemory.existing(level.getChunkAt(pos));
     }
 
-    static void clear(ServerLevel level, BlockPos pos) {
+    public static void clear(ServerLevel level, BlockPos pos) {
         LoadedChunkMemory.clear(level.getChunkAt(pos));
     }
 
@@ -96,9 +96,13 @@ public final class QaSupport {
         player.setData(ModAttachments.DISCOVERY.get(), new Discovery());
     }
 
-    static BlockPos column(ServerLevel level, int chunkX, int chunkZ) {
+    public static BlockPos column(ServerLevel level, int chunkX, int chunkZ) {
         int x = (chunkX << 4) + 8;
         int z = (chunkZ << 4) + 8;
+        // Load the chunk first: the heightmap of a chunk that is not loaded reads as the bottom of the world, and the
+        // sea-level fallback below then puts the site wherever sea level happens to be (inside a hill, or under a
+        // superflat world's floor).
+        level.getChunk(chunkX, chunkZ);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         if (y <= level.getMinY()) {
             y = level.getSeaLevel();
@@ -110,14 +114,14 @@ public final class QaSupport {
         return replicants(level, pos).size();
     }
 
-    static void discardReplicants(ServerLevel level, BlockPos pos) {
+    public static void discardReplicants(ServerLevel level, BlockPos pos) {
         for (MomentReplicant replicant : replicants(level, pos)) {
             replicant.discard();
         }
     }
 
     /** Removes residual echoes in the chunk column of {@code pos} (and one chunk around), so suites stay isolated. */
-    static void discardResidues(ServerLevel level, BlockPos pos) {
+    public static void discardResidues(ServerLevel level, BlockPos pos) {
         net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(pos).inflate(24.0D, 64.0D, 24.0D);
         for (com.mnemolith.entity.echo.ResidueEntity residue : level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class, box)) {
             residue.discard();
@@ -128,7 +132,7 @@ public final class QaSupport {
      * Loads the column as entity-ticking. A plain {@code getChunk} leaves far columns hidden from entity queries,
      * and the tracking promotion is queued on the server thread after the chunk future completes.
      */
-    static void tickColumn(ServerLevel level, BlockPos pos) {
+    public static void tickColumn(ServerLevel level, BlockPos pos) {
         ChunkPos chunk = ChunkPos.containing(pos);
         var future = level.getChunkSource().addTicketAndLoadWithRadius(TicketType.FORCED, chunk, 2);
         var server = level.getServer();
@@ -150,7 +154,7 @@ public final class QaSupport {
         level.getServer().managedBlock(() -> future.isDone() || System.nanoTime() > deadline);
     }
 
-    static void releaseColumn(ServerLevel level, ChunkPos chunk) {
+    public static void releaseColumn(ServerLevel level, ChunkPos chunk) {
         level.getChunkSource().removeTicketWithRadius(TicketType.FORCED, chunk, 2);
     }
 

@@ -38,7 +38,8 @@ Later content, not built yet:
 | `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
 | `com.mnemolith.event` | both | Vanilla listeners. `/mnemolith` is registered here and implemented in `command` |
 | `com.mnemolith.command` | both | `/mnemolith` subcommands. Not loaded as client screens |
-| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa` checklists |
+| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`, `mpsmoke` checklists. Each suite is `check(level, origin)` returning a `QaReport` (named checks and notes); the command only sends it to chat |
+| `com.mnemolith.gametest` | both, game test runs only | NeoForge game tests: every QA suite as one test (`SuiteTests`, reusing `check`), live residue tests with real server players (`ResidueLiveTests`, `LivePlayers`). Registered only when `GameTestHooks.isGametestEnabled()` (the game test server, dev runs); a production server registers nothing. See [Game tests](#game-tests) |
 | `com.mnemolith.network` | both | Lens request, pressure snapshot, and the catalog-open payload. Client handlers are registered from `MnemolithClient` |
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
 | `com.mnemolith.data` | both | Data component register |
@@ -48,6 +49,20 @@ Later content, not built yet:
 | `com.mnemolith.client.config` | physical client | `ClientConfig`. Registered from `MnemolithClient` |
 | `com.mnemolith.client.*` | physical client | Render, particles, audio playback, screens |
 | `com.mnemolith.server` | dedicated server | Dedicated-server entry |
+
+## Game tests
+
+`./gradlew runGameTestServer` (CI runs it after `build`) boots `GameTestServer`, which runs every registered test and exits with the failure count. `MnemolithGameTests.register` is called from the mod constructor and returns at once unless game tests are enabled. When they are, it adds three things:
+
+- Test functions in the vanilla `test_function` registry (not synced to clients) and a `live_players` environment type.
+- On `RegisterGameTestsEvent`: two environments, `mnemolith:suites` and `mnemolith:live` (one batch each, run one after the other), and one `FunctionGameTestInstance` per test on the 3×3×3 air template `data/mnemolith/structure/gametest/empty.nbt` (written by `tools/gametest_structure.py`).
+- The live environment's teardown removes every joined player and releases every forced chunk, whether the tests passed or failed.
+
+The suites are synchronous: each runs inside its test's first tick, exactly as inside the command, and fails the test with the failed check names. `SuiteTests` gives each suite its own 4096-block lane and a surface origin. A check that cannot work in a game test world is waived by name with a reason (only `qa`'s `locate`: `GameTestServer` hard-codes structure generation off); its result is still logged.
+
+`LivePlayers.join` creates a real `ServerPlayer` (its own subclass, so NeoForge's config sync skips it as it skips vanilla's test players). It connects it on an in-memory `Connection` that `NetworkRegistry.configureMockConnection` marks as a NeoForge client with every channel, places it with `PlayerList.placeNewPlayer`, marks the client loaded, and ticks it with `doTick` every game tick. The player is in `level.players()`, fires `PlayerTickEvent` and can use items and interact with entities through the normal server methods.
+
+The world comes from `GameTestServer`'s fixed `minecraft:flat` preset, which the test-only datapack `src/gametest/packs/mnemolith_test_world` (passed with `--packs`, never in the jar) overrides with a deep superflat. Details and the coverage table are in [qa-checklist.md](qa-checklist.md#automated-game-tests-ci).
 
 ## Side split
 

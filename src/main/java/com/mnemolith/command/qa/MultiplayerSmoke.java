@@ -47,8 +47,33 @@ public final class MultiplayerSmoke {
      */
     public static int mpsmoke(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
-        BlockPos pos = BlockPos.containing(source.getPosition()).offset(96, 0, 0);
+        QaReport report = check(source.getLevel(), BlockPos.containing(source.getPosition()));
+        boolean[] flags = new boolean[report.total()];
+        java.util.List<String> failed = report.failed();
+        for (int i = 0; i < NAMES.length; i++) {
+            flags[i] = !failed.contains(NAMES[i]);
+        }
+        source.sendSuccess(() -> Component.translatable(
+                "mnemolith.command.mpsmoke", flags[0], flags[1], flags[2], flags[3], flags[4], flags[5], flags[6]), true);
+        return report.passed();
+    }
+
+    private static final String[] NAMES = {"sameBand", "discoveryIsolated", "steal", "reel", "muteBlocks", "replicants", "guarded"};
+
+    /** Runs the two-player smoke 96 blocks east of {@code origin}. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos origin) {
+        BlockPos pos = origin.offset(96, 0, 0);
+        // Entity-ticking for the whole smoke: the replicant cap counts replicants with an entity query, and a chunk
+        // with no player near it (the game test) hides them, so a second one would slip past the cap.
+        tickColumn(level, pos);
+        try {
+            return smoke(level, pos);
+        } finally {
+            releaseColumn(level, net.minecraft.world.level.ChunkPos.containing(pos));
+        }
+    }
+
+    private static QaReport smoke(ServerLevel level, BlockPos pos) {
         FakePlayer first = fake(level, "MnemolithA", UUID.fromString("11111111-1111-1111-1111-111111111111"));
         FakePlayer second = fake(level, "MnemolithB", UUID.fromString("22222222-2222-2222-2222-222222222222"));
         first.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
@@ -114,23 +139,8 @@ public final class MultiplayerSmoke {
                 muteBlocks,
                 replicants,
                 guarded);
-        boolean reportedBand = sameBand;
-        boolean reportedDiscovery = discoveryIsolated;
-        boolean reportedSteal = steal;
-        boolean reportedReel = reel;
-        boolean reportedMute = muteBlocks;
-        boolean reportedReplicants = replicants;
-        boolean reportedGuarded = guarded;
-        source.sendSuccess(() -> Component.translatable(
-                "mnemolith.command.mpsmoke",
-                reportedBand,
-                reportedDiscovery,
-                reportedSteal,
-                reportedReel,
-                reportedMute,
-                reportedReplicants,
-                reportedGuarded), true);
-        return count(sameBand, discoveryIsolated, steal, reel, muteBlocks, replicants, guarded);
+        boolean[] checks = {sameBand, discoveryIsolated, steal, reel, muteBlocks, replicants, guarded};
+        return new QaReport("mpsmoke", NAMES, checks, java.util.List.of());
     }
 
     private static FakePlayer fake(ServerLevel level, String name, UUID id) {

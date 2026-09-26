@@ -192,7 +192,18 @@ public final class QaWorld {
         return placed && muted;
     }
 
-    static boolean observatory(ServerLevel level, BlockPos searchFrom, BlockPos placeAt) {
+    /** The observatory template places, and its loot chest holds the lens or the needle. */
+    static boolean observatory(ServerLevel level, BlockPos placeAt) {
+        boolean chest = placeTemplate(level, placeAt);
+        Mnemolith.LOGGER.info("Mnemolith qa observatory chest={}", chest);
+        return chest;
+    }
+
+    /**
+     * The structure is registered and worldgen can locate one near {@code searchFrom}. Needs a world with structure
+     * generation on: the game test server's world has it off, so the game test waives this one check.
+     */
+    static boolean locateObservatory(ServerLevel level, BlockPos searchFrom) {
         ResourceKey<Structure> key = ResourceKey.create(Registries.STRUCTURE, OBSERVATORY_ID);
         Registry<Structure> structures = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
         Optional<Holder.Reference<Structure>> holder = structures.get(key);
@@ -200,10 +211,9 @@ public final class QaWorld {
             Mnemolith.LOGGER.info("Mnemolith qa observatory registered=false");
             return false;
         }
-        boolean chest = placeTemplate(level, placeAt);
         BlockPos located = locate(level, searchFrom, holder.get());
-        Mnemolith.LOGGER.info("Mnemolith qa observatory registered=true chest={} located={}", chest, located);
-        return chest && located != null;
+        Mnemolith.LOGGER.info("Mnemolith qa observatory registered=true located={}", located);
+        return located != null;
     }
 
     static boolean placeTemplate(ServerLevel level, BlockPos pos) {

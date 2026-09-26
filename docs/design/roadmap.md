@@ -4,14 +4,14 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated with residual echoes)
+## 0. Status (updated with the game test harness)
 
 | System | Status | Where |
 | --- | --- | --- |
 | Memory grafts | Implemented, draft PR #22 (`feature/echo-grafts`), not merged | `echo.graft`, `graftqa` 12/12, [echo-design.md](../echo-design.md) §12 |
 | Residual echoes | Implemented on `feature/residual-echoes`, stacked on #22 (draft PR, retargets to `main` after #22 merges) | `echo.residue`, `ResidueEntity`, `residual_shard`, `residueqa` 18/18, §13 |
-| Gametest harness | Next | — |
-| Recollection storm and the Scar | After the harness | — |
+| Gametest harness | Implemented on `feature/gametests`, stacked on residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `com.mnemolith.gametest`, `runGameTestServer` in CI, 7 suites + 8 live residue tests, [qa-checklist.md](../qa-checklist.md#automated-game-tests-ci) |
+| Recollection storm and the Scar | Next | — |
 | Echo relay, archive vault | Later | — |
 | 32x art pass | Its own run | — |
 
@@ -19,7 +19,7 @@ Residual echoes were re-scoped from the plan below (§3.2): instead of a strange
 chunk's own loudest memory condensed into a drifting fragment. That keeps ownership and protection simple (no
 foreign fake player acting in your world), costs no save space for recordings, and ties the system to pressure,
 grafts, the lens, the needle, mute stones, archivists, possession and observatories. The "stranger recording" idea is
-parked, not dropped: a residue could later carry a short replay once the gametest harness can cover replays.
+parked, not dropped: a residue could later carry a short replay. The game test harness now exists and can cover replays with real players.
 
 What residual echoes fixed from §2: weakness 3 (pressure is now also an opportunity: an overloaded chunk yields
 residues, a festering residue is a slip farm), weakness 4 (every observatory holds an old residue worth a full graft),
@@ -138,13 +138,17 @@ verdigris copper, amethyst glass), multi-element models for the reel, resonator 
 Move the checks behind `/mnemolith qa|echoqa|jobqa|echo3qa|graftqa` into NeoForge game tests so CI runs them.
 *Scope:* medium; removes the "gametest run crashes" known issue.
 
+*Done* on `feature/gametests`. All seven suites (`mpsmoke` included) run as game tests through the same `check`
+code as the commands, plus eight live residue tests with real server players. CI fails on a failing test. The
+first runs found a real echo build bug (the echo's own body blocking the cell it was placing) and two QA-setup bugs
+(sites read from unloaded heightmaps; the mpsmoke column not entity-ticking).
+
 ## 4. Order
 
 1. Memory grafts (done, PR #22).
 2. Residual echoes (done, stacked PR on #22).
-3. Gametest harness, before the storm work, because storms touch many systems at once. Six QA suites now exist
-   (`qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`); moving them into game tests lets CI catch what only
-   a dedicated boot catches today.
+3. Gametest harness (done, stacked PR on #23), before the storm work, because storms touch many systems at once.
+   All QA suites now run in CI as game tests, plus live residue tests with real players.
 4. Recollection storm and the Scar.
 5. Echo relay and archive vault, depending on how players use grafts.
 6. The 32x art pass as its own run, once the item list is stable enough that nothing is drawn twice.
