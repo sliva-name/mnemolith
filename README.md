@@ -79,6 +79,12 @@ A fractured chunk remembers too much at once. Once a second, for each player sta
 
 The Scar is a boss (60 health plus 20 per merged residue, at most 180) that cannot be hurt until you read it with the lens for 3 seconds; then it is pinned and open for 8 seconds. Every 3 seconds, after an audible charge, it recalls one of its memories on everyone within 10 blocks. A grave-grafted echo draws the recall; a hushed echo swallows its act-out; a mute stone halves it. It drops a **scar fragment** (two if five or more merged; not craftable), which scar-sets one of your echoes for good (a graft holds three slips' worth and a fracture no longer rejects it), plus a strength-4 residual shard per merged temper. With `mobGriefing` on, the site keeps a **scar heart** and a ring of **scar glass** (mine it with a pickaxe; placed anywhere, it wards off storms within one chunk without muting imprints). Once per in-game day the site seeds a strength-5 residue by the heart for whoever stands there, until the heart is broken. `/mnemolith stormqa` checks the system; design notes are in [docs/echo-design.md](docs/echo-design.md) §14.
 
+### Echo relay and archive vault
+
+A **relay thread** (string + echo slip + copper ingot, shapeless, gives 2) ties two of your echoes into a linked pair: right-click one, then another within 16 blocks. The thread carries only what makes an echo an echo. Each end stands inside its partner's hush and kindle aura at any distance, so a hushed echo at home silences its partner's mining far away (the graft's owner pays the charges). An echo next to a residue drinks it for its partner when the partner carries that temper. While you possess one end, **sneak + `V`** hops you into the other (5-second cooldown); the body you leave stands back up as an echo. And every block you break or place while possessing is **mirrored** by the other end at the same offset from its feet, with its own tools and blocks (within 6 blocks, skipping block entities and busy echoes). A fracture under either end turns the thread to noise, and when one end dies, even a possessed body, the thread snaps: the other end takes 4 damage and a death memory is written under it.
+
+An **archive vault** (archival stratum and amethyst around an extraction needle) makes pressure something you manage. Switch it on with an empty hand and every 10 seconds it draws the loudest imprint out of its chunk and the eight around it, up to 12. Nothing is deleted: 15% of what it holds bleeds into its own chunk's pressure. If that chunk fractures, half its contents spill back each vault tick until it calms; an explosion spills everything; a mute stone swallows a spill (lost). Mine it with a pickaxe and it keeps its contents, but a carried vault leaks one imprint where you stand every 60 seconds. Spend it with the needle (one slip), a sneaking empty-hand click (discharge everything into the chunk, refused under a mute stone), or let an idle vault feed a grafted echo within 4 blocks. Archivists with free hands raid a filled vault within 10 blocks. `/mnemolith relayqa` checks both; design notes are in [docs/echo-design.md](docs/echo-design.md) §15.
+
 `/mnemolith inspect` prints pressure for the chunk under you. `/mnemolith smoke` is a gamemaster check of the write, mute, extract, and compose paths. `/mnemolith perf` times those write, score, lens, and sensor paths on a chunk beside you. `/mnemolith qa` checks the survival loop: imprint writes, pressure bands, extract, every formula, quiet and loud failures, mute, the lens band and dimension stamp, the catalog payload, the catalog recipe, vein, mute pocket, observatory locate and chest loot, and one action from each mob. The row-by-row map is in [docs/qa-checklist.md](docs/qa-checklist.md). `/mnemolith mobs` spawns all three and makes the archivist steal once. `/mnemolith worldgen` force-places a vein and a mute pocket at your feet. `/locate structure mnemolith:chronicle_observatory` finds an observatory.
 
 Runtime rules are in [docs/architecture.md](docs/architecture.md). Measured timings are in [docs/performance.md](docs/performance.md).
@@ -89,11 +95,13 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 
 | File | Where it loads | What it holds |
 | --- | --- | --- |
-| `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs |
+| `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs, echoes, grafts, residues, the echo relay (`relay.*`) and archive vaults (`vault.*`) |
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), pressure logging |
 | `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, screen shake, fracture fringe, lens chime volume |
 
 `spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible. `spawnRates.imprintNodeWeight` is still reserved and has no effect.
+
+`relay.relayEnabled` (true), `relay.relayLinkRange` (16 blocks to tie), `relay.relayHopCooldownSeconds` (5) and `relay.relayMirror` (true) shape the echo relay. `vault.vaultsEnabled` (true), `vault.vaultCapacity` (12), `vault.vaultDrawSeconds` (10), `vault.vaultBleed` (0.15 of stored pressure on the vault's chunk) and `vault.vaultLeakSeconds` (60; 0 turns leaking off) shape archive vaults. All apply the next time that action runs; links and stored imprints stay saved while a feature is off.
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 
@@ -158,7 +166,7 @@ A successful dedicated-server log contains `Mnemolith dedicated server setup` an
 
 ### Game tests
 
-`./gradlew runGameTestServer` boots a headless game test server in `run/gametest`, runs every Mnemolith game test and exits with the number of failures (about 20 seconds after a build). The eight `/mnemolith ...qa` suites run as one test each, calling the same code as the commands. Live residue tests use real server players ticked like connected clients, covering formation, lashes, sneaking, lens reading, the needle, festers, mute stones and the observatory seed. Live storm tests call a storm with a real shard and let it merge into the Scar, contain one with a placed mute stone, and read and then hit the Scar. The report is `build/gametest/report.xml`. In a dev client or server, `/test runmultiple mnemolith:` runs them by hand. Coverage and what stays manual: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci). The `/mnemolith ...qa` commands still work on any server.
+`./gradlew runGameTestServer` boots a headless game test server in `run/gametest`, runs every Mnemolith game test and exits with the number of failures (about 20 seconds after a build). The nine `/mnemolith ...qa` suites run as one test each, calling the same code as the commands. Live residue tests use real server players ticked like connected clients, covering formation, lashes, sneaking, lens reading, the needle, festers, mute stones and the observatory seed. Live storm tests call a storm with a real shard and let it merge into the Scar, contain one with a placed mute stone, and read and then hit the Scar. Live relay and vault tests tie two echoes with a real thread and hop between them, mirror a real block break through the other end, and place, switch on, prick and discharge a vault that draws on its own tick. The report is `build/gametest/report.xml`. In a dev client or server, `/test runmultiple mnemolith:` runs them by hand. Coverage and what stays manual: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci). The `/mnemolith ...qa` commands still work on any server.
 
 ### CI
 
@@ -174,11 +182,13 @@ com.mnemolith
   content/               blocks, items, creative tabs
   imprint/  pressure/    chunk memory and pressure bands
   echo/  echo/job/       recording, replay, possession, mine/build/farm jobs
+  echo/graft|residue|storm|relay   grafts, residual echoes, storms and the Scar, the echo relay
+  vault/                 archive vaults (bank, bleed, spill, leak)
   entity/  entity/mob/  entity/ai/  entity/echo/
   world/  worldgen/    veins, mute pockets, observatory
   event/
   command/  command/qa/  /mnemolith and the QA suites
-  gametest/              game tests (suites + live residue and storm tests)
+  gametest/              game tests (suites + live residue, storm, relay and vault tests)
   network/  data/  audio/  particle/
   config/                common, client, and server specs
   client/echo/           echo renderer, HUD, inventory screen
@@ -229,6 +239,10 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Шрам — босс (60 здоровья плюс 20 за каждый слитый осадок, не больше 180), которого нельзя ранить, пока вы не прочитаете его линзой 3 секунды; тогда он скован и открыт 8 секунд. Раз в 3 секунды после слышного замаха он вспоминает одну из своих памятей на всех в 10 блоках. Могильный отголосок перетягивает это на себя, безмолвный глотает разыгрывание, глушащий камень вдвое реже пускает его. Шрам роняет **осколок шрама** (два, если слилось пять и больше; не крафтится) — он навсегда закаляет одного вашего отголоска (прививка держит три бланка, разлом её не отторгает), и по осколку осадка силы 4 за каждый слитый нрав. При `mobGriefing` на месте остаются **сердце шрама** и кольцо **шрамового стекла** (добывается киркой; поставленное где угодно, не пускает бури в пределах чанка, но отпечатки не глушит). Раз в игровой день место приносит у сердца осадок силы 5 тому, кто стоит рядом, пока сердце не разбито. `/mnemolith stormqa` проверяет систему; подробности — [docs/echo-design.md](docs/echo-design.md) §14.
 
+**Связь отголосков и архивное хранилище.** **Нить связи** (нить + бланк отголоска + медный слиток, без формы, 2 штуки) связывает двух ваших отголосков: ПКМ по одному, потом по другому в 16 блоках. Нить несёт только то, что делает отголоска отголоском. Каждый конец стоит в ауре безмолвия и тления напарника на любом расстоянии: безмолвный отголосок дома глушит копку напарника вдали (заряды платит владелец прививки). Отголосок рядом с осадком пьёт его за напарника того же нрава. Вселившись в один конец, **присядьте и нажмите `V`** — вы перейдёте в другой (перезарядка 5 секунд), а покинутое тело встанет отголоском. Каждый блок, который вы ломаете или ставите во вселении, другой конец **повторяет** с тем же смещением от своих ног своими инструментами и блоками (в 6 блоках, кроме блоков с содержимым и занятых отголосков). Разлом под любым концом превращает нить в шум, а гибель одного конца (даже тела, в котором вы) рвёт нить: другой получает 4 урона, под ним пишется память о смерти.
+
+**Архивное хранилище** (архивный пласт и аметист вокруг иглы извлечения) делает давление ресурсом. Включите его пустой рукой — раз в 10 секунд оно забирает самый громкий отпечаток из своего чанка и восьми соседних, до 12. Ничего не стирается: 15% хранимого давит на его собственный чанк. Если этот чанк дошёл до разлома, половина содержимого выплёскивается обратно на каждом такте хранилища, пока чанк не успокоится; взрыв выплёскивает всё; глушащий камень глотает выплеск (память теряется). Добытое киркой хранилище сохраняет содержимое, но в инвентаре протекает — по отпечатку раз в 60 секунд там, где вы стоите. Тратьте его иглой (один бланк), ПКМ присев пустой рукой (выпустить всё в чанк; под глушащим камнем нельзя) или дайте покоящемуся хранилищу кормить отголоска с прививкой в 4 блоках. Архивариусы со свободными руками грабят заполненное хранилище в 10 блоках. `/mnemolith relayqa` проверяет обе системы; подробности — [docs/echo-design.md](docs/echo-design.md) §15.
+
 `/mnemolith inspect` печатает давление чанка. `/mnemolith smoke` — проверка записи и составления. `/mnemolith perf` замеряет запись, счёт, обход линзы и датчики на соседнем чанке. `/mnemolith qa` проверяет цикл выживания; таблица — в [docs/qa-checklist.md](docs/qa-checklist.md). `/mnemolith mpsmoke` проверяет двух игроков в одном процессе сервера. Второй клиент он не открывает. Заметки — в [docs/multiplayer.md](docs/multiplayer.md). `/mnemolith mobs` призывает всех трёх и один раз крадёт бланк. `/mnemolith worldgen` ставит жилу и глухой карман у ног. `/locate structure mnemolith:chronicle_observatory` ищет обсерваторию.
 
 Для выделенного сервера хватает дальности прорисовки 8–10. Пакет линзы остаётся радиусом в 2 чанка (3, если в чанке есть архивный пласт). `visuals.particleDensity` 1 и `visuals.maxParticlesPerTick` 48 сохраняют прежние частицы. Плотность 0 их выключает. Замеры — в [docs/performance.md](docs/performance.md). Остывание идёт только в чанке игрока и пропускается, когда остывать нечему.
@@ -240,6 +254,8 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 | `config/mnemolith-common.toml` | Клиент и выделенный сервер |
 | `config/mnemolith-server.toml` | Логический сервер, синхронизируется клиентам |
 | `config/mnemolith-client.toml` | Только физический клиент |
+
+Связь и хранилища настраиваются в общем конфиге: разделы `relay` (`relayEnabled`, `relayLinkRange` 16, `relayHopCooldownSeconds` 5, `relayMirror`) и `vault` (`vaultsEnabled`, `vaultCapacity` 12, `vaultDrawSeconds` 10, `vaultBleed` 0.15, `vaultLeakSeconds` 60).
 
 Экран конфига: «Моды» → Mnemolith → Config. Строки есть на английском и русском.
 
@@ -259,6 +275,6 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Готовый файл: `build/libs/mnemolith-<версия>.jar`.
 
-`./gradlew runGameTestServer` запускает автотесты без клиента: все наборы `/mnemolith ...qa` и живые тесты осадков с настоящими серверными игроками. Код завершения равен числу упавших тестов. CI запускает эту задачу после `build`, и упавший тест роняет сборку. Что покрыто и что осталось ручным: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci).
+`./gradlew runGameTestServer` запускает автотесты без клиента: все девять наборов `/mnemolith ...qa` и живые тесты осадков, бурь, связи и хранилища с настоящими серверными игроками. Код завершения равен числу упавших тестов. CI запускает эту задачу после `build`, и упавший тест роняет сборку. Что покрыто и что осталось ручным: [`docs/qa-checklist.md`](docs/qa-checklist.md#automated-game-tests-ci).
 
 Если `runServer` остановится и создаст `run/server/eula.txt`, поставьте `eula=true` и запустите снова. Для входа дев-аккаунтом в `server.properties` укажите `online-mode=false`. В журнале выделенного сервера должны быть строки `Mnemolith dedicated server setup` и `Mnemolith logical server starting`, и не должно быть `Mnemolith client setup`.

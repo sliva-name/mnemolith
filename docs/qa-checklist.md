@@ -17,6 +17,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
+| `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 
 **Live residue tests** (`com.mnemolith.gametest.ResidueLiveTests`). Real server players join through `PlayerList.placeNewPlayer` on an in-memory connection negotiated as a NeoForge client, stand in survival and are ticked every game tick the way the network layer ticks a connected player (`ServerPlayer.doTick`), so `PlayerTickEvent`, item use and `level.players()` are the real paths. Setup writes chunk memory and places residues directly; what is under test runs on its own. Players and forced chunks are removed by the `mnemolith:live` environment's teardown, pass or fail.
@@ -39,6 +40,14 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `storm_shard_call_merges_into_scar` | A player frees a fall residual shard (`gameMode.useItemOn`) in a fractured chunk loaded with death, fire and fall memories: a storm is called and adopts the residue, the server tick gathers it and runs its waves, three or more storm residues are left, and they merge: the chunk is a Scar site with its heart, and one Scar stands over it | 1700 |
 | `storm_mute_stone_contains` | While a called storm gathers, the player places a mute stone in the centre chunk (a real block placement): the storm ends `CONTAINED` before it rages, the freed residue stays as an ordinary residue | 300 |
 | `scar_read_then_hurt` | A Scar and a survival player 6 blocks off: a hit before reading does nothing; the player raises the lens (`gameMode.useItem`) and keeps looking: within the read time the Scar is pinned, and `ServerPlayer.attack` then takes health off | 400 |
+
+**Live relay and vault tests** (`com.mnemolith.gametest.RelayLiveTests`), in the `mnemolith:live` batch on their own pads (south of the other sites; the teardown also discards echoes and dropped items there).
+
+| Test | What is proved | Budget |
+| --- | --- | --- |
+| `relay_thread_links_then_hop` | The player right-clicks two of their echoes with a relay thread (`Player.interactOn`): both carry one link and one thread is used. Possessing one end, sneaking and pressing the return key (the same `EchoRelays.returnKey` the unpossess payload calls) puts the player in the other end, and the body left behind stands as the linked echo; the return key without sneaking returns the player | 100 |
+| `relay_mirror_break` | Possessing one end, the player breaks a stone beside them with a pickaxe (`gameMode.destroyBlock`, the real break event): on the next server tick the other end breaks the stone at the same offset beside itself | 100 |
+| `vault_draws_then_spends` | The player places a vault (`gameMode.useItemOn` with the item), switches it on with an empty hand; its own block entity tick draws the death and fire imprints out of the area within two intervals; the second empty-hand click switches it off; the needle (`useItemOn`, the vault passes the click to the item) takes the loudest (death) as a slip; a sneaking empty-hand click discharges the rest into the chunk | 700 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -71,7 +80,7 @@ Two more lines record the observatory: `Mnemolith qa observatory chest=true` (th
 | 9 | Mobs: spawn plus one action | `strider` summons an echo strider and `beginCharge` sets the telegraph pose. `archivist` summons an archivist, `snatch` empties the container, and the pose is flee. `replicant` summons a moment replicant and `beginTelegraph` sets the telegraph pose |
 | 10 | Phase 11 multiplayer invariants | `/mnemolith mpsmoke`, not this command. The line is `sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true` |
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
-| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (24) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
+| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (26) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
 
 ## Echo QA
 
@@ -211,6 +220,42 @@ Manual (client):
 - [ ] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
 - [ ] Visit an observatory: an old residue floats by the reel.
 - [ ] Field guide page «Осадки памяти» renders with its picture in RU and EN.
+
+## Echo relay and archive vault QA
+
+`/mnemolith relayqa` (gamemaster) checks the echo relay and the archive vault on a dedicated server, in cleared chunks next to the command source, with a fake-player owner. The last line must be `Relay QA: 19 of 19`. Everything the pass builds (echoes, vaults, drops, an archivist) is removed. The notes also log `breakUs` (one mirrored break) and `drawUs` (one vault draw).
+
+| Flag | What is proved |
+| --- | --- |
+| `threadLinks` | A real relay thread on one echo remembers it; on a second echo 48 blocks away it refuses (`relayLinkRange` 16) and keeps the thread; within range it links both (one shared id) and uses one thread |
+| `cut` | Sneak-clicking with the thread cuts both ends |
+| `auraConduit` | Unlinked, an echo's work writes a build imprint; linked to a hushed echo 54 blocks away, the same work is swallowed and the far end pays one charge |
+| `residueDrink` | A silence residue next to the unlinked-temper end is drunk for its hushed far partner (`Residues.stormWave` → `FED`, the far charge rises) |
+| `noisy` | A fracture under one end: the conduit stops (work writes again, the far charge is untouched); after the chunk calms, the link carries again |
+| `deathShock` | One end dies: the other loses 4 health, a DEATH imprint is under it, and it is no longer linked |
+| `hop` | Possessing one end, sneak + return key moves the owner into the other end (at its position; that entity is taken over); the left body is the new partner, standing where the owner was; a second hop at once is refused by the cooldown |
+| `mirror` | While possessing, a break beside the owner is repeated beside the partner, a place is repeated with a block from the partner's inventory, and a target out of the partner's reach is refused (`FAR`) |
+| `vaultDraws` | A vault draws the loudest imprint (death before fire) out of its chunk, then the next, then finds nothing; the drawing state is on the block |
+| `bleedLoad` | Filling it raises the chunk's `vault_load` to `ceil(sum × vaultBleed)` and the chunk's pressure by exactly that much |
+| `rupture` | In a fractured chunk the vault's own tick spills half (loudest first) back into the chunk |
+| `explosionSpill` | An explosion at a filled vault breaks it and spills everything into its chunk |
+| `needleExtract` | The extraction needle used on the vault (real `useOn`) gives the loudest imprint as a slip and leaves the rest |
+| `discharge` | Under a mute stone discharging is refused and nothing is lost; without it, all three are written into the chunk and the load drops to 0 |
+| `echoFeed` | An idle vault feeds a hushed echo within 4 blocks one silence imprint (charge rises), and keeps the death imprint |
+| `carryLeak` | A carried vault item with two imprints leaks one where the carrier stands |
+| `archivistRaid` | An archivist next to a filled vault finds it (`raidTarget`), takes the loudest as its loot, and with full hands takes nothing more |
+| `itemKeepsContents` | Breaking the vault with a pickaxe (`gameMode.destroyBlock`, the real loot table) drops a vault item with the three imprints; placing that item back restores them and the chunk's load |
+| `persistence` | The vault's contents and an echo's link survive a save and reload |
+
+Manual (client):
+
+- [ ] Craft a relay thread (string, echo slip, copper ingot) and an archive vault (4 stratum, 4 amethyst, needle in the middle); the tooltips show purpose and source.
+- [ ] Right-click one echo with the thread: «Первый конец завязан…», the thread tooltip says so; right-click another echo within 16 blocks: «Связаны…»; a faint pink thread of motes between them.
+- [ ] Right-click an echo you own: its status line ends with «Связь: есть, N м».
+- [ ] Possess one end, sneak and press `V`: «Вы переходите по нити…», you are in the other; the HUD hint mentions the hop. Break a block: the other end breaks the same spot beside itself.
+- [ ] Place the vault, right-click with an empty hand: it lights up (pink drawers) and the action bar shows «втягивает, 0/12»; wait: the count rises and the area's imprints disappear from the lens.
+- [ ] Break it with a pickaxe: the item tooltip shows «Хранит отпечатков: N»; carry it for a minute: «Хранилище у вас в руках протекает…».
+- [ ] Field guide pages «Связь отголосков» and «Архивное хранилище» render with pictures in RU and EN.
 
 ## Recollection storm QA
 
