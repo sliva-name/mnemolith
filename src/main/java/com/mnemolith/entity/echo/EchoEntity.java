@@ -94,6 +94,28 @@ public class EchoEntity extends MemoryAvatar {
     private boolean scarred;
     /** Echo relay (saved as {@code echo_relay}): the id both ends of a link share; null when unlinked. Server only. */
     private java.util.@org.jspecify.annotations.Nullable UUID relay;
+    /** Weapon taught this echo (saved as {@code echo_role}). */
+    private com.mnemolith.echo.EchoRole role = com.mnemolith.echo.EchoRole.NONE;
+    /** Chorus bolt mark. Server only, saved so a reload keeps the walk. */
+    private @Nullable BlockPos huntMark;
+    private long huntUntil;
+
+    public com.mnemolith.echo.EchoRole role() {
+        return this.role;
+    }
+
+    public void markHunt(BlockPos pos, long until) {
+        this.huntMark = pos;
+        this.huntUntil = until;
+    }
+
+    public @Nullable BlockPos huntMark(long gameTime) {
+        if (this.huntMark == null || gameTime > this.huntUntil) {
+            this.huntMark = null;
+            return null;
+        }
+        return this.huntMark;
+    }
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -304,6 +326,9 @@ public class EchoEntity extends MemoryAvatar {
             if (this.tickCount % 40 == 31 && this.relay != null && this.isAlive()) {
                 com.mnemolith.echo.relay.EchoRelays.tick(level, this);
             }
+            if (!this.isReplaying() && this.isAlive()) {
+                com.mnemolith.echo.EchoRoles.tick(level, this);
+            }
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
             }
@@ -321,7 +346,8 @@ public class EchoEntity extends MemoryAvatar {
      * makes it a decoy. A hushed echo is never picked.
      */
     public boolean attractsMobs() {
-        if (!this.isAlive() || this.isReplaying() || !CommonConfig.ECHO_MOB_AGGRO.get() || com.mnemolith.echo.graft.EchoGrafts.unnoticed(this)) {
+        if (!this.isAlive() || this.isReplaying() || !CommonConfig.ECHO_MOB_AGGRO.get() || com.mnemolith.echo.graft.EchoGrafts.unnoticed(this)
+                || this.role == com.mnemolith.echo.EchoRole.SCOUT) {
             return false;
         }
         return this.job.isWorking() || com.mnemolith.echo.graft.EchoGrafts.decoy(this);
@@ -608,6 +634,12 @@ public class EchoEntity extends MemoryAvatar {
         if (held.is(ModItems.RELAY_THREAD.get())) {
             return com.mnemolith.echo.relay.EchoRelays.useThread(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
+        com.mnemolith.echo.EchoRole taught = com.mnemolith.echo.EchoRoles.roleFor(held);
+        if (!serverPlayer.isShiftKeyDown() && taught != null) {
+            this.role = taught;
+            serverPlayer.sendSystemMessage(Component.translatable("mnemolith.echo.role." + taught.name().toLowerCase(java.util.Locale.ROOT)), true);
+            return InteractionResult.SUCCESS_SERVER;
+        }
         if (serverPlayer.isShiftKeyDown()) {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
@@ -770,6 +802,13 @@ public class EchoEntity extends MemoryAvatar {
         if (this.relay != null) {
             output.store("echo_relay", net.minecraft.core.UUIDUtil.CODEC, this.relay);
         }
+        if (this.role != com.mnemolith.echo.EchoRole.NONE) {
+            output.putString("echo_role", this.role.name());
+        }
+        if (this.huntMark != null) {
+            output.store("echo_hunt", BlockPos.CODEC, this.huntMark);
+            output.putLong("echo_hunt_until", this.huntUntil);
+        }
     }
 
     @Override
@@ -793,6 +832,9 @@ public class EchoEntity extends MemoryAvatar {
         this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
         this.scarred = input.getBooleanOr("echo_scarred", false);
         this.relay = input.read("echo_relay", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.role = com.mnemolith.echo.EchoRole.byName(input.getStringOr("echo_role", "none"));
+        this.huntMark = input.read("echo_hunt", BlockPos.CODEC).orElse(null);
+        this.huntUntil = input.getLongOr("echo_hunt_until", 0L);
         // Only graftable tags with charges left are kept; anything else in a hand-edited save is dropped.
         this.setGraft(input.read("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC)
                 .filter(g -> g.charge() > 0 && com.mnemolith.echo.graft.Temper.of(g.cast().tag()) != null)

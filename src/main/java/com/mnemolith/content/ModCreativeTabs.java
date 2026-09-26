@@ -45,6 +45,34 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.ECHO_STRIDER_SPAWN_EGG.get());
                 output.accept(ModItems.ARCHIVIST_SPAWN_EGG.get());
                 output.accept(ModItems.MOMENT_REPLICANT_SPAWN_EGG.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_FIBER.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_HELMET.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_CHESTPLATE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_LEGGINGS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_BOOTS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.HUSH_SPEAR.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_SCALE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_HELMET.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_CHESTPLATE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_LEGGINGS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_BOOTS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.GRAVE_MAUL.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.ECHO_HELMET.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.ECHO_CHESTPLATE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.ECHO_LEGGINGS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.ECHO_BOOTS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.RECALL_BLADE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.CHORUS_SLING.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.MEMORY_BOLT.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_SINEW.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_HELMET.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_CHESTPLATE.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_LEGGINGS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_BOOTS.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.SCAR_BRAND.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.LEDGER_MITE_SPAWN_EGG.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.KIN_WITNESS_SPAWN_EGG.get());
+                output.accept(com.mnemolith.armory.ArmoryItems.FRACTURE_STALKER_SPAWN_EGG.get());
             })
             .withTabsBefore(CreativeModeTabs.TOOLS_AND_UTILITIES)
             .build());

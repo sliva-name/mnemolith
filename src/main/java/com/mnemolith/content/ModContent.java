@@ -9,6 +9,7 @@ public final class ModContent {
     public static void register(IEventBus modEventBus) {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        com.mnemolith.armory.ArmoryItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModMenus.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": "mnemolith:scar_fragment",
+    "S": "mnemolith:scar_sinew",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "F",
+    "S",
+    "A"
+  ],
+  "result": {
+    "id": "mnemolith:scar_brand",
+    "count": 1
+  }
+}

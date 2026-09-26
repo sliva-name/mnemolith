@@ -90,5 +90,33 @@
   "replicant_blind": {
     "subtitle": "subtitles.mnemolith.replicant_blind",
     "sounds": [{ "name": "mnemolith:replicant_blind", "stream": false }]
+  },
+  "mite_ambient": {
+    "subtitle": "subtitles.mnemolith.mite_ambient",
+    "sounds": [{ "name": "mnemolith:strider_ambient", "stream": false, "pitch": 1.7 }]
+  },
+  "mite_hurt": {
+    "subtitle": "subtitles.mnemolith.mite_hurt",
+    "sounds": [{ "name": "mnemolith:strider_hurt", "stream": false, "pitch": 1.6 }]
+  },
+  "witness_ambient": {
+    "subtitle": "subtitles.mnemolith.witness_ambient",
+    "sounds": [{ "name": "mnemolith:archivist_ambient", "stream": false, "pitch": 0.7 }]
+  },
+  "witness_hurt": {
+    "subtitle": "subtitles.mnemolith.witness_hurt",
+    "sounds": [{ "name": "mnemolith:archivist_hurt", "stream": false, "pitch": 0.6 }]
+  },
+  "stalker_ambient": {
+    "subtitle": "subtitles.mnemolith.stalker_ambient",
+    "sounds": [{ "name": "mnemolith:replicant_ambient", "stream": false, "pitch": 0.55 }]
+  },
+  "stalker_hurt": {
+    "subtitle": "subtitles.mnemolith.stalker_hurt",
+    "sounds": [{ "name": "mnemolith:replicant_hurt", "stream": false, "pitch": 0.6 }]
+  },
+  "stalker_death": {
+    "subtitle": "subtitles.mnemolith.stalker_death",
+    "sounds": [{ "name": "mnemolith:replicant_death", "stream": false, "pitch": 0.5 }]
   }
 }

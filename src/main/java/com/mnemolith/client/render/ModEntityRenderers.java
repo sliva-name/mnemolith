@@ -16,6 +16,9 @@ public final class ModEntityRenderers {
     public static final ModelLayerLocation ARCHIVIST = layer("archivist");
     public static final ModelLayerLocation MOMENT_REPLICANT = layer("moment_replicant");
     public static final ModelLayerLocation RESIDUE = layer("residue");
+    public static final ModelLayerLocation LEDGER_MITE = layer("ledger_mite");
+    public static final ModelLayerLocation KIN_WITNESS = layer("kin_witness");
+    public static final ModelLayerLocation FRACTURE_STALKER = layer("fracture_stalker");
 
     private ModEntityRenderers() {}
 
@@ -24,6 +27,9 @@ public final class ModEntityRenderers {
         event.registerLayerDefinition(ARCHIVIST, ArchivistModel::createBodyLayer);
         event.registerLayerDefinition(MOMENT_REPLICANT, ReplicantModel::createBodyLayer);
         event.registerLayerDefinition(RESIDUE, com.mnemolith.client.model.ResidueModel::createBodyLayer);
+        event.registerLayerDefinition(LEDGER_MITE, com.mnemolith.client.model.LedgerMiteModel::createBodyLayer);
+        event.registerLayerDefinition(KIN_WITNESS, com.mnemolith.client.model.KinWitnessModel::createBodyLayer);
+        event.registerLayerDefinition(FRACTURE_STALKER, com.mnemolith.client.model.FractureStalkerModel::createBodyLayer);
     }
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -31,6 +37,10 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.ARCHIVIST.get(), ArchivistRenderer::new);
         event.registerEntityRenderer(ModEntities.MOMENT_REPLICANT.get(), ReplicantRenderer::new);
         event.registerEntityRenderer(ModEntities.RESIDUE.get(), ResidueRenderer::new);
+        event.registerEntityRenderer(ModEntities.LEDGER_MITE.get(), ArmoryRenderers.MiteRenderer::new);
+        event.registerEntityRenderer(ModEntities.KIN_WITNESS.get(), ArmoryRenderers.WitnessRenderer::new);
+        event.registerEntityRenderer(ModEntities.FRACTURE_STALKER.get(), ArmoryRenderers.StalkerRenderer::new);
+        event.registerEntityRenderer(ModEntities.MEMORY_BOLT.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
         event.registerEntityRenderer(ModEntities.SCAR.get(), ScarRenderer::new);
         registerAvatar(event, ModEntities.ECHO.get(), true);
         registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);

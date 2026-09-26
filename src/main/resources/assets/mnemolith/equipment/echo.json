@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mnemolith:echo"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mnemolith:echo"
+      }
+    ]
+  }
+}

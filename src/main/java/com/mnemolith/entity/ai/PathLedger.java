@@ -67,7 +67,9 @@ public final class PathLedger {
         BlockPos lastWrite = LAST_WRITE.get(id);
         if (lastWrite == null || lastWrite.distSqr(now) >= WRITE_SQR) {
             LAST_WRITE.put(id, now);
-            ImprintWriter.tryWrite((ServerLevel) player.level(), now, ImprintTag.PATH, id, false);
+            if (!(player.isShiftKeyDown() && com.mnemolith.armory.Armory.full(player, com.mnemolith.armory.ArmorySet.HUSH))) {
+                ImprintWriter.tryWrite((ServerLevel) player.level(), now, ImprintTag.PATH, id, false);
+            }
         }
     }
 

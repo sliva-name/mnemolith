@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "E": "mnemolith:echo_slip",
+    "B": "minecraft:bow",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "E",
+    "B",
+    "A"
+  ],
+  "result": {
+    "id": "mnemolith:chorus_sling",
+    "count": 1
+  }
+}

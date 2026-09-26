@@ -510,6 +510,31 @@ public final class EchoJob {
 
     // ---- tick ----
 
+    /** An idle echo may walk for its role. A job, a lens order, or an alarm keeps the mover. */
+    public boolean canRoleRoam() {
+        return this.mode == Mode.IDLE && !this.orders.active() && !this.alarm.alarmed;
+    }
+
+    public void roleWalk(ServerLevel level, EchoEntity echo, BlockPos target) {
+        if (!this.canRoleRoam() || target == null) {
+            return;
+        }
+        if (!this.mover.active() || echo.tickCount % 20 == 0) {
+            this.mover.start(level, echo, new EchoNav.Goal() {
+                @Override
+                public boolean reached(BlockPos feet) {
+                    return feet.distSqr(target) <= 4.0D;
+                }
+
+                @Override
+                public double estimate(BlockPos feet) {
+                    return Math.max(0.0D, Math.sqrt(feet.distSqr(target)) - 2.0D);
+                }
+            });
+        }
+        this.mover.tick(level, echo);
+    }
+
     public void tick(ServerLevel level, EchoEntity echo) {
         if (this.noticeTicks > 0 && --this.noticeTicks == 0) {
             this.notice = null;

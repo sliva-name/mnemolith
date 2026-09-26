@@ -66,6 +66,11 @@ public final class ItemTooltips {
                 }
             } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
+            } else {
+                String hint = com.mnemolith.armory.ArmoryHints.of(stack.getItem());
+                if (hint != null) {
+                    builder.accept(Component.translatable(hint).withStyle(net.minecraft.ChatFormatting.GRAY));
+                }
             }
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.ECHO_RECORDING, (stack, context, display, player, flag, builder) -> {

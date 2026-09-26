@@ -97,6 +97,9 @@ public final class EchoPossession {
             return Result.GONE;
         }
         double range = CommonConfig.ECHO_POSSESS_RANGE.get() + 2.0D;
+        if (com.mnemolith.armory.Armory.full(player, com.mnemolith.armory.ArmorySet.ECHO)) {
+            range += 8.0D;
+        }
         if (echo.level() != player.level() || echo.distanceToSqr(player) > range * range) {
             return Result.FAR;
         }

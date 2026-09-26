@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "mnemolith:grave_scale",
+    "I": "minecraft:iron_block",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "GIG",
+    " S "
+  ],
+  "result": {
+    "id": "mnemolith:grave_maul",
+    "count": 1
+  }
+}
