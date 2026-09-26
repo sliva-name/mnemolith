@@ -9,6 +9,8 @@ public final class MobTuning {
     public static final int PHASE_LIMIT = 12;
     public static final double LENS_FLEE_RANGE = 8.0D;
     public static final double PATH_ARRIVE_SQR = 4.0D;
+    /** A strider follows a player's buffered steps only in its own dimension and within this many blocks. */
+    public static final double PATH_FOLLOW_RANGE = 48.0D;
     public static final int INTEREST_RANGE = 16;
     public static final double SNATCH_RANGE_SQR = 36.0D;
     public static final double BAIT_RANGE = 10.0D;

@@ -69,11 +69,18 @@ public final class FollowPathGoal extends Goal {
             return;
         }
         if (!owners.isEmpty()) {
-            int count = this.strider.twin() ? Math.min(2, owners.size()) : 1;
-            for (int attempt = 0; attempt < count; attempt++) {
-                UUID owner = owners.get(Math.floorMod(this.ownerCursor++, owners.size()));
-                BlockPos next = PathLedger.peek(owner);
+            // Only trails in this level and near the strider count. A twin advances the cursor every pick, so it
+            // alternates between the players whose trails are near; a single strider sticks with the one it found.
+            BlockPos from = this.strider.blockPosition();
+            int start = this.strider.twin() ? this.ownerCursor++ : this.ownerCursor;
+            for (int attempt = 0; attempt < owners.size(); attempt++) {
+                int index = Math.floorMod(start + attempt, owners.size());
+                UUID owner = owners.get(index);
+                BlockPos next = PathLedger.peekNear(owner, level, from, MobTuning.PATH_FOLLOW_RANGE);
                 if (next != null) {
+                    if (!this.strider.twin()) {
+                        this.ownerCursor = index;
+                    }
                     this.pathOwner = owner;
                     this.waypoint = next;
                     return;

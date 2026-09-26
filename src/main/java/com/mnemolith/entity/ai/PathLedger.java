@@ -16,8 +16,10 @@ import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 
 /**
  * Ring buffer of recent player steps, plus a coarser path imprint on the chunk.
@@ -27,6 +29,8 @@ public final class PathLedger {
     private static final Map<UUID, Deque<BlockPos>> PATHS = new HashMap<>();
     private static final Map<UUID, BlockPos> LAST_STEP = new HashMap<>();
     private static final Map<UUID, BlockPos> LAST_WRITE = new HashMap<>();
+    /** Dimension the buffered steps were taken in. A dimension change starts a fresh buffer. */
+    private static final Map<UUID, ResourceKey<Level>> DIMENSION = new HashMap<>();
     private static final int CAP = 16;
     private static final double STEP_SQR = 64.0D;
     private static final double WRITE_SQR = 144.0D;
@@ -38,6 +42,12 @@ public final class PathLedger {
         int y = player.getBlockY();
         int z = player.getBlockZ();
         UUID id = player.getUUID();
+        ResourceKey<Level> dimension = player.level().dimension();
+        if (!dimension.equals(DIMENSION.put(id, dimension))) {
+            PATHS.remove(id);
+            LAST_STEP.remove(id);
+            LAST_WRITE.remove(id);
+        }
         BlockPos last = LAST_STEP.get(id);
         if (last != null) {
             double dx = last.getX() - x;
@@ -69,6 +79,21 @@ public final class PathLedger {
         return path.peekFirst();
     }
 
+    /**
+     * The owner's oldest buffered step, only when it was taken in {@code level} and lies within {@code range} blocks
+     * of {@code from}. A step in another dimension or across the map is not a trail to follow.
+     */
+    public static @Nullable BlockPos peekNear(UUID id, ServerLevel level, BlockPos from, double range) {
+        if (!level.dimension().equals(DIMENSION.get(id))) {
+            return null;
+        }
+        BlockPos next = peek(id);
+        if (next == null || next.distSqr(from) > range * range) {
+            return null;
+        }
+        return next;
+    }
+
     public static void consume(UUID id, BlockPos pos) {
         Deque<BlockPos> path = PATHS.get(id);
         if (path == null || path.isEmpty()) {
@@ -84,6 +109,7 @@ public final class PathLedger {
         PATHS.remove(id);
         LAST_STEP.remove(id);
         LAST_WRITE.remove(id);
+        DIMENSION.remove(id);
     }
 
     /** Drops all players' paths (server stopped). */
@@ -91,6 +117,7 @@ public final class PathLedger {
         PATHS.clear();
         LAST_STEP.clear();
         LAST_WRITE.clear();
+        DIMENSION.clear();
     }
 
     public static List<UUID> owners() {

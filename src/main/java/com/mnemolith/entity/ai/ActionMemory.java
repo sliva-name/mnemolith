@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.util.FakePlayer;
 
 /** Last whitelisted action per player, kept for five seconds. Server only. */
 public final class ActionMemory {
@@ -18,7 +19,14 @@ public final class ActionMemory {
 
     private ActionMemory() {}
 
+    /**
+     * Fake players (an echo's hands, other mods' machines) are skipped: their actions are not a player's moment,
+     * and they would be filed under the owner's UUID long after the owner logged out.
+     */
     public static void record(ServerPlayer player, CopiedActionKind kind, BlockPos pos, ItemStack stack) {
+        if (player instanceof FakePlayer) {
+            return;
+        }
         LAST.put(player.getUUID(), new CopiedAction(kind, pos.immutable(), stack.copy(), player.level().getGameTime(), player.getUUID()));
     }
 

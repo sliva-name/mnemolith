@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.audio.ModSounds;
+import com.mnemolith.content.ModBlocks;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.data.ImprintSlips;
 import com.mnemolith.entity.MemoryMob;
@@ -43,9 +44,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.neoforged.neoforge.event.EventHooks;
 
 /** Telegraphs, then replays the last whitelisted thing a nearby player did. */
 public class MomentReplicant extends MemoryMob {
@@ -331,20 +333,23 @@ public class MomentReplicant extends MemoryMob {
         }
     }
 
+    /**
+     * Copies a block place as a fading {@link ModBlocks#REPLICATED_MOMENT}, never the block itself, so the copy cannot
+     * be mined for a free block. Only air is filled, never fluids or plants, only when mob griefing (and any claim
+     * mod listening to it) allows, and never inside an entity.
+     */
     private void placeCopy(ServerLevel level, @Nullable ServerPlayer player, ItemStack stack) {
-        if (!(stack.getItem() instanceof BlockItem blockItem)) {
-            this.swing(InteractionHand.MAIN_HAND);
-            return;
-        }
-        Block block = blockItem.getBlock();
-        if (block == Blocks.TNT || block == Blocks.COMMAND_BLOCK || block == Blocks.REPEATING_COMMAND_BLOCK || block == Blocks.CHAIN_COMMAND_BLOCK || block == Blocks.STRUCTURE_BLOCK) {
+        this.swing(InteractionHand.MAIN_HAND);
+        if (!(stack.getItem() instanceof BlockItem) || !EventHooks.canEntityGrief(level, this)) {
             return;
         }
         Direction facing = player == null ? this.getDirection() : player.getDirection();
         BlockPos target = (player == null ? this.blockPosition() : player.blockPosition()).relative(facing);
-        BlockState existing = level.getBlockState(target);
-        if (existing.isAir() || existing.canBeReplaced()) {
-            level.setBlock(target, block.defaultBlockState(), Block.UPDATE_ALL);
+        BlockState copy = ModBlocks.REPLICATED_MOMENT.get().defaultBlockState();
+        if (!level.getBlockState(target).isAir() || !level.isUnobstructed(copy, target, CollisionContext.empty())) {
+            return;
+        }
+        if (level.setBlock(target, copy, Block.UPDATE_ALL)) {
             MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D, 6);
         }
     }
