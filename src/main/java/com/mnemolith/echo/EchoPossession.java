@@ -125,7 +125,7 @@ public final class EchoPossession {
         UUID shellId = shell == null ? UUID.randomUUID() : shell.getUUID();
         PossessionState.Anchor anchor = new PossessionState.Anchor(level.dimension(), player.position(), player.getYRot(), player.getXRot(), shellId);
         PossessionState.Body body = new PossessionState.Body(echo.getUUID(), echo.getMaxHealth(), Optional.ofNullable(echo.recording()), Optional.of(echo.job().save()),
-                Optional.ofNullable(echo.graft()));
+                Optional.ofNullable(echo.graft()), echo.scarred());
         player.setData(ModAttachments.ECHO_POSSESSION.get(), new PossessionState(new PossessionState.Data(realState, anchor, body)));
 
         if (shell != null) {
@@ -264,6 +264,7 @@ public final class EchoPossession {
         echo.setYBodyRot(player.yBodyRot);
         data.body().recording().ifPresent(echo::keepRecording);
         data.body().job().ifPresent(echo::restoreJobIdle);
+        echo.setScarred(data.body().scarred());
         data.body().graft().ifPresent(echo::setGraft);
         EchoInventory inventory = echo.inventory();
         List<ItemStack> overflow = new ArrayList<>();

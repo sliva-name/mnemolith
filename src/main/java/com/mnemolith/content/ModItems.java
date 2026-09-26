@@ -63,6 +63,10 @@ public final class ModItems {
             "echo_sturdy_slip", properties -> new com.mnemolith.content.item.EchoUpgradeItem(com.mnemolith.echo.EchoProgress.Kind.STURDY, properties), stackTo(16));
     public static final DeferredItem<com.mnemolith.content.item.ResidualShardItem> RESIDUAL_SHARD = ITEMS.registerItem(
             "residual_shard", com.mnemolith.content.item.ResidualShardItem::new, properties -> properties.stacksTo(1));
+    /** The Scar's drop. Right-click your echo: its graft seat holds three slips' worth and shrugs off fractures. */
+    public static final DeferredItem<Item> SCAR_FRAGMENT = ITEMS.registerItem(
+            "scar_fragment", Item::new, properties -> properties.stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC));
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> SCAR_GLASS = ITEMS.registerSimpleBlockItem(ModBlocks.SCAR_GLASS);
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

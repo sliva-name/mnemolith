@@ -42,7 +42,45 @@ public final class ModBlocks {
             ReplicatedMomentBlock::new,
             momentProperties());
 
+    /** Grows where a recollection storm merged into the Scar. A storm ward: no storm gathers within one chunk. */
+    public static final DeferredBlock<com.mnemolith.content.block.ScarGlassBlock> SCAR_GLASS = BLOCKS.registerBlock(
+            "scar_glass",
+            com.mnemolith.content.block.ScarGlassBlock::new,
+            scarGlassProperties());
+    /** Centre of a Scar site. No item, no drops; breaking it heals the scar. */
+    public static final DeferredBlock<com.mnemolith.content.block.ScarHeartBlock> SCAR_HEART = BLOCKS.registerBlock(
+            "scar_heart",
+            com.mnemolith.content.block.ScarHeartBlock::new,
+            scarHeartProperties());
+
     private ModBlocks() {}
+
+    private static UnaryOperator<BlockBehaviour.Properties> scarGlassProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_PURPLE)
+                .strength(1.5F, 6.0F)
+                .sound(SoundType.AMETHYST)
+                .lightLevel(state -> 5)
+                .noOcclusion()
+                .requiresCorrectToolForDrops()
+                .isValidSpawn((state, level, pos, type) -> false)
+                .isRedstoneConductor((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .isViewBlocking((state, level, pos) -> false);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> scarHeartProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_MAGENTA)
+                .strength(30.0F, 1200.0F)
+                .sound(SoundType.AMETHYST)
+                .lightLevel(state -> 10)
+                .noOcclusion()
+                .noLootTable()
+                .requiresCorrectToolForDrops()
+                .pushReaction(PushReaction.BLOCK)
+                .isValidSpawn((state, level, pos, type) -> false);
+    }
 
     private static UnaryOperator<BlockBehaviour.Properties> stoneProperties() {
         return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(MemorySoundTypes.MUTE);

@@ -8,14 +8,14 @@ import net.minecraft.resources.Identifier;
  * Static pages of the field guide. Text lives in the language files.
  * The screen that draws these pages is client-only.
  * Dedicated QA expects {@link #pageCount()} to be {@link #PAGE_COUNT} (stage 3 added the echo page; memory grafts
- * added the recording and graft pages; residual echoes added the residue page).
+ * added the recording and graft pages; residual echoes added the residue page; the recollection storm added the storm and Scar pages).
  */
 public final class GuideBook {
     public static final String ITEM_ID = "field_guide";
     public static final int ART_WIDTH = 256;
     public static final int ART_HEIGHT = 128;
     /** Pages QA expects. */
-    public static final int PAGE_COUNT = 22;
+    public static final int PAGE_COUNT = 24;
 
     private static final String[] PAGES = {
             "welcome",
@@ -37,6 +37,8 @@ public final class GuideBook {
             "echoes",
             "grafts",
             "residues",
+            "storms",
+            "scar",
             "world",
             "players",
             "reference"

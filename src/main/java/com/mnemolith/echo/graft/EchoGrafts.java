@@ -76,7 +76,35 @@ public final class EchoGrafts {
 
     /** Most charges a graft can hold: two slips' worth. */
     public static int capacity(Temper temper) {
-        return slipCharge(temper) * 2;
+        return capacity(temper, false);
+    }
+
+    /** Two slips' worth, or three on a scar-set echo. */
+    public static int capacity(Temper temper, boolean scarred) {
+        return slipCharge(temper) * (scarred ? 3 : 2);
+    }
+
+    public static int capacity(EchoEntity echo, Temper temper) {
+        return capacity(temper, echo.scarred());
+    }
+
+    /**
+     * Right-click with a scar fragment on your own echo: it becomes scar-set for good (three slips' worth of graft,
+     * no graft rejection and no work stop in a fracture). Consumes the fragment; one per echo.
+     */
+    public static boolean scarSet(ServerPlayer player, EchoEntity echo, ItemStack fragment) {
+        if (echo.scarred()) {
+            player.sendSystemMessage(Component.translatable("mnemolith.graft.already_scarred"), true);
+            return false;
+        }
+        echo.setScarred(true);
+        fragment.consume(1, player);
+        ServerLevel level = (ServerLevel) echo.level();
+        level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.PLAYERS, 1.0F, 0.5F);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, echo.getX(), echo.getY() + 1.0D, echo.getZ(), 30, 0.4D, 0.8D, 0.4D, 0.05D);
+        player.sendSystemMessage(Component.translatable("mnemolith.graft.scar_set"), true);
+        Mnemolith.LOGGER.info("Mnemolith echo scar-set owner={}", echo.ownerName());
+        return true;
     }
 
     /** Whether the graft still counts as a whole slip when it leaves the echo. */
@@ -113,7 +141,7 @@ public final class EchoGrafts {
         EchoGraft current = echo.graft();
         int charge = slipCharge(temper);
         if (current != null && current.temper() == temper) {
-            int cap = capacity(temper);
+            int cap = capacity(echo, temper);
             if (current.charge() >= cap - charge / 2) {
                 player.sendSystemMessage(Component.translatable("mnemolith.graft.full", Component.translatable(temper.key())), true);
                 return false;
@@ -228,7 +256,7 @@ public final class EchoGrafts {
             player.sendSystemMessage(Component.translatable("mnemolith.graft.faint", Component.translatable(cast.tag().translationKey())), true);
             return false;
         }
-        int cap = capacity(temper);
+        int cap = capacity(echo, temper);
         int charge = com.mnemolith.echo.residue.Residues.shardCharge(temper, cast.intensity());
         EchoGraft current = echo.graft();
         if (current != null && current.temper() == temper) {
@@ -258,7 +286,7 @@ public final class EchoGrafts {
         if (graft == null || amount <= 0) {
             return false;
         }
-        int cap = capacity(graft.temper());
+        int cap = capacity(echo, graft.temper());
         if (graft.charge() >= cap) {
             return false;
         }
@@ -276,7 +304,8 @@ public final class EchoGrafts {
             return false;
         }
         EchoGraft before = possessedGraft(player);
-        int cap = capacity(temper);
+        PossessionState.Data body = EchoPossession.state(player).data();
+        int cap = capacity(temper, body != null && body.body().scarred());
         if (before != null && before.temper() == temper) {
             setPossessedGraft(player, before.withCharge(Math.min(cap, before.charge() + charge)));
             return true;
@@ -342,6 +371,25 @@ public final class EchoGrafts {
             }
         }
         return best;
+    }
+
+    /**
+     * A hushed echo (anyone's) within the aura radius of {@code pos} that swallows a residue's act-out: it pays one
+     * charge. Null when there is none.
+     */
+    public static @Nullable EchoEntity hushNear(ServerLevel level, BlockPos pos) {
+        int radius = CommonConfig.ECHO_GRAFT_AURA_RADIUS.get();
+        if (!enabled() || radius <= 0) {
+            return null;
+        }
+        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(pos).inflate(radius);
+        for (EchoEntity echo : level.getEntitiesOfClass(EchoEntity.class, box, e -> e.isAlive() && e.graftTemper() == Temper.HUSHED)) {
+            if (echo.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= (double) radius * radius) {
+                spend(echo, 1);
+                return echo;
+            }
+        }
+        return null;
     }
 
     /**
@@ -471,7 +519,7 @@ public final class EchoGrafts {
     /** Every 40 ticks: a fracture under a grafted echo rejects the graft into that chunk. */
     public static void checkFracture(ServerLevel level, EchoEntity echo) {
         EchoGraft graft = echo.graft();
-        if (graft == null || !enabled()) {
+        if (graft == null || !enabled() || echo.scarred()) {
             return;
         }
         BlockPos pos = echo.blockPosition();

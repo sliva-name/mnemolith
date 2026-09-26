@@ -172,6 +172,7 @@ public final class ImprintEvents {
         }
         coolPressure(level, player);
         com.mnemolith.echo.residue.Residues.pulse(level, player);
+        com.mnemolith.echo.storm.Storms.onPlayerTick(level, player);
         if (!player.hasEffect(ModEffects.FIRE_TRAIL)) {
             return;
         }

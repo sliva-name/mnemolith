@@ -17,5 +17,6 @@ public final class ModEntityAttributes {
         event.put(ModEntities.ECHO.get(), com.mnemolith.entity.echo.EchoEntity.createAttributes().build());
         event.put(ModEntities.ECHO_SHELL.get(), com.mnemolith.entity.echo.EchoShell.createAttributes().build());
         event.put(ModEntities.RESIDUE.get(), com.mnemolith.entity.echo.ResidueEntity.createAttributes().build());
+        event.put(ModEntities.SCAR.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());
     }
 }

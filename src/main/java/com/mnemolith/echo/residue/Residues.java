@@ -109,6 +109,9 @@ public final class Residues {
             trySeed(level, chunk);
             return;
         }
+        if (memory.scar() != null && com.mnemolith.echo.storm.ScarSites.reseed(level, chunk, memory) != null) {
+            return;
+        }
         PressureBand band = MemoryPressure.band(memory.cachedPressure());
         double chance = switch (band) {
             case OVERLOADED -> CommonConfig.RESIDUE_FORM_CHANCE.get();
@@ -261,7 +264,7 @@ public final class Residues {
     // ---- fester ----
 
     /** What one fester did; the QA reads it. */
-    public enum Fester { STARVED, FED, FADED, HELD, WROTE, DISSOLVED }
+    public enum Fester { STARVED, FED, FADED, HELD, WROTE, DISSOLVED, ACTED, HUSHED }
 
     /**
      * One fester, in order: a mute stone starves it; a matching echo drinks it; a calm chunk lets it fade (an old
@@ -322,11 +325,47 @@ public final class Residues {
         return false;
     }
 
-    /** A fractured chunk lets the residue play its memory out. Fire and blasts respect mobGriefing. */
-    public static void actOut(ServerLevel level, ResidueEntity residue) {
-        BlockPos pos = residue.blockPosition();
+    /**
+     * A storm wave for a storm-born residue, in order: a mute stone starves it; a matching echo drinks it; a read
+     * (pinned) residue holds still; otherwise it acts its memory out, unless a hushed echo nearby swallows it. Storm
+     * residues do not write back (the storm draws on the area's own memories and on what the act-outs leave).
+     */
+    public static Fester stormWave(ServerLevel level, ResidueEntity residue) {
+        if (LoadedChunkMemory.isMuted(level, residue.blockPosition())) {
+            return weaken(level, residue, Fester.STARVED);
+        }
+        if (feed(level, residue)) {
+            return weaken(level, residue, Fester.FED);
+        }
+        if (residue.isPinned()) {
+            return Fester.HELD;
+        }
+        return actOut(level, residue) ? Fester.ACTED : Fester.HUSHED;
+    }
+
+    /**
+     * A fractured chunk (or a storm) lets the residue play its memory out. Fire and blasts respect mobGriefing. False
+     * when a hushed echo within its aura radius swallowed it instead (the echo pays one charge).
+     */
+    public static boolean actOut(ServerLevel level, ResidueEntity residue) {
+        return actOut(level, residue, residue.tag(), residue.blockPosition());
+    }
+
+    /** The act-out of {@code tag} at {@code pos}, by {@code source} (a residue, or the Scar recalling it). */
+    public static boolean actOut(ServerLevel level, net.minecraft.world.entity.Entity source, ImprintTag tag, BlockPos pos) {
+        EchoEntity hush = EchoGrafts.hushNear(level, pos);
+        if (hush != null) {
+            level.sendParticles(EchoGrafts.particle(Temper.HUSHED), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10, 0.4D, 0.5D, 0.4D, 0.0D);
+            Mnemolith.LOGGER.info("Mnemolith residue act-out hushed tag={} at {}", tag.getSerializedName(), pos.toShortString());
+            return false;
+        }
+        actOutUnhushed(level, source, tag, pos);
+        return true;
+    }
+
+    private static void actOutUnhushed(ServerLevel level, net.minecraft.world.entity.Entity residue, ImprintTag tag, BlockPos pos) {
         boolean griefing = level.getGameRules().get(net.minecraft.world.level.gamerules.GameRules.MOB_GRIEFING);
-        switch (residue.tag()) {
+        switch (tag) {
             case DEATH -> {
                 int zombies = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, residue.getBoundingBox().inflate(12.0D)).size();
                 if (zombies < MAX_ACT_OUT_ZOMBIES) {
@@ -341,7 +380,7 @@ public final class Residues {
                     }
                 }
             }
-            case EXPLOSION -> level.explode(residue, residue.getX(), residue.getY() + 0.5D, residue.getZ(), 1.5F,
+            case EXPLOSION -> level.explode(residue, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 1.5F,
                     griefing ? net.minecraft.world.level.Level.ExplosionInteraction.MOB : net.minecraft.world.level.Level.ExplosionInteraction.NONE);
             case FALL -> {
                 for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, residue.getBoundingBox().inflate(8.0D), Residues::affects)) {
@@ -355,7 +394,7 @@ public final class Residues {
             }
             default -> {}
         }
-        Mnemolith.LOGGER.info("Mnemolith residue acted out tag={} at {}", residue.tag().getSerializedName(), pos.toShortString());
+        Mnemolith.LOGGER.info("Mnemolith residue acted out tag={} at {}", tag.getSerializedName(), pos.toShortString());
     }
 
     /** The first air block with a solid block under it, searching down at most 8 blocks. */
@@ -378,7 +417,12 @@ public final class Residues {
 
     /** The unread residue strikes {@code player} with its memory. */
     public static void lash(ServerLevel level, ResidueEntity residue, ServerPlayer player) {
-        switch (residue.tag()) {
+        lash(level, residue, residue.tag(), residue.temper(), player);
+    }
+
+    /** {@code source} (a residue, or the Scar recalling one of its memories) strikes {@code player} with {@code tag}. */
+    public static void lash(ServerLevel level, net.minecraft.world.entity.Entity residue, ImprintTag tag, Temper temper, ServerPlayer player) {
+        switch (tag) {
             case FIRE -> player.igniteForSeconds(3.0F);
             case FALL -> {
                 player.push(0.0D, 0.9D, 0.0D);
@@ -395,7 +439,7 @@ public final class Residues {
             }
             default -> {}
         }
-        level.sendParticles(EchoGrafts.particle(residue.temper()), player.getX(), player.getY() + 1.0D, player.getZ(), 12, 0.3D, 0.5D, 0.3D, 0.05D);
+        level.sendParticles(EchoGrafts.particle(temper), player.getX(), player.getY() + 1.0D, player.getZ(), 12, 0.3D, 0.5D, 0.3D, 0.05D);
         level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.HOSTILE, 1.0F, 0.5F);
     }
 
@@ -403,8 +447,13 @@ public final class Residues {
 
     /** True when {@code player} holds the raised lens and looks straight at {@code residue} with a clear line. */
     public static boolean reading(ServerPlayer player, ResidueEntity residue) {
+        return reading(player, residue, READ_RANGE);
+    }
+
+    /** A focused lens held steadily on {@code residue} (a residue, or the Scar) within {@code range} blocks. */
+    public static boolean reading(ServerPlayer player, net.minecraft.world.entity.Entity residue, double range) {
         if (player.level() != residue.level() || !com.mnemolith.content.item.ChronicleLensItem.isFocusing(player)
-                || player.distanceToSqr(residue) > READ_RANGE * READ_RANGE) {
+                || player.distanceToSqr(residue) > range * range) {
             return false;
         }
         net.minecraft.world.phys.Vec3 eye = player.getEyePosition();

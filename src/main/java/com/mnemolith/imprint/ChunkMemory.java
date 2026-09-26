@@ -27,13 +27,19 @@ public final class ChunkMemory {
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
             Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory),
-            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded)
+            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded),
+            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
+            ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
     private final List<BlockPos> resonators = new ArrayList<>();
     private final List<BlockPos> strata = new ArrayList<>();
+    /** Scar glass in this chunk: a recollection storm cannot gather within one chunk of it. Optional in the codec. */
+    private final List<BlockPos> wards = new ArrayList<>();
+    /** Set when a recollection storm merged into the Scar here. Optional in the codec. */
+    private @org.jspecify.annotations.Nullable ScarSite scar;
     private boolean fractured;
     private boolean archival;
     private boolean observatory;
@@ -48,7 +54,7 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -61,6 +67,8 @@ public final class ChunkMemory {
         memory.strata.addAll(strata);
         memory.observatory = observatory;
         memory.residueSeeded = residueSeeded;
+        memory.wards.addAll(wards);
+        memory.scar = scar.orElse(null);
         memory.refreshCooling();
         return memory;
     }
@@ -70,6 +78,8 @@ public final class ChunkMemory {
                 && this.muteStones.isEmpty()
                 && this.resonators.isEmpty()
                 && this.strata.isEmpty()
+                && this.wards.isEmpty()
+                && this.scar == null
                 && !this.fractured
                 && !this.archival
                 && !this.observatory
@@ -327,6 +337,47 @@ public final class ChunkMemory {
 
     public void setResidueSeeded(boolean residueSeeded) {
         this.residueSeeded = residueSeeded;
+    }
+
+    public List<BlockPos> wardsCopy() {
+        return List.copyOf(this.wards);
+    }
+
+    public boolean hasWard() {
+        return !this.wards.isEmpty();
+    }
+
+    public boolean hasWard(BlockPos pos) {
+        return this.wards.contains(pos);
+    }
+
+    public int wardCount() {
+        return this.wards.size();
+    }
+
+    public boolean addWard(BlockPos pos) {
+        return addMark(this.wards, pos);
+    }
+
+    public boolean removeWard(BlockPos pos) {
+        return this.wards.remove(pos);
+    }
+
+    public @org.jspecify.annotations.Nullable ScarSite scar() {
+        return this.scar;
+    }
+
+    private Optional<ScarSite> scarOptional() {
+        return Optional.ofNullable(this.scar);
+    }
+
+    public void setScar(@org.jspecify.annotations.Nullable ScarSite scar) {
+        this.scar = scar;
+    }
+
+    /** A Scar site, or scar glass here: a storm cannot gather within one chunk of it. */
+    public boolean stormProof() {
+        return this.scar != null || !this.wards.isEmpty();
     }
 
     /** Removes exactly {@code imprint} (residual echoes condense one chosen imprint). */
