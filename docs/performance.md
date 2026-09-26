@@ -42,3 +42,16 @@ Nanoseconds, dedicated server, same world, `/mnemolith perf`. The before line is
 | `mobs.sensorInterval` | 10 | Ticks between resonator scans, flee pressure scans, and idle repaths. 1 checks every tick. A charge still aims every tick. |
 
 A dedicated view distance of 8 to 10 matches this loop. The lens packet is a radius of 2 chunks, or 3 when the player's chunk has archival strata, and it is capped at 49 chunks. A larger view distance loads more chunks for mobs and for the per-player cool pulse. It does not widen that packet.
+
+## Recollection storms
+
+The storm adds no per-chunk or per-dimension scan. `Storms.tick` iterates only active storms (default at most 1 per dimension) and skips a storm whose centre chunk is not loaded. The natural roll runs once every 20 ticks per player and reads only the cached band of the chunk under that player. A wave, every 200 ticks, walks the imprint lists of at most the 9 loaded chunks of the storm's area and resolves at most 6 storm residues. The Scar senses players every tick within 20 blocks through `level.players()` like the residue, and writes an imprint at most every 200 ticks.
+
+`/mnemolith stormqa` logs the cost of a stepped storm (`waveCondenses` note), dedicated server, this branch:
+
+| World | `gatherTickNs` (average gathering tick) | `firstWaveUs` (the tick that breaks the storm: condenses 3 imprints, spawns 3 residues, resolves them) |
+| --- | ---: | ---: |
+| Fresh | 604 | 3770 |
+| Main-world copy | 792 | 2794 |
+
+The first wave is dominated by the three entity spawns and their log lines; a raging tick between waves costs the same as a gathering tick. No new network payload: boss bars, particles and sounds are vanilla sends.
