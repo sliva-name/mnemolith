@@ -20,6 +20,13 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * fracture feel needs. Unchanged snapshots are not resent.
  */
 public final class PressureSync {
+    /**
+     * Per-player floor between chunk walks when only the memory epoch moved. A client may ask every tick, and the
+     * epoch is global, so without this each request could walk up to 49 chunks. Moving to another chunk or picking up
+     * or putting away the lens is answered at once.
+     */
+    static final int MIN_REWALK_TICKS = 10;
+
     private PressureSync() {}
 
     /** Any pressure, mute, or fracture change. Lens polls skip their chunk walk until this moves. */
@@ -58,6 +65,9 @@ public final class PressureSync {
             }
             return;
         }
+        if (stamp != null && stamp.tooSoon(level.dimension(), origin.x(), origin.z(), lens, ambient, level.getGameTime(), MIN_REWALK_TICKS)) {
+            return;
+        }
         List<ChunkPressure> chunks = PressureCollector.collect(level, player.blockPosition());
         if (lens) {
             VeinShimmer.send(level, player, origin);
@@ -75,6 +85,9 @@ public final class PressureSync {
         ChunkPos origin = ChunkPos.containing(player.blockPosition());
         Stamp stamp = LensPollCache.get(player.getUUID());
         if (stamp != null && stamp.matches(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), false, false)) {
+            return;
+        }
+        if (stamp != null && stamp.tooSoon(level.dimension(), origin.x(), origin.z(), false, false, level.getGameTime(), MIN_REWALK_TICKS)) {
             return;
         }
         List<ChunkPressure> chunks = PressureCollector.collectBands(level, player.blockPosition());

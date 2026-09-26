@@ -104,13 +104,13 @@ public final class CommonConfig {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         SpecValues.section(builder, "difficulty", "Thresholds that decide when recollection becomes dangerous.");
-        RECOLLECTION_STORM_THRESHOLD = SpecValues.decimal(builder, "recollectionStormThreshold", "Multiplier applied to memory-pressure thresholds before a recollection storm can start.", 1.0D, 0.1D, 10.0D);
+        RECOLLECTION_STORM_THRESHOLD = SpecValues.decimal(builder, "recollectionStormThreshold", "Multiplier on the saturated, overloaded, and fracture thresholds. Each scaled threshold is capped at pressureSoftCap, so fracture stays reachable. Recollection storms themselves are not implemented yet.", 1.0D, 0.1D, 10.0D);
         PRESSURE_SOFT_CAP = SpecValues.integer(builder, "pressureSoftCap", "Soft cap for memory pressure accumulated from imprints in loaded chunks.", 100, 1, 10_000);
         builder.pop();
 
         SpecValues.section(builder, "spawnRates", "Relative weights for future imprint nodes and storm attempts. Worldgen does not use these yet.");
-        IMPRINT_NODE_WEIGHT = SpecValues.integer(builder, "imprintNodeWeight", "Relative weight of imprint-bearing nodes when structures are placed.", 4, 0, 100);
-        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Chance, from 0.0 to 1.0, that a pressure check attempts a recollection storm.", 0.02D, 0.0D, 1.0D);
+        IMPRINT_NODE_WEIGHT = SpecValues.integer(builder, "imprintNodeWeight", "Reserved, not used yet. Relative weight of imprint-bearing nodes when structures are placed.", 4, 0, 100);
+        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Reserved, not used yet: recollection storms are not implemented. Chance, from 0.0 to 1.0, that a pressure check attempts a storm.", 0.02D, 0.0D, 1.0D);
         builder.pop();
 
         SpecValues.section(builder, "worldGen", "Structure placement defaults. Changing these takes effect the next time a world loads.");
@@ -150,9 +150,9 @@ public final class CommonConfig {
         QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.", 6000, 0, 72_000);
         VEIN_SHIMMER_TICKS = SpecValues.integer(builder, "veinShimmerTicks", "Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.", 40, 0, 200);
         ALLOW_AMBIENT_PRESSURE = SpecValues.bool(builder, "allowAmbientPressure", "Whether the server may send full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it such a player gets only the band-only snapshot (overloaded and fracture chunks) used for fracture feel. Vein marks stay lens-only. The client visuals.ambientWithoutLens toggle only draws the shimmer; it cannot grant the snapshot by itself.", false);
-        SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold.", 20, 1, 10_000);
-        OVERLOADED_THRESHOLD = SpecValues.integer(builder, "overloadedThreshold", "Pressure at which a chunk becomes overloaded. Multiplied by recollectionStormThreshold.", 50, 1, 10_000);
-        FRACTURE_THRESHOLD = SpecValues.integer(builder, "fractureThreshold", "Pressure at which a chunk fractures. Fracture is logged and can spawn a moment replicant.", 80, 1, 10_000);
+        SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 20, 1, 10_000);
+        OVERLOADED_THRESHOLD = SpecValues.integer(builder, "overloadedThreshold", "Pressure at which a chunk becomes overloaded. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 50, 1, 10_000);
+        FRACTURE_THRESHOLD = SpecValues.integer(builder, "fractureThreshold", "Pressure at which a chunk fractures. Multiplied by recollectionStormThreshold and capped at pressureSoftCap. Fracture is logged and can spawn a moment replicant.", 80, 1, 10_000);
         MUTE_RADIUS_CHUNKS = SpecValues.integer(builder, "muteRadiusChunks", "Chebyshev radius, in chunks, of loaded chunks where a mute stone blocks imprint writes. 0 is the stone's own chunk.", 0, 0, 2);
         CATALOG_ENABLED = SpecValues.bool(builder, "catalogEnabled", "Whether a catalog fragment opens the discovery catalog.", true);
         DISCOVERY_HINTS = SpecValues.bool(builder, "discoveryHints", "Whether the catalog and reel may show how many stable patterns are still unread. They never list an unread pattern.", true);

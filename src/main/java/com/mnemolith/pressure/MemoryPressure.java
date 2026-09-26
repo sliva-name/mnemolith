@@ -105,9 +105,11 @@ public final class MemoryPressure {
 
     public static PressureBand band(int pressure) {
         double scale = CommonConfig.RECOLLECTION_STORM_THRESHOLD.get();
-        int fracture = scale(CommonConfig.FRACTURE_THRESHOLD.get(), scale);
-        int overloaded = scale(CommonConfig.OVERLOADED_THRESHOLD.get(), scale);
-        int saturated = scale(CommonConfig.SATURATED_THRESHOLD.get(), scale);
+        // The score never exceeds the soft cap, so a scaled threshold above it would make that band unreachable.
+        int cap = CommonConfig.PRESSURE_SOFT_CAP.get();
+        int fracture = Math.min(cap, scale(CommonConfig.FRACTURE_THRESHOLD.get(), scale));
+        int overloaded = Math.min(cap, scale(CommonConfig.OVERLOADED_THRESHOLD.get(), scale));
+        int saturated = Math.min(cap, scale(CommonConfig.SATURATED_THRESHOLD.get(), scale));
         if (pressure >= fracture) {
             return PressureBand.FRACTURE;
         }
