@@ -13,6 +13,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_qa` | `/mnemolith qa` (19 checks) | `locate` is waived: the game test server always creates its world with structure generation off, so `findNearestMapStructure` returns nothing. Its result is still logged (`Mnemolith gametest qa waived locate ...`). Run `/mnemolith qa` on a real world for it |
 | `mnemolith:suite_echoqa` | `/mnemolith echoqa` (11) | |
 | `mnemolith:suite_jobqa` | `/mnemolith jobqa` (12) | |
+| `mnemolith:suite_mineqa` | `/mnemolith mineqa` (6) | Mining job regression: nearest targets first, digging down, no skipped blocks |
 | `mnemolith:suite_echo3qa` | `/mnemolith echo3qa` (13) | |
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
@@ -131,6 +132,27 @@ buildExact ticks=166 rotation=CLOCKWISE_90 status="Done: 15/15" wrong=0 stairsFa
 | `strangerRefused` | Another player cannot stop the echo, unlink its chest, or open it |
 
 The last line of `mnemolith jobqa` must be `Echo job check: 12 of 12`. `mnemolith qa` stays at 19 of 19 and `mnemolith echoqa` at 11 of 11.
+
+### Mining job QA (`/mnemolith mineqa`)
+
+A gamemaster command (also `mnemolith:suite_mineqa`) for the mining job on the shapes players teach. It builds its own sealed areas (obsidian walls and floor) next to the command source, gives the echo a diamond pickaxe, drives it through the level's own entity tick and cleans up. The last line must be `Mining QA: 6 of 6`.
+
+| Check | What passes |
+| --- | --- |
+| `stoneDigsDown` | Stone lesson, radius 2, echo on a stone floor: both layers under it (y−1 and y−2) are mined out |
+| `stoneNoSkip` | Same pass: no stone cell in the radius is left |
+| `oreLine` | Iron ore lesson in solid stone: a continuous line of 6 ores at the echo's feet is mined, none skipped |
+| `oreDown` | Same pass: a vein of 4 ores straight down under the echo is mined |
+| `nearFirstDeep` | Stone lesson, default radius 16, over a 37×37×20 stone mass, with the work point 6 blocks above a chunk section's bottom. After 120 blocks it is still mining, it has dug at least 3 down, and nothing more than 6 blocks from the work point was opened |
+| `nearFirstShallow` | Same with the work point 1 block above a section's bottom |
+
+The two `nearFirst` checks are the regression for "echoes skip blocks and only dig horizontally". Before the fix, the scan kept the first 256 targets in section storage order, which for stone is one flat layer at the section's bottom. Offset 6 tunnelled 7 down to that layer and opened 130 cells more than 6 blocks out. Offset 1 never went below y−1 and opened 44 far cells.
+
+**In the client (manual):**
+
+- [ ] Record yourself breaking a few stone blocks. Put the echo in a stone area, give it a pickaxe and press **Mining** (radius 16). It clears the blocks next to it first and works outward and down in a compact pit, with no untouched blocks left between the ones it took.
+- [ ] The same with an ore lesson on a real vein: the whole vein goes, including the ores under the echo.
+- [ ] Next to a drop of more than 3 blocks it does not break the block it stands on. Next to water or lava it leaves the block that would open the fluid.
 
 ## Echo stage 3 QA
 

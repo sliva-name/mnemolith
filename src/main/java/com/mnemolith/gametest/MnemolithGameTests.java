@@ -70,6 +70,8 @@ public final class MnemolithGameTests {
         suite("mpsmoke", MultiplayerSmoke::check, Map.of());
         suite("stormqa", StormQa::check, Map.of());
         suite("relayqa", com.mnemolith.command.qa.RelayQa::check, Map.of());
+        // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
+        suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
 
         // Formation: pulses every 200 ticks at 1 in 2; 4400 ticks is 22 pulses, a miss chance under 1 in 4 million.
         live("residue_forms_where_player_stands", ResidueLiveTests::formsWherePlayerStands, 4400);
