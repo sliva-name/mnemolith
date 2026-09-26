@@ -8,6 +8,7 @@ import com.mnemolith.client.gui.LensOverlay;
 import com.mnemolith.client.network.ClientPayloads;
 import com.mnemolith.client.particle.ClientParticles;
 import com.mnemolith.client.render.ClientRender;
+import com.mnemolith.client.render.FractureFeel;
 import com.mnemolith.client.render.ModEntityRenderers;
 import com.mnemolith.client.render.PressureClient;
 import com.mnemolith.client.config.ClientConfig;
@@ -37,11 +38,15 @@ public final class MnemolithClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modEventBus.addListener(ClientScreens::registerMenus);
         modEventBus.addListener(LensOverlay::register);
+        modEventBus.addListener(FractureFeel::register);
         modEventBus.addListener(ClientPayloads::register);
         modEventBus.addListener(ClientParticles::register);
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(FractureFeel::onClientTick);
+        NeoForge.EVENT_BUS.addListener(FractureFeel::onCamera);
+        NeoForge.EVENT_BUS.addListener(FractureFeel::onAfterWeather);
         NeoForge.EVENT_BUS.addListener(LensOverlay::onSystemMessage);
         NeoForge.EVENT_BUS.addListener(FieldGuideClient::onRightClick);
         modEventBus.addListener(com.mnemolith.client.echo.ThermalClient::registerKeys);
@@ -66,6 +71,11 @@ public final class MnemolithClient {
             ClientScreens.init();
         });
         Mnemolith.LOGGER.info("Mnemolith client setup; imprintParticles={}", ClientConfig.IMPRINT_PARTICLES.get());
+        Mnemolith.LOGGER.info(
+                "Mnemolith fracture feel vignette={} shake={} fringe={}",
+                ClientConfig.PRESSURE_VIGNETTE.get(),
+                ClientConfig.STORM_SCREEN_SHAKE.get(),
+                ClientConfig.FRACTURE_FRINGE.get());
         Mnemolith.LOGGER.info(
                 "Mnemolith gui contrast glyph={} shadow={} panel={} accent={} fail={}",
                 Integer.toHexString(GuiArt.BONE),

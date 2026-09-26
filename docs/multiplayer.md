@@ -17,7 +17,7 @@ Payloads are registered as version `1` in `ModNetwork`:
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |
-| `mnemolith:request_pressure` | client to server | One boolean, ambient or lens. The server answers only for a live player who holds a lens, or who asked for the ambient read. It does not write memory |
+| `mnemolith:request_pressure` | client to server | One boolean, ambient or lens. The server answers only for a live player who holds a lens, or who asked for the ambient read (shimmer without a lens, or fracture feel). It does not write memory |
 | `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and lens or ambient flag are unchanged |
 | `mnemolith:open_catalog` | server to that player | That player's tag and formula bits. The screen class is client-only |
 

@@ -6,8 +6,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /**
- * Client asks for nearby chunk pressure. {@code ambient} is set only when the client
- * wants saturated shimmer without a lens. Vein marks still require the lens.
+ * Client asks for nearby chunk pressure. {@code ambient} is set when the client wants a
+ * read without a lens: saturated shimmer, or fracture feel. Vein marks still require the lens.
+ * The server only answers. It does not write memory.
  */
 public record RequestPressurePayload(boolean ambient) implements CustomPacketPayload {
     public static final Type<RequestPressurePayload> TYPE = PayloadIds.type("request_pressure");
