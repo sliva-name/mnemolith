@@ -13,6 +13,7 @@ Mnemolith on a dedicated server is server-authoritative. Clients send a lens req
 | Replicant | One server entity. A replicant already within 24 blocks, or anywhere in that chunk's column, blocks another spawn |
 | Memory graft | Server only. Grafting, unpicking and possession check the echo owner; the aura of a hushed or kindled echo only covers echoes of the same owner. The client sees one synced int (`DATA_GRAFT`: temper id, charge, capacity) on the echo — no new payload, protocol version unchanged |
 | Residual echo | One server entity per chunk column (at most 3 within 48 blocks). Condensing runs on each player's own pulse in that player's chunk. Lens reading pins it for everyone and notes the tag only for the reader; the needle capture goes to whoever clicks. The client sees four synced fields (temper, strength, pinned, reading progress) — no new payload, protocol version unchanged |
+| Recollection storm and Scar | Server only (`Storms`, `StormData`). The natural roll runs on each player's tick in that player's chunk; a shard call is decided where it is used. Boss bars are vanilla `ServerBossEvent`s for players within 48 blocks; the Scar is one server entity with four synced fields (temper mask, pinned, reading progress, casting). Reading pins it for everyone; its recall hits every player within 10 blocks; the drop goes to the ground at its death. No new payload, protocol version unchanged |
 | Archivist steal | One slip. An open container is taken before the player's inventory, so both players viewing that container see the same removal |
 
 Payloads are registered as version `2` in `ModNetwork` (2 added the snapshot scope):
@@ -59,7 +60,7 @@ This is one server process. It does not open two Minecraft clients, so it does n
 
 ## Known limits
 
-- No Scar, no new dimension, and no proxy-specific handshake.
+- No new dimension and no proxy-specific handshake. A storm's centre chunk must be loaded for it to advance; with nobody near, it freezes.
 - Full pressure reads without a lens are allowed only by `gameplay.allowAmbientPressure` on the server. A client that sets the request bit without a lens, and without that config, gets only the band-only snapshot: which nearby chunks are overloaded or fractured, the same thing its screen already shows through fracture feel. The read is still read-only: a client cannot create an imprint by sending a payload.
 - Two players can share one reel. They see the same three slots, the same way they would share a chest. Separate reels do not share slots.
 - Disconnect closes the menu. Slips stay in the reel. A button packet for a menu that is no longer open does not compose.

@@ -4,15 +4,15 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated with the game test harness)
+## 0. Status (updated with the recollection storm)
 
 | System | Status | Where |
 | --- | --- | --- |
 | Memory grafts | Implemented, draft PR #22 (`feature/echo-grafts`), not merged | `echo.graft`, `graftqa` 12/12, [echo-design.md](../echo-design.md) §12 |
 | Residual echoes | Implemented on `feature/residual-echoes`, stacked on #22 (draft PR, retargets to `main` after #22 merges) | `echo.residue`, `ResidueEntity`, `residual_shard`, `residueqa` 18/18, §13 |
 | Gametest harness | Implemented on `feature/gametests`, stacked on residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `com.mnemolith.gametest`, `runGameTestServer` in CI, 7 suites + 8 live residue tests, [qa-checklist.md](../qa-checklist.md#automated-game-tests-ci) |
-| Recollection storm and the Scar | Next | — |
-| Echo relay, archive vault | Later | — |
+| Recollection storm and the Scar | Implemented on `feature/recollection-storm`, stacked on the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.storm`, `ScarEntity`, `scar_fragment`, `scar_glass`, `scar_heart`, `stormqa` 19/19, 3 live storm tests, [echo-design.md](../echo-design.md) §14 |
+| Echo relay, archive vault | Next | — |
 | 32x art pass | Its own run | — |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -114,8 +114,17 @@ With residual echoes in place a storm has a natural body: a fractured chunk cond
 once into residues that act out together, and the Scar is what is left when they merge. Lens reading, mute stones,
 hush grafts and shard grafts become the defensive kit.
 
+*Done* on `feature/recollection-storm`. A fracture can gather a storm (a 2% roll per second per player, or a freed
+shard); it gathers 10 s (a mute stone or scar glass contains it), then six waves condense the 3×3 area's loud memories
+into storm residues that act out, unless starved, drunk by grafted echoes, read, or hushed. Three or more survivors
+merge into the Scar: a boss that must be read with the lens before it can be hurt, whose recalls grave and hushed
+echoes answer. It drops the scar fragment (a third graft slip and fracture immunity for one echo, as planned) and
+leaves a lasting site with a heart, scar glass (a craft-free ward block) and a daily residue. Replaying imprints as
+hostile *echoes* (the older idea below) was dropped in favour of residues, which already exist, are cheap, and are
+read and captured with the tools players have. The first live runs found two test-setup bugs (a placement aimed at
+air instead of the ground; a player kept following the Scar into terrain), no gameplay bug.
 
-Fracture currently only logs and may call one replicant. A storm would replay a fractured chunk's imprints as
+Original plan: fracture currently only logs and may call one replicant. A storm would replay a fractured chunk's imprints as
 hostile echoes for a short time and can end with the Scar (the boss the architecture doc reserves). Mute stones,
 hush grafts and decoys become the defensive kit.
 - *Items:* **Scar fragment** (boss drop) enabling a higher-tier graft slot. *Risks:* server load, griefing, fairness
@@ -149,6 +158,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 2. Residual echoes (done, stacked PR on #22).
 3. Gametest harness (done, stacked PR on #23), before the storm work, because storms touch many systems at once.
    All QA suites now run in CI as game tests, plus live residue tests with real players.
-4. Recollection storm and the Scar.
-5. Echo relay and archive vault, depending on how players use grafts.
+4. Recollection storm and the Scar (done, stacked PR on #24).
+5. Echo relay and archive vault, depending on how players use grafts. Next.
 6. The 32x art pass as its own run, once the item list is stable enough that nothing is drawn twice.
