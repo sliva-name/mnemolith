@@ -69,7 +69,7 @@ public final class ImprintWriter {
         }
         PressureBand band = MemoryPressure.recompute(chunk, memory);
         for (ImprintTag tag : tags) {
-            Mnemolith.LOGGER.info(
+            Mnemolith.LOGGER.debug(
                     "Mnemolith imprint {} at {},{},{} pressure={} band={}",
                     tag.getSerializedName(),
                     pos.getX(),

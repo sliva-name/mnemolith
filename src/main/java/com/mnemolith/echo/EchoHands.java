@@ -464,6 +464,6 @@ public final class EchoHands {
     }
 
     private static void log(EchoEntity echo, EchoAction action, Outcome outcome) {
-        Mnemolith.LOGGER.info("Mnemolith echo {} {} at {} -> {}", echo.ownerName(), action.kind().getSerializedName(), action.pos().toShortString(), outcome);
+        Mnemolith.LOGGER.debug("Mnemolith echo {} {} at {} -> {}", echo.ownerName(), action.kind().getSerializedName(), action.pos().toShortString(), outcome);
     }
 }

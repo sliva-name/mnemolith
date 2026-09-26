@@ -25,8 +25,9 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
- * Client fracture feel. Intensity comes only from the latest pressure snapshot, which the server
- * already built for the lens. This class does not read chunk memory and does not decide a band.
+ * Client fracture feel. Intensity comes only from the latest pressure snapshot: the full lens
+ * reading, or, without a lens, the server's band-only snapshot (overloaded and fracture chunks
+ * within two chunks). This class does not read chunk memory and does not decide a band.
  * <p>
  * The chunk under the player is full strength. One chunk away (Chebyshev) is a little over half,
  * two chunks away is a hint, and anything farther is only what the lens-sized snapshot still

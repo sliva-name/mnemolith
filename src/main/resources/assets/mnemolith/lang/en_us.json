@@ -110,6 +110,8 @@
   "mnemolith.configuration.instabilityDecay.tooltip": "Instability removed from a player's chunk on each decay pulse. 0 disables cooling.",
   "mnemolith.configuration.instabilityDecayTicks": "Instability Decay Ticks",
   "mnemolith.configuration.instabilityDecayTicks.tooltip": "Ticks between instability and quiet-imprint pulses while a player is in the chunk. 0 disables the pulse.",
+  "mnemolith.configuration.allowAmbientPressure": "Allow Ambient Pressure",
+  "mnemolith.configuration.allowAmbientPressure.tooltip": "Whether the server sends full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it, fracture feel still works from overloaded and fracture bands only. Vein marks stay lens-only. The client Ambient Without Lens toggle only draws that shimmer.",
   "mnemolith.configuration.veinShimmerTicks": "Vein Shimmer Ticks",
   "mnemolith.configuration.veinShimmerTicks.tooltip": "Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.",
   "mnemolith.configuration.quietFadeTicks": "Quiet Fade Ticks",

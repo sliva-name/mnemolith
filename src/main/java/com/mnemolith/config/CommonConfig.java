@@ -28,6 +28,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue INSTABILITY_DECAY_TICKS;
     public static final ModConfigSpec.IntValue QUIET_FADE_TICKS;
     public static final ModConfigSpec.IntValue VEIN_SHIMMER_TICKS;
+    public static final ModConfigSpec.BooleanValue ALLOW_AMBIENT_PRESSURE;
     public static final ModConfigSpec.IntValue SATURATED_THRESHOLD;
     public static final ModConfigSpec.IntValue OVERLOADED_THRESHOLD;
     public static final ModConfigSpec.IntValue FRACTURE_THRESHOLD;
@@ -148,6 +149,7 @@ public final class CommonConfig {
         INSTABILITY_DECAY_TICKS = SpecValues.integer(builder, "instabilityDecayTicks", "Ticks between instability and quiet-imprint pulses while a player is in the chunk. 0 disables the pulse.", 200, 0, 20_000);
         QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.", 6000, 0, 72_000);
         VEIN_SHIMMER_TICKS = SpecValues.integer(builder, "veinShimmerTicks", "Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.", 40, 0, 200);
+        ALLOW_AMBIENT_PRESSURE = SpecValues.bool(builder, "allowAmbientPressure", "Whether the server may send full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it such a player gets only the band-only snapshot (overloaded and fracture chunks) used for fracture feel. Vein marks stay lens-only. The client visuals.ambientWithoutLens toggle only draws the shimmer; it cannot grant the snapshot by itself.", false);
         SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold.", 20, 1, 10_000);
         OVERLOADED_THRESHOLD = SpecValues.integer(builder, "overloadedThreshold", "Pressure at which a chunk becomes overloaded. Multiplied by recollectionStormThreshold.", 50, 1, 10_000);
         FRACTURE_THRESHOLD = SpecValues.integer(builder, "fractureThreshold", "Pressure at which a chunk fractures. Fracture is logged and can spawn a moment replicant.", 80, 1, 10_000);

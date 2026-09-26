@@ -66,7 +66,7 @@ public class ArchivalVeinFeature extends Feature<NoneFeatureConfiguration> {
                 MemoryPressure.recompute(chunk, memory);
             }
         }
-        Mnemolith.LOGGER.info("Mnemolith archival vein at {},{},{} blocks={}", origin.getX(), y, origin.getZ(), placed);
+        Mnemolith.LOGGER.debug("Mnemolith archival vein at {},{},{} blocks={}", origin.getX(), y, origin.getZ(), placed);
         return true;
     }
 

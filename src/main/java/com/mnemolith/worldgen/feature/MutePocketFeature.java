@@ -77,7 +77,7 @@ public class MutePocketFeature extends Feature<NoneFeatureConfiguration> {
         if (forced || random.nextInt(2) == 0) {
             this.placeChest(level, floor.above(), random);
         }
-        Mnemolith.LOGGER.info("Mnemolith mute pocket at {},{},{} stones={}", floor.getX(), floor.getY(), floor.getZ(), stones);
+        Mnemolith.LOGGER.debug("Mnemolith mute pocket at {},{},{} stones={}", floor.getX(), floor.getY(), floor.getZ(), stones);
         return true;
     }
 
