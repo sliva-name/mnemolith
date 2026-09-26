@@ -41,7 +41,7 @@ Later content, not built yet:
 | `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
 | `com.mnemolith.event` | both | Vanilla listeners. `/mnemolith` is registered here and implemented in `command` |
 | `com.mnemolith.command` | both | `/mnemolith` subcommands. Not loaded as client screens |
-| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`, `stormqa`, `relayqa`, `mpsmoke` checklists. Each suite is `check(level, origin)` returning a `QaReport` (named checks and notes); the command only sends it to chat |
+| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `mineqa`, `echo3qa`, `graftqa`, `residueqa`, `stormqa`, `relayqa`, `mpsmoke` checklists. Each suite is `check(level, origin)` returning a `QaReport` (named checks and notes); the command only sends it to chat |
 | `com.mnemolith.gametest` | both, game test runs only | NeoForge game tests: every QA suite as one test (`SuiteTests`, reusing `check`), live residue, storm, relay and vault tests with real server players (`ResidueLiveTests`, `StormLiveTests`, `RelayLiveTests`, `LivePlayers`). Registered only when `GameTestHooks.isGametestEnabled()` (the game test server, dev runs); a production server registers nothing. See [Game tests](#game-tests) |
 | `com.mnemolith.network` | both | Lens request, pressure snapshot, and the catalog-open payload. Client handlers are registered from `MnemolithClient` |
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
