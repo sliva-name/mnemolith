@@ -49,6 +49,17 @@ public final class MultiplayerSmoke {
         CommandSourceStack source = context.getSource();
         ServerLevel level = source.getLevel();
         BlockPos pos = BlockPos.containing(source.getPosition()).offset(96, 0, 0);
+        // Entity-ticking for the whole smoke: the replicant cap counts replicants with an entity query, and a chunk
+        // with no player near it hides them, so a second one would slip past the cap.
+        tickColumn(level, pos);
+        try {
+            return smoke(source, level, pos);
+        } finally {
+            releaseColumn(level, net.minecraft.world.level.ChunkPos.containing(pos));
+        }
+    }
+
+    private static int smoke(CommandSourceStack source, ServerLevel level, BlockPos pos) {
         FakePlayer first = fake(level, "MnemolithA", UUID.fromString("11111111-1111-1111-1111-111111111111"));
         FakePlayer second = fake(level, "MnemolithB", UUID.fromString("22222222-2222-2222-2222-222222222222"));
         first.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);

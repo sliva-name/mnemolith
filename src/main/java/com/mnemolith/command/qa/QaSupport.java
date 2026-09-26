@@ -99,6 +99,10 @@ public final class QaSupport {
     static BlockPos column(ServerLevel level, int chunkX, int chunkZ) {
         int x = (chunkX << 4) + 8;
         int z = (chunkZ << 4) + 8;
+        // Load the chunk first: the heightmap of a chunk that is not loaded reads as the bottom of the world, and the
+        // sea-level fallback below then puts the site wherever sea level happens to be (inside a hill, or under a
+        // superflat world's floor).
+        level.getChunk(chunkX, chunkZ);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         if (y <= level.getMinY()) {
             y = level.getSeaLevel();
