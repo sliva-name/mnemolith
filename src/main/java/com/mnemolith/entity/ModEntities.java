@@ -14,7 +14,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The three memory mobs, plus the echo body and the shell left behind while a player possesses it. The Scar stays unregistered. */
+/** The three memory mobs, plus the echo body, the shell left behind while a player possesses it, and residual echoes. The Scar stays unregistered. */
 public final class ModEntities {
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Mnemolith.MOD_ID);
 
@@ -44,6 +44,12 @@ public final class ModEntities {
             EchoShell::create,
             MobCategory.MISC,
             builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(10).updateInterval(2).noLootTable());
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.ResidueEntity>> RESIDUE = ENTITY_TYPES.registerEntityType(
+            "residue",
+            com.mnemolith.entity.echo.ResidueEntity::new,
+            MobCategory.MISC,
+            builder -> builder.sized(0.6F, 1.6F).eyeHeight(1.3F).clientTrackingRange(10).noLootTable().fireImmune());
 
     private ModEntities() {}
 

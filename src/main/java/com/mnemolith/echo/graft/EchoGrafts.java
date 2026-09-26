@@ -192,6 +192,9 @@ public final class EchoGrafts {
         String result;
         if (!worthReturning(graft)) {
             result = "spent";
+        } else if (com.mnemolith.echo.residue.Residues.condenseGraft(level, graft, pos)) {
+            // An overloaded chunk has no room to take it quietly: it condenses into a residual echo.
+            result = "residue";
         } else if (ImprintWriter.write(level, pos, List.of(graft.cast().tag()), owner, false)) {
             result = "chunk";
         } else {
@@ -202,6 +205,87 @@ public final class EchoGrafts {
         }
         Mnemolith.LOGGER.info("Mnemolith graft released temper={} why={} charge={} -> {} at {}", graft.temper(), why, graft.charge(), result, pos.toShortString());
         return result;
+    }
+
+    // ---- residual echoes ----
+
+    /**
+     * Right-click with a residual shard on your own echo: the shard's memory takes as a graft worth up to two slips
+     * (full from strength 4). Same temper tops the graft up; another temper replaces it (the old graft is released).
+     */
+    public static boolean graftShard(ServerPlayer player, EchoEntity echo, ItemStack shard) {
+        ServerLevel level = (ServerLevel) echo.level();
+        ImprintCast cast = shard.get(ModDataComponents.IMPRINT_CAST.get());
+        if (cast == null) {
+            return false;
+        }
+        if (!enabled()) {
+            player.sendSystemMessage(Component.translatable("mnemolith.graft.disabled"), true);
+            return false;
+        }
+        Temper temper = Temper.of(cast.tag());
+        if (temper == null) {
+            player.sendSystemMessage(Component.translatable("mnemolith.graft.faint", Component.translatable(cast.tag().translationKey())), true);
+            return false;
+        }
+        int cap = capacity(temper);
+        int charge = com.mnemolith.echo.residue.Residues.shardCharge(temper, cast.intensity());
+        EchoGraft current = echo.graft();
+        if (current != null && current.temper() == temper) {
+            if (current.charge() >= cap) {
+                player.sendSystemMessage(Component.translatable("mnemolith.graft.full", Component.translatable(temper.key())), true);
+                return false;
+            }
+            echo.setGraft(current.withCharge(Math.min(cap, current.charge() + charge)));
+        } else {
+            if (current != null) {
+                release(level, echo, echo.blockPosition(), "replaced");
+            }
+            echo.setGraft(new EchoGraft(cast, charge));
+        }
+        int now = echo.graft() == null ? 0 : echo.graft().charge();
+        player.sendSystemMessage(Component.translatable("mnemolith.graft.shard", Component.translatable(temper.key()), now, cap), true);
+        shard.consume(1, player);
+        level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 0.5F);
+        burst(level, echo, temper, 28);
+        Mnemolith.LOGGER.info("Mnemolith graft from shard owner={} temper={} charge={}", echo.ownerName(), temper, now);
+        return true;
+    }
+
+    /** A residue feeds {@code amount} charges into an echo that already carries its temper. False when it is full. */
+    public static boolean topUp(EchoEntity echo, int amount) {
+        EchoGraft graft = echo.graft();
+        if (graft == null || amount <= 0) {
+            return false;
+        }
+        int cap = capacity(graft.temper());
+        if (graft.charge() >= cap) {
+            return false;
+        }
+        echo.setGraft(graft.withCharge(Math.min(cap, graft.charge() + amount)));
+        return true;
+    }
+
+    /**
+     * A possessed body absorbs a residue: {@code cast} becomes the body's graft with {@code charge} charges (capped).
+     * A graft the body had before is released at the player's feet.
+     */
+    public static boolean absorbIntoPossessed(ServerPlayer player, ImprintCast cast, int charge) {
+        Temper temper = Temper.of(cast.tag());
+        if (!enabled() || temper == null || !EchoPossession.isPossessing(player)) {
+            return false;
+        }
+        EchoGraft before = possessedGraft(player);
+        int cap = capacity(temper);
+        if (before != null && before.temper() == temper) {
+            setPossessedGraft(player, before.withCharge(Math.min(cap, before.charge() + charge)));
+            return true;
+        }
+        if (before != null && player.level() instanceof ServerLevel level) {
+            releaseGraft(level, before, player.getUUID(), player.blockPosition(), "absorbed");
+        }
+        setPossessedGraft(player, new EchoGraft(cast, Math.min(cap, charge)));
+        return true;
     }
 
     /** Spends {@code amount} charges of {@code echo}'s graft; an empty graft is gone and the owner is told. */

@@ -4,6 +4,28 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
+## 0. Status (updated with residual echoes)
+
+| System | Status | Where |
+| --- | --- | --- |
+| Memory grafts | Implemented, draft PR #22 (`feature/echo-grafts`), not merged | `echo.graft`, `graftqa` 12/12, [echo-design.md](../echo-design.md) §12 |
+| Residual echoes | Implemented on `feature/residual-echoes`, stacked on #22 (draft PR, retargets to `main` after #22 merges) | `echo.residue`, `ResidueEntity`, `residual_shard`, `residueqa` 18/18, §13 |
+| Gametest harness | Next | — |
+| Recollection storm and the Scar | After the harness | — |
+| Echo relay, archive vault | Later | — |
+| 32x art pass | Its own run | — |
+
+Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
+chunk's own loudest memory condensed into a drifting fragment. That keeps ownership and protection simple (no
+foreign fake player acting in your world), costs no save space for recordings, and ties the system to pressure,
+grafts, the lens, the needle, mute stones, archivists, possession and observatories. The "stranger recording" idea is
+parked, not dropped: a residue could later carry a short replay once the gametest harness can cover replays.
+
+What residual echoes fixed from §2: weakness 3 (pressure is now also an opportunity: an overloaded chunk yields
+residues, a festering residue is a slip farm), weakness 4 (every observatory holds an old residue worth a full graft),
+weakness 5 in part (the lens gets a second active use, reading; the needle gets a new target), and weakness 1 again
+(echoes drink residues, possessed bodies absorb them).
+
 ## 1. The core loop today
 
 Two loops share one world.
@@ -66,7 +88,7 @@ for as long as it lasts.
 - *Scope:* medium. One new server class set, hooks in existing job/threat/possession code, entity data, UI line,
   renderer tint and particles, guide pages, docs, a QA suite.
 
-### 2. Residual echoes (world echoes to find and capture)
+### 2. Residual echoes (world echoes to find and capture) — implemented, re-scoped (see §0)
 
 A chunk that reaches fracture, and some observatory ruins, carry a **residue**: a stranger's echo that replays the
 last minutes of whoever lived there. Record it with an echo slip while it plays and you get a recording you could not
@@ -87,6 +109,11 @@ chest. A relay line through a muted corridor becomes a quiet logistics chain; a 
 - *Items:* **Relay thread** (string + echo slip + copper): linking tool. *Scope:* medium.
 
 ### 4. Recollection storm and the Scar
+
+With residual echoes in place a storm has a natural body: a fractured chunk condenses every graftable imprint at
+once into residues that act out together, and the Scar is what is left when they merge. Lens reading, mute stones,
+hush grafts and shard grafts become the defensive kit.
+
 
 Fracture currently only logs and may call one replicant. A storm would replay a fractured chunk's imprints as
 hostile echoes for a short time and can end with the Scar (the boss the architecture doc reserves). Mute stones,
@@ -113,9 +140,11 @@ Move the checks behind `/mnemolith qa|echoqa|jobqa|echo3qa|graftqa` into NeoForg
 
 ## 4. Order
 
-1. Memory grafts (this run).
-2. Residual echoes: the best next step for exploration and for echoes as a world phenomenon rather than a tool.
-3. Gametest harness, before the storm work, because storms touch many systems at once.
+1. Memory grafts (done, PR #22).
+2. Residual echoes (done, stacked PR on #22).
+3. Gametest harness, before the storm work, because storms touch many systems at once. Six QA suites now exist
+   (`qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`); moving them into game tests lets CI catch what only
+   a dedicated boot catches today.
 4. Recollection storm and the Scar.
 5. Echo relay and archive vault, depending on how players use grafts.
 6. The 32x art pass as its own run, once the item list is stable enough that nothing is drawn twice.

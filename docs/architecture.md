@@ -23,9 +23,10 @@ Later content, not built yet:
 | `com.mnemolith.pressure` | both | `MemoryPressure` and `PressureBand` |
 | `com.mnemolith.entity` | both | Effects, entity types, attributes, spawn gates, `MemoryMob` |
 | `com.mnemolith.entity.mob` | both | Echo strider, archivist, moment replicant |
-| `com.mnemolith.entity.echo` | both | Echo and shell entities (`MemoryAvatar`, `EchoEntity`, `EchoShell`) and the echo's 41-slot inventory |
+| `com.mnemolith.entity.echo` | both | Echo and shell entities (`MemoryAvatar`, `EchoEntity`, `EchoShell`), the echo's 41-slot inventory, and the residual echo (`ResidueEntity`: state, timers, drift; rules in `echo.residue`) |
 | `com.mnemolith.echo` | both | Echo recording format, recorder, replay hands (owner fake player), echo registry, possession swap and its player attachment. See [echo-design.md](echo-design.md) |
 | `com.mnemolith.echo.graft` | both | Memory grafts: `Temper` (5 tempers from imprint tags), `EchoGraft` (slip + charge, codec), `EchoGrafts` (every graft rule; echo, job, possession and mob code only call it). See [echo-design.md](echo-design.md) §12 |
+| `com.mnemolith.echo.residue` | both | Residual echoes: `Residues` holds every rule (condense, fester, lash, lens reading, needle capture, shard graft and release, possession absorb, observatory seeding, act-out). See [echo-design.md](echo-design.md) §13 |
 | `com.mnemolith.echo.job` | both | Echo job: saved settings and a thin `tick` on `EchoJob`; mine, build, and farm controllers; shared path/dig (`JobMotion`) and chest I/O (`JobChest`) |
 | `com.mnemolith.client.echo` | physical client | Echo renderer, client echo/shell subclasses, lens thermal view, targeting, HUD hints, return key, echo inventory screen |
 | `com.mnemolith.entity.ai` | both | Path ledger, the replicant's action window, and the three mobs' goals |
@@ -37,7 +38,7 @@ Later content, not built yet:
 | `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
 | `com.mnemolith.event` | both | Vanilla listeners. `/mnemolith` is registered here and implemented in `command` |
 | `com.mnemolith.command` | both | `/mnemolith` subcommands. Not loaded as client screens |
-| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa` checklists |
+| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa` checklists |
 | `com.mnemolith.network` | both | Lens request, pressure snapshot, and the catalog-open payload. Client handlers are registered from `MnemolithClient` |
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
 | `com.mnemolith.data` | both | Data component register |

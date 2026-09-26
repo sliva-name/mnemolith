@@ -209,6 +209,10 @@ public final class GraftQa {
                     + " floorKept=" + level.getBlockState(floor).is(Blocks.STONE));
             discard(pig);
 
+            // The burst, the deaths and the released grafts all wrote into chunk A; a fracture there would reject the
+            // next grafts on its own (that rule has its own check below), so start the next checks from a quiet chunk.
+            LoadedChunkMemory.clear(level.getChunkAt(a));
+
             // ---------- plunging: a long drop without damage, one charge ----------
             EchoGrafts.graft(owner, echo, slip(ImprintTag.FALL, a, 1));
             int plungeStart = echo.graftCharge();
@@ -227,6 +231,7 @@ public final class GraftQa {
                     + " maxDrop=" + EchoGrafts.maxDrop(echo));
 
             // ---------- grave: a decoy that draws a husk and stands its ground ----------
+            LoadedChunkMemory.clear(level.getChunkAt(a));
             EchoGrafts.graft(owner, echo, slip(ImprintTag.DEATH, a, 1));
             place(echo, a);
             owner.snapTo(Vec3.atBottomCenterOf(a.offset(0, 0, 40)));
@@ -253,9 +258,13 @@ public final class GraftQa {
             LoadedChunkMemory.clear(level.getChunkAt(b));
             int fractured = ImprintWriter.spike(level, b, 85);
             EchoGrafts.checkFracture(level, echo);
-            boolean backInWorld = hasTag(level, b, ImprintTag.DEATH) || slipDropped(level, b, ImprintTag.DEATH);
+            // Residual echoes: a fractured chunk has no room for it, so the graft condenses into a residue there.
+            List<com.mnemolith.entity.echo.ResidueEntity> condensed = level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class,
+                    new net.minecraft.world.phys.AABB(b).inflate(6.0D), r -> r.tag() == ImprintTag.DEATH);
+            boolean backInWorld = !condensed.isEmpty() || hasTag(level, b, ImprintTag.DEATH) || slipDropped(level, b, ImprintTag.DEATH);
+            condensed.forEach(Entity::discard);
             fracture = MemoryPressure.band(fractured) == PressureBand.FRACTURE && echo.graft() == null && backInWorld;
-            notes.add("fracture pressure=" + fractured + " graftGone=" + (echo.graft() == null) + " backInWorld=" + backInWorld);
+            notes.add("fracture pressure=" + fractured + " graftGone=" + (echo.graft() == null) + " backInWorld=" + backInWorld + " residue=" + !condensed.isEmpty());
             QaSupport.discardReplicants(level, b);
             LoadedChunkMemory.clear(level.getChunkAt(b));
             clearDrops(level, b);
@@ -315,6 +324,7 @@ public final class GraftQa {
             cleanup(level, owner, a);
             for (BlockPos p : List.of(a, b)) {
                 QaSupport.discardReplicants(level, p);
+                QaSupport.discardResidues(level, p);
                 LoadedChunkMemory.clear(level.getChunkAt(p));
                 releaseColumn(level, ChunkPos.containing(p));
             }

@@ -80,3 +80,21 @@ One imprint slip grafted into an echo gives charges; a graft holds two slips' wo
 | Volatile (explosion) | 48 | one dug block at ×0.55 time | ~48 blocks of fast digging, then explosion residue (weight 8) per work imprint |
 
 Why these numbers: silence is the cheapest slip to get (a mute stone writes one) and the strongest effect (it hides pressure), so it gets the fewest charges. Death and fall slips need a real risk. Fire is common in the Nether, but ingots are a real economy, so one slip is capped at 32. Explosion slips are rarest and their residue is a cost of its own, so they get the most charges. A worn graft (under half a slip) is gone when it leaves the echo, so topping up is the way to keep one.
+
+## Residual echoes
+
+| Number | Default | Why |
+| --- | --- | --- |
+| Condense chance per 10 s, overloaded / fracture | 0.2 / 0.5 | about one residue per minute of standing in an overloaded chunk, faster in a fracture; slow enough that the relief is not free |
+| Fester period | 60 s | one imprint back per minute: a festering residue refills an overloaded chunk in a few minutes, and gives a slip farm about one slip a minute |
+| Strength | 2–6 (imprint intensity; old residues 5) | one fester step each: a strength-4 residue lasts 4 minutes under a mute stone or in a calm chunk |
+| Echo drinking | half a slip per fester | a strength-4 residue is worth two slips to a matching echo, the same as a shard graft, but slowly |
+| Shard graft | capacity × min(4, max(2, strength)) / 4 | full two slips from strength 4; a weak residue is not better than a slip |
+| Needle wear on capture | 2 × extraction cost (4) | capturing is stronger than extracting, so it costs more |
+| Lash | radius 3 (1.5 sneaking), every 5 s | a warning, not a killer: 3 magic damage + 3 s wither is the worst |
+| Reading | 60 ticks within 16 blocks, cone 0.98 | long enough that you must commit and stand still; pinned for 200 ticks, enough to walk up with the needle |
+| Nearby cap | 3 within 48 blocks | a loud base cannot turn into a swarm |
+| Act-out zombies | at most 2 within 12 blocks | fracture reshapes the chunk without flooding it |
+
+Why: condensing takes the loudest graftable imprint out, so a residue is relief now and a cost later. The player chooses the cost: starve it (mute stone, calm), spend it (capture, feed, absorb), or farm it (let it fester beside a needle).
+
