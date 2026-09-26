@@ -8,6 +8,7 @@ import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModBlocks;
 import com.mnemolith.entity.ModEffects;
+import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
@@ -52,6 +53,10 @@ public final class ImprintEvents {
     @SubscribeEvent
     public static void onDeath(LivingDeathEvent event) {
         if (event.isCanceled() || !(event.getEntity().level() instanceof ServerLevel level)) {
+            return;
+        }
+        // An echo body's death is written once, by EchoLife.onEchoBodyDied (DEATH plus the configured spike).
+        if (event.getEntity() instanceof EchoEntity) {
             return;
         }
         BlockPos pos = event.getEntity().blockPosition();
