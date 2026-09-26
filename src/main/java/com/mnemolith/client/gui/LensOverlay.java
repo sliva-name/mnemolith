@@ -92,10 +92,10 @@ public final class LensOverlay {
     }
 
     private static int cacheKey(ChunkPressure here, boolean sneak, boolean numeric) {
-        int pressure = here == null ? -1 : here.pressure();
-        int band = here == null ? -1 : here.band();
-        int state = here == null ? -1 : here.state();
-        return (pressure * 17) ^ (band * 31) ^ (state * 13) ^ (sneak ? 1 : 0) ^ (numeric ? 2 : 0);
+        if (here == null) {
+            return (sneak ? 1 : 0) ^ (numeric ? 2 : 0);
+        }
+        return java.util.Objects.hash(here.chunkX(), here.chunkZ(), here.pressure(), here.band(), here.state(), sneak, numeric);
     }
 
     private static Component line(ChunkPressure here) {

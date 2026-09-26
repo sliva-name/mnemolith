@@ -283,6 +283,10 @@ public final class Storms {
      * and nothing left to condense is spent; after the last wave three or more standing merge into the Scar.
      */
     public static void wave(ServerLevel level, StormData data, RecollectionStorm storm) {
+        if (storm.wavesLeft() <= 0) {
+            resolve(level, storm, living(level, storm));
+            return;
+        }
         BlockPos middle = surface(level, storm);
         boolean choked = LoadedChunkMemory.isMuted(level, middle);
         storm.spendWaves(choked ? 2 : 1);
@@ -312,14 +316,27 @@ public final class Storms {
                 storm.id(), storm.wavesLeft(), condensed, acted, held, starved, fed, hushed, choked, living.size());
         data.setDirty();
         updateBar(level, storm);
-        if (living.isEmpty() && condensed == 0) {
+        if (storm.wavesLeft() <= 0) {
+            resolve(level, storm, living);
+        } else if (living.isEmpty() && condensed == 0 && storm.residues().size() == living.size()) {
             finish(level, storm, End.SPENT);
-        } else if (storm.wavesLeft() <= 0) {
-            if (living.size() >= SCAR_MERGE) {
-                merge(level, storm, living);
-            } else {
-                finish(level, storm, End.PASSED);
-            }
+        }
+    }
+
+    /**
+     * Ends a storm whose waves are done. Residues whose chunks are not loaded stay on the list and keep the storm
+     * open until they can be counted; a loaded miss is dropped by {@link #living}.
+     */
+    private static void resolve(ServerLevel level, RecollectionStorm storm, List<ResidueEntity> living) {
+        if (storm.residues().size() > living.size()) {
+            return;
+        }
+        if (living.size() >= SCAR_MERGE) {
+            merge(level, storm, living);
+        } else if (living.isEmpty()) {
+            finish(level, storm, End.SPENT);
+        } else {
+            finish(level, storm, End.PASSED);
         }
     }
 
@@ -359,33 +376,50 @@ public final class Storms {
             if (made >= room) {
                 break;
             }
-            if (!candidate.memory().removeImprint(candidate.imprint())) {
+            Imprint imprint = candidate.imprint();
+            ResidueEntity residue = Residues.spawn(level, Residues.airAbove(level, imprint.origin()), imprint.tag(), Residues.strengthOf(imprint.intensity()), false);
+            if (residue == null || !candidate.memory().removeImprint(imprint)) {
+                if (residue != null) {
+                    residue.discard();
+                }
                 continue;
             }
             MemoryPressure.recompute(candidate.chunk(), candidate.memory());
-            Imprint imprint = candidate.imprint();
-            ResidueEntity residue = Residues.spawn(level, Residues.airAbove(level, imprint.origin()), imprint.tag(), Residues.strengthOf(imprint.intensity()), false);
-            if (residue != null) {
-                adopt(storm, residue);
-                made++;
-            }
+            adopt(storm, residue);
+            made++;
         }
         return made;
     }
 
-    /** The storm's residues that are still alive and loaded; the rest drop out of the storm's list. */
+    /**
+     * Storm residues that are alive and loaded. A miss is removed only when every chunk of the storm is loaded, so an
+     * unloaded residue stays on the list until its chunk comes back.
+     */
     public static List<ResidueEntity> living(ServerLevel level, RecollectionStorm storm) {
         List<ResidueEntity> living = new ArrayList<>();
+        boolean areaLoaded = areaLoaded(level, storm);
         Iterator<UUID> ids = storm.residues().iterator();
         while (ids.hasNext()) {
             Entity entity = level.getEntity(ids.next());
             if (entity instanceof ResidueEntity residue && residue.isAlive() && residue.storm() == storm.id()) {
                 living.add(residue);
-            } else {
+            } else if (entity != null || areaLoaded) {
                 ids.remove();
             }
         }
         return living;
+    }
+
+    private static boolean areaLoaded(ServerLevel level, RecollectionStorm storm) {
+        ChunkPos center = storm.center();
+        for (int dx = -AREA; dx <= AREA; dx++) {
+            for (int dz = -AREA; dz <= AREA; dz++) {
+                if (!level.getChunkSource().hasChunk(center.x() + dx, center.z() + dz)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** Three or more storm residues after the last wave: they merge into the Scar, and the centre becomes a Scar site. */

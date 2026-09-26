@@ -299,6 +299,11 @@ final class JobMotion {
         if (state.isAir() || !level.isLoaded(pos)) {
             level.destroyBlockProgress(echo.getId(), pos, -1);
             this.digPos = null;
+            if (this.digFor == DigFor.TARGET) {
+                this.job.mine.target = null;
+                this.phase = Phase.SELECT;
+                return;
+            }
             this.afterDig(level, echo, pos, false);
             return;
         }
@@ -311,10 +316,11 @@ final class JobMotion {
             return;
         }
         if (this.digFor == DigFor.TARGET && this.job.strain.misfire(echo)) {
-            if (this.job.strain.misfires++ % 2 == 1 && this.job.mine.breakExtra(level, echo, pos)) {
+            int roll = this.job.strain.misfires++;
+            if (roll % 2 == 1 && this.job.mine.breakExtra(level, echo, pos)) {
                 this.job.strain.misfireNotice(echo, "extra", pos);
-            } else {
-                // Fumbled: the dig starts over.
+            } else if (roll % 2 == 0) {
+                // Fumbled: the dig starts over. A failed extra break still finishes this block.
                 this.digTicks = 0;
                 this.job.strain.misfireNotice(echo, "skip", pos);
                 return;

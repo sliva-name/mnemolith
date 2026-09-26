@@ -22,6 +22,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.IMPRINT_SLIP.get());
                 output.accept(ModItems.ECHO_SLIP.get());
+                output.accept(ModItems.ECHO_RECORDING.get());
                 output.accept(ModItems.ECHO_CHORUS_SLIP.get());
                 output.accept(ModItems.ECHO_LONG_SLIP.get());
                 output.accept(ModItems.ECHO_STURDY_SLIP.get());

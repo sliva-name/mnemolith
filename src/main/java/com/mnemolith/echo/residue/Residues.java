@@ -142,14 +142,15 @@ public final class Residues {
         if (loudest == null || !roomFor(level, chunk.getPos(), loudest.origin())) {
             return null;
         }
-        memory.removeImprint(loudest);
-        MemoryPressure.recompute(chunk, memory);
         BlockPos at = airAbove(level, loudest.origin());
         ResidueEntity residue = spawn(level, at, loudest.tag(), strengthOf(loudest.intensity()), false);
-        if (residue != null) {
-            Mnemolith.LOGGER.info("Mnemolith residue condensed tag={} strength={} at {} pressure={}", loudest.tag().getSerializedName(),
-                    residue.strength(), at.toShortString(), memory.cachedPressure());
+        if (residue == null) {
+            return null;
         }
+        memory.removeImprint(loudest);
+        MemoryPressure.recompute(chunk, memory);
+        Mnemolith.LOGGER.info("Mnemolith residue condensed tag={} strength={} at {} pressure={}", loudest.tag().getSerializedName(),
+                residue.strength(), at.toShortString(), memory.cachedPressure());
         return residue;
     }
 
@@ -201,8 +202,6 @@ public final class Residues {
 
     /** An observatory chunk holds one old residue near its reel: strength 5, and it does not fade in a calm chunk. */
     private static @Nullable ResidueEntity seedObservatory(ServerLevel level, LevelChunk chunk, ChunkMemory memory) {
-        memory.setResidueSeeded(true);
-        chunk.markUnsaved();
         BlockPos reel = findReel(level, chunk);
         BlockPos at;
         if (reel != null) {
@@ -216,6 +215,11 @@ public final class Residues {
         Temper[] tempers = Temper.values();
         ImprintTag tag = tempers[level.getRandom().nextInt(tempers.length)].tag();
         ResidueEntity residue = spawn(level, at, tag, OLD_STRENGTH, true);
+        if (residue == null) {
+            return null;
+        }
+        memory.setResidueSeeded(true);
+        chunk.markUnsaved();
         Mnemolith.LOGGER.info("Mnemolith residue seeded observatory tag={} at {}", tag.getSerializedName(), at.toShortString());
         return residue;
     }

@@ -1,5 +1,6 @@
 package com.mnemolith.content.menu;
 
+import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.content.ModMenus;
 import com.mnemolith.content.composition.ComposeResult;
@@ -24,11 +25,12 @@ public class CompositionMenu extends AbstractContainerMenu {
     public static final int DATA_STATUS = 0;
     public static final int DATA_FORMULA = 1;
     public static final int DATA_DISCOVERED = 2;
+    public static final int DATA_HINTS = 3;
 
     private final Container container;
     private final BlockPos blockPos;
     private final boolean boundToBlock;
-    private final SimpleContainerData data = new SimpleContainerData(3);
+    private final SimpleContainerData data = new SimpleContainerData(4);
 
     public CompositionMenu(int containerId, Inventory inventory, Container container) {
         super(ModMenus.COMPOSITION.get(), containerId);
@@ -42,12 +44,14 @@ public class CompositionMenu extends AbstractContainerMenu {
         }
         checkContainerSize(container, ImprintConstants.COMPOSITION_SLOTS);
         for (int slot = 0; slot < ImprintConstants.COMPOSITION_SLOTS; slot++) {
-            this.addSlot(new SlipSlot(container, slot, 62 + slot * 18, 30));
+            this.addSlot(new SlipSlot(container, slot, 71 + slot * 18, 30));
         }
         this.addStandardInventorySlots(inventory, 8, 148);
         this.addDataSlots(this.data);
         this.data.set(DATA_FORMULA, -1);
+        this.data.set(DATA_HINTS, 1);
         if (inventory.player instanceof ServerPlayer serverPlayer) {
+            this.data.set(DATA_HINTS, CommonConfig.DISCOVERY_HINTS.get() ? 1 : 0);
             this.publishDiscovery(serverPlayer);
         }
     }
@@ -62,6 +66,11 @@ public class CompositionMenu extends AbstractContainerMenu {
 
     public int discoveredFormulas() {
         return this.data.get(DATA_DISCOVERED);
+    }
+
+    /** Server's {@code gameplay.discoveryHints}. The client's common config is not synced. */
+    public boolean discoveryHints() {
+        return this.data.get(DATA_HINTS) != 0;
     }
 
     @Override

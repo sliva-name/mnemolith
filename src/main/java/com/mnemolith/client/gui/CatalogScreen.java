@@ -1,6 +1,5 @@
 package com.mnemolith.client.gui;
 
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.composition.CompositionFormula;
 import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ImprintTag;
@@ -21,11 +20,13 @@ public class CatalogScreen extends Screen {
 
     private int tags;
     private int formulas;
+    private final boolean hints;
 
-    public CatalogScreen(int tags, int formulas) {
+    public CatalogScreen(int tags, int formulas, boolean hints) {
         super(Component.translatable("mnemolith.gui.catalog"));
         this.tags = tags;
         this.formulas = formulas;
+        this.hints = hints;
     }
 
     @Override
@@ -93,7 +94,7 @@ public class CatalogScreen extends Screen {
         if (written == 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_no_formula"), left + 10, formulaY + 14, GuiArt.BONE);
         }
-        if (CommonConfig.DISCOVERY_HINTS.get()) {
+        if (this.hints) {
             int unread = Discovery.FORMULA_COUNT - Integer.bitCount(this.formulas & ((1 << Discovery.FORMULA_COUNT) - 1));
             if (unread > 0) {
                 GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_remaining", unread), left + 10, top + PANEL_HEIGHT - 40, GuiArt.VERDIGRIS);

@@ -160,13 +160,14 @@ public final class ScarSites {
             merged.add(Temper.GRAVE);
         }
         Temper temper = merged.get(level.getRandom().nextInt(merged.size()));
+        ResidueEntity residue = Residues.spawn(level, at, temper.tag(), Residues.OLD_STRENGTH, true);
+        if (residue == null) {
+            return null;
+        }
         memory.setScar(site.withSeededAt(level.getGameTime()));
         chunk.markUnsaved();
-        ResidueEntity residue = Residues.spawn(level, at, temper.tag(), Residues.OLD_STRENGTH, true);
-        if (residue != null) {
-            level.sendParticles(EchoGrafts.particle(temper), at.getX() + 0.5D, at.getY() + 0.5D, at.getZ() + 0.5D, 20, 0.5D, 0.5D, 0.5D, 0.02D);
-            Mnemolith.LOGGER.info("Mnemolith scar site seeded tag={} at {}", temper.tag().getSerializedName(), at.toShortString());
-        }
+        level.sendParticles(EchoGrafts.particle(temper), at.getX() + 0.5D, at.getY() + 0.5D, at.getZ() + 0.5D, 20, 0.5D, 0.5D, 0.5D, 0.02D);
+        Mnemolith.LOGGER.info("Mnemolith scar site seeded tag={} at {}", temper.tag().getSerializedName(), at.toShortString());
         return residue;
     }
 

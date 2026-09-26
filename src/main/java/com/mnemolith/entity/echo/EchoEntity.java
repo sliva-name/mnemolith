@@ -279,7 +279,7 @@ public class EchoEntity extends MemoryAvatar {
     @Override
     public void tick() {
         if (this.level() instanceof ServerLevel level) {
-            if ((this.tickCount % 40 == 1) && !EchoRegistry.get(level.getServer()).isCurrent(this.ownerId(), this.getUUID(), this.generation)) {
+            if ((this.tickCount == 0 || this.tickCount % 40 == 1) && !EchoRegistry.get(level.getServer()).isCurrent(this.ownerId(), this.getUUID(), this.generation)) {
                 Mnemolith.LOGGER.warn("Mnemolith echo stale copy removed id={} owner={} generation={}", this.getUUID(), this.ownerName(), this.generation);
                 this.discardSilently();
                 return;

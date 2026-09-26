@@ -1,6 +1,5 @@
 package com.mnemolith.client.gui;
 
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.composition.ComposeResult;
 import com.mnemolith.content.composition.CompositionFormula;
 import com.mnemolith.content.menu.CompositionMenu;
@@ -73,7 +72,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
 
     private void drawSilhouettes(GuiGraphicsExtractor graphics) {
         int mask = this.menu.discoveredFormulas();
-        boolean hints = CommonConfig.DISCOVERY_HINTS.get();
+        boolean hints = this.menu.discoveryHints();
         int known = Integer.bitCount(mask & ((1 << Discovery.FORMULA_COUNT) - 1));
         if (!hints && known == 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, 100, GuiArt.BONE);

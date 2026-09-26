@@ -313,7 +313,6 @@ final class BuildController {
                 this.job.strain.misfired.put(pos.asLong(), level.getBlockState(pos));
                 return true;
             }
-            return false;
         }
         return false;
     }

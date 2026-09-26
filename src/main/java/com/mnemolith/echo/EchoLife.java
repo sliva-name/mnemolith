@@ -71,6 +71,14 @@ public final class EchoLife {
         if (check == SpawnResult.SPAWNED && EchoRegistry.get(player.level().getServer()).count(player.getUUID()) >= EchoProgress.echoLimit(player)) {
             check = SpawnResult.LIMIT;
         }
+        if (check == SpawnResult.LIMIT) {
+            int limit = EchoProgress.echoLimit(player);
+            String key = limit < CommonConfig.ECHO_MAX_PER_PLAYER_CAP.get()
+                    ? "mnemolith.echo.activate_limit_chorus"
+                    : "mnemolith.echo.activate_limit";
+            player.sendSystemMessage(Component.translatable(key, limit), true);
+            return check;
+        }
         if (check != SpawnResult.SPAWNED) {
             player.sendSystemMessage(Component.translatable("mnemolith.echo.activate_" + check.name().toLowerCase(java.util.Locale.ROOT)), true);
             return check;

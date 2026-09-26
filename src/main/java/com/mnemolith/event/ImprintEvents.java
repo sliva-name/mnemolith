@@ -67,9 +67,7 @@ public final class ImprintEvents {
         if (event.getSource().is(DamageTypeTags.IS_FIRE)) {
             tags.add(ImprintTag.FIRE);
         }
-        if (event.getSource().is(DamageTypeTags.IS_EXPLOSION) && CommonConfig.WRITE_EXPLOSION.get()) {
-            tags.add(ImprintTag.EXPLOSION);
-        }
+        // ExplosionEvent.Detonate writes the blast. A second copy here would count the same creeper twice.
         if (event.getEntity() instanceof Player || event.getSource().getEntity() instanceof Player) {
             tags.add(ImprintTag.PLAYER);
         }

@@ -125,17 +125,37 @@ final class FarmController {
             BlockState state = level.getBlockState(cursor);
             if (state.getBlock() instanceof CropBlock) {
                 this.fieldSize++;
-                if (this.taught.knows(state.getBlock()) && FarmLesson.isMature(state) && this.farmTasks.size() < JobLimits.CANDIDATE_CAP) {
-                    this.farmTasks.add(cursor.immutable());
+                if (this.taught.knows(state.getBlock()) && FarmLesson.isMature(state)) {
+                    this.rememberFarmTask(level, cursor.immutable(), true);
                 }
             } else if (state.is(Blocks.FARMLAND)) {
                 this.fieldSize++;
-                if (level.getBlockState(cursor.above()).isAir() && this.farmTasks.size() < JobLimits.CANDIDATE_CAP) {
-                    this.farmTasks.add(cursor.above().immutable());
+                if (level.getBlockState(cursor.above()).isAir()) {
+                    this.rememberFarmTask(level, cursor.above().immutable(), false);
                 }
             }
         }
         return this.farmScanIndex >= total;
+    }
+
+    /**
+     * Keeps at most {@link JobLimits#CANDIDATE_CAP} tasks. A mature crop replaces an empty plot when the list is full,
+     * so a large unseeded field still harvests instead of filling the cap with air.
+     */
+    private void rememberFarmTask(ServerLevel level, BlockPos pos, boolean harvest) {
+        if (this.farmTasks.size() < JobLimits.CANDIDATE_CAP) {
+            this.farmTasks.add(pos);
+            return;
+        }
+        if (!harvest) {
+            return;
+        }
+        for (int i = 0; i < this.farmTasks.size(); i++) {
+            if (level.getBlockState(this.farmTasks.get(i)).isAir()) {
+                this.farmTasks.set(i, pos);
+                return;
+            }
+        }
     }
 
     /** A harvest (mature taught crop) or a planting spot (air over farmland, and the echo carries a taught seed). */

@@ -197,7 +197,7 @@ public final class CommonConfig {
         SpecValues.section(builder, "echo", "Echoes: self-recordings that replay as a helper body you can possess.");
         ECHOES_ENABLED = SpecValues.bool(builder, "echoesEnabled", "Whether echo slips record, recordings spawn echoes, and the lens can possess an echo.", true);
         ECHO_RECORD_SECONDS = SpecValues.integer(builder, "echoRecordSeconds", "Length, in seconds, of one self-recording.", 25, 5, 60);
-        ECHO_MAX_PER_PLAYER = SpecValues.integer(builder, "echoMaxPerPlayer", "Echoes one player may own at once. Stage 1 is tuned for 1.", 1, 1, 4);
+        ECHO_MAX_PER_PLAYER = SpecValues.integer(builder, "echoMaxPerPlayer", "Echoes one player may own before any chorus slip. Two, so a relay thread has both ends.", 2, 1, 4);
         ECHO_ACTIVATE_RANGE = SpecValues.integer(builder, "echoActivateRange", "Furthest distance, in blocks, from the recording's start at which a recording can be activated.", 48, 8, 256);
         ECHO_POSSESS_RANGE = SpecValues.integer(builder, "echoPossessRange", "Furthest distance, in blocks, at which the lens can possess your echo.", 32, 4, 64);
         ECHO_MAX_HEALTH = SpecValues.decimal(builder, "echoMaxHealth", "Maximum health of an echo body.", 20.0D, 1.0D, 100.0D);

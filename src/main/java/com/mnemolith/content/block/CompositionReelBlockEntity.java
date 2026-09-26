@@ -1,12 +1,14 @@
 package com.mnemolith.content.block;
 
 import com.mnemolith.content.ModBlockEntities;
+import com.mnemolith.content.ModItems;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.ImprintConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +21,8 @@ public class CompositionReelBlockEntity extends BaseContainerBlockEntity {
     private static final Component NAME = Component.translatable("container.mnemolith.composition_reel");
 
     private NonNullList<ItemStack> items = NonNullList.withSize(ImprintConstants.COMPOSITION_SLOTS, ItemStack.EMPTY);
+    /** A slip left in the old third slot. Dropped once the chunk loads, so a saved reel does not delete it. */
+    private ItemStack legacyExtra = ItemStack.EMPTY;
 
     public CompositionReelBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.COMPOSITION_REEL.get(), pos, state);
@@ -32,6 +36,12 @@ public class CompositionReelBlockEntity extends BaseContainerBlockEntity {
     @Override
     public int getContainerSize() {
         return ImprintConstants.COMPOSITION_SLOTS;
+    }
+
+    /** Hoppers and droppers use this. The menu slot check does not apply to them. */
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return stack.is(ModItems.IMPRINT_SLIP.get());
     }
 
     @Override
@@ -58,7 +68,24 @@ public class CompositionReelBlockEntity extends BaseContainerBlockEntity {
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
+        NonNullList<ItemStack> loaded = NonNullList.withSize(3, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input, loaded);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(input, this.items);
+        for (int slot = 0; slot < this.items.size(); slot++) {
+            this.items.set(slot, loaded.get(slot));
+        }
+        this.legacyExtra = loaded.get(2);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (this.legacyExtra.isEmpty() || this.level == null || this.level.isClientSide()) {
+            return;
+        }
+        ItemStack extra = this.legacyExtra;
+        this.legacyExtra = ItemStack.EMPTY;
+        Containers.dropItemStack(this.level, this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D, this.worldPosition.getZ() + 0.5D, extra);
+        this.setChanged();
     }
 }

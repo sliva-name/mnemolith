@@ -13,6 +13,7 @@ import com.mnemolith.entity.ai.PathLedger;
 import com.mnemolith.entity.mob.MomentReplicant;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.Discovery;
+import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.imprint.ModAttachments;
@@ -50,7 +51,7 @@ public final class QaSupport {
 
     /** Two slips in a temporary container, composed as if at {@code pos}. */
     static ComposeResult compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, ImprintTag first, ImprintTag second) {
-        SimpleContainer container = new SimpleContainer(3);
+        SimpleContainer container = new SimpleContainer(ImprintConstants.COMPOSITION_SLOTS);
         container.setItem(0, ImprintSlips.of(first, pos));
         container.setItem(1, ImprintSlips.of(second, pos));
         return Composition.compose(level, pos, player, container);

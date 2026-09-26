@@ -5,7 +5,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
- * Version 2: the pressure snapshot carries a {@link PressureSnapshotPayload.Scope}.
+ * Version 3: the catalog payload carries the server's discovery-hints flag.
  */
 public final class ModNetwork {
     private ModNetwork() {}
@@ -15,7 +15,7 @@ public final class ModNetwork {
     }
 
     private static void onRegister(RegisterPayloadHandlersEvent event) {
-        event.registrar("2")
+        event.registrar("3")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)

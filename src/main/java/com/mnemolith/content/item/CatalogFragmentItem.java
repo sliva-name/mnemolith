@@ -36,6 +36,6 @@ public class CatalogFragmentItem extends Item {
     /** The bits the catalog screen is allowed to draw. Undiscovered tags and formulas stay clear. */
     public static OpenCatalogPayload payloadFor(ServerPlayer player) {
         Discovery discovery = player.getData(ModAttachments.DISCOVERY.get());
-        return new OpenCatalogPayload(discovery.tags(), discovery.formulas());
+        return new OpenCatalogPayload(discovery.tags(), discovery.formulas(), CommonConfig.DISCOVERY_HINTS.get());
     }
 }

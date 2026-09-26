@@ -19,6 +19,6 @@ public final class ClientPayloads {
         // The server already checked gameplay.catalogEnabled before sending; the client's own common config is not
         // synced and must not veto it.
         event.register(OpenCatalogPayload.TYPE, (payload, context) -> context.enqueueWork(
-                () -> Minecraft.getInstance().setScreenAndShow(new CatalogScreen(payload.tags(), payload.formulas()))));
+                () -> Minecraft.getInstance().setScreenAndShow(new CatalogScreen(payload.tags(), payload.formulas(), payload.hints()))));
     }
 }

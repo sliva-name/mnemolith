@@ -263,6 +263,8 @@ public final class ArchiveVaults {
         for (Imprint imprint : all) {
             if (ImprintWriter.restore(level, pos.above(), imprint)) {
                 written++;
+            } else {
+                vault.add(imprint);
             }
         }
         refreshLoad(level, pos);
@@ -315,9 +317,15 @@ public final class ArchiveVaults {
             if (loudest.isEmpty()) {
                 break;
             }
-            taken++;
-            if (ImprintWriter.restore(level, pos.above(), loudest.get())) {
+            Imprint imprint = loudest.get();
+            if (ImprintWriter.restore(level, pos.above(), imprint)) {
+                taken++;
                 written++;
+            } else if (LoadedChunkMemory.isMuted(level, pos)) {
+                taken++;
+            } else {
+                vault.add(imprint);
+                break;
             }
         }
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.2F, 0.4F);

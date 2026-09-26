@@ -8,6 +8,8 @@ import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
+import com.mnemolith.pressure.MemoryPressure;
+import com.mnemolith.pressure.PressureBand;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -235,7 +237,9 @@ public final class LoadedChunkMemory {
     }
 
     public static ChunkState stateOf(ChunkMemory memory, boolean muted) {
-        if (memory != null && memory.fractured()) {
+        // The fractured flag stays set after the score falls, so a second rise does not call another replicant.
+        // The lens state follows the live band, or a calmed chunk would hide mute and archival forever.
+        if (memory != null && MemoryPressure.band(memory.cachedPressure()) == PressureBand.FRACTURE) {
             return ChunkState.FRACTURED;
         }
         if (muted) {

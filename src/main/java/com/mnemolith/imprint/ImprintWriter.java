@@ -94,8 +94,11 @@ public final class ImprintWriter {
         LevelChunk chunk = level.getChunkAt(pos);
         long now = level.getGameTime();
         ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
-        memory.addImprint(new Imprint(banked.tag(), banked.intensity(), pos.immutable(), banked.player(), Imprint.contextHash(banked.tag(), pos, now), now),
+        boolean accepted = memory.offerImprint(new Imprint(banked.tag(), banked.intensity(), pos.immutable(), banked.player(), Imprint.contextHash(banked.tag(), pos, now), now),
                 CommonConfig.MAX_IMPRINTS_PER_CHUNK.get());
+        if (!accepted) {
+            return false;
+        }
         MemoryPressure.recompute(chunk, memory);
         MemoryFx.write(level, pos);
         return true;

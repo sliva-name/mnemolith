@@ -132,6 +132,7 @@ public final class Echo3Qa {
         try {
             // ---------- upgrades ----------
             int base = CommonConfig.ECHO_MAX_PER_PLAYER.get();
+            int chorusRoom = EchoProgress.maxLevel(EchoProgress.Kind.CHORUS);
             int limit0 = EchoProgress.echoLimit(owner);
             int frames0 = EchoProgress.recordFrames(owner);
             boolean c1 = EchoUpgradeItem.absorb(owner, EchoProgress.Kind.CHORUS);
@@ -148,7 +149,9 @@ public final class Echo3Qa {
             double bonus = EchoProgress.bonusHealth(owner);
             boolean recipes = recipe(level, "echo_chorus_slip") && recipe(level, "echo_long_slip") && recipe(level, "echo_sturdy_slip");
             boolean guide = GuideBook.pageCount() == GuideBook.PAGE_COUNT && Component.translatable("mnemolith.guide.echoes.title").getString().length() > 0;
-            boolean upgradeCore = limit0 == base && c1 && c2 && !c3 && limit2 == Math.min(CommonConfig.ECHO_MAX_PER_PLAYER_CAP.get(), base + 2)
+            boolean upgradeCore = limit0 == base
+                    && c1 == (chorusRoom >= 1) && c2 == (chorusRoom >= 2) && c3 == (chorusRoom >= 3)
+                    && limit2 == Math.min(CommonConfig.ECHO_MAX_PER_PLAYER_CAP.get(), base + chorusRoom)
                     && l1 && l2 && !l3 && frames2 == Math.min(EchoRecording.MAX_FRAMES, frames0 + 2 * CommonConfig.ECHO_RECORD_BONUS_SECONDS.get() * 20)
                     && s1 && s2 && !s3 && Math.abs(bonus - 2 * CommonConfig.ECHO_STURDY_HEALTH_BONUS.get()) < 0.001D && recipes && guide;
             notes.add("upgrades limit " + limit0 + "->" + limit2 + " chorus=" + c1 + "," + c2 + ",third=" + c3 + " frames " + frames0 + "->" + frames2
@@ -513,7 +516,8 @@ public final class Echo3Qa {
             }
             persistence = reloaded != null && reloaded.job().order() == EchoJob.Order.STAY && reloaded.job().status().kind() == JobStatus.Kind.STAY
                     && reloaded.job().farmLesson().equals(farmL) && Math.abs(reloaded.bonusHealth() - bonus) < 0.01D
-                    && Math.abs(reloaded.getMaxHealth() - expectedMax) < 0.01D && progressBack.equals(EchoProgress.of(owner)) && progressBack.chorus() == 2;
+                    && Math.abs(reloaded.getMaxHealth() - expectedMax) < 0.01D && progressBack.equals(EchoProgress.of(owner))
+                    && progressBack.chorus() == Math.min(3, chorusRoom);
             notes.add("persistence order=" + (reloaded == null ? "-" : reloaded.job().order().getSerializedName()) + " farm="
                     + (reloaded != null && reloaded.job().farmLesson().equals(farmL)) + " maxHealth=" + (reloaded == null ? -1 : reloaded.getMaxHealth())
                     + " progress=" + progressBack);

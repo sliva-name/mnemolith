@@ -244,9 +244,27 @@ public final class ChunkMemory {
         }
     }
 
+    /**
+     * Adds {@code imprint} only when the list is under the cap. A full chunk keeps what it has; nothing is evicted.
+     * Vault discharge and spill use this so a memory is never in neither place.
+     */
+    public boolean offerImprint(Imprint imprint, int cap) {
+        int limit = Math.max(1, Math.min(cap, ImprintConstants.ABSOLUTE_LIST_CAP));
+        if (this.imprints.size() >= limit) {
+            return false;
+        }
+        this.imprints.add(imprint);
+        if (isQuiet(imprint.tag())) {
+            this.coolDirty = true;
+        }
+        return true;
+    }
+
+    /** Lower pressure first, then the older write. Equal pressure keeps the newer copy. */
     private static boolean lowerPriority(Imprint candidate, Imprint current) {
-        if (candidate.intensity() != current.intensity()) {
-            return candidate.intensity() < current.intensity();
+        int pressure = Integer.compare(candidate.pressureContribution(), current.pressureContribution());
+        if (pressure != 0) {
+            return pressure < 0;
         }
         return candidate.writtenAt() < current.writtenAt();
     }
@@ -259,8 +277,8 @@ public final class ChunkMemory {
         for (int i = 1; i < this.imprints.size(); i++) {
             Imprint candidate = this.imprints.get(i);
             Imprint current = this.imprints.get(best);
-            if (candidate.intensity() > current.intensity()
-                    || (candidate.intensity() == current.intensity() && candidate.writtenAt() > current.writtenAt())) {
+            int pressure = Integer.compare(candidate.pressureContribution(), current.pressureContribution());
+            if (pressure > 0 || (pressure == 0 && candidate.writtenAt() > current.writtenAt())) {
                 best = i;
             }
         }
