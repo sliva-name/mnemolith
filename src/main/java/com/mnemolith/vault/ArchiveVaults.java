@@ -238,6 +238,14 @@ public final class ArchiveVaults {
 
     /** The needle on a vault: the loudest stored imprint becomes a slip in the player's hands. */
     public static Optional<Imprint> extract(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault, @Nullable ServerPlayer player) {
+        Optional<Imprint> loudest = vault.stored().stream().max(Comparator.comparingInt(Imprint::pressureContribution));
+        if (loudest.isEmpty()) {
+            return Optional.empty();
+        }
+        if (player != null && !com.mnemolith.content.InventorySpace.fits(player.getInventory(), com.mnemolith.data.ImprintSlips.of(loudest.get()))) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return Optional.empty();
+        }
         Optional<Imprint> taken = vault.takeLoudest();
         taken.ifPresent(imprint -> {
             ImprintWriter.giveSlip(level, pos, player, imprint);
@@ -267,6 +275,7 @@ public final class ArchiveVaults {
         List<Imprint> all = vault.takeAll();
         int written = 0;
         int handed = 0;
+        boolean refused = false;
         for (Imprint imprint : all) {
             if (ImprintWriter.restore(level, pos.above(), imprint)) {
                 written++;
@@ -274,15 +283,25 @@ public final class ArchiveVaults {
                 handed++;
             } else {
                 vault.add(imprint);
+                if (player != null) {
+                    refused = true;
+                }
             }
         }
         refreshLoad(level, pos);
-        level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.0F, 0.6F);
-        level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.2D, pos.getZ() + 0.5D, 16, 0.6D, 0.4D, 0.6D, 0.03D);
+        if (written + handed > 0) {
+            level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.0F, 0.6F);
+            level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.2D, pos.getZ() + 0.5D, 16, 0.6D, 0.4D, 0.6D, 0.03D);
+        }
         if (player != null) {
-            player.sendSystemMessage(handed > 0
-                    ? Component.translatable("mnemolith.vault.discharged_slips", handed, written)
-                    : Component.translatable("mnemolith.vault.discharged", written), true);
+            if (refused) {
+                com.mnemolith.content.InventorySpace.refuse(player);
+            }
+            if (written + handed > 0) {
+                player.sendSystemMessage(handed > 0
+                        ? Component.translatable("mnemolith.vault.discharged_slips", handed, written)
+                        : Component.translatable("mnemolith.vault.discharged", written), true);
+            }
         }
         Mnemolith.LOGGER.info("Mnemolith vault discharge written={} slips={} at {}", written, handed, pos.toShortString());
         return written + handed;
@@ -354,13 +373,17 @@ public final class ArchiveVaults {
         return written + dropped;
     }
 
-    /** A chunk that refused the imprint. The player who asked for it receives the slip; otherwise it drops on the vault. */
+    /**
+     * A chunk that refused the imprint. The player receives the slip when there is room.
+     * A full inventory returns false so the caller can put the imprint back.
+     */
     private static boolean handSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
         if (player != null) {
             ItemStack slip = ImprintSlips.of(imprint);
-            if (!player.getInventory().add(slip)) {
-                player.drop(slip, false);
+            if (!com.mnemolith.content.InventorySpace.fits(player.getInventory(), slip)) {
+                return false;
             }
+            player.getInventory().add(slip);
             DiscoveryNotes.noteTag(player, imprint.tag());
             return true;
         }

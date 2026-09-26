@@ -180,13 +180,15 @@ public final class EchoGrafts {
             player.sendSystemMessage(Component.translatable("mnemolith.message.extract_cooldown"), true);
             return false;
         }
-        echo.setGraft(null);
         Temper temper = graft.temper();
+        ItemStack slip = ImprintSlips.of(graft.cast().toImprint());
+        if (worthReturning(graft) && !com.mnemolith.content.InventorySpace.fits(player.getInventory(), slip)) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return false;
+        }
+        echo.setGraft(null);
         if (worthReturning(graft)) {
-            ItemStack slip = ImprintSlips.of(graft.cast().toImprint());
-            if (!player.getInventory().add(slip)) {
-                player.drop(slip, false);
-            }
+            player.getInventory().add(slip);
             player.sendSystemMessage(Component.translatable("mnemolith.graft.unpicked", Component.translatable(temper.key())), true);
         } else {
             player.sendSystemMessage(Component.translatable("mnemolith.graft.crumbled", Component.translatable(temper.key())), true);

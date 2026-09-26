@@ -53,7 +53,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         Component status = this.statusLine();
         int color = switch (this.menu.status()) {
             case ComposeResult.SUCCESS -> GuiArt.VERDIGRIS;
-            case ComposeResult.FAIL, ComposeResult.DISABLED -> GuiArt.FAIL;
+            case ComposeResult.FAIL, ComposeResult.DISABLED, ComposeResult.FULL -> GuiArt.FAIL;
             default -> GuiArt.BONE;
         };
         GuiArt.paragraph(graphics, this.font, status, 8, 74, this.imageWidth - 16, color);
@@ -66,6 +66,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
             case ComposeResult.FAIL -> Component.translatable("mnemolith.gui.compose_fail");
             case ComposeResult.EMPTY -> Component.translatable("mnemolith.gui.compose_empty");
             case ComposeResult.DISABLED -> Component.translatable("mnemolith.gui.compose_disabled");
+            case ComposeResult.FULL -> Component.translatable("mnemolith.message.inventory_full");
             default -> Component.translatable("mnemolith.gui.compose_idle");
         };
     }

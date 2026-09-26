@@ -125,6 +125,10 @@ public final class ImprintWriter {
         if (memory == null || memory.imprintCount() == 0) {
             return memory != null ? thisOrNeighbors(level, pos, player, memory) : Optional.empty();
         }
+        Optional<Imprint> highest = memory.highest();
+        if (highest.isEmpty() || !roomFor(player, highest.get())) {
+            return Optional.empty();
+        }
         Optional<Imprint> removed = takeHighest(chunk, memory);
         if (removed.isEmpty()) {
             return Optional.empty();
@@ -153,6 +157,13 @@ public final class ImprintWriter {
                 if (memory == null || memory.imprintCount() == 0) {
                     continue;
                 }
+                Optional<Imprint> highest = memory.highest();
+                if (highest.isEmpty()) {
+                    continue;
+                }
+                if (!roomFor(player, highest.get())) {
+                    return Optional.empty();
+                }
                 Optional<Imprint> removed = takeHighest(chunk, memory);
                 if (removed.isEmpty()) {
                     continue;
@@ -179,13 +190,22 @@ public final class ImprintWriter {
     public static void giveSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
         if (player != null) {
             ItemStack slip = ImprintSlips.of(imprint);
-            if (!player.getInventory().add(slip)) {
+            if (!player.getInventory().add(slip) && !slip.isEmpty()) {
                 player.drop(slip, false);
             }
             DiscoveryNotes.noteTag(player, imprint.tag());
         }
         level.playSound(null, pos, ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         MemoryFx.extract(level, pos);
+    }
+
+    /** False when the player's storage cannot take this slip. The imprint stays where it is, and the player is told. */
+    private static boolean roomFor(@Nullable ServerPlayer player, Imprint imprint) {
+        if (player == null || com.mnemolith.content.InventorySpace.fits(player.getInventory(), ImprintSlips.of(imprint))) {
+            return true;
+        }
+        com.mnemolith.content.InventorySpace.refuse(player);
+        return false;
     }
 
     public static int intensityFor(ImprintTag tag) {

@@ -1,6 +1,7 @@
 package com.mnemolith.content.item;
 
 import com.mnemolith.config.CommonConfig;
+import com.mnemolith.content.ModItems;
 import com.mnemolith.echo.EchoPossession;
 import com.mnemolith.echo.EchoRecorder;
 
@@ -40,6 +41,11 @@ public class EchoSlipItem extends Item {
             return InteractionResult.FAIL;
         }
         ItemStack stack = player.getItemInHand(hand);
+        ItemStack recording = new ItemStack(ModItems.ECHO_RECORDING.get());
+        if (!com.mnemolith.content.InventorySpace.fitsAfterUse(serverPlayer, hand, stack, recording)) {
+            com.mnemolith.content.InventorySpace.refuse(serverPlayer);
+            return InteractionResult.FAIL;
+        }
         if (EchoRecorder.start(serverPlayer)) {
             stack.consume(1, player);
             return InteractionResult.SUCCESS_SERVER;

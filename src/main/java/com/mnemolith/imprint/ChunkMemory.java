@@ -269,9 +269,19 @@ public final class ChunkMemory {
         return candidate.writtenAt() < current.writtenAt();
     }
 
+    public Optional<Imprint> highest() {
+        int best = this.highestIndex();
+        return best < 0 ? Optional.empty() : Optional.of(this.imprints.get(best));
+    }
+
     public Optional<Imprint> removeHighest() {
+        int best = this.highestIndex();
+        return best < 0 ? Optional.empty() : Optional.of(this.imprints.remove(best));
+    }
+
+    private int highestIndex() {
         if (this.imprints.isEmpty()) {
-            return Optional.empty();
+            return -1;
         }
         int best = 0;
         for (int i = 1; i < this.imprints.size(); i++) {
@@ -282,7 +292,7 @@ public final class ChunkMemory {
                 best = i;
             }
         }
-        return Optional.of(this.imprints.remove(best));
+        return best;
     }
 
     public boolean addMuteStone(BlockPos pos) {

@@ -1,0 +1,27 @@
+---
+description: Handheld weapons and non-cube blocks must render as real silhouettes, with legal model rotations and a covered ground footprint.
+globs: tools/art/**/*.py,src/main/resources/assets/mnemolith/models/**/*.json,src/main/java/com/mnemolith/content/ModBlocks.java
+alwaysApply: false
+---
+
+# Item and block models
+
+Match the extraction needle and chronicle lens. A new weapon or placed block is unfinished until its silhouette reads in first person and on the ground.
+
+## Handheld weapons
+
+- Inventory, ground, frame, and shelf keep the flat 32×32 sprite. Hands use an element model, selected with `minecraft:display_context` the same way as `extraction_needle`.
+- Lay the model on the sprite diagonal: rotation `origin [8, 8, 8]`, `axis z`, `angle -45`, plus the `HANDHELD` display from `tools/art/mnart/handheld.py`.
+- An element `angle` may only be `-45`, `-22.5`, `0`, `22.5`, or `45`. Any other value (the chorus sling used `-40`) makes the hand model fail to load.
+- A blade, spear head, or brand is thin on Z and wide on X, so the face is what the hand sees. A square rod reads as a stick, not a weapon.
+- The silhouette has to be that weapon: a sword has a guard and a flat blade, a maul has a head wider than the haft, a spear has a leaf, a sling is a fork. A gem on a pole is not enough.
+- Rebuild only the weapon files. Do not run a full `tools/art/build.py`.
+
+## Blocks that are not a full cube
+
+- Call `.noOcclusion()`. A solid occluding block hides the neighbor face, and the world shows through every gap. That is what happened under the mute stone.
+- The piece that sits on the ground covers x and z from 0 to 16 at y = 0. An inset base leaves a ring of the block below.
+
+## Check before finishing
+
+Render first person with `tools/art/preview.py` (`hand_first_person`) and look at the image next to the needle. The tip stays in frame, the face is visible, and the shape is recognizable. Fix the model if it is a rod, a window frame, or a cube on a stick.

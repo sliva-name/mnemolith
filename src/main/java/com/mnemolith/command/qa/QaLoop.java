@@ -98,9 +98,19 @@ public final class QaLoop {
             return false;
         }
         OpenCatalogPayload payload = CatalogFragmentItem.payloadFor(player);
-        return holdsTag(player, ImprintTag.FALL)
+        boolean noted = holdsTag(player, ImprintTag.FALL)
                 && payload.tags() == (1 << ImprintTag.FALL.ordinal())
                 && payload.formulas() == 0;
+        if (!noted || !ImprintWriter.tryWrite(level, pos, ImprintTag.DEATH, null, false)) {
+            return false;
+        }
+        net.minecraft.world.entity.player.Inventory inventory = player.getInventory();
+        for (int slot = 0; slot < net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE; slot++) {
+            inventory.setItem(slot, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COBBLESTONE, 64));
+        }
+        boolean refused = ImprintWriter.extract(level, pos, player).isEmpty();
+        inventory.setItem(0, net.minecraft.world.item.ItemStack.EMPTY);
+        return refused && !ImprintWriter.extract(level, pos, player).isEmpty() && holdsTag(player, ImprintTag.DEATH);
     }
 
     static boolean formulas(ServerLevel level, FakePlayer player, BlockPos pos) {

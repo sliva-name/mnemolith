@@ -303,7 +303,14 @@ public final class ResidueEntity extends Mob {
             return InteractionResult.PASS;
         }
         if (needle) {
-            // Either way the attempt happened (a capture, or a slip and a lash), so the click is consumed.
+            if (this.isPinned()) {
+                ItemStack shard = Residues.shardOf((ServerLevel) this.level(), this);
+                if (!com.mnemolith.content.InventorySpace.fits(serverPlayer.getInventory(), shard)) {
+                    com.mnemolith.content.InventorySpace.refuse(serverPlayer);
+                    return InteractionResult.FAIL;
+                }
+            }
+            // A capture, or a slip and a lash: the click is consumed. A full inventory already returned above.
             Residues.capture(serverPlayer, this, held);
             return InteractionResult.SUCCESS_SERVER;
         }

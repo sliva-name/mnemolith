@@ -400,53 +400,66 @@ def _icon_bolt():
 
 
 def _blade_icon():
+    rng = core.rng_for('recall_blade_icon')
     cv = new()
-    shapes.rod(cv, (8, 28), (14, 20), 3.4, 'leather', 3)
-    shapes.rod(cv, (13, 21), (16, 18), 4.2, 'iron', 3)
-    shapes.rod(cv, (15, 18), (22, 6), 2.6, 'iron', 4)
-    shapes.rod(cv, (16, 16), (23, 5), 1.1, 'amethyst', 5)
-    shapes.gem(cv, [(21, 7), (26, 3), (28, 5), (23, 9)], 'amethyst', 5)
-    core.glint(cv, 25, 4, arm=0)
+    shapes.rod(cv, (5, 28), (12, 20), 3.6, 'leather', 3, rng=rng, noise=0.2)
+    cv.part(m_ellipse(S, S, 4.2, 28.6, 2.2, 2.2), 'brass', 'sphere', 3)
+    shapes.rod(cv, (10, 22), (18, 18), 5.2, 'iron', 3)
+    shapes.rod(cv, (14, 20), (24, 6), 2.8, 'iron', 4)
+    shapes.rod(cv, (15, 18), (23, 7), 1.0, 'amethyst', 5)
+    shapes.gem(cv, [(22, 8), (27, 2), (29, 4), (24, 10)], 'amethyst', 5)
+    core.glint(cv, 26, 4, arm=0)
+    shapes.glow(cv, 26, 4, 4, RAMPS['amethyst'][6], 0.28)
     return finish(cv)
 
 
 def _maul_icon():
+    rng = core.rng_for('grave_maul_icon')
     cv = new()
-    shapes.rod(cv, (15, 28), (17, 14), 3.0, 'wood', 3)
-    cv.part(m_rect(S, S, 6, 5, 26, 15), 'mute', 'box', 3)
-    cv.fill(m_rect(S, S, 6, 5, 26, 7), RAMPS['iron'][4])
+    shapes.rod(cv, (16, 30), (16, 16), 3.4, 'wood', 3, rng=rng, noise=0.25)
+    shapes.rod(cv, (16, 26), (16, 20), 4.2, 'leather', 2)
+    cv.part(m_poly(S, S, [(4, 14), (8, 4), (24, 4), (28, 14), (24, 16), (8, 16)]), 'mute', 'box', 3, rng=rng, noise=0.12)
+    cv.fill(m_rect(S, S, 6, 5, 26, 7), RAMPS['iron'][5])
     cv.fill(m_rect(S, S, 6, 13, 26, 15), RAMPS['iron'][2])
-    cv.fill(m_rect(S, S, 14, 6, 18, 14), RAMPS['bone'][4])
+    cv.fill(m_rect(S, S, 13, 6, 19, 14), RAMPS['bone'][4])
+    shapes.gem(cv, [(26, 8), (30, 10), (26, 12), (24, 10)], 'iron', 4)
     cv.px(8, 6, RAMPS['iron'][6])
     return finish(cv)
 
 
 def _spear_icon():
+    rng = core.rng_for('hush_spear_icon')
     cv = new()
-    shapes.rod(cv, (16, 30), (16, 10), 2.2, 'wood', 3)
-    shapes.rod(cv, (16, 16), (16, 12), 3.2, 'indigo', 3)
-    shapes.gem(cv, [(16, 2), (21, 11), (16, 9), (11, 11)], 'bone', 5)
-    cv.fill(m_line(S, S, (16, 4), (16, 9)), RAMPS['bone'][6])
+    shapes.rod(cv, (16, 31), (16, 12), 2.4, 'wood', 3, rng=rng, noise=0.2)
+    shapes.rod(cv, (16, 18), (16, 13), 3.6, 'indigo', 3)
+    shapes.gem(cv, [(16, 2), (22, 12), (16, 10), (10, 12)], 'bone', 5)
+    cv.fill(m_line(S, S, (16, 3), (16, 11)), RAMPS['indigo'][5])
+    cv.fill(m_line(S, S, (13, 8), (16, 3)), RAMPS['bone'][6])
+    cv.fill(m_line(S, S, (19, 8), (16, 3)), RAMPS['bone'][6])
     return finish(cv)
 
 
 def _sling_icon():
     cv = new()
-    shapes.rod(cv, (6, 22), (16, 10), 1.3, 'leather', 2)
-    shapes.rod(cv, (26, 22), (16, 10), 1.3, 'leather', 2)
-    cv.part(m_ellipse(S, S, 16, 12, 4.2, 3.2), 'echo', 'sphere', 4)
-    shapes.gem(cv, [(16, 8), (18, 12), (16, 14), (14, 12)], 'amethyst', 5)
-    core.glint(cv, 16, 10, arm=0)
+    shapes.rod(cv, (16, 30), (16, 18), 3.2, 'wood', 3)
+    shapes.rod(cv, (16, 26), (16, 20), 3.8, 'leather', 2)
+    shapes.rod(cv, (8, 8), (15, 16), 2.2, 'leather', 3)
+    shapes.rod(cv, (24, 8), (17, 16), 2.2, 'leather', 3)
+    cv.part(m_ellipse(S, S, 16, 16, 5.0, 3.4), 'echo', 'sphere', 4)
+    shapes.gem(cv, [(16, 12), (19, 16), (16, 19), (13, 16)], 'amethyst', 5)
+    core.glint(cv, 16, 14, arm=0)
+    cv.fill(m_line(S, S, (9, 8), (23, 8)), RAMPS['leather'][4])
     return finish(cv)
 
 
 def _brand_icon():
     cv = new()
-    shapes.rod(cv, (16, 30), (16, 16), 3.6, 'ink', 2)
+    shapes.rod(cv, (16, 30), (16, 18), 3.8, 'ink', 2)
     cv.part(m_rect(S, S, 11, 26, 21, 30), 'iron', 'box', 2)
-    shapes.gem(cv, [(16, 3), (22, 14), (16, 12), (10, 14)], 'scar', 4)
-    shapes.glow(cv, 16, 8, 5, RAMPS['ember'][5], 0.4)
-    core.glint(cv, 16, 6, arm=0)
+    shapes.gem(cv, [(16, 2), (24, 14), (16, 12), (8, 14)], 'scar', 4)
+    shapes.rod(cv, (20, 12), (22, 4), 1.3, 'ember', 5)
+    shapes.glow(cv, 16, 7, 6, RAMPS['ember'][5], 0.45)
+    core.glint(cv, 18, 5, arm=0)
     return finish(cv)
 
 
@@ -510,54 +523,73 @@ def _weapon(name, build):
 
 
 def recall_blade_hand():
+    """Flat blade, thin through Z so the hand sees the face, wide across X. -45 lays it on the sprite diagonal."""
     def build(m):
         rot = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -45}
-        m.box((7.2, 1, 7.2), (8.8, 6, 8.8), P(grip, 'grip'), rotation=rot)
-        m.box((6.8, 6, 6.8), (9.2, 7.4, 9.2), F('iron', wear=0.4), rotation=rot)
-        m.box((7.3, 7.4, 7.3), (8.7, 16, 8.7), P(shaft, 'blade'), rotation=rot)
-        m.box((8.2, 7.6, 7.5), (8.7, 15.5, 8.5), F('amethyst', wear=0.1, shift=0.8), rotation=rot)
-        m.box((7.1, 15.2, 7.1), (8.9, 17.2, 8.9), P(crystal, 'tip'), rotation=rot)
+        m.box((7.05, 0.3, 7.15), (8.95, 1.7, 8.85), F('brass', wear=0.25), rotation=rot)
+        m.box((7.25, 1.6, 7.3), (8.75, 5.5, 8.7), P(grip, 'grip'), rotation=rot)
+        m.box((5.1, 5.2, 7.35), (10.9, 6.5, 8.65), F('iron', wear=0.35), rotation=rot)
+        m.box((6.55, 6.3, 7.62), (9.45, 12.4, 8.38), P(shaft, 'blade'), rotation=rot)
+        m.box((7.15, 12.1, 7.68), (8.85, 14.4, 8.32), P(shaft, 'blade_tip'), rotation=rot)
+        m.box((7.55, 6.7, 7.32), (8.2, 13.2, 7.68), F('amethyst', wear=0.0, shift=0.8), rotation=rot)
+        m.box((7.55, 6.7, 8.32), (8.2, 13.2, 8.68), F('amethyst', wear=0.0, shift=0.8), rotation=rot)
+        m.box((7.5, 14.1, 7.55), (8.5, 15.6, 8.45), P(crystal, 'tip'), rotation=rot)
     return _weapon('recall_blade', build)
 
 
 def grave_maul_hand():
     def build(m):
         rot = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -45}
-        m.box((7.3, 1, 7.3), (8.7, 9, 8.7), F('wood', wear=0.6), rotation=rot)
-        m.box((5.2, 9, 6.4), (10.8, 14.5, 9.6), F('mute', wear=0.7), rotation=rot)
-        m.box((5.2, 9, 6.4), (10.8, 10.2, 9.6), F('iron', wear=0.4), rotation=rot)
-        m.box((5.2, 13.3, 6.4), (10.8, 14.5, 9.6), F('iron', wear=0.5), rotation=rot)
-        m.box((7.4, 10.2, 6.2), (8.6, 13.3, 7.0), F('bone', wear=0.3), rotation=rot)
+        m.box((7.1, 0.3, 7.1), (8.9, 8.4, 8.9), F('wood', wear=0.55), rotation=rot)
+        m.box((6.95, 2.0, 6.95), (9.05, 5.6, 9.05), P(grip, 'grip'), rotation=rot)
+        m.box((4.6, 8.5, 6.5), (11.4, 13.8, 9.5), F('mute', wear=0.65), rotation=rot)
+        m.box((4.6, 8.5, 6.5), (11.4, 9.6, 9.5), F('iron', wear=0.4), rotation=rot)
+        m.box((4.6, 12.7, 6.5), (11.4, 13.8, 9.5), F('iron', wear=0.45), rotation=rot)
+        m.box((6.5, 9.7, 6.15), (9.5, 12.5, 6.7), F('bone', wear=0.2), rotation=rot)
+        m.box((6.5, 9.7, 9.3), (9.5, 12.5, 9.85), F('bone', wear=0.2), rotation=rot)
+        m.box((11.1, 10.1, 7.2), (13.2, 12.3, 8.8), F('iron', wear=0.3, shift=0.35), rotation=rot)
+        m.box((2.8, 10.1, 7.2), (4.9, 12.3, 8.8), F('iron', wear=0.3, shift=0.35), rotation=rot)
     return _weapon('grave_maul', build)
 
 
 def hush_spear_hand():
     def build(m):
         rot = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -45}
-        m.box((7.5, 0.5, 7.5), (8.5, 14, 8.5), F('wood', wear=0.5), rotation=rot)
-        m.box((7.1, 8, 7.1), (8.9, 10, 8.9), F('indigo', wear=0.3), rotation=rot)
-        m.box((7.2, 14, 7.2), (8.8, 17.4, 8.8), F('bone', wear=0.2, shift=0.7), rotation=rot)
+        m.box((7.4, 0.15, 7.4), (8.6, 12.3, 8.6), F('wood', wear=0.45), rotation=rot)
+        m.box((7.1, 6.4, 7.1), (8.9, 8.9, 8.9), F('indigo', wear=0.25), rotation=rot)
+        m.box((7.05, 11.5, 7.15), (8.95, 13.1, 8.85), F('bone', wear=0.3), rotation=rot)
+        m.box((6.15, 12.5, 7.68), (9.85, 15.5, 8.32), F('bone', wear=0.1, shift=0.55), rotation=rot)
+        m.box((7.05, 15.1, 7.72), (8.95, 17.15, 8.28), F('bone', wear=0.05, shift=0.9), rotation=rot)
+        m.box((7.65, 12.7, 8.15), (8.35, 16.5, 8.48), F('indigo', wear=0.05, shift=0.4), rotation=rot)
     return _weapon('hush_spear', build)
 
 
 def chorus_sling_hand():
+    """Handle on the sprite diagonal; the arms step off it by a legal 22.5 so the fork is a Y, not a window."""
     def build(m):
-        rot = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -40}
-        m.box((6.5, 4, 7.2), (9.5, 7, 8.8), F('leather', wear=0.6), rotation=rot)
-        m.box((7.2, 6.2, 7.4), (8.8, 8.2, 8.6), P(crystal, 'bead'), rotation=rot)
-        m.box((4.5, 8, 7.6), (6.5, 9, 8.4), F('leather', wear=0.4), rotation=rot)
-        m.box((9.5, 8, 7.6), (11.5, 9, 8.4), F('leather', wear=0.4), rotation=rot)
-        m.box((7.4, 1.5, 7.4), (8.6, 4, 8.6), F('wood', wear=0.4), rotation=rot)
+        shaft = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -45}
+        left = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -22.5}
+        right = {'origin': [8, 8, 8], 'axis': 'z', 'angle': 22.5}
+        m.box((7.2, 1.0, 7.3), (8.8, 8.0, 8.7), F('wood', wear=0.4), rotation=shaft)
+        m.box((7.05, 2.0, 7.15), (8.95, 5.6, 8.85), P(grip, 'grip'), rotation=shaft)
+        m.box((6.35, 7.6, 7.4), (8.05, 13.4, 8.6), F('leather', wear=0.45), rotation=left)
+        m.box((7.95, 7.6, 7.4), (9.65, 13.4, 8.6), F('leather', wear=0.45), rotation=right)
+        m.box((6.6, 7.0, 7.15), (9.4, 8.7, 8.85), F('echo', wear=0.15, shift=0.3), rotation=shaft)
+        m.box((7.2, 7.15, 7.3), (8.8, 8.9, 8.7), P(crystal, 'bead'), rotation=shaft)
     return _weapon('chorus_sling', build)
 
 
 def scar_brand_hand():
     def build(m):
         rot = {'origin': [8, 8, 8], 'axis': 'z', 'angle': -45}
-        m.box((7.0, 1, 7.0), (9.0, 7, 9.0), F('ink', wear=0.5), rotation=rot)
-        m.box((6.6, 6.5, 6.6), (9.4, 8, 9.4), F('iron', wear=0.4), rotation=rot)
-        m.box((7.2, 8, 7.2), (8.8, 15, 8.8), F('scar', wear=0.2, shift=0.5), rotation=rot)
-        m.box((6.9, 14, 6.9), (9.1, 16.5, 9.1), P(crystal, 'brand'), rotation=rot)
+        m.box((7.1, 0.3, 7.15), (8.9, 1.75, 8.85), F('iron', wear=0.4), rotation=rot)
+        m.box((7.2, 1.55, 7.25), (8.8, 6.15, 8.75), F('ink', wear=0.45), rotation=rot)
+        m.box((6.3, 5.7, 7.2), (9.7, 7.15, 8.8), F('iron', wear=0.35), rotation=rot)
+        m.box((6.35, 6.9, 7.55), (9.65, 12.6, 8.45), F('scar', wear=0.12, shift=0.35), rotation=rot)
+        m.box((6.9, 12.2, 7.6), (9.1, 14.5, 8.4), F('scar', wear=0.05, shift=0.75), rotation=rot)
+        m.box((7.55, 7.2, 7.28), (8.2, 13.4, 7.62), F('ember', wear=0.0, shift=0.7), rotation=rot)
+        m.box((7.55, 7.2, 8.38), (8.2, 13.4, 8.72), F('ember', wear=0.0, shift=0.7), rotation=rot)
+        m.box((7.3, 14.2, 7.5), (8.7, 15.7, 8.5), P(crystal, 'brand'), rotation=rot)
     return _weapon('scar_brand', build)
 
 

@@ -527,9 +527,11 @@ public final class Residues {
             return false;
         }
         ItemStack shard = shardOf(level, residue);
-        if (!player.getInventory().add(shard)) {
-            player.drop(shard, false);
+        if (!com.mnemolith.content.InventorySpace.fits(player.getInventory(), shard)) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return false;
         }
+        player.getInventory().add(shard);
         if (cooldown > 0) {
             player.getCooldowns().addCooldown(needle, cooldown);
         }

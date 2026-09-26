@@ -83,6 +83,11 @@ public final class Composition {
         if (formula.isEmpty()) {
             return fail(level, pos, player, container, tags);
         }
+        if (formula.get() == CompositionFormula.BAIT && player != null
+                && !com.mnemolith.content.InventorySpace.fits(player.getInventory(), new ItemStack(ModItems.ARCHIVIST_BAIT.get()))) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return finish(ComposeResult.FULL, -1);
+        }
         for (int slot : slots) {
             container.removeItem(slot, 1);
         }
@@ -142,7 +147,7 @@ public final class Composition {
             case LANDING_BURST -> player.addEffect(new MobEffectInstance(ModEffects.LANDING_BURST, ImprintConstants.LANDING_BURST_DURATION_TICKS, 0, false, false));
             case BAIT -> {
                 ItemStack bait = new ItemStack(ModItems.ARCHIVIST_BAIT.get());
-                if (!player.getInventory().add(bait)) {
+                if (!player.getInventory().add(bait) && !bait.isEmpty()) {
                     player.drop(bait, false);
                 }
             }

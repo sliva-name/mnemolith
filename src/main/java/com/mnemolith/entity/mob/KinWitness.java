@@ -118,25 +118,28 @@ public class KinWitness extends PathfinderMob {
             }
             return InteractionResult.SUCCESS;
         }
-        if (stack.is(Items.PAPER) && this.trust >= 3 && this.level() instanceof ServerLevel level) {
-            long now = level.getGameTime();
+        if (stack.is(Items.PAPER) && this.trust >= 3 && this.level() instanceof ServerLevel serverLevel) {
+            long now = serverLevel.getGameTime();
             if (now < this.nextGift) {
                 if (player instanceof net.minecraft.server.level.ServerPlayer server) {
                     server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_wait"), true);
                 }
                 return InteractionResult.FAIL;
             }
+            if (!(player instanceof net.minecraft.server.level.ServerPlayer server)) {
+                return InteractionResult.SUCCESS;
+            }
+            ItemStack tablet = new ItemStack(ModItems.ARCHIVAL_TABLET.get());
+            if (!com.mnemolith.content.InventorySpace.fitsAfterUse(server, hand, stack, tablet)) {
+                com.mnemolith.content.InventorySpace.refuse(server);
+                return InteractionResult.FAIL;
+            }
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
             this.nextGift = now + 24000L;
-            ItemStack tablet = new ItemStack(ModItems.ARCHIVAL_TABLET.get());
-            if (!player.getInventory().add(tablet)) {
-                this.spawnAtLocation(level, tablet);
-            }
-            if (player instanceof net.minecraft.server.level.ServerPlayer server) {
-                server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_gift"), true);
-            }
+            server.getInventory().add(tablet);
+            server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_gift"), true);
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);

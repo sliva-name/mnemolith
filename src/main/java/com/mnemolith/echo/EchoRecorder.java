@@ -233,7 +233,9 @@ public final class EchoRecorder {
         }
         Mnemolith.LOGGER.info("Mnemolith echo recording end player={} frames={} actions={} reason={}", player.getGameProfile().name(), session.count, session.actions.size(), reason);
         ItemStack given = result.copy();
-        if (!player.getInventory().add(result)) {
+        if (!com.mnemolith.content.InventorySpace.give(player, result)) {
+            // The slip was spent when the recording began. The finished item cannot stay in a full inventory,
+            // so it falls, and the player already heard why.
             player.drop(result, false);
         }
         return given;
