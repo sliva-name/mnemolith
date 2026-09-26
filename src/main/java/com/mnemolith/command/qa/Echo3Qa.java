@@ -409,7 +409,23 @@ public final class Echo3Qa {
 
             // ---------- a husk hunts the working echo ----------
             owner.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 40)));
-            Mob husk = spawnMob(level, net.minecraft.world.entity.EntityTypes.HUSK, echo.blockPosition().offset(6, 0, -3), extras);
+            // The husk keeps only the echo target goals. With its vanilla goals it also hunts villagers (same priority 3 as
+            // the echo goal, no line of sight needed), iron golems and turtles within its 35-block follow range. With a
+            // village near the arena it locked onto a villager first and, at equal priority, never switched to the echo:
+            // the old mobAttack flake (a probe with one villager 9 blocks away took the villager in 6 of 10 runs). Which
+            // vanilla target wins is vanilla's business; this check is about the echo goal. The spawn is a fixed spot in
+            // the flattened box around C instead of an offset from wherever the farm route left the echo.
+            BlockPos huskAt = c.offset(-5, 0, -3);
+            Mob husk = spawnMob(level, net.minecraft.world.entity.EntityTypes.HUSK, huskAt, extras);
+            int rivals = 0;
+            if (husk != null) {
+                double range = husk.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+                rivals = level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, husk.getBoundingBox().inflate(range, 4.0D, range),
+                        e -> e instanceof net.minecraft.world.entity.npc.villager.AbstractVillager || e instanceof net.minecraft.world.entity.animal.golem.IronGolem
+                                || e instanceof net.minecraft.world.entity.animal.turtle.Turtle).size();
+                husk.targetSelector.removeAllGoals(goal -> !(goal instanceof com.mnemolith.event.EchoThreatEvents.EchoHuntGoal));
+            }
+            boolean huskClear = husk != null && !husk.isInWall() && husk.hasLineOfSight(echo);
             boolean targeted = false, attacked = false;
             int ticksHunt = 0;
             BlockPos fledFrom = null;
@@ -439,9 +455,9 @@ public final class Echo3Qa {
             discard(husk);
             int ticksCalm = drive(level, echo, 1200, e -> !e.job().alarmed());
             JobStatus.Kind resumed = echo.job().status().kind();
-            mobAttack = targeted && attacked && attackedStatus && fled >= CommonConfig.ECHO_FLEE_DISTANCE.get() - 2 && !echo.job().alarmed()
+            mobAttack = huskClear && targeted && attacked && attackedStatus && fled >= CommonConfig.ECHO_FLEE_DISTANCE.get() - 2 && !echo.job().alarmed()
                     && echo.job().mode() == EchoJob.Mode.FARM && (resumed == JobStatus.Kind.FARMING || resumed == JobStatus.Kind.FARM_WAIT) && echo.isAlive();
-            notes.add("mobAttack targeted=" + targeted + " hitAfter=" + ticksHunt + " label=\"" + attackedText + "\" fled=" + fmt(fled) + " calmAfter=" + ticksCalm
+            notes.add("mobAttack huskClear=" + huskClear + " vanillaRivalsNear=" + rivals + " targeted=" + targeted + " hitAfter=" + ticksHunt + " label=\"" + attackedText + "\" fled=" + fmt(fled) + " calmAfter=" + ticksCalm
                     + " resumed=" + resumed.getSerializedName() + " health=" + echo.getHealth() + "/" + echo.getMaxHealth());
 
             // ---------- lens orders ----------

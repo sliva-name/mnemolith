@@ -7,6 +7,7 @@ import com.mnemolith.entity.echo.EchoEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -31,10 +32,17 @@ public final class EchoThreatEvents {
         if (mob instanceof Creeper || mob instanceof NeutralMob || mob instanceof MemoryMob) {
             return;
         }
-        mob.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(mob, EchoEntity.class, 10, true, false,
+        mob.targetSelector.addGoal(3, new EchoHuntGoal(mob, true,
                 (target, level) -> target instanceof EchoEntity echo && echo.attractsMobs()));
         // Memory grafts: a grave echo is a decoy. This goal outranks the player target, so the mob turns to the decoy.
-        mob.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(mob, EchoEntity.class, 10, false, false,
+        mob.targetSelector.addGoal(1, new EchoHuntGoal(mob, false,
                 (target, level) -> target instanceof EchoEntity echo && echo.attractsMobs() && com.mnemolith.echo.graft.EchoGrafts.decoy(echo)));
+    }
+
+    /** The echo target goals above, as their own type so QA can tell them from the mob's vanilla targets. */
+    public static final class EchoHuntGoal extends NearestAttackableTargetGoal<EchoEntity> {
+        EchoHuntGoal(PathfinderMob mob, boolean mustSee, TargetingConditions.Selector selector) {
+            super(mob, EchoEntity.class, 10, mustSee, false, selector);
+        }
     }
 }

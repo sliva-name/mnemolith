@@ -868,7 +868,7 @@ Dev · N м». Пакет `mnemolith:echo_command` (id сущности, при�
 
 Сущность `residue`, предмет `residual_shard` (текстура 16×16, модель `item/generated`), текстура
 `entity/residue.png` 64×64 (светлая, окрашивается нравом), страница справочника `residues` (22 страницы),
-команда `residueqa`, семь ключей конфига, генератор арта `tools/art/residue_art.py`.
+команда `residueqa`, семь ключей конфига, генератор арта `tools/art/residue_art.py` (после art pass: текстуры 32×32 и 128×128, скрипт заменён общим конвейером `tools/art/build.py`).
 
 ### 13.10. Известные ограничения
 

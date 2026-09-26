@@ -1,6 +1,24 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mnemolith:item/extraction_needle"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": [
+          "gui",
+          "ground",
+          "fixed",
+          "on_shelf"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/extraction_needle"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mnemolith:item/extraction_needle_in_hand"
+    }
   }
 }
