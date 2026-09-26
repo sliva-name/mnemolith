@@ -21,6 +21,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
@@ -82,6 +83,11 @@ public final class LivePlayers {
         JOINED.clear();
         for (ChunkPos chunk : FORCED) {
             QaSupport.discardResidues(level, chunk.getMiddleBlockPosition(level.getSeaLevel()));
+            AABB column = new AABB(chunk.getMinBlockX() - 16, level.getMinY(), chunk.getMinBlockZ() - 16, chunk.getMaxBlockX() + 17, level.getMaxY(), chunk.getMaxBlockZ() + 17);
+            for (net.minecraft.world.entity.Entity entity : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, column,
+                    e -> e instanceof com.mnemolith.entity.echo.ScarEntity || e instanceof net.minecraft.world.entity.monster.zombie.Zombie)) {
+                entity.discard();
+            }
             QaSupport.releaseColumn(level, chunk);
         }
         FORCED.clear();
@@ -98,18 +104,34 @@ public final class LivePlayers {
         }
     }
 
-    /** The live batch's environment: nothing to set up, and the teardown removes every joined player and forced chunk. */
-    public record Environment() implements TestEnvironmentDefinition<Unit> {
-        public static final MapCodec<Environment> CODEC = MapCodec.unit(new Environment());
+    /**
+     * A live batch's environment: the teardown removes every joined player and forced chunk and ends any storm left.
+     * Storm batches ({@code storms} true) each get their own environment, so they run one after another: storms are
+     * capped per dimension ({@code maxStormsPerDimension}, 1 by default), and tests in one batch run side by side.
+     */
+    public record Environment(boolean storms) implements TestEnvironmentDefinition<Unit> {
+        public static final MapCodec<Environment> CODEC = com.mojang.serialization.Codec.BOOL.optionalFieldOf("storms", false)
+                .xmap(Environment::new, Environment::storms);
 
+        public Environment() {
+            this(false);
+        }
+
+        /** Without {@code storms}, natural storms are paused for the batch (long fractures must not start one). */
         @Override
         public Unit setup(ServerLevel level) {
+            com.mnemolith.echo.storm.Storms.pauseNatural(!this.storms);
             return Unit.INSTANCE;
         }
 
         @Override
         public void teardown(ServerLevel level, Unit saveData) {
             cleanUp(level);
+            com.mnemolith.echo.storm.StormData data = com.mnemolith.echo.storm.StormData.get(level.getServer());
+            for (com.mnemolith.echo.storm.RecollectionStorm storm : data.storms()) {
+                com.mnemolith.echo.storm.Storms.finish(level, storm, com.mnemolith.echo.storm.Storms.End.DISABLED);
+            }
+            com.mnemolith.echo.storm.Storms.pauseNatural(false);
         }
 
         @Override

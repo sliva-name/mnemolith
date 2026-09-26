@@ -34,8 +34,11 @@ public class ResidualShardItem extends Item {
             }
             return InteractionResult.FAIL;
         }
-        if (context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer player) {
-            player.sendSystemMessage(Component.translatable("mnemolith.residue.released",
+        net.minecraft.server.level.ServerPlayer releaser = context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer player ? player : null;
+        // In a fractured chunk, a freed shard calls a recollection storm (its own message replaces the release line).
+        boolean called = level instanceof net.minecraft.server.level.ServerLevel server && com.mnemolith.echo.storm.Storms.callByShard(server, residue, releaser);
+        if (releaser != null && !called) {
+            releaser.sendSystemMessage(Component.translatable("mnemolith.residue.released",
                     Component.translatable(residue.tag().translationKey()), residue.strength()), true);
         }
         context.getItemInHand().consume(1, context.getPlayer());

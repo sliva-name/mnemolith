@@ -55,6 +55,8 @@ public final class ResidueEntity extends Mob {
     private int festerTicks;
     private int pinTicks;
     private int lashCooldown;
+    /** The recollection storm that condensed this residue (0 = none): its waves drive it instead of the fester. */
+    private long storm;
     private @Nullable Vec3 driftTarget;
 
     public ResidueEntity(EntityType<? extends ResidueEntity> type, Level level) {
@@ -173,10 +175,26 @@ public final class ResidueEntity extends Mob {
             this.lashCooldown--;
         }
         this.sense(level, level.players());
+        if (this.storm != 0L) {
+            // Storm-born: the storm's waves act for it. A storm that ended (or was lost) lets it go back to normal.
+            if (this.tickCount % 100 == 0 && !com.mnemolith.echo.storm.Storms.isActive(level, this.storm)) {
+                this.storm = 0L;
+            }
+            return;
+        }
         if (++this.festerTicks >= Residues.festerTicks()) {
             this.festerTicks = 0;
             Residues.fester(level, this);
         }
+    }
+
+    /** The storm this residue belongs to (0 = none). */
+    public long storm() {
+        return this.storm;
+    }
+
+    public void setStorm(long storm) {
+        this.storm = storm;
     }
 
     /**
@@ -344,6 +362,9 @@ public final class ResidueEntity extends Mob {
         output.putBoolean("residue_old", this.old);
         output.putInt("residue_fester", this.festerTicks);
         output.putInt("residue_pin", this.pinTicks);
+        if (this.storm != 0L) {
+            output.putLong("residue_storm", this.storm);
+        }
     }
 
     @Override
@@ -356,6 +377,7 @@ public final class ResidueEntity extends Mob {
         this.old = input.getBooleanOr("residue_old", false);
         this.festerTicks = Math.max(0, input.getIntOr("residue_fester", 0));
         this.pinTicks = Math.max(0, input.getIntOr("residue_pin", 0));
+        this.storm = input.getLongOr("residue_storm", 0L);
         this.entityData.set(DATA_PINNED, this.pinTicks > 0);
         Mnemolith.LOGGER.debug("Mnemolith residue loaded tag={} strength={}", this.tag.getSerializedName(), this.strength());
     }

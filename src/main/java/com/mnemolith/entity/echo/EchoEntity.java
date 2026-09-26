@@ -90,6 +90,8 @@ public class EchoEntity extends MemoryAvatar {
     private double bonusHealth;
     /** Memory graft (saved as {@code echo_graft}); null without one. Server only; clients read {@link #DATA_GRAFT}. */
     private com.mnemolith.echo.graft.@Nullable EchoGraft graft;
+    /** Scar-set with a scar fragment (saved as {@code echo_scarred}): holds three slips' worth, shrugs off fractures. */
+    private boolean scarred;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -332,10 +334,20 @@ public class EchoEntity extends MemoryAvatar {
         int packed = 0;
         if (value != null) {
             com.mnemolith.echo.graft.Temper temper = value.temper();
-            int capacity = Math.min(0x3FFF, com.mnemolith.echo.graft.EchoGrafts.capacity(temper));
+            int capacity = Math.min(0x3FFF, com.mnemolith.echo.graft.EchoGrafts.capacity(temper, this.scarred));
             packed = temper.id() | (Math.min(0x3FFF, Math.max(0, value.charge())) << 4) | (capacity << 18);
         }
         this.entityData.set(DATA_GRAFT, packed);
+    }
+
+    public boolean scarred() {
+        return this.scarred;
+    }
+
+    /** Sets the scar flag (and re-syncs the graft capacity it changes). */
+    public void setScarred(boolean value) {
+        this.scarred = value;
+        this.setGraft(this.graft);
     }
 
     /** Synced temper (client and server); null without a graft. */
@@ -574,6 +586,9 @@ public class EchoEntity extends MemoryAvatar {
         if (!serverPlayer.isShiftKeyDown() && com.mnemolith.echo.residue.Residues.isShard(held)) {
             return com.mnemolith.echo.graft.EchoGrafts.graftShard(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
+        if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.SCAR_FRAGMENT.get())) {
+            return com.mnemolith.echo.graft.EchoGrafts.scarSet(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+        }
         if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.EXTRACTION_NEEDLE.get())) {
             return com.mnemolith.echo.graft.EchoGrafts.unpick(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
@@ -594,7 +609,8 @@ public class EchoEntity extends MemoryAvatar {
     }
 
     private Component withGraftLine(Component status) {
-        return this.graftTemper() == null ? status : status.copy().append(" · ").append(this.graftLine());
+        Component line = this.graftTemper() == null ? status : status.copy().append(" · ").append(this.graftLine());
+        return this.scarred ? line.copy().append(" · ").append(Component.translatable("mnemolith.graft.scarred")) : line;
     }
 
     public void openInventory(ServerPlayer player) {
@@ -729,6 +745,9 @@ public class EchoEntity extends MemoryAvatar {
         if (this.graft != null) {
             output.store("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC, this.graft);
         }
+        if (this.scarred) {
+            output.putBoolean("echo_scarred", true);
+        }
     }
 
     @Override
@@ -750,6 +769,7 @@ public class EchoEntity extends MemoryAvatar {
         this.replayTick = input.getIntOr("echo_replay_tick", -1);
         input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
         this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
+        this.scarred = input.getBooleanOr("echo_scarred", false);
         // Only graftable tags with charges left are kept; anything else in a hand-edited save is dropped.
         this.setGraft(input.read("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC)
                 .filter(g -> g.charge() > 0 && com.mnemolith.echo.graft.Temper.of(g.cast().tag()) != null)

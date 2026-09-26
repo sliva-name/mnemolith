@@ -16,6 +16,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_echo3qa` | `/mnemolith echo3qa` (13) | |
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
+| `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 
 **Live residue tests** (`com.mnemolith.gametest.ResidueLiveTests`). Real server players join through `PlayerList.placeNewPlayer` on an in-memory connection negotiated as a NeoForge client, stand in survival and are ticked every game tick the way the network layer ticks a connected player (`ServerPlayer.doTick`), so `PlayerTickEvent`, item use and `level.players()` are the real paths. Setup writes chunk memory and places residues directly; what is under test runs on its own. Players and forced chunks are removed by the `mnemolith:live` environment's teardown, pass or fail.
@@ -31,7 +32,15 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `residue_mute_stone_starves` | A mute stone placed in the chunk (a real block placement) mutes it; the next fester costs 1 strength and writes nothing | 1400 |
 | `residue_observatory_seeds_once` | The observatory template placed with its worldgen processor list marks the reel's chunk; a player walking in makes the next pulse seed one old strength-5 residue by the reel; two more pulses seed nothing | 800 |
 
-**Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
+**Live storm tests** (`com.mnemolith.gametest.StormLiveTests`). The same real server players, each test in its own environment (`mnemolith:storm_...`, `mnemolith:scar_read_then_hurt`) so its storm never shares a batch. Setup clears three chunks of memory and lays a flat stone pad with open air; the storm then runs on the real server tick. Teardown ends leftover storms, discards the Scar and raised zombies, and unpauses natural storms.
+
+| Test | What is proved | Budget |
+| --- | --- | --- |
+| `storm_shard_call_merges_into_scar` | A player frees a fall residual shard (`gameMode.useItemOn`) in a fractured chunk loaded with death, fire and fall memories: a storm is called and adopts the residue, the server tick gathers it and runs its waves, three or more storm residues are left, and they merge: the chunk is a Scar site with its heart, and one Scar stands over it | 1700 |
+| `storm_mute_stone_contains` | While a called storm gathers, the player places a mute stone in the centre chunk (a real block placement): the storm ends `CONTAINED` before it rages, the freed residue stays as an ordinary residue | 300 |
+| `scar_read_then_hurt` | A Scar and a survival player 6 blocks off: a hit before reading does nothing; the player raises the lens (`gameMode.useItem`) and keeps looking: within the read time the Scar is pinned, and `ServerPlayer.attack` then takes health off | 400 |
+
+**Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
 **Proving the gate.** Break a check on purpose (for example, make `Residues.lash` skip the wither) and `./gradlew runGameTestServer` fails with the test name and message and a non-zero exit; revert it and it passes.
 
@@ -62,7 +71,7 @@ Two more lines record the observatory: `Mnemolith qa observatory chest=true` (th
 | 9 | Mobs: spawn plus one action | `strider` summons an echo strider and `beginCharge` sets the telegraph pose. `archivist` summons an archivist, `snatch` empties the container, and the pose is flee. `replicant` summons a moment replicant and `beginTelegraph` sets the telegraph pose |
 | 10 | Phase 11 multiplayer invariants | `/mnemolith mpsmoke`, not this command. The line is `sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true` |
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
-| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (22) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
+| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (24) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
 
 ## Echo QA
 
@@ -125,7 +134,7 @@ farming ticks=128 harvested=10 planted=20/20 chestWheat=10 echoSeeds=17 chestSee
 
 | Flag | What is proved |
 | --- | --- |
-| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has `GuideBook.PAGE_COUNT` (21) pages |
+| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has `GuideBook.PAGE_COUNT` (24 since the storm pages) pages |
 | `farmLesson` | A recording with 2 hoe tills, 2 plantings and 2 mature harvests gives a farm lesson (wheat) and no mining lesson or blueprint |
 | `replicantMimic` | A replicant mimicking a build takes back at most 3 placed blocks, one item each back into the echo; the echo rebuilds, the result is exact (wrong=0), with no extra items and no ground drops |
 | `workPressure` | 60 work actions in one chunk write 3 BUILD imprints and add pressure (+10 with the defaults) |
@@ -202,6 +211,43 @@ Manual (client):
 - [ ] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
 - [ ] Visit an observatory: an old residue floats by the reel.
 - [ ] Field guide page «Осадки памяти» renders with its picture in RU and EN.
+
+## Recollection storm QA
+
+`/mnemolith stormqa` (gamemaster) checks recollection storms and the Scar on a dedicated server, in cleared chunks next to the command source, with a fake-player owner and one echo. The last line must be `Recollection storm QA: 19 of 19`. Storms already running are set aside and put back afterwards; natural rolls are paused for the pass; every storm, site, block and entity the pass makes is removed. Storms are stepped tick by tick (`Storms.step`) instead of waiting in real time. The notes also log `gatherTickNs` (the average gathering tick) and `firstWaveUs` (the tick that breaks the storm and runs its first wave).
+
+| Flag | What is proved |
+| --- | --- |
+| `gates` | A calm chunk is `CALM`, a fractured one `OK`, a mute stone makes it `MUTED`, scar glass nearby `WARDED`; with one storm running the cap (default 1) refuses another |
+| `shardCalls` | A shard used through `ResidualShardItem` on a fractured chunk calls a gathering storm that adopts the freed residue; with that storm running, another call is refused by the cap |
+| `muteContains` | A mute stone placed in the centre chunk while it gathers ends the storm `CONTAINED`; the freed residue loses its storm flag |
+| `waveCondenses` | The first wave turns the area's loud graftable imprints (one of them in a neighbouring chunk) into three storm residues and removes those imprints |
+| `hushSwallows` | A hushed echo within 8 blocks swallows a storm residue's act-out for one charge |
+| `chokeStarves` | A muted centre: the wave condenses nothing, its residues starve (strength −1 each), and it costs two waves |
+| `spent` | Nothing standing and nothing to condense: the storm ends `SPENT` |
+| `passed` | Two survivors after the last wave: `PASSED`, and they stay as ordinary residues |
+| `scarForms` | Three survivors merge: `SCAR`, the chunk is a Scar site, heart and a glass ring (with mobGriefing), one Scar entity, the site now wards storms |
+| `griefingOff` | With mobGriefing off the site still forms, but no heart and no glass are placed |
+| `scarNeedsReading` | An unread Scar takes no damage; a lens reading (the fake player's gaze through `ScarEntity.sense`) pins it after 60 ticks and it can then be hurt |
+| `scarRecall` | Its recall reaches the player within 10 blocks and lashes (silence: blinded) |
+| `graveDecoy` | A grave-grafted echo within 16 blocks draws the recall onto itself for one charge; the owner is not hit |
+| `scarDrops` | Death drops one scar fragment and a strength-4 shard per merged temper; six merged would drop two fragments |
+| `fragmentSetsEcho` | A scar fragment on your echo scar-sets it: graft capacity 64→96, a second fragment is refused, a fracture keeps the graft, and the flag saves |
+| `wardBlocks` | Placed scar glass wards: the gate is `WARDED`, and imprints are still written there |
+| `siteReseeds` | A player in a Scar site chunk makes the pulse seed one strength-5 residue of a merged temper; not again the same day; not under a mute stone |
+| `heartHeals` | Breaking the heart heals the site (no longer a scar chunk) |
+| `persistence` | The storm (`StormData` codec), the chunk's scar fields, the Scar entity and a storm residue's flag survive a save and reload |
+
+Manual (client):
+
+- [ ] Stand in a fractured chunk for a minute or two (or free a shard there): «Собирается буря воспоминаний…», the bar «Буря воспоминаний: собирается», the sky darkens, the edge of the 3×3 area flickers.
+- [ ] Place a mute stone in the centre chunk while it gathers: «Буря воспоминаний сдержана.» and the bar goes.
+- [ ] Let one rage: every 10 s storm residues appear and act out (zombie, fire, small blast with mobGriefing, lift, darkness); the bar counts the storm residues.
+- [ ] Let three or more survive: the Scar rises, violet and cracked, its tint drifting through the merged tempers; heart and scar glass around it (mobGriefing on).
+- [ ] Hit it unread: nothing. Raise the lens for 3 s: «Прочитано: Шрам скован…», it slows and can be hurt for 8 s. Hear the charge before each recall and step out of 10 blocks to dodge it.
+- [ ] Kill it: scar fragment(s), shards and xp. Use a fragment on your echo: «закалён Шрамом», the graft line shows 3 slips' worth.
+- [ ] Come back the next in-game day: an old residue floats by the heart. Mine scar glass with a pickaxe and place it by a fracture: no storm gathers there.
+- [ ] Field guide pages «Бури воспоминаний» and «Шрам» render with pictures in RU and EN.
 
 ### Manual stage 3 checks (client)
 

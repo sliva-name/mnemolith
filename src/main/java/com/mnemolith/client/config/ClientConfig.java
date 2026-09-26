@@ -32,7 +32,7 @@ public final class ClientConfig {
         SpecValues.section(builder, "visuals", "Local presentation of memory. These options stay on this client.");
         IMPRINT_PARTICLES = SpecValues.bool(builder, "imprintParticles", "Whether custom memory particles are shown.", true);
         PRESSURE_VIGNETTE = SpecValues.bool(builder, "pressureVignette", "Whether an overloaded or fractured chunk darkens the screen edge. The band comes from the server snapshot.", true);
-        STORM_SCREEN_SHAKE = SpecValues.bool(builder, "stormScreenShake", "Whether an overloaded or fractured chunk shakes the camera. A recollection storm is not started.", true);
+        STORM_SCREEN_SHAKE = SpecValues.bool(builder, "stormScreenShake", "Whether an overloaded or fractured chunk (where recollection storms gather) shakes the camera. Client only: it never starts or stops a storm, and the storm's darkened sky and fog come with its boss bar either way.", true);
         FRACTURE_FRINGE = SpecValues.bool(builder, "fractureFringe", "Whether the fractured chunk under you desaturates the world and fringes the screen edge. One fullscreen pass. Overloaded chunks do not run it.", true);
         MEMORY_AUDIO_VOLUME = SpecValues.decimal(builder, "memoryAudioVolume", "Volume scale, from 0.0 to 1.0, for the local chronicle lens chime.", 1.0D, 0.0D, 1.0D);
         PARTICLE_DENSITY = SpecValues.decimal(builder, "particleDensity", "Scale, from 0.0 to 1.0, for every custom memory particle. 0 disables them.", 1.0D, 0.0D, 1.0D);

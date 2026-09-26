@@ -65,7 +65,7 @@ Veins were common enough to tint a lot of stone and rare enough that the bleed n
 
 Catalog unlock is unchanged: a tag is learned when you extract it or put it in the reel, and a formula is learned when that compose succeeds. Hints still count unread patterns. They do not list them.
 
-Server config defaults are unchanged. Storms are still not started. `server.logPressureChanges` logs band changes other than fracture. Cooling and write strengths live in the common gameplay section.
+Server config defaults are unchanged (storms allowed, 1 per dimension). Storms now run; their numbers are in [Recollection storms](#recollection-storms-and-the-scar). `server.logPressureChanges` logs band changes other than fracture. Cooling and write strengths live in the common gameplay section.
 
 ## Memory grafts
 
@@ -98,3 +98,25 @@ Why these numbers: silence is the cheapest slip to get (a mute stone writes one)
 
 Why: condensing takes the loudest graftable imprint out, so a residue is relief now and a cost later. The player chooses the cost: starve it (mute stone, calm), spend it (capture, feed, absorb), or farm it (let it fester beside a needle).
 
+## Recollection storms and the Scar
+
+| Number | Default | Why |
+| --- | --- | --- |
+| `stormAttemptChance` | 0.02 per second per player in a fracture | a storm usually gathers within a minute or two of standing in a fracture; a fracture you pass through rarely breaks |
+| `maxStormsPerDimension` | 1 | one storm is an event; two at once would be noise and double the tick work |
+| Gathering | 10 s | long enough to see the bar, place a mute stone or step away |
+| Area | 3×3 chunks around the centre | the fracture and its neighbours: a base next to a fracture is inside it |
+| Waves | 6, one per 10 s | a minute of pressure: enough time to read and capture a few, not an endless siege |
+| Storm residues alive | at most 6 | same order as the residue cap; the worst case is six act-outs every 10 s |
+| Muted centre | each wave counts twice | containing late still pays off: a raging storm in a muted centre ends in three waves |
+| Merge | 3 or more standing after the last wave | ignoring a storm has a cost; draining, capturing or feeding one below 3 avoids the boss |
+| Scar health | 60 + 20 per merged residue, at most 180 | three merged is 120 (a strong mob), six merged is the ceiling |
+| Read to hurt | 3 s of lens within 20 blocks → 8 s pinned, 5 s unreadable after | the fight alternates reading and hitting, and needs the lens tool you already have |
+| Recall | every 3 s, 1 s audible charge, radius 10 | leaving 10 blocks during the charge dodges it; grave and hushed echoes answer it |
+| Leash | 20 blocks from the heart | it guards its site; you can always retreat out of it |
+| Drops | 1 scar fragment (2 at 5+ merged), one strength-4 shard per merged temper, 50 xp | the boss pays in grafts: a fragment is a permanent upgrade, the shards are two slips' worth each |
+| Scar-set capacity | 3 slips instead of 2 | a clear upgrade that does not stack (one per echo) |
+| Site reseed | once per in-game day, strength 5, only with a player in the chunk | a lasting reason to return; one residue a day is far below a slip farm's rate |
+| Scar glass ward | storms blocked within one chunk; imprints still written | protects a slip farm without muting it |
+
+Why: every storm offers the same choice as a residue at a larger scale. Pay up front (drain, mute, ward), pay during (read, capture, feed echoes, flee out of the area), or let it merge and fight for a permanent echo upgrade and a site that keeps giving.

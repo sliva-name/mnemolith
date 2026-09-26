@@ -15,9 +15,9 @@ public final class ServerConfig {
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
-        SpecValues.section(builder, "server", "Authority rules for recollection storms. Instability cooling and imprint strengths live in the common gameplay section. The logical server owns these values.");
-        ALLOW_RECOLLECTION_STORMS = SpecValues.bool(builder, "allowRecollectionStorms", "Reserved, not used yet: recollection storms are not implemented, and this value is only logged at server start. Whether storms may start.", true);
-        MAX_STORMS_PER_DIMENSION = SpecValues.integer(builder, "maxStormsPerDimension", "Reserved, not used yet: recollection storms are not implemented, and this value is only logged at server start. Maximum storms active in one dimension at once.", 1, 0, 16);
+        SpecValues.section(builder, "server", "Authority rules for recollection storms (they run only on the logical server). How often they are attempted is stormAttemptChance in the common spawnRates section. Instability cooling and imprint strengths live in the common gameplay section.");
+        ALLOW_RECOLLECTION_STORMS = SpecValues.bool(builder, "allowRecollectionStorms", "Whether recollection storms may gather, naturally or called by a freed residual shard. Turning it off ends storms that are running (their residues stay as ordinary residues); Scar sites and the Scar stay.", true);
+        MAX_STORMS_PER_DIMENSION = SpecValues.integer(builder, "maxStormsPerDimension", "Maximum recollection storms gathering or raging in one dimension at once. 0 stops new storms like allowRecollectionStorms false, without ending running ones.", 1, 0, 16);
         LOG_PRESSURE_CHANGES = SpecValues.bool(builder, "logPressureChanges", "Whether a pressure band change, other than fracture, is written to the server log.", false);
         builder.pop();
 

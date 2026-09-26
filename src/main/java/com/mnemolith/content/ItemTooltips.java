@@ -44,6 +44,12 @@ public final class ItemTooltips {
                             com.mnemolith.echo.EchoProgress.of(player).level(upgrade.kind()), com.mnemolith.echo.EchoProgress.maxLevel(upgrade.kind()))
                             .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                 }
+            } else if (stack.getItem() == ModItems.SCAR_FRAGMENT.get()) {
+                builder.accept(Component.translatable("item.mnemolith.scar_fragment.hint"));
+                builder.accept(Component.translatable("item.mnemolith.scar_fragment.source").withStyle(net.minecraft.ChatFormatting.GRAY));
+            } else if (stack.getItem() == ModItems.SCAR_GLASS.get()) {
+                builder.accept(Component.translatable("block.mnemolith.scar_glass.hint"));
+                builder.accept(Component.translatable("block.mnemolith.scar_glass.source").withStyle(net.minecraft.ChatFormatting.GRAY));
             } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
             }

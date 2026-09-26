@@ -12,7 +12,7 @@ DEEP = (20, 26, 56); STRIPE = (42, 54, 104); EMBER = (255, 176, 137); RED = (210
 PINK = (255, 168, 214); PINK_L = (255, 214, 236); SHELL = (201, 195, 204); INDIGO = (61, 74, 138)
 SHADOW = (7, 11, 24); GOLD = (232, 176, 72)
 # Pages drawn by these tools; clean_page() never samples them.
-GENERATED = ('recording.png', 'grafts.png', 'residues.png')
+GENERATED = ('recording.png', 'grafts.png', 'residues.png', 'storms.png', 'scar.png')
 TEMPERS = [  # tag accent on the slip, temper body color
     ('silence', (184, 198, 220), (184, 198, 220)),
     ('death', (182, 162, 232), (182, 162, 232)),

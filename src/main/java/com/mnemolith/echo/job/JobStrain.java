@@ -44,7 +44,7 @@ final class JobStrain {
             this.strain = band;
             this.job.dirty = true;
         }
-        if (band == PressureBand.FRACTURE && this.job.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get()) {
+        if (band == PressureBand.FRACTURE && this.job.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get() && !echo.scarred()) {
             this.job.halt(echo, JobStatus.of(JobStatus.Kind.FRACTURED));
         }
     }

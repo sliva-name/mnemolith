@@ -51,6 +51,12 @@ public final class ModEntities {
             MobCategory.MISC,
             builder -> builder.sized(0.6F, 1.6F).eyeHeight(1.3F).clientTrackingRange(10).noLootTable().fireImmune());
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.ScarEntity>> SCAR = ENTITY_TYPES.registerEntityType(
+            "scar",
+            com.mnemolith.entity.echo.ScarEntity::new,
+            MobCategory.MISC,
+            builder -> builder.sized(1.2F, 3.2F).eyeHeight(2.6F).clientTrackingRange(10).noLootTable().fireImmune());
+
     private ModEntities() {}
 
     public static void register(IEventBus modEventBus) {

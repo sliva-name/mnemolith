@@ -192,6 +192,34 @@ public final class LoadedChunkMemory {
         }
     }
 
+    /** Scar glass placed: this chunk (and its ring) no longer lets a recollection storm gather. */
+    public static void addWard(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        if (getOrCreate(chunk).addWard(pos)) {
+            chunk.markUnsaved();
+        }
+    }
+
+    public static void removeWard(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = existing(chunk);
+        if (memory == null) {
+            return;
+        }
+        boolean wasFull = ChunkMemory.markListFull(memory.wardCount());
+        if (memory.removeWard(pos)) {
+            if (wasFull) {
+                refillMarks(chunk, ModBlocks.SCAR_GLASS.get(), memory::addWard);
+            }
+            chunk.markUnsaved();
+        }
+    }
+
+    /** True when a Scar site or scar glass sits in a loaded chunk within one chunk of {@code pos}. */
+    public static boolean stormProof(ServerLevel level, BlockPos pos) {
+        return anyLoaded(level, pos, 1, ChunkMemory::stormProof);
+    }
+
     public static boolean markObservatory(ChunkAccess chunk) {
         ChunkMemory memory = getOrCreate(chunk);
         if (memory.observatory()) {

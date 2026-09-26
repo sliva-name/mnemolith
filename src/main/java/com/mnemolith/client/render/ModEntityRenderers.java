@@ -31,6 +31,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.ARCHIVIST.get(), ArchivistRenderer::new);
         event.registerEntityRenderer(ModEntities.MOMENT_REPLICANT.get(), ReplicantRenderer::new);
         event.registerEntityRenderer(ModEntities.RESIDUE.get(), ResidueRenderer::new);
+        event.registerEntityRenderer(ModEntities.SCAR.get(), ScarRenderer::new);
         registerAvatar(event, ModEntities.ECHO.get(), true);
         registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);
     }

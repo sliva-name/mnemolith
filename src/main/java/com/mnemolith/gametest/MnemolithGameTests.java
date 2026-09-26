@@ -15,6 +15,7 @@ import com.mnemolith.command.qa.MnemolithQa;
 import com.mnemolith.command.qa.MultiplayerSmoke;
 import com.mnemolith.command.qa.QaReport;
 import com.mnemolith.command.qa.ResidueQa;
+import com.mnemolith.command.qa.StormQa;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -34,9 +35,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * Registers the Mnemolith game tests: {@code ./gradlew runGameTestServer} runs them all and exits non-zero when a
  * required one fails; in a dev world {@code /test runmultiple mnemolith:} runs them by hand.
  * <p>
- * Two batches (one per environment), run one after the other: {@code mnemolith:suites} (the QA suites, each done
- * within its first tick) and {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the
- * environment's teardown).
+ * Batches (one per environment), run one after the other: {@code mnemolith:suites} (the QA suites, each done within
+ * its first tick), {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the environment's
+ * teardown), and one batch per storm test (storms are capped per dimension, so they must not run side by side).
  */
 public final class MnemolithGameTests {
     private MnemolithGameTests() {}
@@ -52,7 +53,8 @@ public final class MnemolithGameTests {
     /** The anchor template: 3x3x3 air (see {@code tools/gametest_structure.py}). */
     private static final Identifier EMPTY = id("gametest/empty");
 
-    private record Spec(DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> function, boolean live, int maxTicks) {}
+    /** {@code environment}: "suites", "live", or a storm batch of its own. */
+    private record Spec(DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> function, String environment, int maxTicks) {}
 
     private static final List<Spec> SPECS = new ArrayList<>();
 
@@ -66,6 +68,7 @@ public final class MnemolithGameTests {
         suite("graftqa", GraftQa::check, Map.of());
         suite("residueqa", ResidueQa::check, Map.of());
         suite("mpsmoke", MultiplayerSmoke::check, Map.of());
+        suite("stormqa", StormQa::check, Map.of());
 
         // Formation: pulses every 200 ticks at 1 in 2; 4400 ticks is 22 pulses, a miss chance under 1 in 4 million.
         live("residue_forms_where_player_stands", ResidueLiveTests::formsWherePlayerStands, 4400);
@@ -78,16 +81,25 @@ public final class MnemolithGameTests {
         live("residue_mute_stone_starves", ResidueLiveTests::muteStoneStarves, 1400);
         // Seeds on the first pulse (within 200 ticks), then two more pulses must not seed again.
         live("residue_observatory_seeds_once", ResidueLiveTests::observatorySeedsOnce, 800);
+
+        // Storms: one batch each (storms are capped per dimension). Gathering 200 ticks + six waves of 200 = 1400.
+        storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);
+        storm("storm_mute_stone_contains", StormLiveTests::muteStoneContains, 300);
+        storm("scar_read_then_hurt", StormLiveTests::scarReadThenHurt, 400);
     }
 
     private static void suite(String name, BiFunction<ServerLevel, BlockPos, QaReport> check, Map<String, String> waived) {
         int lane = SPECS.size();
         Consumer<GameTestHelper> body = helper -> SuiteTests.run(helper, lane, check, waived);
-        SPECS.add(new Spec(FUNCTIONS.register("suite_" + name, () -> body), false, 100));
+        SPECS.add(new Spec(FUNCTIONS.register("suite_" + name, () -> body), "suites", 100));
     }
 
     private static void live(String name, Consumer<GameTestHelper> body, int maxTicks) {
-        SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), true, maxTicks));
+        SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), "live", maxTicks));
+    }
+
+    private static void storm(String name, Consumer<GameTestHelper> body, int maxTicks) {
+        SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), name, maxTicks));
     }
 
     /** Called from the mod constructor. Does nothing unless game tests are enabled for this run. */
@@ -104,7 +116,12 @@ public final class MnemolithGameTests {
         Holder<TestEnvironmentDefinition<?>> suites = event.registerEnvironment(id("suites"));
         Holder<TestEnvironmentDefinition<?>> live = event.registerEnvironment(id("live"), new LivePlayers.Environment());
         for (Spec spec : SPECS) {
-            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(spec.live() ? live : suites, EMPTY, spec.maxTicks(), 0, true);
+            Holder<TestEnvironmentDefinition<?>> environment = switch (spec.environment()) {
+                case "suites" -> suites;
+                case "live" -> live;
+                default -> event.registerEnvironment(id(spec.environment()), new LivePlayers.Environment(true));
+            };
+            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, EMPTY, spec.maxTicks(), 0, true);
             event.registerTest(spec.function().getId(), new FunctionGameTestInstance(spec.function().getKey(), data));
         }
     }

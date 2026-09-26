@@ -114,13 +114,13 @@ public final class CommonConfig {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         SpecValues.section(builder, "difficulty", "Thresholds that decide when recollection becomes dangerous.");
-        RECOLLECTION_STORM_THRESHOLD = SpecValues.decimal(builder, "recollectionStormThreshold", "Multiplier on the saturated, overloaded, and fracture thresholds. Each scaled threshold is capped at pressureSoftCap, so fracture stays reachable. Recollection storms themselves are not implemented yet.", 1.0D, 0.1D, 10.0D);
+        RECOLLECTION_STORM_THRESHOLD = SpecValues.decimal(builder, "recollectionStormThreshold", "Multiplier on the saturated, overloaded, and fracture thresholds. Each scaled threshold is capped at pressureSoftCap, so fracture stays reachable. Recollection storms can only gather in a fractured chunk, so this also sets how loud a place must get before a storm is possible: higher means later and rarer storms.", 1.0D, 0.1D, 10.0D);
         PRESSURE_SOFT_CAP = SpecValues.integer(builder, "pressureSoftCap", "Soft cap for memory pressure accumulated from imprints in loaded chunks.", 100, 1, 10_000);
         builder.pop();
 
-        SpecValues.section(builder, "spawnRates", "Relative weights for future imprint nodes and storm attempts. Worldgen does not use these yet.");
-        IMPRINT_NODE_WEIGHT = SpecValues.integer(builder, "imprintNodeWeight", "Reserved, not used yet. Relative weight of imprint-bearing nodes when structures are placed.", 4, 0, 100);
-        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Reserved, not used yet: recollection storms are not implemented. Chance, from 0.0 to 1.0, that a pressure check attempts a storm.", 0.02D, 0.0D, 1.0D);
+        SpecValues.section(builder, "spawnRates", "How often recollection storms are attempted, and a reserved imprint node weight that worldgen does not use yet.");
+        IMPRINT_NODE_WEIGHT = SpecValues.integer(builder, "imprintNodeWeight", "Reserved, not used yet: no worldgen feature places imprint-bearing nodes. Relative weight of such nodes when structures are placed.", 4, 0, 100);
+        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Chance, from 0.0 to 1.0, rolled once a second for each player standing in a fractured chunk, that a recollection storm starts gathering there (if allowRecollectionStorms, maxStormsPerDimension, mute stones and scar wards allow it). 0.02 means a storm usually gathers within a minute or two. 0 turns natural storms off; a freed residual shard can still call one.", 0.02D, 0.0D, 1.0D);
         builder.pop();
 
         SpecValues.section(builder, "worldGen", "Structure placement defaults. Changing these takes effect the next time a world loads.");
@@ -162,7 +162,7 @@ public final class CommonConfig {
         ALLOW_AMBIENT_PRESSURE = SpecValues.bool(builder, "allowAmbientPressure", "Whether the server may send full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it such a player gets only the band-only snapshot (overloaded and fracture chunks) used for fracture feel. Vein marks stay lens-only. The client visuals.ambientWithoutLens toggle only draws the shimmer; it cannot grant the snapshot by itself.", false);
         SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 20, 1, 10_000);
         OVERLOADED_THRESHOLD = SpecValues.integer(builder, "overloadedThreshold", "Pressure at which a chunk becomes overloaded. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 50, 1, 10_000);
-        FRACTURE_THRESHOLD = SpecValues.integer(builder, "fractureThreshold", "Pressure at which a chunk fractures. Multiplied by recollectionStormThreshold and capped at pressureSoftCap. Fracture is logged and can spawn a moment replicant.", 80, 1, 10_000);
+        FRACTURE_THRESHOLD = SpecValues.integer(builder, "fractureThreshold", "Pressure at which a chunk fractures. Multiplied by recollectionStormThreshold and capped at pressureSoftCap. Fracture is logged, can spawn a moment replicant, and is where a recollection storm can gather.", 80, 1, 10_000);
         MUTE_RADIUS_CHUNKS = SpecValues.integer(builder, "muteRadiusChunks", "Chebyshev radius, in chunks, of loaded chunks where a mute stone blocks imprint writes. 0 is the stone's own chunk.", 0, 0, 2);
         CATALOG_ENABLED = SpecValues.bool(builder, "catalogEnabled", "Whether a catalog fragment opens the discovery catalog.", true);
         DISCOVERY_HINTS = SpecValues.bool(builder, "discoveryHints", "Whether the catalog and reel may show how many stable patterns are still unread. They never list an unread pattern.", true);
@@ -223,7 +223,7 @@ public final class CommonConfig {
         ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
         ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion) can be grafted into your echo to give it a temper.", true);
         ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
-        ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes.", 8, 0, 16);
+        ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes. A hushed echo (anyone's) also swallows a residue's or the Scar's act-out within this radius, for one charge.", 8, 0, 16);
         builder.pop();
 
         SpecValues.section(builder, "residue", "Residual echoes: a loud imprint in an overloaded chunk condenses into a drifting fragment that festers, lashes, and can be read, captured, fed or starved.");
