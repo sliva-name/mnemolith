@@ -72,7 +72,6 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  * entity tick, so movement uses real collisions.
  */
 public final class JobQa {
-    private static final int CHECKS = 12;
     private static final UUID OWNER = UUID.fromString("55555555-5555-5555-5555-555555555555");
     private static final UUID STRANGER = UUID.fromString("66666666-6666-6666-6666-666666666666");
     private static final int MAX_TICKS = 12000;
@@ -82,9 +81,12 @@ public final class JobQa {
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        return check(source.getLevel(), BlockPos.containing(source.getPosition())).send(source, true);
+    }
+
+    /** Runs the suite near {@code spawn} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos spawn) {
         salt++;
-        BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos base = column(level, (spawn.getX() >> 4) + 40 + salt * 6, spawn.getZ() >> 4);
         tickColumn(level, base);
         FakePlayer owner = FakePlayerFactory.get(level, new GameProfile(OWNER, "JobQaOwner"));
@@ -175,7 +177,7 @@ public final class JobQa {
             echo = EchoLife.spawn(level, owner, plain, mineL);
             if (echo == null) {
                 notes.add("spawn failed");
-                return report(source, notes, mineLesson);
+                return report(notes, mineLesson);
             }
             echo.stopReplay();
             echo.snapTo(Vec3.atBottomCenterOf(base), 0.0F, 0.0F);
@@ -210,7 +212,7 @@ public final class JobQa {
             notes.add("minePersist ticks=" + ticks + " mined=" + minedBeforeReload + " items=" + itemsBeforeReload + " reloadedMode="
                     + (reloaded == null ? "-" : reloaded.job().mode()));
             if (reloaded == null) {
-                return report(source, notes, mineLesson, false, false, false, false, false, buildLesson, false, false, false, summary, stranger2);
+                return report(notes, mineLesson, false, false, false, false, false, buildLesson, false, false, false, summary, stranger2);
             }
             echo = reloaded;
             ticks += drive(level, echo, e -> e.job().mode() != EchoJob.Mode.MINE);
@@ -361,26 +363,13 @@ public final class JobQa {
             releaseColumn(level, ChunkPos.containing(base.offset(-6, 0, 18)));
             releaseColumn(level, ChunkPos.containing(base.offset(5, 0, 18)));
         }
-        return report(source, notes, mineLesson, mining, deposit, safety, minePersist, noTool, buildLesson, buildExact, buildMissing, buildResume, summary, stranger2);
+        return report(notes, mineLesson, mining, deposit, safety, minePersist, noTool, buildLesson, buildExact, buildMissing, buildResume, summary, stranger2);
     }
 
-    private static int report(CommandSourceStack source, List<String> notes, boolean... checks) {
-        int passed = count(checks);
+    private static QaReport report(List<String> notes, boolean... checks) {
         String[] names = {"mineLesson", "mining", "deposit", "safety", "minePersist", "noTool", "buildLesson", "buildExact", "buildMissing",
                 "buildResume", "clientSummary", "strangerRefused"};
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < names.length; i++) {
-            line.append(names[i]).append('=').append(i < checks.length && checks[i]).append(' ');
-        }
-        Mnemolith.LOGGER.info("Mnemolith jobqa {}", line.toString().trim());
-        for (String note : notes) {
-            Mnemolith.LOGGER.info("Mnemolith jobqa note {}", note);
-            source.sendSuccess(() -> Component.literal(note), false);
-        }
-        String summary = line.toString().trim();
-        source.sendSuccess(() -> Component.literal(summary), false);
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.jobqa", passed, CHECKS), true);
-        return passed;
+        return new QaReport("jobqa", names, checks, notes).log();
     }
 
     // ---------- scenario ----------

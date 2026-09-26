@@ -68,6 +68,9 @@ neoForge {
             type = "gameTestServer"
             gameDirectory = project.file('run/gametest')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Test-only datapacks (a deep superflat world, see src/gametest/packs/README.md) and a JUnit-style report for CI.
+            programArguments.addAll '--packs', project.file('src/gametest/packs').absolutePath
+            programArguments.addAll '--report', project.file('build/gametest/report.xml').absolutePath
         }
 
         data {
@@ -91,6 +94,11 @@ neoForge {
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             logLevel = org.slf4j.event.Level.DEBUG
+        }
+
+        // CI reads the game test log: keep it to INFO (DEBUG is ~20k lines of resource scanning).
+        gameTestServer {
+            logLevel = org.slf4j.event.Level.INFO
         }
     }
 
@@ -182,5 +190,13 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// The game test server writes its JUnit-style report here and does not create the folder itself.
+tasks.named('runGameTestServer') {
+    def reportDir = layout.buildDirectory.dir('gametest').get().asFile
+    doFirst {
+        reportDir.mkdirs()
     }
 }

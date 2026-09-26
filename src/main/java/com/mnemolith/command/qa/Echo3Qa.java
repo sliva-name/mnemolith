@@ -91,7 +91,6 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  * gate) and save/reload of the new state. Everything is ticked through the level's own entity tick.
  */
 public final class Echo3Qa {
-    private static final int CHECKS = 13;
     private static final UUID OWNER = UUID.fromString("77777777-7777-7777-7777-777777777777");
     private static final UUID STRANGER = UUID.fromString("88888888-8888-8888-8888-888888888888");
     private static final int MAX_TICKS = 12000;
@@ -101,9 +100,12 @@ public final class Echo3Qa {
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        return check(source.getLevel(), BlockPos.containing(source.getPosition())).send(source, true);
+    }
+
+    /** Runs the suite near {@code spawn} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos spawn) {
         salt++;
-        BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos a = column(level, (spawn.getX() >> 4) - 40 - salt * 6, (spawn.getZ() >> 4) + 20);
         // The farm stands on its own chunk's surface. With chunk A's height it could be carved into a hillside as a sealed
         // dark room: sky light 0, so the wheat popped and nothing could be planted.
@@ -204,14 +206,14 @@ public final class Echo3Qa {
             EchoLesson.Blueprint blueprint = buildL.blueprint().orElse(null);
             if (blueprint == null) {
                 notes.add("no blueprint from the build recording");
-                return report(source, notes, upgradeCore, farmLesson);
+                return report(notes, upgradeCore, farmLesson);
             }
 
             // ---------- spawn with the sturdy body ----------
             EchoEntity echo = EchoLife.spawn(level, owner, plainRecording(level, a), buildL, farmL);
             if (echo == null) {
                 notes.add("spawn failed");
-                return report(source, notes, upgradeCore, farmLesson);
+                return report(notes, upgradeCore, farmLesson);
             }
             echo.stopReplay();
             double expectedMax = CommonConfig.ECHO_MAX_HEALTH.get() + bonus;
@@ -514,27 +516,14 @@ public final class Echo3Qa {
                 releaseColumn(level, ChunkPos.containing(p));
             }
         }
-        return report(source, notes, upgrades, farmLesson, mimic, workPressure, misfire, fracture, farming, strider, archivist, mobAttack, orders, navigation,
+        return report(notes, upgrades, farmLesson, mimic, workPressure, misfire, fracture, farming, strider, archivist, mobAttack, orders, navigation,
                 persistence);
     }
 
-    private static int report(CommandSourceStack source, List<String> notes, boolean... checks) {
-        int passed = count(checks);
+    private static QaReport report(List<String> notes, boolean... checks) {
         String[] names = {"upgrades", "farmLesson", "replicantMimic", "workPressure", "misfire", "fractureStop", "farming", "striderShadow", "archivistSteal",
                 "mobAttack", "lensCommands", "navigation", "persistence"};
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < names.length; i++) {
-            line.append(names[i]).append('=').append(i < checks.length && checks[i]).append(' ');
-        }
-        Mnemolith.LOGGER.info("Mnemolith echo3qa {}", line.toString().trim());
-        for (String note : notes) {
-            Mnemolith.LOGGER.info("Mnemolith echo3qa note {}", note);
-            source.sendSuccess(() -> Component.literal(note), false);
-        }
-        String summary = line.toString().trim();
-        source.sendSuccess(() -> Component.literal(summary), false);
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.echo3qa", passed, CHECKS), true);
-        return passed;
+        return new QaReport("echo3qa", names, checks, notes).log();
     }
 
     // ---------- navigation courses ----------

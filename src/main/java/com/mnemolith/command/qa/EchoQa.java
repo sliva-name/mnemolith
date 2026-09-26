@@ -65,7 +65,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * for the duration of the command.
  */
 public final class EchoQa {
-    private static final int CHECKS = 11;
     private static final UUID OWNER = UUID.fromString("44444444-4444-4444-4444-444444444444");
     private static int salt;
 
@@ -75,9 +74,12 @@ public final class EchoQa {
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        return check(source.getLevel(), BlockPos.containing(source.getPosition())).send(source, false);
+    }
+
+    /** Runs the suite near {@code spawn} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos spawn) {
         salt++;
-        BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos base = column(level, (spawn.getX() >> 4) - 30 - salt * 4, spawn.getZ() >> 4);
         tickColumn(level, base);
         FakePlayer owner = FakePlayerFactory.get(level, new GameProfile(OWNER, "EchoQaOwner"));
@@ -96,7 +98,7 @@ public final class EchoQa {
             spawned = echo != null && echo.isAlive() && echo.isReplaying() && EchoRegistry.get(level.getServer()).count(OWNER) == 1;
             notes.add("spawn=" + (echo == null ? "null" : echo.blockPosition().toShortString()));
             if (echo == null) {
-                return report(source, notes, spawned);
+                return report(notes, spawned);
             }
             empty = echo.inventory().isEmpty() && echo.inventory().totalCount() == 0;
 
@@ -172,7 +174,7 @@ public final class EchoQa {
             notes.add("swap result=" + result + " inBody=" + inBody + " realBack=" + realBack + " bodyBack=" + bodyBack + " home=" + home2
                     + " real=" + real + " body=" + body + " total=" + (playerCount(owner) + (returned == null ? -1 : returned.inventory().totalCount())));
             if (returned == null) {
-                return report(source, notes, spawned, empty, replay, give, gear, swap);
+                return report(notes, spawned, empty, replay, give, gear, swap);
             }
 
             // 5) The body dies while possessed: player back at the shell, body items on the ground, chunk pressure up.
@@ -251,24 +253,12 @@ public final class EchoQa {
             cleanup(level, owner, site);
             releaseColumn(level, new net.minecraft.world.level.ChunkPos(base.getX() >> 4, base.getZ() >> 4));
         }
-        return report(source, notes, spawned, empty, replay, give, gear, swap, bodyDied, logout, recover, dimension, shellKilled);
+        return report(notes, spawned, empty, replay, give, gear, swap, bodyDied, logout, recover, dimension, shellKilled);
     }
 
-    private static int report(CommandSourceStack source, List<String> notes, boolean... checks) {
-        int passed = count(checks);
+    private static QaReport report(List<String> notes, boolean... checks) {
         String[] names = {"spawn", "emptyInventory", "replayFakePlayer", "giveItems", "replayWithGear", "possessSwap", "bodyDied", "logout", "crashRecover", "dimension", "shellKilled"};
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < names.length; i++) {
-            line.append(names[i]).append('=').append(i < checks.length && checks[i]).append(' ');
-        }
-        Mnemolith.LOGGER.info("Mnemolith echoqa {}", line.toString().trim());
-        for (String note : notes) {
-            Mnemolith.LOGGER.info("Mnemolith echoqa note {}", note);
-        }
-        String summary = line.toString().trim();
-        source.sendSuccess(() -> Component.literal(summary), false);
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.echoqa", passed, CHECKS), true);
-        return passed;
+        return new QaReport("echoqa", names, checks, notes).log();
     }
 
     private static Site build(ServerLevel level, BlockPos base) {

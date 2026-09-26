@@ -22,14 +22,21 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
 public final class MnemolithQa {
     private MnemolithQa() {}
 
-    private static final int CHECKS = 18;
+    private static final String[] NAMES = {"writes", "bands", "extract", "formulas", "quietFail", "loudFail", "mute", "lens", "catalog",
+            "recipe", "guide", "vein", "pocket", "observatory", "locate", "loot", "strider", "archivist", "replicant"};
     private static int salt = 1;
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        QaReport report = check(source.getLevel(), BlockPos.containing(source.getPosition()));
+        int passed = report.passed();
+        source.sendSuccess(() -> Component.translatable("mnemolith.command.qa", passed, report.total()), true);
+        return passed;
+    }
+
+    /** Runs the checklist near {@code origin} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos origin) {
         salt++;
-        BlockPos origin = BlockPos.containing(source.getPosition());
         int chunkX = (origin.getX() >> 4) + 12 + salt * 8;
         int chunkZ = (origin.getZ() >> 4);
 
@@ -52,7 +59,8 @@ public final class MnemolithQa {
         boolean vein = vein(level, column(level, chunkX + 16, chunkZ));
         BlockPos observatoryAt = column(level, chunkX + 20, chunkZ);
         boolean pocket = pocket(level, column(level, chunkX + 18, chunkZ));
-        boolean observatory = observatory(level, origin, observatoryAt.offset(0, 24, 0));
+        boolean observatory = observatory(level, observatoryAt.offset(0, 24, 0));
+        boolean locate = locateObservatory(level, origin);
         boolean loot = loot(level);
         BlockPos mobs = column(level, chunkX + 24, chunkZ);
         boolean strider = strider(level, mobs);
@@ -61,7 +69,7 @@ public final class MnemolithQa {
 
         String dimension = level.dimension().identifier().toString();
         Mnemolith.LOGGER.info(
-                "Mnemolith qa writes={} bands={} extract={} formulas={} quietFail={} loudFail={} mute={} lens={} catalog={} recipe={} guide={} vein={} pocket={} observatory={} loot={} strider={} archivist={} replicant={} dimension={}",
+                "Mnemolith qa writes={} bands={} extract={} formulas={} quietFail={} loudFail={} mute={} lens={} catalog={} recipe={} guide={} vein={} pocket={} observatory={} locate={} loot={} strider={} archivist={} replicant={} dimension={}",
                 writes,
                 bands,
                 extract,
@@ -76,16 +84,14 @@ public final class MnemolithQa {
                 vein,
                 pocket,
                 observatory,
+                locate,
                 loot,
                 strider,
                 archivist,
                 replicant,
                 dimension);
-        int passed = count(
-                writes, bands, extract, formulas, quietFail, loudFail, mute, lens,
-                catalog, recipe, guide, vein, pocket, observatory, loot, strider, archivist, replicant);
-        int reported = passed;
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.qa", reported, CHECKS), true);
-        return passed;
+        boolean[] checks = {writes, bands, extract, formulas, quietFail, loudFail, mute, lens,
+                catalog, recipe, guide, vein, pocket, observatory, locate, loot, strider, archivist, replicant};
+        return new QaReport("qa", NAMES, checks, java.util.List.of());
     }
 }

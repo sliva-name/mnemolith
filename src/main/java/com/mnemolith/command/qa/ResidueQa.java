@@ -91,9 +91,12 @@ public final class ResidueQa {
 
     public static int run(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        ServerLevel level = source.getLevel();
+        return check(source.getLevel(), BlockPos.containing(source.getPosition())).send(source, true);
+    }
+
+    /** Runs the suite near {@code spawn} and returns its report. Shared by the command and the game test. */
+    public static QaReport check(ServerLevel level, BlockPos spawn) {
         salt++;
-        BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos a = column(level, (spawn.getX() >> 4) - 40 - salt * 4, (spawn.getZ() >> 4) + 30);
         BlockPos b = a.offset(16, 0, 0);
         BlockPos c = a.offset(32, 0, 0);
@@ -404,24 +407,11 @@ public final class ResidueQa {
                 releaseColumn(level, ChunkPos.containing(p));
             }
         }
-        return report(source, notes, ok);
+        return report(notes, ok);
     }
 
-    private static int report(CommandSourceStack source, List<String> notes, boolean[] checks) {
-        int passed = count(checks);
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < NAMES.length; i++) {
-            line.append(NAMES[i]).append('=').append(checks[i]).append(' ');
-        }
-        Mnemolith.LOGGER.info("Mnemolith residueqa {}", line.toString().trim());
-        for (String note : notes) {
-            Mnemolith.LOGGER.info("Mnemolith residueqa note {}", note);
-            source.sendSuccess(() -> Component.literal(note), false);
-        }
-        String summary = line.toString().trim();
-        source.sendSuccess(() -> Component.literal(summary), false);
-        source.sendSuccess(() -> Component.translatable("mnemolith.command.residueqa", passed, NAMES.length), true);
-        return passed;
+    private static QaReport report(List<String> notes, boolean[] checks) {
+        return new QaReport("residueqa", NAMES, checks, notes).log();
     }
 
     // ---------- helpers ----------

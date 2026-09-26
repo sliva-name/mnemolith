@@ -1,12 +1,49 @@
 # QA checklist
 
+## Automated: game tests (CI)
+
+`./gradlew runGameTestServer` starts a headless NeoForge game test server, runs every Mnemolith game test and exits with the number of failed required tests; CI (`.github/workflows/build.yml`) runs it after `./gradlew build`, so any failure fails the job. The JUnit-style report is `build/gametest/report.xml` and the log `run/gametest/logs/latest.log` (both uploaded as the `gametest-report` artifact). A full run takes about 7 seconds of game time and about 20 seconds of wall time on top of the build. In a dev world, `/test runmultiple mnemolith:` runs the same tests by hand.
+
+The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface at y=0) from the test-only datapack in `src/gametest/packs` (see its README). The vanilla game test world is 4 blocks deep and would put the vein, pocket and mining sites in the void.
+
+**Suites.** Each command suite is one required test that calls the same `check(level, origin)` the command calls (`com.mnemolith.gametest.SuiteTests`), so there is one copy of every check. The test fails with the names of the checks that did not pass and the first notes; the full `Mnemolith <suite> ...` lines are in the log as for the command. Each suite runs from its own lane (4096 blocks apart) so suites never share chunks.
+
+| Test | Suite | Notes |
+| --- | --- | --- |
+| `mnemolith:suite_qa` | `/mnemolith qa` (19 checks) | `locate` is waived: the game test server always creates its world with structure generation off, so `findNearestMapStructure` returns nothing. Its result is still logged (`Mnemolith gametest qa waived locate ...`). Run `/mnemolith qa` on a real world for it |
+| `mnemolith:suite_echoqa` | `/mnemolith echoqa` (11) | |
+| `mnemolith:suite_jobqa` | `/mnemolith jobqa` (12) | |
+| `mnemolith:suite_echo3qa` | `/mnemolith echo3qa` (13) | |
+| `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
+| `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
+| `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
+
+**Live residue tests** (`com.mnemolith.gametest.ResidueLiveTests`). Real server players join through `PlayerList.placeNewPlayer` on an in-memory connection negotiated as a NeoForge client, stand in survival and are ticked every game tick the way the network layer ticks a connected player (`ServerPlayer.doTick`), so `PlayerTickEvent`, item use and `level.players()` are the real paths. Setup writes chunk memory and places residues directly; what is under test runs on its own. Players and forced chunks are removed by the `mnemolith:live` environment's teardown, pass or fail.
+
+| Test | What is proved | Budget |
+| --- | --- | --- |
+| `residue_forms_where_player_stands` | A player standing in a fractured chunk with death and fire memories: the player tick's pulse condenses death (the louder) into one residue; the death imprint leaves the chunk, fire stays | 4400 ticks (22 pulses at 1 in 2) |
+| `residue_lashes_player_beside` | A survival player walking 2 blocks beside an unread death residue is lashed by the residue's own tick: hurt and withered | 200 |
+| `residue_sneaking_halves_reach` | Sneaking at 2.2 blocks: 60 ticks unharmed; standing up at the same distance: lashed | 300 |
+| `residue_needle_slips_when_unread` | The needle through `ServerPlayer.interactOn` on an unread fire residue: no shard, the residue stays, the player burns | 40 |
+| `residue_lens_reads_then_needle_captures` | The player raises the chronicle lens with a real item use (`gameMode.useItem`) 8 blocks away and keeps looking at the drifting residue: within 3 s it is pinned, fire is noted in the player's discovery, no lash; then the needle takes it as a fire/4 shard | 300 |
+| `residue_fester_writes_back` | Left alone in an overloaded chunk, the residue festers on its own 60 s timer and writes its fall memory back, strength unchanged | 1400 |
+| `residue_mute_stone_starves` | A mute stone placed in the chunk (a real block placement) mutes it; the next fester costs 1 strength and writes nothing | 1400 |
+| `residue_observatory_seeds_once` | The observatory template placed with its worldgen processor list marks the reel's chunk; a player walking in makes the next pulse seed one old strength-5 residue by the reel; two more pulses seed nothing | 800 |
+
+**Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
+
+**Proving the gate.** Break a check on purpose (for example, make `Residues.lash` skip the wither) and `./gradlew runGameTestServer` fails with the test name and message and a non-zero exit; revert it and it passes.
+
+## `/mnemolith qa`
+
 `/mnemolith qa` is a gamemaster command. It runs on the dedicated server, on surface columns east of the command source, and does not use the chunks owned by `/mnemolith smoke` (the source chunk), `/mnemolith perf` (48 blocks east), or `/mnemolith mpsmoke` (96 blocks east). One log line is the result:
 
 ```
-Mnemolith qa writes=true bands=true extract=true formulas=true quietFail=true loudFail=true mute=true lens=true catalog=true recipe=true guide=true vein=true pocket=true observatory=true loot=true strider=true archivist=true replicant=true dimension=minecraft:overworld
+Mnemolith qa writes=true bands=true extract=true formulas=true quietFail=true loudFail=true mute=true lens=true catalog=true recipe=true guide=true vein=true pocket=true observatory=true locate=true loot=true strider=true archivist=true replicant=true dimension=minecraft:overworld
 ```
 
-A second line, `Mnemolith qa observatory registered=true chest=true located=<pos>`, records the structure search. The chat message is `QA <passed> of 18`. Every flag above has to be true. Multiplayer flags stay on `/mnemolith mpsmoke` and are not folded into this command.
+Two more lines record the observatory: `Mnemolith qa observatory chest=true` (the template) and `Mnemolith qa observatory registered=true located=<pos>` (the structure search). The chat message is `QA <passed> of 19`. Every flag above has to be true. Multiplayer flags stay on `/mnemolith mpsmoke` and are not folded into this command.
 
 `/mnemolith smoke` is unchanged. The Phase 9 line is still `pressure=75 band=OVERLOADED muted=true writeBlocked=true compose=3`.
 
@@ -21,11 +58,11 @@ A second line, `Mnemolith qa observatory registered=true chest=true located=<pos
 | 5 | Mute stone: silence, then the write block | `mute`. Placing the block writes silence, then a build write is refused |
 | 6 | Lens band matches the server; dimension stamp | `lens`. `PressureSync.originBand` equals the cached band, and that band is saturated for one explosion imprint. The first lens walk runs, `perfStampMatches` is true for this dimension and chunk, and the next walk is skipped. The log's `dimension=` is the stamp. A dimension change drops it (`PressureSync.forget` on logout and dimension change; the client drops its snapshot when `snapshotDimension` no longer matches) |
 | 7 | Catalog fragment opens only discovered tags and formulas | `catalog`. An empty player sends bits `0,0`. After extracting explosion, the payload is only that tag. After composing death+silence, the formula bit is unrecorded, death and silence are set, and fire stays clear. `CatalogScreen` draws a row only when that bit is set |
-| 8 | Worldgen: vein, mute pocket, observatory locate, chest loot | `vein` lays stone along both axes (the feature replaces stone, and a repeat pass would already be stratum), force-places a vein, and requires stratum marks. `pocket` fills a stone volume at the forced floor (the feature replaces stone or air, and a surface column is dirt), force-places the pocket, and requires that floor to be muted. `observatory` requires the structure registry entry, a placed template whose chest loot id is `mnemolith:chests/chronicle_observatory` and whose unpacked chest contains a lens or a needle, and `findNearestMapStructure` from the command source. `loot` requires the loaded loot JSON to name `mnemolith:catalog_fragment` (weight 1 in the teaching pool) |
+| 8 | Worldgen: vein, mute pocket, observatory locate, chest loot | `vein` lays stone along both axes (the feature replaces stone, and a repeat pass would already be stratum), force-places a vein, and requires stratum marks. `pocket` fills a stone volume at the forced floor (the feature replaces stone or air, and a surface column is dirt), force-places the pocket, and requires that floor to be muted. `observatory` requires a placed template whose chest loot id is `mnemolith:chests/chronicle_observatory` and whose unpacked chest contains a lens or a needle. `locate` requires the structure registry entry and `findNearestMapStructure` from the command source (split from `observatory` so the game test can waive only the search). `loot` requires the loaded loot JSON to name `mnemolith:catalog_fragment` (weight 1 in the teaching pool) |
 | 9 | Mobs: spawn plus one action | `strider` summons an echo strider and `beginCharge` sets the telegraph pose. `archivist` summons an archivist, `snatch` empties the container, and the pose is flee. `replicant` summons a moment replicant and `beginTelegraph` sets the telegraph pose |
 | 10 | Phase 11 multiplayer invariants | `/mnemolith mpsmoke`, not this command. The line is `sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true` |
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
-| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has 18 ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
+| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (22) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
 
 ## Echo QA
 
@@ -49,7 +86,7 @@ Mnemolith echoqa spawn=true emptyInventory=true replayFakePlayer=true giveItems=
 | `dimension` | A dimension change while possessed is cancelled and swaps back |
 | `shellKilled` | Damage to the shell is written to the stored real health; killing the shell returns the owner |
 
-`/mnemolith qa` stays at 18 of 18 and does not include these checks.
+`/mnemolith qa` stays at 19 of 19 and does not include these checks.
 
 ## Echo job QA (stage 2)
 
@@ -75,7 +112,7 @@ buildExact ticks=166 rotation=CLOCKWISE_90 status="Done: 15/15" wrong=0 stairsFa
 | `clientSummary` | The recording's network form is a small summary (241 bytes vs 549 for the full 25-frame recording), and a creative-style client round trip restores the full recording |
 | `strangerRefused` | Another player cannot stop the echo, unlink its chest, or open it |
 
-The last line of `mnemolith jobqa` must be `Echo job check: 12 of 12`. `mnemolith qa` stays at 18 of 18 and `mnemolith echoqa` at 11 of 11.
+The last line of `mnemolith jobqa` must be `Echo job check: 12 of 12`. `mnemolith qa` stays at 19 of 19 and `mnemolith echoqa` at 11 of 11.
 
 ## Echo stage 3 QA
 
@@ -102,7 +139,7 @@ farming ticks=128 harvested=10 planted=20/20 chestWheat=10 echoSeeds=17 chestSee
 | `navigation` | The echo wades shallow water, climbs a 4-block ladder, and opens and closes a wooden door and a fence gate behind itself |
 | `persistence` | After an NBT reload the order, the farm lesson, max health 40 and the upgrade levels are kept |
 
-The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa` 18/18, `echoqa` 11/11 and `jobqa` 12/12 stay green.
+The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa` 19/19, `echoqa` 11/11 and `jobqa` 12/12 stay green.
 
 ## Memory graft QA
 
@@ -132,7 +169,7 @@ Manual (client):
 
 ## Residual echo QA
 
-`/mnemolith residueqa` (gamemaster) checks residual echoes on a dedicated server with a fake-player owner, one echo and an archivist in three cleared chunks next to the command source. The last line must be `Residual echo QA: 18 of 18`. The fake player is not in the level's player list, so the lash and lens checks hand it to the same `ResidueEntity.sense` code the tick uses (the lens check runs only that sensing step each tick, since a full tick would first sense the empty player list and decay the reading); festers are called directly instead of waiting 60 seconds. The archivist check is not scripted: the archivist is ticked and walks to the residue on its own.
+`/mnemolith residueqa` (gamemaster) checks residual echoes on a dedicated server with a fake-player owner, one echo and an archivist in three cleared chunks next to the command source. The last line must be `Residual echo QA: 18 of 18`. The live game tests above cover formation, lash, sneaking, lens reading, the needle, festers and the observatory seed with real players; this command keeps the rest. The fake player is not in the level's player list, so the lash and lens checks hand it to the same `ResidueEntity.sense` code the tick uses (the lens check runs only that sensing step each tick, since a full tick would first sense the empty player list and decay the reading); festers are called directly instead of waiting 60 seconds. The archivist check is not scripted: the archivist is ticked and walks to the residue on its own.
 
 | Flag | What is proved |
 | --- | --- |
@@ -155,7 +192,7 @@ Manual (client):
 | `actOut` | A death residue festering in a fracture writes death and raises one zombie |
 | `persistence` | The residue (tag, strength, old, origin) survives an NBT reload; `ChunkMemory` round-trips `residue_seeded`, and a save without the field loads as unseeded |
 
-`qa` 18/18, `echoqa` 11/11, `jobqa` 12/12, `echo3qa` 13/13, `graftqa` 12/12 and `mpsmoke` stay green (`graftqa` `fractureReject` now accepts the graft condensing into a residue, which is what a fracture does with it).
+`qa` 19/19, `echoqa` 11/11, `jobqa` 12/12, `echo3qa` 13/13, `graftqa` 12/12 and `mpsmoke` stay green (`graftqa` `fractureReject` now accepts the graft condensing into a residue, which is what a fracture does with it).
 
 Manual (client):
 

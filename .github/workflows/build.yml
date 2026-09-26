@@ -23,3 +23,19 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      # Every QA suite plus the live residue tests on a headless game test server. The server exits with the number
+      # of failed required tests, so any failure fails this step (and the job). About half a minute after the build.
+      - name: Game tests
+        timeout-minutes: 15
+        run: ./gradlew runGameTestServer
+
+      - name: Upload game test report and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-report
+          path: |
+            build/gametest/report.xml
+            run/gametest/logs/latest.log
+          if-no-files-found: ignore

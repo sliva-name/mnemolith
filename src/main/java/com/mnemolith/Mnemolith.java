@@ -47,6 +47,7 @@ public final class Mnemolith {
         ModNetwork.register(modEventBus);
         ModParticles.register(modEventBus);
         ModWorldgen.register(modEventBus);
+        com.mnemolith.gametest.MnemolithGameTests.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
