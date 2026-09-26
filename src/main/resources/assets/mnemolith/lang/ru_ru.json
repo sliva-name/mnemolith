@@ -111,7 +111,7 @@
   "mnemolith.configuration.instabilityDecayTicks": "Тики спада нестабильности",
   "mnemolith.configuration.instabilityDecayTicks.tooltip": "Тики между импульсами нестабильности и тихих отпечатков, пока игрок в чанке. 0 отключает импульс.",
   "mnemolith.configuration.allowAmbientPressure": "Разрешить давление без линзы",
-  "mnemolith.configuration.allowAmbientPressure.tooltip": "Отправляет ли сервер снимки давления игроку без хроникальной линзы. Метки жил остаются только с линзой. Клиентское «Мерцание без линзы» только рисует это мерцание.",
+  "mnemolith.configuration.allowAmbientPressure.tooltip": "Отправляет ли сервер полные снимки давления игроку без хроникальной линзы. Без этого ощущение разлома всё равно работает, но только по полосам перегрузки и разлома. Метки жил остаются только с линзой. Клиентское «Мерцание без линзы» только рисует это мерцание.",
   "mnemolith.configuration.veinShimmerTicks": "Тики мерцания жилы",
   "mnemolith.configuration.veinShimmerTicks.tooltip": "Тики между повторами частиц жилы, пока снимок линзы не изменился. 0 повторяет только новый снимок. Изменённый чанк мерцает сразу.",
   "mnemolith.configuration.quietFadeTicks": "Тики затухания тихих отпечатков",

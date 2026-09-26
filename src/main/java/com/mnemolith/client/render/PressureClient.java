@@ -23,9 +23,14 @@ import java.util.List;
 /**
  * Lens polling and the latest pressure snapshot. Loaded only from the client entrypoint.
  * Fracture feel reuses this snapshot. It does not scan chunks.
+ * <p>
+ * A {@link PressureSnapshotPayload.Scope#BANDS} snapshot (no lens, server ambient rule off) only feeds fracture feel:
+ * {@link #origin} returns null for it, so the pill has no reading, and shimmer and the chime skip it.
  */
 public final class PressureClient {
     private static List<ChunkPressure> snapshot = List.of();
+    private static PressureSnapshotPayload.Scope scope = PressureSnapshotPayload.Scope.BANDS;
+    private static boolean lastLens;
     private static ResourceKey<Level> snapshotDimension;
     private static int ticksUntilPoll;
     private static int ticksUntilShimmer;
@@ -37,10 +42,11 @@ public final class PressureClient {
 
     public static void accept(PressureSnapshotPayload payload) {
         snapshot = List.copyOf(payload.chunks());
+        scope = payload.scope();
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         snapshotDimension = player == null || player.level() == null ? null : player.level().dimension();
-        if (player == null || !holdsLens(player) || !ClientConfig.IMPRINT_PARTICLES.get()) {
+        if (player == null || !full() || !holdsLens(player) || !ClientConfig.IMPRINT_PARTICLES.get()) {
             return;
         }
         float volume = ClientConfig.MEMORY_AUDIO_VOLUME.get().floatValue();
@@ -59,6 +65,7 @@ public final class PressureClient {
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.level == null) {
             snapshot = List.of();
+            scope = PressureSnapshotPayload.Scope.BANDS;
             snapshotDimension = null;
             polledChunkX = Integer.MIN_VALUE;
             polledChunkZ = Integer.MIN_VALUE;
@@ -67,6 +74,7 @@ public final class PressureClient {
         }
         if (snapshotDimension != null && !player.level().dimension().equals(snapshotDimension)) {
             snapshot = List.of();
+            scope = PressureSnapshotPayload.Scope.BANDS;
             snapshotDimension = null;
             lastChimeBand = -1;
             polledChunkX = Integer.MIN_VALUE;
@@ -79,7 +87,13 @@ public final class PressureClient {
         if (!lens) {
             lastChimeBand = -1;
         }
-        if (lens || ambient) {
+        if (lens != lastLens) {
+            // Picking up or putting away the lens asks at once. Until the answer arrives the previous snapshot
+            // stays, so fracture feel keeps its bands and does not blink.
+            lastLens = lens;
+            ticksUntilPoll = 0;
+        }
+        if ((lens || ambient) && full()) {
             shimmerCached(player);
         }
         if (!lens && !ambient && !feel) {
@@ -128,7 +142,11 @@ public final class PressureClient {
         return ChronicleLensItem.isHeld(player);
     }
 
+    /** The lens reading for the chunk under the player, or null when there is none or the snapshot is band-only. */
     public static ChunkPressure origin(LocalPlayer player) {
+        if (!full()) {
+            return null;
+        }
         int chunkX = player.blockPosition().getX() >> 4;
         int chunkZ = player.blockPosition().getZ() >> 4;
         for (ChunkPressure chunk : snapshot) {
@@ -139,6 +157,12 @@ public final class PressureClient {
         return null;
     }
 
+    /** True when the latest snapshot is a full reading rather than the band-only fracture-feel read. */
+    public static boolean full() {
+        return scope == PressureSnapshotPayload.Scope.FULL;
+    }
+
+    /** Every chunk in the latest snapshot, full or band-only. Fracture feel reads this. */
     public static List<ChunkPressure> snapshot() {
         return new ArrayList<>(snapshot);
     }

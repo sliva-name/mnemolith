@@ -122,12 +122,14 @@ The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa
 
 `/mnemolith inspect` prints the server band for the chunk you are in. Reach overloaded (a death and a creeper, or any mix `/mnemolith inspect` reports as Overloaded), then fracture (a failed compose once pressure is at least 62 with the defaults, or enough loud imprints to reach 80). The server log shows `Mnemolith fracture` the first time, and `Mnemolith fx pressure` when the band rises into overloaded or fracture. That rise also plays `pressure_warn` for nearby players. It does not repeat while you simply stand there.
 
-With the lens put away, the three client toggles at their defaults, and `gameplay.allowAmbientPressure = true` in `mnemolith-common.toml` (without it the server refuses lens-less requests):
+With the lens put away, the three client toggles at their defaults, and `gameplay.allowAmbientPressure` at its default (false), so the client runs on the band-only snapshot:
 
 - [ ] Overloaded: the screen edge darkens (ink) and the camera trembles. The world is not desaturated yet.
 - [ ] Fracture, standing in that chunk: the edge goes crimson and breathes, the tremble is stronger, and the world desaturates with a thin color fringe. One chunk away is weaker. Two chunks away is a hint. Beyond the lens snapshot there is nothing, because the client never receives those chunks.
 - [ ] The lens pill is absent until you hold a chronicle lens. The feel stays.
-- [ ] With `gameplay.allowAmbientPressure = false` (the default): holding the lens shows the feel; putting it away clears it within one poll (the server's single empty snapshot). Holding the lens again brings it back.
+- [ ] Standing in a fractured chunk, pick up and put away the lens a few times. The feel does not blink. The pill appears only while the lens is held and shows the full reading (number, sneak state) within one round trip.
+- [ ] Without the lens, and with `visuals.ambientWithoutLens` on, a saturated chunk does not shimmer (band-only carries no saturated chunks). Set `gameplay.allowAmbientPressure = true` and it shimmers.
+- [ ] Without the lens, standing on an archival vein next to a fracture three chunks away: no feel from that chunk (the band-only radius is 2 and does not grow for strata).
 - [ ] Set `visuals.pressureVignette`, `visuals.stormScreenShake`, and `visuals.fractureFringe` to false in `mnemolith-client.toml` or on the config screen. Each one stops on the next frame. All three off, with no lens and with ambient shimmer off, stops the extra pressure poll.
 - [ ] The client log from `Mnemolith client setup` includes `Mnemolith fracture feel vignette=true shake=true fringe=true` when the defaults are on. A dedicated server log does not contain that line.
 - [ ] If `post_effect/fracture.json` fails to load, one warning names `mnemolith:fracture` and the vignette and shake still run.

@@ -8,8 +8,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 /**
  * Client asks for nearby chunk pressure. {@code ambient} is what the client hopes to do
  * without a lens: saturated shimmer, or fracture feel. The server does not treat that bit as
- * permission: a snapshot is sent when the player holds a chronicle lens, or when
- * {@code gameplay.allowAmbientPressure} is on. Vein marks still require the lens.
+ * permission: a full snapshot is sent when the player holds a chronicle lens, or when
+ * {@code gameplay.allowAmbientPressure} is on. Otherwise the answer is the band-only snapshot
+ * ({@link PressureSnapshotPayload.Scope#BANDS}) that fracture feel needs. Vein marks still require the lens.
  * The server only answers. It does not write memory.
  */
 public record RequestPressurePayload(boolean ambient) implements CustomPacketPayload {

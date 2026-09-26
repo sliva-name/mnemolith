@@ -14,7 +14,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Server answers a lens request with the chunks around that player. Unchanged snapshots are not resent. */
+/**
+ * Server answers a pressure request with the chunks around that player. A held lens, or
+ * {@code gameplay.allowAmbientPressure}, gets the full snapshot; anyone else gets the band-only snapshot
+ * fracture feel needs. Unchanged snapshots are not resent.
+ */
 public final class PressureSync {
     private PressureSync() {}
 
@@ -38,10 +42,10 @@ public final class PressureSync {
             return;
         }
         boolean lens = holdsLens(player);
-        // payload.ambient() is not permission. Ambient snapshots exist only when the common config allows them.
+        // payload.ambient() is not permission. A full snapshot without a lens exists only when the common config allows it.
         boolean ambient = !lens && CommonConfig.ALLOW_AMBIENT_PRESSURE.get();
         if (!lens && !ambient) {
-            refuse(player, level);
+            sendBands(player, level);
             return;
         }
         ChunkPos origin = ChunkPos.containing(player.blockPosition());
@@ -59,21 +63,23 @@ public final class PressureSync {
             VeinShimmer.send(level, player, origin);
         }
         LensPollCache.put(player.getUUID(), new Stamp(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), lens, ambient, level.getGameTime()));
-        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.copyOf(chunks)));
+        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(PressureSnapshotPayload.Scope.FULL, List.copyOf(chunks)));
     }
 
     /**
-     * A request with no lens and no server ambient rule gets no chunk walk. One empty snapshot clears a lens
-     * reading the client may still be drawing; repeats for the same chunk and memory epoch are not resent.
+     * No lens and no server ambient rule: the player still gets the band-only read fracture feel needs, whatever the
+     * request bit says. No vein shimmer, no pressure numbers, no chunk state, nothing below overloaded. The stamp
+     * with lens and ambient both false is this mode; a repeat for the same chunk and memory epoch is not resent.
      */
-    private static void refuse(ServerPlayer player, ServerLevel level) {
+    private static void sendBands(ServerPlayer player, ServerLevel level) {
         ChunkPos origin = ChunkPos.containing(player.blockPosition());
         Stamp stamp = LensPollCache.get(player.getUUID());
         if (stamp != null && stamp.matches(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), false, false)) {
             return;
         }
+        List<ChunkPressure> chunks = PressureCollector.collectBands(level, player.blockPosition());
         LensPollCache.put(player.getUUID(), new Stamp(LensPollCache.epoch(), level.dimension(), origin.x(), origin.z(), false, false, level.getGameTime()));
-        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(List.of()));
+        PacketDistributor.sendToPlayer(player, new PressureSnapshotPayload(PressureSnapshotPayload.Scope.BANDS, List.copyOf(chunks)));
     }
 
     /**

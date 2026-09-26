@@ -13,12 +13,12 @@ Mnemolith on a dedicated server is server-authoritative. Clients send a lens req
 | Replicant | One server entity. A replicant already within 24 blocks, or anywhere in that chunk's column, blocks another spawn |
 | Archivist steal | One slip. An open container is taken before the player's inventory, so both players viewing that container see the same removal |
 
-Payloads are registered as version `1` in `ModNetwork`:
+Payloads are registered as version `2` in `ModNetwork` (2 added the snapshot scope):
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |
-| `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match; the client sets it for shimmer without a lens or for fracture feel. The server ignores it as permission. It answers only for a live player who holds a lens, or when `gameplay.allowAmbientPressure` is true. It does not write memory |
-| `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and the server's lens or ambient decision are unchanged. A refused request gets one empty snapshot |
+| `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match; the client sets it for shimmer without a lens or for fracture feel. The server ignores it as permission. A live player who holds a lens, or any player when `gameplay.allowAmbientPressure` is true, gets a full snapshot; anyone else gets a band-only one. It does not write memory |
+| `mnemolith:pressure_snapshot` | server to that player | A scope and up to 49 nearby chunks. `FULL`: pressure, band, and chunk state for the lens radius. `BANDS`: only overloaded and fracture chunks within 2, pressure 0, state `NORMAL`; the client uses it for fracture feel only. A repeat is skipped when the memory epoch, dimension, chunk, and the server's full, ambient, or band-only decision are unchanged |
 | `mnemolith:open_catalog` | server to that player | That player's tag and formula bits. The screen class is client-only |
 
 Logout and a dimension change drop the saved lens stamp. The client also drops its snapshot when the dimension changes, so matching chunk coordinates in another dimension cannot keep the previous band on screen. Overworld teleports already miss the stamp because the chunk coordinates are part of it.
@@ -58,7 +58,7 @@ This is one server process. It does not open two Minecraft clients, so it does n
 ## Known limits
 
 - No Scar, no new dimension, and no proxy-specific handshake.
-- Ambient pressure reads are allowed only by `gameplay.allowAmbientPressure` on the server. A client that sets the request bit without a lens, and without that config, gets no snapshot. The read is still read-only: a client cannot create an imprint by sending a payload.
+- Full pressure reads without a lens are allowed only by `gameplay.allowAmbientPressure` on the server. A client that sets the request bit without a lens, and without that config, gets only the band-only snapshot: which nearby chunks are overloaded or fractured, the same thing its screen already shows through fracture feel. The read is still read-only: a client cannot create an imprint by sending a payload.
 - Two players can share one reel. They see the same three slots, the same way they would share a chest. Separate reels do not share slots.
 - Disconnect closes the menu. Slips stay in the reel. A button packet for a menu that is no longer open does not compose.
 - `mpsmoke` does not connect a second game. A two-client check is still a manual join of the same dedicated server.
