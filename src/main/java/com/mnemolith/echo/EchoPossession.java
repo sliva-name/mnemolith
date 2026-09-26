@@ -125,7 +125,7 @@ public final class EchoPossession {
         UUID shellId = shell == null ? UUID.randomUUID() : shell.getUUID();
         PossessionState.Anchor anchor = new PossessionState.Anchor(level.dimension(), player.position(), player.getYRot(), player.getXRot(), shellId);
         PossessionState.Body body = new PossessionState.Body(echo.getUUID(), echo.getMaxHealth(), Optional.ofNullable(echo.recording()), Optional.of(echo.job().save()),
-                Optional.ofNullable(echo.graft()), echo.scarred());
+                Optional.ofNullable(echo.graft()), echo.scarred(), Optional.ofNullable(echo.relay()));
         player.setData(ModAttachments.ECHO_POSSESSION.get(), new PossessionState(new PossessionState.Data(realState, anchor, body)));
 
         if (shell != null) {
@@ -200,6 +200,7 @@ public final class EchoPossession {
             }
             EchoLife.onEchoBodyDied(here, player.getUUID(), data.body().echo(), bodyPos, player.getGameProfile().name());
             com.mnemolith.echo.graft.EchoGrafts.onPossessedBodyDied(here, player.getUUID(), data.body().graft().orElse(null), bodyPos);
+            com.mnemolith.echo.relay.EchoRelays.onPossessedBodyDied(here, player.getUUID(), data.body().relay().orElse(null));
         } else {
             spawnBody(here, player, data, bodyItems, bodySelected, bodyHealth);
         }
@@ -248,6 +249,57 @@ public final class EchoPossession {
         return true;
     }
 
+    /**
+     * Echo relay hop: the body being possessed is set down as an echo where the player stands, and the player moves
+     * into {@code target} (the other end of its link) in the same tick. The real state, the anchor and the shell stay
+     * as they were, so the return key still brings the player home. False when the target cannot be taken.
+     */
+    public static boolean hop(ServerPlayer player, EchoEntity target) {
+        PossessionState.Data data = state(player).data();
+        if (data == null || !target.isAlive() || target.isRemoved() || target.level() != player.level() || !target.isOwnedBy(player)) {
+            return false;
+        }
+        ServerLevel level = player.level();
+        player.stopRiding();
+        player.stopUsingItem();
+        settleMenus(player);
+        Inventory inventory = player.getInventory();
+        int bodySelected = inventory.getSelectedSlot();
+        List<SlotStack> bodyItems = SlotStack.drain(inventory);
+        float bodyHealth = player.getHealth();
+        EchoRegistry registry = EchoRegistry.get(level.getServer());
+        registry.remove(player.getUUID(), data.body().echo());
+        spawnBody(level, player, data, bodyItems, bodySelected, bodyHealth);
+
+        PossessionState.Body body = new PossessionState.Body(target.getUUID(), target.getMaxHealth(), Optional.ofNullable(target.recording()), Optional.of(target.job().save()),
+                Optional.ofNullable(target.graft()), target.scarred(), Optional.ofNullable(target.relay()));
+        player.setData(ModAttachments.ECHO_POSSESSION.get(), new PossessionState(new PossessionState.Data(data.real(), data.anchor(), body)));
+        EchoInventory echoItems = target.inventory();
+        for (int i = 0; i < EchoInventory.SIZE; i++) {
+            inventory.setItem(i, echoItems.removeItemNoUpdate(i));
+        }
+        inventory.setSelectedSlot(target.selectedSlot());
+        player.removeAllEffects();
+        player.setHealth(Math.max(1.0F, Math.min(target.getHealth(), player.getMaxHealth())));
+        player.clearFire();
+        player.resetFallDistance();
+        registry.retire(player.getUUID(), target.getUUID());
+        double x = target.getX();
+        double y = target.getY();
+        double z = target.getZ();
+        float yRot = target.getYRot();
+        float xRot = target.getXRot();
+        target.discardSilently();
+        teleport(player, level, x, y, z, yRot, xRot);
+        sendHeldSlot(player);
+        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.9F);
+        MemoryFx.mob(level, ModParticles.IMPRINT_SHIMMER.get(), x, y + 1.0D, z, 16);
+        sync(player);
+        player.sendSystemMessage(Component.translatable("mnemolith.relay.hopped"), true);
+        Mnemolith.LOGGER.info("Mnemolith relay hop player={} into={}", player.getGameProfile().name(), target.getUUID());
+        return true;
+    }
+
     private static void spawnBody(ServerLevel level, ServerPlayer player, PossessionState.Data data, List<SlotStack> items, int selected, float health) {
         EchoEntity echo = ModEntities.ECHO.get().create(level, EntitySpawnReason.TRIGGERED);
         if (echo == null) {
@@ -265,6 +317,7 @@ public final class EchoPossession {
         data.body().recording().ifPresent(echo::keepRecording);
         data.body().job().ifPresent(echo::restoreJobIdle);
         echo.setScarred(data.body().scarred());
+        data.body().relay().ifPresent(echo::setRelay);
         data.body().graft().ifPresent(echo::setGraft);
         EchoInventory inventory = echo.inventory();
         List<ItemStack> overflow = new ArrayList<>();

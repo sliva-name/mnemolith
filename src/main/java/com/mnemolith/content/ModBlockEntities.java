@@ -16,6 +16,10 @@ public final class ModBlockEntities {
             "composition_reel",
             () -> new BlockEntityType<>(CompositionReelBlockEntity::new, ModBlocks.COMPOSITION_REEL.get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.ArchiveVaultBlockEntity>> ARCHIVE_VAULT = BLOCK_ENTITIES.register(
+            "archive_vault",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.ArchiveVaultBlockEntity::new, ModBlocks.ARCHIVE_VAULT.get()));
+
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {

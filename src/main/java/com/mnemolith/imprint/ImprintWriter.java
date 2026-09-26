@@ -83,6 +83,24 @@ public final class ImprintWriter {
         return true;
     }
 
+    /**
+     * Writes a banked imprint back into the chunk at {@code pos}, keeping its tag, intensity and author (an archive
+     * vault discharging, spilling or leaking). A muted chunk refuses it, as it refuses every write.
+     */
+    public static boolean restore(ServerLevel level, BlockPos pos, Imprint banked) {
+        if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMuted(level, pos)) {
+            return false;
+        }
+        LevelChunk chunk = level.getChunkAt(pos);
+        long now = level.getGameTime();
+        ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
+        memory.addImprint(new Imprint(banked.tag(), banked.intensity(), pos.immutable(), banked.player(), Imprint.contextHash(banked.tag(), pos, now), now),
+                CommonConfig.MAX_IMPRINTS_PER_CHUNK.get());
+        MemoryPressure.recompute(chunk, memory);
+        MemoryFx.write(level, pos);
+        return true;
+    }
+
     public static int spike(ServerLevel level, BlockPos pos, int amount) {
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
@@ -155,7 +173,7 @@ public final class ImprintWriter {
     }
 
     /** Hands the slip to the player (if any), notes the tag, then plays the extract sound and particles. */
-    private static void giveSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
+    public static void giveSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
         if (player != null) {
             ItemStack slip = ImprintSlips.of(imprint);
             if (!player.getInventory().add(slip)) {

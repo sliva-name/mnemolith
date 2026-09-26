@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:string",
+    "mnemolith:echo_slip",
+    "minecraft:copper_ingot"
+  ],
+  "result": {
+    "id": "mnemolith:relay_thread",
+    "count": 2
+  }
+}

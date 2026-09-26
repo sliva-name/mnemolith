@@ -322,6 +322,17 @@ public final class Residues {
                 return true;
             }
         }
+        // Echo relay: an echo next to the residue drinks it for the other end of its link, when that end carries the temper.
+        for (EchoEntity echo : level.getEntitiesOfClass(EchoEntity.class, residue.getBoundingBox().inflate(FEED_RANGE),
+                e -> e.isAlive() && EchoGrafts.enabled() && e.relay() != null)) {
+            EchoEntity partner = com.mnemolith.echo.relay.EchoRelays.drinkFor(level, echo, temper);
+            if (partner != null && EchoGrafts.topUp(partner, Math.max(1, EchoGrafts.slipCharge(temper) / 2))) {
+                level.sendParticles(EchoGrafts.particle(temper), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.02D);
+                level.sendParticles(EchoGrafts.particle(temper), partner.getX(), partner.getY() + 1.0D, partner.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.02D);
+                Mnemolith.LOGGER.info("Mnemolith relay drink tag={} via={} into={}", residue.tag().getSerializedName(), echo.getUUID(), partner.getUUID());
+                return true;
+            }
+        }
         return false;
     }
 

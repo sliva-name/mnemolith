@@ -356,6 +356,11 @@ public final class EchoGrafts {
         if (echo.graftTemper() == temper) {
             return echo;
         }
+        // Echo relay: the other end of a link always stands inside its partner's aura, at any distance.
+        EchoEntity linked = com.mnemolith.echo.relay.EchoRelays.auraPartner(level, echo, temper);
+        if (linked != null) {
+            return linked;
+        }
         int radius = CommonConfig.ECHO_GRAFT_AURA_RADIUS.get();
         if (radius <= 0 || echo.ownerId() == null) {
             return null;

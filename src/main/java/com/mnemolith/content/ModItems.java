@@ -67,6 +67,10 @@ public final class ModItems {
     public static final DeferredItem<Item> SCAR_FRAGMENT = ITEMS.registerItem(
             "scar_fragment", Item::new, properties -> properties.stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SCAR_GLASS = ITEMS.registerSimpleBlockItem(ModBlocks.SCAR_GLASS);
+    /** Echo relay: ties two of your echoes into a linked pair (used up by the second end). */
+    public static final DeferredItem<Item> RELAY_THREAD = ITEMS.registerItem("relay_thread", Item::new, properties -> properties.stacksTo(16));
+    /** Archive vault: keeps its imprints on the item when broken, so one stack is one vault. */
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVE_VAULT = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVE_VAULT, properties -> properties.stacksTo(1));
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

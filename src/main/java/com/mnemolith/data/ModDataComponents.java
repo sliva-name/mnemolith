@@ -31,6 +31,16 @@ public final class ModDataComponents {
             "echo_farm",
             builder -> builder.persistent(com.mnemolith.echo.FarmLesson.CODEC).networkSynchronized(com.mnemolith.echo.FarmLesson.STREAM_CODEC));
 
+    /** Echo relay: the first echo a relay thread was used on, until the second end is tied. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<java.util.UUID>> RELAY_FIRST = DATA_COMPONENTS.registerComponentType(
+            "relay_first",
+            builder -> builder.persistent(net.minecraft.core.UUIDUtil.CODEC).networkSynchronized(net.minecraft.core.UUIDUtil.STREAM_CODEC));
+
+    /** Archive vault: the imprints a vault holds, kept on the item when it is broken and moved. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.vault.VaultContents>> VAULT_CONTENTS = DATA_COMPONENTS.registerComponentType(
+            "vault_contents",
+            builder -> builder.persistent(com.mnemolith.vault.VaultContents.CODEC).networkSynchronized(com.mnemolith.vault.VaultContents.STREAM_CODEC));
+
     private ModDataComponents() {}
 
     public static void register(IEventBus modEventBus) {

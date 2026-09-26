@@ -92,6 +92,8 @@ public class EchoEntity extends MemoryAvatar {
     private com.mnemolith.echo.graft.@Nullable EchoGraft graft;
     /** Scar-set with a scar fragment (saved as {@code echo_scarred}): holds three slips' worth, shrugs off fractures. */
     private boolean scarred;
+    /** Echo relay (saved as {@code echo_relay}): the id both ends of a link share; null when unlinked. Server only. */
+    private java.util.@org.jspecify.annotations.Nullable UUID relay;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -299,6 +301,9 @@ public class EchoEntity extends MemoryAvatar {
             if (this.tickCount % 40 == 23 && this.graft != null && this.isAlive()) {
                 com.mnemolith.echo.graft.EchoGrafts.checkFracture(level, this);
             }
+            if (this.tickCount % 40 == 31 && this.relay != null && this.isAlive()) {
+                com.mnemolith.echo.relay.EchoRelays.tick(level, this);
+            }
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
             }
@@ -338,6 +343,14 @@ public class EchoEntity extends MemoryAvatar {
             packed = temper.id() | (Math.min(0x3FFF, Math.max(0, value.charge())) << 4) | (capacity << 18);
         }
         this.entityData.set(DATA_GRAFT, packed);
+    }
+
+    public java.util.@org.jspecify.annotations.Nullable UUID relay() {
+        return this.relay;
+    }
+
+    public void setRelay(java.util.@org.jspecify.annotations.Nullable UUID relay) {
+        this.relay = relay;
     }
 
     public boolean scarred() {
@@ -592,6 +605,9 @@ public class EchoEntity extends MemoryAvatar {
         if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.EXTRACTION_NEEDLE.get())) {
             return com.mnemolith.echo.graft.EchoGrafts.unpick(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
+        if (held.is(ModItems.RELAY_THREAD.get())) {
+            return com.mnemolith.echo.relay.EchoRelays.useThread(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+        }
         if (serverPlayer.isShiftKeyDown()) {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
@@ -610,7 +626,9 @@ public class EchoEntity extends MemoryAvatar {
 
     private Component withGraftLine(Component status) {
         Component line = this.graftTemper() == null ? status : status.copy().append(" · ").append(this.graftLine());
-        return this.scarred ? line.copy().append(" · ").append(Component.translatable("mnemolith.graft.scarred")) : line;
+        Component scarredLine = this.scarred ? line.copy().append(" · ").append(Component.translatable("mnemolith.graft.scarred")) : line;
+        return this.relay == null || !(this.level() instanceof ServerLevel level) ? scarredLine
+                : scarredLine.copy().append(" · ").append(com.mnemolith.echo.relay.EchoRelays.statusLine(level, this));
     }
 
     public void openInventory(ServerPlayer player) {
@@ -674,6 +692,7 @@ public class EchoEntity extends MemoryAvatar {
         if (wasAlive && this.dead && this.level() instanceof ServerLevel level && !this.silentRemoval) {
             EchoLife.onEchoBodyDied(level, this.ownerId(), this.getUUID(), this.blockPosition(), this.ownerName());
             com.mnemolith.echo.graft.EchoGrafts.onBodyDied(level, this);
+            com.mnemolith.echo.relay.EchoRelays.onBodyDied(level, this);
         }
     }
 
@@ -748,6 +767,9 @@ public class EchoEntity extends MemoryAvatar {
         if (this.scarred) {
             output.putBoolean("echo_scarred", true);
         }
+        if (this.relay != null) {
+            output.store("echo_relay", net.minecraft.core.UUIDUtil.CODEC, this.relay);
+        }
     }
 
     @Override
@@ -770,6 +792,7 @@ public class EchoEntity extends MemoryAvatar {
         input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
         this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
         this.scarred = input.getBooleanOr("echo_scarred", false);
+        this.relay = input.read("echo_relay", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         // Only graftable tags with charges left are kept; anything else in a hand-edited save is dropped.
         this.setGraft(input.read("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC)
                 .filter(g -> g.charge() > 0 && com.mnemolith.echo.graft.Temper.of(g.cast().tag()) != null)

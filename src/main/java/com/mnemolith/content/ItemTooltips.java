@@ -50,6 +50,20 @@ public final class ItemTooltips {
             } else if (stack.getItem() == ModItems.SCAR_GLASS.get()) {
                 builder.accept(Component.translatable("block.mnemolith.scar_glass.hint"));
                 builder.accept(Component.translatable("block.mnemolith.scar_glass.source").withStyle(net.minecraft.ChatFormatting.GRAY));
+            } else if (stack.getItem() == ModItems.RELAY_THREAD.get()) {
+                builder.accept(Component.translatable("item.mnemolith.relay_thread.hint"));
+                builder.accept(Component.translatable("item.mnemolith.relay_thread.source").withStyle(net.minecraft.ChatFormatting.GRAY));
+                if (stack.has(ModDataComponents.RELAY_FIRST.get())) {
+                    builder.accept(Component.translatable("item.mnemolith.relay_thread.first").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+            } else if (stack.getItem() == ModItems.ARCHIVE_VAULT.get()) {
+                builder.accept(Component.translatable("block.mnemolith.archive_vault.hint"));
+                builder.accept(Component.translatable("block.mnemolith.archive_vault.source").withStyle(net.minecraft.ChatFormatting.GRAY));
+                com.mnemolith.vault.VaultContents contents = stack.get(ModDataComponents.VAULT_CONTENTS.get());
+                if (contents != null && !contents.imprints().isEmpty()) {
+                    builder.accept(Component.translatable("block.mnemolith.archive_vault.contents", contents.imprints().size())
+                            .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
             } else if (stack.getItem() == ModItems.FIELD_GUIDE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.field_guide.hint"));
             }
