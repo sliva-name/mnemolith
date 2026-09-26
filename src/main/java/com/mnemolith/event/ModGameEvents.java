@@ -9,6 +9,7 @@ import com.mnemolith.command.qa.MultiplayerSmoke;
 import com.mnemolith.command.qa.PerfCommand;
 import com.mnemolith.command.qa.SmokeCommand;
 import com.mnemolith.config.ServerConfig;
+import com.mnemolith.pressure.MemoryPressure;
 
 import net.minecraft.commands.Commands;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -16,6 +17,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * Common game events. Fires on the integrated server and the dedicated server.
@@ -36,6 +38,13 @@ public final class ModGameEvents {
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         MobEvents.clearAll();
+        MemoryPressure.clearDeferred();
+    }
+
+    /** Replicant attempts that a chunk load queued instead of spawning inside the load event. */
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent.Post event) {
+        MemoryPressure.runDeferred(event.getServer());
     }
 
     @SubscribeEvent

@@ -155,8 +155,8 @@ public final class ImprintEvents {
         }
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory != null) {
-            memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());
-            MemoryPressure.recompute(chunk, memory);
+            boolean faded = memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());
+            MemoryPressure.recomputeOnLoad(chunk, memory, faded);
         }
     }
 

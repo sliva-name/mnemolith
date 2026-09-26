@@ -53,6 +53,7 @@ public class Archivist extends MemoryMob {
     private int stunTicks;
     private @Nullable ServerPlayer interest;
     private @Nullable ItemEntity dropped;
+    /** The slip it stole from a player or picked up. One at a time, saved, and dropped half the time on death. */
     private ItemStack carried = ItemStack.EMPTY;
     // Same-tick cache for nearestBait(): BaitGoal can ask twice in one AI step (continue check, then start check).
     private int baitTick = Integer.MIN_VALUE;
@@ -99,8 +100,9 @@ public class Archivist extends MemoryMob {
         return this.fleeTicks > 0;
     }
 
+    /** Holds one stolen slip at a time; a second theft would overwrite (and lose) the first. */
     public boolean stealReady() {
-        return this.stealCooldown <= 0;
+        return this.stealCooldown <= 0 && this.carried.isEmpty();
     }
 
     public @Nullable ServerPlayer interest() {
@@ -214,6 +216,9 @@ public class Archivist extends MemoryMob {
         if (!MobTuning.archivistEnabled() || this.stunTicks > 0) {
             return;
         }
+        if (!this.carried.isEmpty() && ImprintSlips.isSlip(entity.getItem())) {
+            return;
+        }
         ItemStack stack = entity.getItem();
         if (ImprintSlips.isSlip(stack) || stack.getItem() == ModItems.ARCHIVIST_BAIT.get()) {
             this.dropped = entity;
@@ -221,7 +226,7 @@ public class Archivist extends MemoryMob {
     }
 
     public boolean snatch(ServerLevel level, Container container, @Nullable ServerPlayer player, boolean ignoreCooldown) {
-        if (this.stunTicks > 0) {
+        if (this.stunTicks > 0 || !this.carried.isEmpty()) {
             return false;
         }
         if (!ignoreCooldown && (!MobTuning.archivistEnabled() || this.stealCooldown > 0)) {
@@ -242,7 +247,7 @@ public class Archivist extends MemoryMob {
         if (!(player.level() instanceof ServerLevel level)) {
             return false;
         }
-        if (this.stunTicks > 0) {
+        if (this.stunTicks > 0 || !this.carried.isEmpty()) {
             return false;
         }
         if (!ignoreCooldown && (!MobTuning.archivistEnabled() || this.stealCooldown > 0)) {
@@ -406,7 +411,7 @@ public class Archivist extends MemoryMob {
                 }
             }
         }
-        if (this.dropped == null || !this.dropped.isAlive()) {
+        if (this.carried.isEmpty() && (this.dropped == null || !this.dropped.isAlive())) {
             AABB box = this.getBoundingBox().inflate(8.0D);
             for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, box, item -> ImprintSlips.isSlip(item.getItem()))) {
                 this.dropped = entity;
@@ -448,12 +453,16 @@ public class Archivist extends MemoryMob {
         if (!this.echoLoot.isEmpty()) {
             output.store("echo_loot", ItemStack.CODEC, this.echoLoot);
         }
+        if (!this.carried.isEmpty()) {
+            output.store("carried", ItemStack.CODEC, this.carried);
+        }
     }
 
     @Override
     protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
         super.readAdditionalSaveData(input);
         this.echoLoot = input.read("echo_loot", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        this.carried = input.read("carried", ItemStack.CODEC).orElse(ItemStack.EMPTY);
     }
 
     @Override
