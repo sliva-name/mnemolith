@@ -1,40 +1,107 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "mnemolith:block/archival_stratum",
-    "strata": "mnemolith:block/archival_stratum"
+    "particle": "mnemolith:block/archival_stratum_particle",
+    "sheet": "mnemolith:block/archival_stratum"
   },
   "elements": [
     {
       "from": [2, 0, 2],
       "to": [14, 16, 14],
       "faces": {
-        "down": { "uv": [0, 13, 8, 16], "texture": "#strata" },
-        "up": { "uv": [0, 0, 8, 3], "texture": "#strata" },
-        "north": { "uv": [2, 0, 14, 16], "texture": "#strata" },
-        "south": { "uv": [2, 0, 14, 16], "texture": "#strata" },
-        "west": { "uv": [2, 0, 14, 16], "texture": "#strata" },
-        "east": { "uv": [2, 0, 14, 16], "texture": "#strata" }
+        "north": {
+          "uv": [8.0, 0.0, 14.0, 8.0],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [8.0, 0.0, 14.0, 8.0],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [8.0, 0.0, 14.0, 8.0],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [8.0, 0.0, 14.0, 8.0],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [0.0, 8.0, 6.0, 14.0],
+          "texture": "#sheet",
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [0.0, 8.0, 6.0, 14.0],
+          "texture": "#sheet",
+          "cullface": "down"
+        }
       }
     },
     {
       "from": [0, 5, 0],
       "to": [16, 9, 16],
       "faces": {
-        "down": { "uv": [0, 7, 16, 9], "texture": "#strata" },
-        "up": { "uv": [0, 4, 16, 6], "texture": "#strata" },
-        "north": { "uv": [0, 4, 16, 9], "texture": "#strata" },
-        "south": { "uv": [0, 4, 16, 9], "texture": "#strata" },
-        "west": { "uv": [0, 4, 16, 9], "texture": "#strata" },
-        "east": { "uv": [0, 4, 16, 9], "texture": "#strata" }
+        "north": {
+          "uv": [6.0, 8.0, 14.0, 10.0],
+          "texture": "#sheet",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [6.0, 8.0, 14.0, 10.0],
+          "texture": "#sheet",
+          "cullface": "south"
+        },
+        "east": {
+          "uv": [6.0, 8.0, 14.0, 10.0],
+          "texture": "#sheet",
+          "cullface": "east"
+        },
+        "west": {
+          "uv": [6.0, 8.0, 14.0, 10.0],
+          "texture": "#sheet",
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [0.0, 0.0, 8.0, 8.0],
+          "texture": "#sheet"
+        },
+        "down": {
+          "uv": [0.0, 0.0, 8.0, 8.0],
+          "texture": "#sheet"
+        }
       }
     }
   ],
   "display": {
-    "gui": { "rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625] },
-    "ground": { "rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25] },
-    "fixed": { "rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [0.5, 0.5, 0.5] },
-    "thirdperson_righthand": { "rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375] },
-    "firstperson_righthand": { "rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4] }
+    "gui": {
+      "rotation": [30, 225, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.625, 0.625, 0.625]
+    },
+    "ground": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 3, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "fixed": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.5, 0.5, 0.5]
+    },
+    "thirdperson_righthand": {
+      "rotation": [75, 45, 0],
+      "translation": [0, 2.5, 0],
+      "scale": [0.375, 0.375, 0.375]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 225, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.4, 0.4, 0.4]
+    }
   }
 }

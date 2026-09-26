@@ -43,3 +43,6 @@ repo/
 ### Logs ###
 *.log
 logs/
+
+# art pipeline
+__pycache__/

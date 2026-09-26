@@ -324,6 +324,19 @@ With the lens put away, the three client toggles at their defaults, and `gamepla
 - [ ] The client log from `Mnemolith client setup` includes `Mnemolith fracture feel vignette=true shake=true fringe=true` when the defaults are on. A dedicated server log does not contain that line.
 - [ ] If `post_effect/fracture.json` fails to load, one warning names `mnemolith:fracture` and the vignette and shake still run.
 
+## Art pass (client)
+
+Offline, `python tools/art/validate_assets.py --vanilla <extracted client assets>` must report 0 errors and `python tools/art/build.py --check` 0 differences. The rest needs a physical client.
+
+- [ ] Client log after resource load: no `Missing texture`, `Unable to load model`, `Unable to resolve texture` or `missing model` line for `mnemolith:`.
+- [ ] Creative tab at GUI scale 2 and 3: every item and block icon reads as its object; no magenta-black tile; the lens and needle show the flat sprite in the inventory, as a dropped item, in an item frame and on a shelf.
+- [ ] Hold the chronicle lens and the extraction needle in first and third person, both hands: the 3D models sit in the grip like vanilla handheld items (compare with an iron sword), the lens glass is see-through.
+- [ ] Place mute stone, composition reel, resonator trap, archive vault (idle and drawing), archival stratum, scar heart, scar glass: models are lit correctly from all sides, no z-fighting, the vault drawer labels light up while drawing, scar glass stays translucent.
+- [ ] Known, not fixed here: the non-full models (mute stone, reel, trap, stratum) keep full occlusion, so a neighbour's hidden face can show as a gap at their base.
+- [ ] Archivist, echo strider, moment replicant, residue (with the lens and without), the Scar, an echo and a grafted echo: textures sit on the right boxes at 128×128, no seams or stretched faces.
+- [ ] Particles (extract, compose ok/fail, mute haze, strider trail, graft motes): shapes are crisp and still tinted.
+- [ ] Field guide, all 26 pages in EN and RU: pictures fill the art box, no blur (nearest filtering), no stretched aspect.
+
 ## GUI contrast
 
 The archival panel chrome is ink `#1C244A`. Catalog, lens, and reel glyphs are bone or a light accent. The drop shadow is drawn one pixel down-right by `GuiArt.label` and `GuiArt.paragraph`. The font's own shadow flag stays off.
