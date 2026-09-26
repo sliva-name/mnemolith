@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": "mnemolith:hush_fiber",
+    "C": "minecraft:copper_ingot",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "H",
+    "C",
+    "S"
+  ],
+  "result": {
+    "id": "mnemolith:hush_spear",
+    "count": 1
+  }
+}

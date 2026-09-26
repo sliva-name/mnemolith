@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:string",
+    "minecraft:ink_sac",
+    "minecraft:paper"
+  ],
+  "result": {
+    "id": "mnemolith:hush_fiber",
+    "count": 2
+  }
+}

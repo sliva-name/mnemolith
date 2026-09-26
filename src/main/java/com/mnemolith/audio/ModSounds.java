@@ -39,6 +39,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_DEATH = register("replicant_death");
     public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_TELEGRAPH = register("replicant_telegraph");
     public static final DeferredHolder<SoundEvent, SoundEvent> REPLICANT_BLIND = register("replicant_blind");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MITE_AMBIENT = register("mite_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MITE_HURT = register("mite_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WITNESS_AMBIENT = register("witness_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WITNESS_HURT = register("witness_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STALKER_AMBIENT = register("stalker_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STALKER_HURT = register("stalker_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STALKER_DEATH = register("stalker_death");
 
     private ModSounds() {}
 

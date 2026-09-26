@@ -66,6 +66,25 @@ public final class MobSpawns {
         return pressure >= minPressure;
     }
 
+    /** A calm chunk: mites keep to quiet ground. */
+    public static boolean allowCalm(ServerLevelAccessor level, BlockPos pos, RandomSource random, int weight) {
+        return allowBelow(level, pos, random, weight, 20);
+    }
+
+    /** Pressure strictly under {@code ceiling}. */
+    public static boolean allowBelow(ServerLevelAccessor level, BlockPos pos, RandomSource random, int weight, int ceiling) {
+        if (weight <= 0 || random.nextInt(100) >= weight || !(level instanceof ServerLevel server)) {
+            return false;
+        }
+        if (LoadedChunkMemory.isMuted(server, pos)) {
+            return false;
+        }
+        LevelChunk chunk = server.getChunkAt(pos);
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        int pressure = memory == null ? 0 : memory.cachedPressure();
+        return pressure < ceiling;
+    }
+
     private static boolean hasPath(ServerLevelAccessor level, BlockPos pos) {
         if (!(level instanceof ServerLevel server)) {
             return false;

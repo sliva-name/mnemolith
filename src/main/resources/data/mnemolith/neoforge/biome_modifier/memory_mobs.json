@@ -19,6 +19,24 @@
       "weight": 8,
       "minCount": 1,
       "maxCount": 1
+    },
+    {
+      "type": "mnemolith:ledger_mite",
+      "weight": 12,
+      "minCount": 1,
+      "maxCount": 2
+    },
+    {
+      "type": "mnemolith:kin_witness",
+      "weight": 6,
+      "minCount": 1,
+      "maxCount": 1
+    },
+    {
+      "type": "mnemolith:fracture_stalker",
+      "weight": 8,
+      "minCount": 1,
+      "maxCount": 2
     }
   ]
 }

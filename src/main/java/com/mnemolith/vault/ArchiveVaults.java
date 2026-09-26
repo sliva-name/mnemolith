@@ -11,6 +11,7 @@ import com.mnemolith.echo.graft.EchoGrafts;
 import com.mnemolith.echo.graft.Temper;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.Imprint;
 import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.particle.ModParticles;
@@ -34,6 +35,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -50,12 +52,13 @@ import org.jspecify.annotations.Nullable;
  *       {@code vaultDrawSeconds}, up to {@code vaultCapacity}. The chunks it drains go quiet.</li>
  *   <li><b>The price</b>: a share ({@code vaultBleed}) of what it holds bleeds into its own chunk's pressure, so a full
  *       vault makes its chunk loud (archivists come for it, residues condense there). If that chunk fractures, the vault
- *       ruptures and spills half of what it holds; an explosion spills everything.</li>
+ *       ruptures and spills half of what it holds; an explosion spills everything. A chunk that is already at its imprint
+ *       cap cannot take the spill, so those imprints drop as slips instead of staying trapped in the vault.</li>
  *   <li><b>Move</b>: broken with any tool it keeps its imprints on the item. Carried, it leaks one imprint where you
  *       stand every {@code vaultLeakSeconds}.</li>
  *   <li><b>Spend</b>: the needle takes the loudest one as a slip; sneak-use discharges everything into the chunk it
- *       stands in (feed a reel, call residues or a storm on purpose); an idle vault feeds grafted echoes standing next
- *       to it, one matching imprint per cycle.</li>
+ *       stands in (feed a reel, call residues or a storm on purpose), or into the player's hands as slips when that
+ *       chunk is already full; an idle vault feeds grafted echoes standing next to it, one matching imprint per cycle.</li>
  * </ul>
  * A mute stone in the vault's chunk keeps it from drawing there and swallows whatever it spills or discharges.
  */
@@ -244,7 +247,10 @@ public final class ArchiveVaults {
         return taken;
     }
 
-    /** Sneak-use: every stored imprint is written into the vault's chunk. Returns how many; -1 when a mute stone refuses. */
+    /**
+     * Sneak-use: every stored imprint is written into the vault's chunk, or handed to the player as a slip when that
+     * chunk is already full. Returns how many left the vault; -1 when a mute stone refuses.
+     */
     public static int discharge(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault, @Nullable ServerPlayer player) {
         if (vault.isEmpty()) {
             if (player != null) {
@@ -260,9 +266,12 @@ public final class ArchiveVaults {
         }
         List<Imprint> all = vault.takeAll();
         int written = 0;
+        int handed = 0;
         for (Imprint imprint : all) {
             if (ImprintWriter.restore(level, pos.above(), imprint)) {
                 written++;
+            } else if (handSlip(level, pos, player, imprint)) {
+                handed++;
             } else {
                 vault.add(imprint);
             }
@@ -271,10 +280,12 @@ public final class ArchiveVaults {
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.0F, 0.6F);
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.2D, pos.getZ() + 0.5D, 16, 0.6D, 0.4D, 0.6D, 0.03D);
         if (player != null) {
-            player.sendSystemMessage(Component.translatable("mnemolith.vault.discharged", written), true);
+            player.sendSystemMessage(handed > 0
+                    ? Component.translatable("mnemolith.vault.discharged_slips", handed, written)
+                    : Component.translatable("mnemolith.vault.discharged", written), true);
         }
-        Mnemolith.LOGGER.info("Mnemolith vault discharge count={} at {}", written, pos.toShortString());
-        return written;
+        Mnemolith.LOGGER.info("Mnemolith vault discharge written={} slips={} at {}", written, handed, pos.toShortString());
+        return written + handed;
     }
 
     /** An idle vault feeds one grafted echo within 4 blocks: a stored imprint of its temper becomes half a slip of charges. */
@@ -308,10 +319,15 @@ public final class ArchiveVaults {
         return spilled;
     }
 
-    /** Writes the {@code count} loudest stored imprints into the vault's chunk (a muted chunk swallows them: lost). */
+    /**
+     * Writes the {@code count} loudest stored imprints into the vault's chunk. A muted chunk swallows them. A chunk
+     * already at its imprint cap cannot take them, so they drop as slips on the vault: a full vault in a full chunk
+     * still empties.
+     */
     public static int spill(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault, int count, String why) {
         int written = 0;
         int taken = 0;
+        int dropped = 0;
         for (int i = 0; i < count; i++) {
             Optional<Imprint> loudest = vault.takeLoudest();
             if (loudest.isEmpty()) {
@@ -323,6 +339,9 @@ public final class ArchiveVaults {
                 written++;
             } else if (LoadedChunkMemory.isMuted(level, pos)) {
                 taken++;
+            } else if (dropSlip(level, pos, imprint)) {
+                taken++;
+                dropped++;
             } else {
                 vault.add(imprint);
                 break;
@@ -330,9 +349,28 @@ public final class ArchiveVaults {
         }
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.2F, 0.4F);
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 20, 0.7D, 0.5D, 0.7D, 0.04D);
-        Mnemolith.LOGGER.info("Mnemolith vault spill why={} taken={} written={} left={} at {}", why, taken, written, vault.count(), pos.toShortString());
+        Mnemolith.LOGGER.info("Mnemolith vault spill why={} taken={} written={} dropped={} left={} at {}", why, taken, written, dropped, vault.count(), pos.toShortString());
         refreshLoad(level, pos);
-        return written;
+        return written + dropped;
+    }
+
+    /** A chunk that refused the imprint. The player who asked for it receives the slip; otherwise it drops on the vault. */
+    private static boolean handSlip(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Imprint imprint) {
+        if (player != null) {
+            ItemStack slip = ImprintSlips.of(imprint);
+            if (!player.getInventory().add(slip)) {
+                player.drop(slip, false);
+            }
+            DiscoveryNotes.noteTag(player, imprint.tag());
+            return true;
+        }
+        return dropSlip(level, pos, imprint);
+    }
+
+    private static boolean dropSlip(ServerLevel level, BlockPos pos, Imprint imprint) {
+        ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintSlips.of(imprint));
+        drop.setDefaultPickUpDelay();
+        return level.addFreshEntity(drop);
     }
 
     /** Archivists: the nearest tracked vault holding something within {@link #RAID_RANGE} of {@code from}, or null. */

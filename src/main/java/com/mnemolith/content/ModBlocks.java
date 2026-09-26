@@ -67,6 +67,7 @@ public final class ModBlocks {
                 .strength(3.0F, 6.0F)
                 .sound(SoundType.DEEPSLATE_BRICKS)
                 .lightLevel(state -> state.getValue(com.mnemolith.content.block.ArchiveVaultBlock.DRAWING) ? 7 : 2)
+                .noOcclusion()
                 .requiresCorrectToolForDrops();
     }
 
@@ -98,15 +99,15 @@ public final class ModBlocks {
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> stoneProperties() {
-        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(MemorySoundTypes.MUTE);
+        return properties -> properties.mapColor(MapColor.COLOR_BLUE).strength(1.5F, 6.0F).sound(MemorySoundTypes.MUTE).noOcclusion();
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> reelProperties() {
-        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 3.0F).sound(SoundType.AMETHYST);
+        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 3.0F).sound(SoundType.AMETHYST).noOcclusion();
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> trapProperties() {
-        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 6.0F).sound(SoundType.METAL);
+        return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 6.0F).sound(SoundType.METAL).noOcclusion();
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> momentProperties() {
@@ -129,6 +130,7 @@ public final class ModBlocks {
                 .strength(3.0F, 6.0F)
                 .sound(MemorySoundTypes.STRATUM)
                 .lightLevel(state -> 7)
+                .noOcclusion()
                 .requiresCorrectToolForDrops();
     }
 }

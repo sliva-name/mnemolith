@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mnemolith:scar"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mnemolith:scar"
+      }
+    ]
+  }
+}

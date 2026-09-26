@@ -293,8 +293,21 @@ public final class RelayQa {
             for (int i = 0; i < ticks; i++) {
                 ArchiveVaults.tick(level, v, vault);
             }
-            ok[10] = fractured == PressureBand.FRACTURE && vault.count() == held - (held + 1) / 2 && QaSupport.hasTag(level, v.above(), ImprintTag.DEATH);
-            notes.add("rupture band=" + fractured + " held " + held + "->" + vault.count());
+            int afterRupture = vault.count();
+            boolean ruptured = fractured == PressureBand.FRACTURE && afterRupture == held - (held + 1) / 2 && QaSupport.hasTag(level, v.above(), ImprintTag.DEATH);
+            // A chunk already at the imprint cap cannot take the spill: the imprints leave as slips, the vault does not keep them.
+            reset(level, b);
+            int cap = CommonConfig.MAX_IMPRINTS_PER_CHUNK.get();
+            int filled = fillChunk(level, v);
+            vault.replace(List.of(imprint(ImprintTag.DEATH, v), imprint(ImprintTag.FIRE, v)));
+            int spilledFull = ArchiveVaults.spill(level, v, vault, 2, "full");
+            ChunkMemory afterFull = LoadedChunkMemory.existing(level.getChunkAt(v));
+            boolean stayedFull = afterFull != null && afterFull.imprintCount() == cap
+                    && !QaSupport.hasTag(level, v.above(), ImprintTag.DEATH) && !QaSupport.hasTag(level, v.above(), ImprintTag.FIRE);
+            boolean overflowSpill = filled == cap && spilledFull == 2 && vault.isEmpty() && stayedFull;
+            ok[10] = ruptured && overflowSpill;
+            notes.add("rupture band=" + fractured + " held " + held + "->" + afterRupture + " fullChunk=" + filled + " spilled=" + spilledFull + " stayed=" + stayedFull);
+            clearDrops(level, v);
             reset(level, b);
 
             // ---------- an explosion spills everything ----------
@@ -335,8 +348,18 @@ public final class RelayQa {
             LoadedChunkMemory.removeMuteStone(level, b.offset(-6, 0, -6));
             int discharged = ArchiveVaults.discharge(level, v, vault, null);
             boolean wrote = QaSupport.hasTag(level, v.above(), ImprintTag.FALL) && QaSupport.hasTag(level, v.above(), ImprintTag.DEATH);
-            ok[13] = refused == -1 && keptWhileMuted == 3 && discharged == 3 && vault.isEmpty() && wrote && ArchiveVaults.chunkLoad(level, v) == 0;
-            notes.add("discharge muted=" + refused + " kept=" + keptWhileMuted + " discharged=" + discharged + " wrote=" + wrote);
+            boolean emptied = vault.isEmpty() && ArchiveVaults.chunkLoad(level, v) == 0;
+            reset(level, b);
+            int full = fillChunk(level, v);
+            vault.replace(List.of(imprint(ImprintTag.DEATH, v), imprint(ImprintTag.SILENCE, v)));
+            owner.getInventory().clearContent();
+            int handed = ArchiveVaults.discharge(level, v, vault, owner);
+            boolean slips = QaSupport.holdsTag(owner, ImprintTag.DEATH) && QaSupport.holdsTag(owner, ImprintTag.SILENCE);
+            boolean fullDischarge = full == CommonConfig.MAX_IMPRINTS_PER_CHUNK.get() && handed == 2 && vault.isEmpty() && slips;
+            ok[13] = refused == -1 && keptWhileMuted == 3 && discharged == 3 && wrote && emptied && fullDischarge;
+            notes.add("discharge muted=" + refused + " kept=" + keptWhileMuted + " discharged=" + discharged + " wrote=" + wrote
+                    + " full=" + full + " handed=" + handed + " slips=" + slips);
+            owner.getInventory().clearContent();
             reset(level, b);
 
             // ---------- an idle vault feeds a grafted echo nearby ----------
@@ -465,6 +488,16 @@ public final class RelayQa {
             place(echo, at);
         }
         return echo;
+    }
+
+    /** Fills the chunk of {@code pos} up to the imprint cap with path imprints. Returns how many it holds. */
+    private static int fillChunk(ServerLevel level, BlockPos pos) {
+        int cap = CommonConfig.MAX_IMPRINTS_PER_CHUNK.get();
+        for (int i = 0; i < cap; i++) {
+            ImprintWriter.write(level, pos, List.of(ImprintTag.PATH), null, false);
+        }
+        ChunkMemory memory = LoadedChunkMemory.existing(level.getChunkAt(pos));
+        return memory == null ? 0 : memory.imprintCount();
     }
 
     private static ArchiveVaultBlockEntity placeVault(ServerLevel level, BlockPos pos) {

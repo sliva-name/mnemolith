@@ -44,7 +44,8 @@ final class JobStrain {
             this.strain = band;
             this.job.dirty = true;
         }
-        if (band == PressureBand.FRACTURE && this.job.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get() && !echo.scarred()) {
+        if (band == PressureBand.FRACTURE && this.job.isWorking() && CommonConfig.ECHO_FRACTURE_STOPS.get() && !echo.scarred()
+                && echo.role() != com.mnemolith.echo.EchoRole.WARDEN && !com.mnemolith.armory.Armory.full(echo, com.mnemolith.armory.ArmorySet.SCAR)) {
             this.job.halt(echo, JobStatus.of(JobStatus.Kind.FRACTURED));
         }
     }
@@ -68,6 +69,9 @@ final class JobStrain {
             return;
         }
         this.workActions = 0;
+        if (com.mnemolith.echo.EchoRoles.swallowWork(echo)) {
+            return;
+        }
         // Memory grafts: a hush swallows the imprint (and its instability); kindled and volatile work leaves fire or explosion.
         ImprintTag tag = com.mnemolith.echo.graft.EchoGrafts.workImprint(level, echo, pos);
         if (tag == null) {

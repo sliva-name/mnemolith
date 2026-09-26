@@ -67,6 +67,7 @@ def stratum_band_top(w, h, rng):
 def archival_stratum():
     m = Model('archival_stratum')
     core_side = P(stratum_core_side, 'core_side')
+    m.box((0, 0, 0), (16, 2, 16), core_side, up=P(stratum_top, 'core_top'), down=P(stratum_top, 'core_top'))
     m.box((2, 0, 2), (14, 16, 14), core_side, up=P(stratum_top, 'core_top'), down=P(stratum_top, 'core_top'))
     m.box((0, 5, 0), (16, 9, 16), P(stratum_band_side, 'band_side'), up=P(stratum_band_top, 'band_top'), down=P(stratum_band_top, 'band_top'))
     return m.build()
@@ -143,7 +144,7 @@ def mute_cap_top(w, h, rng):
 def mute_stone():
     m = Model('mute_stone')
     stone_flat = F('mute', shift=-0.3, kind='top')
-    m.box((1, 0, 1), (15, 3, 15), P(mute_plinth_side, 'plinth'), up=stone_flat, down=stone_flat)
+    m.box((0, 0, 0), (16, 3, 16), P(mute_plinth_side, 'plinth'), up=stone_flat, down=stone_flat)
     m.box((2, 3, 2), (14, 11, 14), P(mute_body_side, 'body'), skip=('up', 'down'))
     m.box((1, 11, 1), (15, 13, 15), P(mute_lip_side, 'lip'), up=P(mute_lip_top, 'lip_top'), down=stone_flat)
     m.box((3, 13, 3), (13, 15, 13), F('mute', shift=0.2), up=P(mute_cap_top, 'cap_top'), down=None)
@@ -216,7 +217,7 @@ def composition_reel():
     m = Model('composition_reel')
     wood_top = P(planks, 'planks_top')
     wood_side = P(lambda w, h, r: planks(w, h, r, 'side'), 'planks_side')
-    m.box((1, 0, 1), (15, 2, 15), wood_side, up=wood_top, down=wood_top)
+    m.box((0, 0, 0), (16, 2, 16), wood_side, up=wood_top, down=wood_top)
     for x0 in (1, 13):
         m.box((x0, 2, 3), (x0 + 2, 14, 13), F('copper', wear=0.6), east=P(reel_cheek, 'cheek'), west=P(reel_cheek, 'cheek'))
         m.box((x0, 14, 5), (x0 + 2, 15, 11), F('copper', shift=0.4), down=None)
@@ -265,7 +266,7 @@ def gel_core(w, h, rng):
 
 def resonator_trap():
     m = Model('resonator_trap')
-    m.box((1, 0, 1), (15, 2, 15), F('mute', shift=-0.3, wear=0.7), up=P(cobble_plate_top, 'plate_top'), down=P(cobble_plate_top, 'plate_top'))
+    m.box((0, 0, 0), (16, 2, 16), F('mute', shift=-0.3, wear=0.7), up=P(cobble_plate_top, 'plate_top'), down=P(cobble_plate_top, 'plate_top'))
     for x, z in ((1, 1), (12, 1), (1, 12), (12, 12)):
         m.box((x, 2, z), (x + 3, 12, z + 3), P(post_side, 'post'), up=P(post_top, 'post_top'), down=None)
     m.box((6, 2, 6), (10, 7, 10), P(gel_core, 'core'), down=None)
@@ -413,7 +414,7 @@ def scar_crystal(w, h, rng):
 
 def scar_heart():
     m = Model('scar_heart')
-    m.box((2, 0, 2), (14, 3, 14), P(scar_base_side, 'base'), up=P(scar_base_top, 'base_top'), down=F('deep', shift=-1))
+    m.box((0, 0, 0), (16, 3, 16), P(scar_base_side, 'base'), up=P(scar_base_top, 'base_top'), down=F('deep', shift=-1))
     crystal = P(scar_crystal, 'crystal')
     m.box((6, 3, 6), (10, 15, 10), crystal, down=None)
     m.box((3, 2, 7), (6, 11, 10), crystal, rotation={'origin': [4.5, 2, 8.5], 'axis': 'z', 'angle': 22.5})

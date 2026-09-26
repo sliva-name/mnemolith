@@ -5,6 +5,9 @@ import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.entity.echo.EchoShell;
 import com.mnemolith.entity.mob.Archivist;
 import com.mnemolith.entity.mob.EchoStrider;
+import com.mnemolith.entity.mob.FractureStalker;
+import com.mnemolith.entity.mob.KinWitness;
+import com.mnemolith.entity.mob.LedgerMite;
 import com.mnemolith.entity.mob.MomentReplicant;
 
 import net.minecraft.world.entity.Avatar;
@@ -33,6 +36,26 @@ public final class ModEntities {
             MomentReplicant::new,
             MobCategory.MONSTER,
             builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(8).notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<LedgerMite>> LEDGER_MITE = ENTITY_TYPES.registerEntityType(
+            "ledger_mite",
+            LedgerMite::new,
+            MobCategory.CREATURE,
+            builder -> builder.sized(0.7F, 0.4F).eyeHeight(0.2F).clientTrackingRange(8));
+    public static final DeferredHolder<EntityType<?>, EntityType<KinWitness>> KIN_WITNESS = ENTITY_TYPES.registerEntityType(
+            "kin_witness",
+            KinWitness::new,
+            MobCategory.CREATURE,
+            builder -> builder.sized(0.7F, 2.2F).eyeHeight(1.9F).clientTrackingRange(8));
+    public static final DeferredHolder<EntityType<?>, EntityType<FractureStalker>> FRACTURE_STALKER = ENTITY_TYPES.registerEntityType(
+            "fracture_stalker",
+            FractureStalker::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(1.1F, 0.9F).eyeHeight(0.7F).clientTrackingRange(8).notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.armory.MemoryBolt>> MEMORY_BOLT = ENTITY_TYPES.registerEntityType(
+            "memory_bolt",
+            com.mnemolith.entity.armory.MemoryBolt::new,
+            MobCategory.MISC,
+            builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(8).updateInterval(10).noLootTable());
 
     public static final DeferredHolder<EntityType<?>, EntityType<EchoEntity>> ECHO = ENTITY_TYPES.registerEntityType(
             "echo",

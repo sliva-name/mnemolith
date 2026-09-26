@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:scar_fragment",
+    "minecraft:leather"
+  ],
+  "result": {
+    "id": "mnemolith:scar_sinew",
+    "count": 2
+  }
+}

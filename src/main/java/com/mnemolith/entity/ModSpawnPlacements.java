@@ -30,5 +30,23 @@ public final class ModSpawnPlacements {
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowNatural(level, pos, random, MobTuning.replicantEnabled(), MobTuning.replicantWeight(), MobTuning.replicantMinPressure()),
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(
+                ModEntities.LEDGER_MITE.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowCalm(level, pos, random, 12),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(
+                ModEntities.KIN_WITNESS.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowBelow(level, pos, random, 8, 50),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(
+                ModEntities.FRACTURE_STALKER.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowNatural(level, pos, random, true, 10, 50),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }
