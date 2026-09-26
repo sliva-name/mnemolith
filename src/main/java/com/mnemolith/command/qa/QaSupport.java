@@ -129,6 +129,19 @@ public final class QaSupport {
         server.managedBlock(() -> level.isPositionEntityTicking(pos) || System.nanoTime() > deadline);
     }
 
+    /**
+     * Lets the light engine finish the updates queued by blocks a check just carved or placed. Checks run inside one
+     * server tick, so without this a freshly flattened area keeps its old light (0 where there was stone), and
+     * light-dependent blocks such as crops pop or refuse to be planted. Bounded by a 3 second deadline.
+     */
+    static void settleLight(ServerLevel level, BlockPos pos) {
+        var engine = level.getChunkSource().getLightEngine();
+        engine.tryScheduleUpdate();
+        var future = engine.waitForPendingTasks(pos.getX() >> 4, pos.getZ() >> 4);
+        long deadline = System.nanoTime() + 3_000_000_000L;
+        level.getServer().managedBlock(() -> future.isDone() || System.nanoTime() > deadline);
+    }
+
     static void releaseColumn(ServerLevel level, ChunkPos chunk) {
         level.getChunkSource().removeTicketWithRadius(TicketType.FORCED, chunk, 2);
     }

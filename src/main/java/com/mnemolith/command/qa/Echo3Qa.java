@@ -105,9 +105,12 @@ public final class Echo3Qa {
         salt++;
         BlockPos spawn = BlockPos.containing(source.getPosition());
         BlockPos a = column(level, (spawn.getX() >> 4) - 40 - salt * 6, (spawn.getZ() >> 4) + 20);
-        int y = a.getY();
+        // The farm stands on its own chunk's surface. With chunk A's height it could be carved into a hillside as a sealed
+        // dark room: sky light 0, so the wheat popped and nothing could be planted.
+        int ax = a.getX() >> 4;
+        int az = a.getZ() >> 4;
         BlockPos b = a.offset(16, 0, 0);
-        BlockPos c = a.offset(0, 0, 16);
+        BlockPos c = column(level, ax, az + 1);
         BlockPos d = a.offset(16, 0, 16);
         for (BlockPos p : List.of(a, b, c, d)) {
             tickColumn(level, p);
@@ -287,17 +290,29 @@ public final class Echo3Qa {
             echo.job().startBuilding(echo);
             int ticksF = drive(level, echo, 200, e -> e.job().mode() != EchoJob.Mode.BUILD);
             int placedF = blueprint.size() - mismatches(level, blueprint, siteB);
-            boolean conserved = placedF + echo.inventory().totalCount() == blueprint.size();
+            // The strain band is re-read every few ticks, so a last overload misfire can still put a wrong block down before
+            // the fracture stop; it stays in the world (a documented limit), so count every filled spot, not only exact ones.
+            int filledF = 0;
+            for (EchoLesson.Entry entry : blueprint.placed(siteB, Rotation.NONE)) {
+                if (!level.getBlockState(entry.offset()).isAir()) {
+                    filledF++;
+                }
+            }
+            boolean conserved = filledF + echo.inventory().totalCount() == blueprint.size();
             fracture = MemoryPressure.band(fractured) == PressureBand.FRACTURE && echo.job().status().kind() == JobStatus.Kind.FRACTURED
                     && echo.job().mode() == EchoJob.Mode.IDLE && ticksF <= 40 && conserved && echo.jobStopped();
             notes.add("fractureStop pressure=" + fractured + " ticks=" + ticksF + " status=\"" + echo.job().status().component().getString() + "\" placed=" + placedF
-                    + " conserved=" + conserved);
+                    + " filled=" + filledF + " conserved=" + conserved);
             QaSupport.discardReplicants(level, b);
             LoadedChunkMemory.clear(level.getChunkAt(b));
             clearEchoItems(echo);
 
             // ---------- farming (chunk C) ----------
             LoadedChunkMemory.clear(level.getChunkAt(c));
+            // Crops need light: open the sky over the field (the area may sit under an overhang) and let the light
+            // engine catch up, or the wheat pops and nothing can be planted.
+            openSky(level, c, 5);
+            QaSupport.settleLight(level, c);
             List<BlockPos> field = new ArrayList<>();
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dz = 1; dz <= 4; dz++) {
@@ -355,6 +370,9 @@ public final class Echo3Qa {
             discard(striderMob);
 
             // ---------- archivist theft ----------
+            // The farm left seeds in the echo; set them aside so the largest stealable stack is the cobblestone.
+            int farmSeeds = countItem(echo.inventory(), Items.WHEAT_SEEDS);
+            removeAll(echo, Items.WHEAT_SEEDS);
             echo.inventory().insert(new ItemStack(Items.COBBLESTONE, 20));
             echo.inventory().insert(new ItemStack(Items.IRON_HOE));
             int cobbleBefore = countItem(echo.inventory(), Items.COBBLESTONE);
@@ -383,6 +401,9 @@ public final class Echo3Qa {
                 drop.discard();
             }
             removeAll(echo, Items.COBBLESTONE);
+            if (farmSeeds > 0) {
+                echo.inventory().insert(new ItemStack(Items.WHEAT_SEEDS, farmSeeds));
+            }
 
             // ---------- a husk hunts the working echo ----------
             owner.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 40)));
@@ -637,6 +658,18 @@ public final class Echo3Qa {
                 level.setBlock(center.offset(dx, -1, dz), Blocks.STONE.defaultBlockState(), 2 | 16);
                 for (int dy = 0; dy <= height; dy++) {
                     level.setBlock(center.offset(dx, dy, dz), Blocks.AIR.defaultBlockState(), 2 | 16);
+                }
+            }
+        }
+    }
+
+    /** Clears everything above the flattened box around {@code center} up to the surface, so it sees the sky. */
+    private static void openSky(ServerLevel level, BlockPos center, int radius) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, center.getX() + dx, center.getZ() + dz);
+                for (int y = center.getY() + 9; y < top; y++) {
+                    level.setBlock(new BlockPos(center.getX() + dx, y, center.getZ() + dz), Blocks.AIR.defaultBlockState(), 2 | 16);
                 }
             }
         }
