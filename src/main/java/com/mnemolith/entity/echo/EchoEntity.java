@@ -69,6 +69,8 @@ public class EchoEntity extends MemoryAvatar {
     public static final int LESSON_FARMING = 4;
     private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
+    /** Memory graft (temper id in bits 0-3, charges in bits 4-17, capacity in bits 18-31); 0 without a graft. */
+    private static final EntityDataAccessor<Integer> DATA_GRAFT = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.INT);
     /** Set by the physical client so client-side echoes carry a skin. Null on a dedicated server. */
     public static EntityType.@Nullable EntityFactory<EchoEntity> clientFactory;
 
@@ -86,6 +88,8 @@ public class EchoEntity extends MemoryAvatar {
     private @Nullable Vec3 moveTarget;
     /** Stage 3: extra max health from the owner's sturdy body upgrades (saved). */
     private double bonusHealth;
+    /** Memory graft (saved as {@code echo_graft}); null without one. Server only; clients read {@link #DATA_GRAFT}. */
+    private com.mnemolith.echo.graft.@Nullable EchoGraft graft;
 
     protected EchoEntity(EntityType<? extends EchoEntity> type, Level level) {
         super(type, level);
@@ -117,6 +121,7 @@ public class EchoEntity extends MemoryAvatar {
         entityData.define(DATA_LESSON, (byte) 0);
         entityData.define(DATA_STRAIN, (byte) 0);
         entityData.define(DATA_FARM, Component.empty());
+        entityData.define(DATA_GRAFT, 0);
     }
 
     // ---- inventory ----
@@ -289,6 +294,9 @@ public class EchoEntity extends MemoryAvatar {
                     this.applyBonusHealth(bonus);
                 }
             }
+            if (this.tickCount % 40 == 23 && this.graft != null && this.isAlive()) {
+                com.mnemolith.echo.graft.EchoGrafts.checkFracture(level, this);
+            }
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
             }
@@ -301,9 +309,58 @@ public class EchoEntity extends MemoryAvatar {
 
     // ---- threats (stage 3) ----
 
-    /** Whether hostile mobs may pick this echo as a target: only while it works in the world. */
+    /**
+     * Whether hostile mobs may pick this echo as a target: while it works in the world, or always while a grave graft
+     * makes it a decoy. A hushed echo is never picked.
+     */
     public boolean attractsMobs() {
-        return this.isAlive() && !this.isReplaying() && this.job.isWorking() && CommonConfig.ECHO_MOB_AGGRO.get();
+        if (!this.isAlive() || this.isReplaying() || !CommonConfig.ECHO_MOB_AGGRO.get() || com.mnemolith.echo.graft.EchoGrafts.unnoticed(this)) {
+            return false;
+        }
+        return this.job.isWorking() || com.mnemolith.echo.graft.EchoGrafts.decoy(this);
+    }
+
+    // ---- memory graft ----
+
+    public com.mnemolith.echo.graft.@Nullable EchoGraft graft() {
+        return this.graft;
+    }
+
+    /** Sets (or clears) the graft and syncs its temper and charges to clients. */
+    public void setGraft(com.mnemolith.echo.graft.@Nullable EchoGraft value) {
+        this.graft = value;
+        int packed = 0;
+        if (value != null) {
+            com.mnemolith.echo.graft.Temper temper = value.temper();
+            int capacity = Math.min(0x3FFF, com.mnemolith.echo.graft.EchoGrafts.capacity(temper));
+            packed = temper.id() | (Math.min(0x3FFF, Math.max(0, value.charge())) << 4) | (capacity << 18);
+        }
+        this.entityData.set(DATA_GRAFT, packed);
+    }
+
+    /** Synced temper (client and server); null without a graft. */
+    public com.mnemolith.echo.graft.@Nullable Temper graftTemper() {
+        return com.mnemolith.echo.graft.Temper.byId(this.entityData.get(DATA_GRAFT) & 0xF);
+    }
+
+    /** Synced charges left. */
+    public int graftCharge() {
+        return (this.entityData.get(DATA_GRAFT) >>> 4) & 0x3FFF;
+    }
+
+    /** Synced most charges this graft can hold. */
+    public int graftCapacity() {
+        return (this.entityData.get(DATA_GRAFT) >>> 18) & 0x3FFF;
+    }
+
+    /** "Graft: Kindled · 20/64", or empty. */
+    public Component graftLine() {
+        return com.mnemolith.echo.graft.EchoGrafts.describe(this.graftTemper(), this.graftCharge(), this.graftCapacity());
+    }
+
+    @Override
+    public boolean fireImmune() {
+        return super.fireImmune() || this.graftTemper() == com.mnemolith.echo.graft.Temper.KINDLED && com.mnemolith.echo.graft.EchoGrafts.enabled();
     }
 
     /** Mobs that still hunt an echo that no longer works lose interest. */
@@ -511,20 +568,30 @@ public class EchoEntity extends MemoryAvatar {
         if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.ECHO_RECORDING.get())) {
             return EchoLife.teach(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
+        if (!serverPlayer.isShiftKeyDown() && com.mnemolith.data.ImprintSlips.isSlip(held)) {
+            return com.mnemolith.echo.graft.EchoGrafts.graft(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+        }
+        if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.EXTRACTION_NEEDLE.get())) {
+            return com.mnemolith.echo.graft.EchoGrafts.unpick(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+        }
         if (serverPlayer.isShiftKeyDown()) {
             this.openInventory(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
         if (this.job.hasWorkMode() || this.job.order() != com.mnemolith.echo.job.EchoJob.Order.NONE) {
-            serverPlayer.sendSystemMessage(this.job.shownStatus().component(), true);
+            serverPlayer.sendSystemMessage(this.withGraftLine(this.job.shownStatus().component()), true);
             return InteractionResult.SUCCESS_SERVER;
         }
-        serverPlayer.sendSystemMessage(Component.translatable(
+        serverPlayer.sendSystemMessage(this.withGraftLine(Component.translatable(
                 this.isReplaying() ? "mnemolith.echo.status_replaying" : "mnemolith.echo.status_idle",
                 Math.round(this.getHealth()),
                 Math.round(this.getMaxHealth()),
-                this.inventory.totalCount()), true);
+                this.inventory.totalCount())), true);
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private Component withGraftLine(Component status) {
+        return this.graftTemper() == null ? status : status.copy().append(" · ").append(this.graftLine());
     }
 
     public void openInventory(ServerPlayer player) {
@@ -541,6 +608,9 @@ public class EchoEntity extends MemoryAvatar {
 
     @Override
     public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
+        if (source.is(DamageTypeTags.IS_FIRE) && com.mnemolith.echo.graft.EchoGrafts.fireproof(this)) {
+            return true;
+        }
         return source.is(DamageTypes.IN_WALL) || source.is(DamageTypes.DROWN) || source.is(DamageTypeTags.IS_FALL) || super.isInvulnerableTo(level, source);
     }
 
@@ -552,9 +622,14 @@ public class EchoEntity extends MemoryAvatar {
         boolean hurt = super.hurtServer(level, source, damage);
         if (hurt && this.isAlive() && source.getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
                 && attacker instanceof net.minecraft.world.entity.monster.Enemy) {
-            // Stage 3: a working echo never fights back; it runs and resumes later.
-            this.job.onAttacked(level, this, attacker);
-            this.syncJob();
+            if (com.mnemolith.echo.graft.EchoGrafts.decoy(this)) {
+                // A grave graft stands its ground and pays for each hit instead of running.
+                com.mnemolith.echo.graft.EchoGrafts.onDecoyHit(this);
+            } else {
+                // Stage 3: a working echo never fights back; it runs and resumes later.
+                this.job.onAttacked(level, this, attacker);
+                this.syncJob();
+            }
         }
         return hurt;
     }
@@ -579,6 +654,7 @@ public class EchoEntity extends MemoryAvatar {
         super.die(source);
         if (wasAlive && this.dead && this.level() instanceof ServerLevel level && !this.silentRemoval) {
             EchoLife.onEchoBodyDied(level, this.ownerId(), this.getUUID(), this.blockPosition(), this.ownerName());
+            com.mnemolith.echo.graft.EchoGrafts.onBodyDied(level, this);
         }
     }
 
@@ -593,6 +669,7 @@ public class EchoEntity extends MemoryAvatar {
                 }
             }
             EchoRegistry.get(level.getServer()).remove(this.ownerId(), this.getUUID());
+            com.mnemolith.echo.graft.EchoGrafts.release(level, this, this.blockPosition(), "discarded");
         }
         super.remove(reason);
     }
@@ -646,6 +723,9 @@ public class EchoEntity extends MemoryAvatar {
         if (this.bonusHealth > 0.0D) {
             output.putDouble("echo_bonus_health", this.bonusHealth);
         }
+        if (this.graft != null) {
+            output.store("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC, this.graft);
+        }
     }
 
     @Override
@@ -667,6 +747,10 @@ public class EchoEntity extends MemoryAvatar {
         this.replayTick = input.getIntOr("echo_replay_tick", -1);
         input.read("echo_job", EchoJob.Saved.CODEC).ifPresent(this.job::load);
         this.bonusHealth = Math.max(0.0D, input.getDoubleOr("echo_bonus_health", 0.0D));
+        // Only graftable tags with charges left are kept; anything else in a hand-edited save is dropped.
+        this.setGraft(input.read("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC)
+                .filter(g -> g.charge() > 0 && com.mnemolith.echo.graft.Temper.of(g.cast().tag()) != null)
+                .orElse(null));
         this.applyConfiguredHealth();
         if (this.recording != null && this.replayTick >= 0 && this.replayTick < this.recording.length()) {
             this.nextAction = 0;

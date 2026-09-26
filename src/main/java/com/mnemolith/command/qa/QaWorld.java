@@ -117,7 +117,7 @@ public final class QaWorld {
     }
 
     static boolean guide(ServerLevel level) {
-        if (GuideBook.pageCount() != 19 || !GuideBook.ITEM_ID.equals("field_guide")) {
+        if (GuideBook.pageCount() != GuideBook.PAGE_COUNT || !GuideBook.ITEM_ID.equals("field_guide")) {
             return false;
         }
         Identifier id = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, GuideBook.ITEM_ID);

@@ -88,7 +88,7 @@ farming ticks=128 harvested=10 planted=20/20 chestWheat=10 echoSeeds=17 chestSee
 
 | Flag | What is proved |
 | --- | --- |
-| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has 19 pages |
+| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has `GuideBook.PAGE_COUNT` (21) pages |
 | `farmLesson` | A recording with 2 hoe tills, 2 plantings and 2 mature harvests gives a farm lesson (wheat) and no mining lesson or blueprint |
 | `replicantMimic` | A replicant mimicking a build takes back at most 3 placed blocks, one item each back into the echo; the echo rebuilds, the result is exact (wrong=0), with no extra items and no ground drops |
 | `workPressure` | 60 work actions in one chunk write 3 BUILD imprints and add pressure (+10 with the defaults) |
@@ -103,6 +103,32 @@ farming ticks=128 harvested=10 planted=20/20 chestWheat=10 echoSeeds=17 chestSee
 | `persistence` | After an NBT reload the order, the farm lesson, max health 40 and the upgrade levels are kept |
 
 The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa` 18/18, `echoqa` 11/11 and `jobqa` 12/12 stay green.
+
+## Memory graft QA
+
+`/mnemolith graftqa` (gamemaster) checks memory grafts on a dedicated server with a fake-player owner, two echoes, a pig, a husk and an archivist in two cleared chunks next to the command source. The last line must be `Memory graft check: 12 of 12`.
+
+| Flag | What is proved |
+| --- | --- |
+| `rules` | A silence slip grafts *hushed* with 12 charges, a second tops it up to 24/24, a third is refused as full (slip kept), a path slip is refused as too faint (slip kept) |
+| `hush` | The hushed echo swallows its own work imprint and a neighbour's within the aura (1 charge each); out of the aura the neighbour writes BUILD |
+| `replace` | A fire slip replaces the hush with *kindled* (32); the old silence graft is written back into the chunk |
+| `kindled` | Two iron ores broken by the kindled echo and by a neighbour in its aura both drop iron ingots (no raw iron), 2 charges spent; the kindled echo is fire immune and lava-proof and its work writes FIRE |
+| `unpick` | The needle unpicks the graft into one fire slip; a graft worn below half a slip is spent (no slip, no imprint) |
+| `volatileBurst` | *Volatile* digs at ×0.55, pays 1 per dug block, and its body death blasts a pig next to it without breaking the floor |
+| `plunge` | A *plunging* echo dropped from 8 blocks lands without damage, pays 1 charge; its max drop is 12 |
+| `graveDecoy` | An idle *grave* echo draws a husk's target; a hit costs 1 charge and it does not flee |
+| `fractureReject` | Spiking the chunk to fracture rejects the graft into the chunk (or drops it as a slip) |
+| `archivistSteal` | The archivist steals the graft (as a death slip) before the echo's cobblestone and drops it on death |
+| `possession` | Possessing a volatile echo carries the graft, gives Haste II, spends 1 charge per 200 ticks; the returned body has the remaining charge and the effect is gone |
+| `persistence` | The graft (temper, charge, imprint) survives an NBT reload |
+
+Manual (client):
+
+- [ ] Right-click your echo with a death slip: purple motes, the label over its head reads «Прививка: Могильный · 24/24», the echo inventory screen shows the same line.
+- [ ] A volatile echo flickers red; a kindled echo stands in lava unhurt.
+- [ ] With the needle on your grafted echo you get the slip back; a stranger's echo refuses.
+- [ ] Field guide pages «Запись и вселение» and «Прививки памяти» render with pictures in RU and EN.
 
 ### Manual stage 3 checks (client)
 

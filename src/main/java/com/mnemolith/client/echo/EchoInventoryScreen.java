@@ -38,7 +38,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
     private static final int WARM = 0xFFFFB089;
     private static final int DIM = 0xFFA89FB8;
     /** Height of the job panel (the inventory panel keeps {@link EchoMenu#HEIGHT}). */
-    private static final int JOB_H = 232;
+    private static final int JOB_H = 246;
 
     private @Nullable Button replay;
     private @Nullable Button mine;
@@ -247,6 +247,10 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             graphics.text(this.font, lines.get(i), x + 1, 205 + i * 10, GuiArt.SHADOW, false);
             graphics.text(this.font, lines.get(i), x, 204 + i * 10, color, false);
         }
+        // Memory graft: temper and charges, or a hint that a slip can be grafted.
+        com.mnemolith.echo.graft.Temper temper = echo.graftTemper();
+        Component graft = temper == null ? Component.translatable("mnemolith.gui.echo.graft_none") : echo.graftLine();
+        this.fitted(graphics, graft, x, 230, width, temper == null ? DIM : 0xFF000000 | temper.rgb());
     }
 
     private void fitted(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {

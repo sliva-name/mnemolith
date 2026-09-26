@@ -11,6 +11,7 @@ Mnemolith on a dedicated server is server-authoritative. Clients send a lens req
 | Compose | `Composition.compose` when the open menu's button is clicked. A closed menu, a removed player, or a disconnected player is ignored |
 | Discovery | Attachment on that player, `copyOnDeath`, synced only when the holder is that player |
 | Replicant | One server entity. A replicant already within 24 blocks, or anywhere in that chunk's column, blocks another spawn |
+| Memory graft | Server only. Grafting, unpicking and possession check the echo owner; the aura of a hushed or kindled echo only covers echoes of the same owner. The client sees one synced int (`DATA_GRAFT`: temper id, charge, capacity) on the echo — no new payload, protocol version unchanged |
 | Archivist steal | One slip. An open container is taken before the player's inventory, so both players viewing that container see the same removal |
 
 Payloads are registered as version `2` in `ModNetwork` (2 added the snapshot scope):

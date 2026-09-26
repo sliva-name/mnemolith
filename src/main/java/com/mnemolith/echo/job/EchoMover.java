@@ -69,7 +69,8 @@ public final class EchoMover {
             this.search = null;
             return;
         }
-        this.search = new EchoNav.Search(level, start, target, null, 0, CommonConfig.ECHO_PATH_BUDGET.get() * 16).avoid(this.walker.refused());
+        this.search = new EchoNav.Search(level, start, target, null, 0, CommonConfig.ECHO_PATH_BUDGET.get() * 16).avoid(this.walker.refused())
+                .maxDrop(com.mnemolith.echo.graft.EchoGrafts.maxDrop(echo));
     }
 
     public void stop(ServerLevel level, EchoEntity echo) {

@@ -267,7 +267,7 @@ final class BuildController {
                 this.skipped.clear();
                 this.builtCount++;
                 this.job.setStatus(JobStatus.of(JobStatus.Kind.BUILDING, this.builtCount, this.plan.size()));
-                this.job.motion.placeCooldown = JobLimits.PLACE_INTERVAL;
+                this.job.motion.placeCooldown = com.mnemolith.echo.graft.EchoGrafts.placeInterval(echo, JobLimits.PLACE_INTERVAL);
                 this.job.mimic.afterPlace(pos, entry.state());
                 this.job.strain.onWorkAction(level, echo, pos);
             }

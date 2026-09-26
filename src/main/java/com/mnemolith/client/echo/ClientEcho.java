@@ -26,6 +26,24 @@ public class ClientEcho extends EchoEntity implements ClientAvatarEntity {
         super.tick();
         this.avatarState.tick(this.position(), this.getDeltaMovement());
         this.skin.tick();
+        this.graftMotes();
+    }
+
+    /** A grafted echo sheds a mote of its temper's color now and then (client only, follows particle density). */
+    private void graftMotes() {
+        com.mnemolith.echo.graft.Temper temper = this.graftTemper();
+        if (temper == null || this.isInvisible()) {
+            return;
+        }
+        double density = com.mnemolith.client.config.ClientConfig.PARTICLE_DENSITY.get();
+        if (!com.mnemolith.client.config.ClientConfig.IMPRINT_PARTICLES.get() || density <= 0.0D || this.random.nextDouble() > 0.12D * density) {
+            return;
+        }
+        double x = this.getX() + (this.random.nextDouble() - 0.5D) * 0.7D;
+        double y = this.getY() + 0.3D + this.random.nextDouble() * 1.5D;
+        double z = this.getZ() + (this.random.nextDouble() - 0.5D) * 0.7D;
+        double rise = temper == com.mnemolith.echo.graft.Temper.PLUNGING ? -0.03D : 0.025D;
+        this.level().addParticle(com.mnemolith.echo.graft.EchoGrafts.particle(temper), x, y, z, 0.0D, rise, 0.0D);
     }
 
     @Override

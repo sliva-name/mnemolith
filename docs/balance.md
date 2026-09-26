@@ -66,3 +66,17 @@ Veins were common enough to tint a lot of stone and rare enough that the bleed n
 Catalog unlock is unchanged: a tag is learned when you extract it or put it in the reel, and a formula is learned when that compose succeeds. Hints still count unread patterns. They do not list them.
 
 Server config defaults are unchanged. Storms are still not started. `server.logPressureChanges` logs band changes other than fracture. Cooling and write strengths live in the common gameplay section.
+
+## Memory grafts
+
+One imprint slip grafted into an echo gives charges; a graft holds two slips' worth. `echoGraftChargeScale` multiplies every number in the charge column.
+
+| Temper (slip) | Charges per slip | One charge buys | Rough value of one slip |
+| --- | --- | --- | --- |
+| Hushed (silence) | 12 | one swallowed work imprint (with the defaults one imprint per 20 work actions, +3 instability) | ~240 quiet work actions, ~36 instability not written |
+| Grave (death) | 24 | one hostile hit taken | a night of decoy duty next to a farm |
+| Kindled (fire) | 32 | one ore smelted (own or a neighbour's) | 32 ingots without fuel or a furnace |
+| Plunging (fall) | 24 | one long drop (>3.5) or one floor dug over a long drop | a 12-deep shaft in a few steps |
+| Volatile (explosion) | 48 | one dug block at ×0.55 time | ~48 blocks of fast digging, then explosion residue (weight 8) per work imprint |
+
+Why these numbers: silence is the cheapest slip to get (a mute stone writes one) and the strongest effect (it hides pressure), so it gets the fewest charges. Death and fall slips need a real risk. Fire is common in the Nether, but ingots are a real economy, so one slip is capped at 32. Explosion slips are rarest and their residue is a cost of its own, so they get the most charges. A worn graft (under half a slip) is gone when it leaves the echo, so topping up is the way to keep one.

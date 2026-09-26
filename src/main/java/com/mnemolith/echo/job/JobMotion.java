@@ -92,7 +92,8 @@ final class JobMotion {
             return;
         }
         int budget = CommonConfig.ECHO_PATH_BUDGET.get();
-        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16).avoid(this.walker.refused());
+        this.search = new EchoNav.Search(level, start, goal, digger, maxDug, budget * 16).avoid(this.walker.refused())
+                .maxDrop(com.mnemolith.echo.graft.EchoGrafts.maxDrop(echo));
         this.pathToChest = toChest;
         this.phase = Phase.PATH;
     }
@@ -280,7 +281,8 @@ final class JobMotion {
         this.digFor = why;
         this.digTicks = 0;
         ItemStack stack = tool >= 0 ? echo.inventory().getItem(tool) : ItemStack.EMPTY;
-        this.digTotal = EchoWork.breakTicks(level, pos, state, stack);
+        // Memory grafts: a hushed echo digs slower, a volatile one faster.
+        this.digTotal = Math.max(2, (int) Math.round(EchoWork.breakTicks(level, pos, state, stack) * com.mnemolith.echo.graft.EchoGrafts.digFactor(echo)));
         this.phase = Phase.DIG;
         echo.lookAt(Vec3.atCenterOf(pos));
     }
@@ -329,10 +331,15 @@ final class JobMotion {
             this.job.halt(echo, JobStatus.of(JobStatus.Kind.NO_TOOL, EchoWork.toolKind(state)));
             return;
         }
+        boolean plunge = EchoWork.supports(echo, pos) && EchoWork.dropBelow(level, pos) > com.mnemolith.echo.graft.EchoGrafts.NORMAL_DROP;
         EchoHands.JobBreak result = EchoHands.breakForJob(level, echo, pos, tool);
         if (result.outcome() != EchoHands.Outcome.DONE) {
             this.digRefused(level, echo, pos, this.digFor);
             return;
+        }
+        com.mnemolith.echo.graft.EchoGrafts.afterDig(echo);
+        if (plunge) {
+            com.mnemolith.echo.graft.EchoGrafts.onPlungeDig(echo);
         }
         if (result.toolBroke()) {
             Mnemolith.LOGGER.info("Mnemolith echo tool broke owner={} at {}", echo.ownerName(), pos.toShortString());

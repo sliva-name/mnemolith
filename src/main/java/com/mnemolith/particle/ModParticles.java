@@ -25,6 +25,12 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STRIDER_TRAIL = register("strider_trail");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ARCHIVIST_SNATCH = register("archivist_snatch");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> REPLICANT_TELEGRAPH = register("replicant_telegraph");
+    // Memory grafts: one mote per temper, same sprite, tinted by the client provider.
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_HUSHED = register("graft_hushed");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_GRAVE = register("graft_grave");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_KINDLED = register("graft_kindled");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_PLUNGING = register("graft_plunging");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_VOLATILE = register("graft_volatile");
 
     private ModParticles() {}
 

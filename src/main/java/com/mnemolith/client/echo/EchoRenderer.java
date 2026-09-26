@@ -125,7 +125,8 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
     /** Light pink for every echo; the target is near-white pink and pulses about twice a second. */
     public static int silhouetteTint(int entityId) {
         if (!EchoView.isTarget(entityId)) {
-            return SILHOUETTE_TINT;
+            com.mnemolith.echo.graft.Temper temper = temperOf(entityId);
+            return temper == null ? SILHOUETTE_TINT : 0xD0000000 | lighten(temper.rgb());
         }
         double phase = (System.currentTimeMillis() % 600L) / 600.0D * Math.PI * 2.0D;
         int alpha = 0xC8 + (int) (0x37 * (0.5D + 0.5D * Math.sin(phase)));
@@ -151,24 +152,65 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
         float s = 0.025F * grow;
         poseStack.scale(s, -s, s);
         Matrix4f pose = new Matrix4f(poseStack.last().pose());
-        float x = -minecraft.font.width(text) / 2.0F;
         int color = echo.jobStopped() ? LABEL_STOPPED : LABEL_TEXT;
-        // Stage 3: a second line with the memory band of the chunk it works in, from saturation up.
-        // With two lines the status moves up one row so the lower line, not the status, sits just above the head.
+        // Lines stack upwards from just above the head: the graft (if any), the memory band (stage 3, from saturation
+        // up), then the job status on top.
+        java.util.List<Component> lines = new java.util.ArrayList<>(3);
+        java.util.List<Integer> colors = new java.util.ArrayList<>(3);
+        lines.add(text);
+        colors.add(color);
         com.mnemolith.pressure.PressureBand strain = echo.strain();
-        boolean strained = strain.ordinal() >= com.mnemolith.pressure.PressureBand.SATURATED.ordinal();
-        collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, x, strained ? -10.0F : 0.0F, text, FULL_BRIGHT, color, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
-        if (strained) {
-            Component line = Component.translatable("mnemolith.job.strain", Component.translatable(strain.translationKey()));
-            float lx = -minecraft.font.width(line) / 2.0F;
-            int lineColor = switch (strain) {
+        if (strain.ordinal() >= com.mnemolith.pressure.PressureBand.SATURATED.ordinal()) {
+            lines.add(Component.translatable("mnemolith.job.strain", Component.translatable(strain.translationKey())));
+            colors.add(switch (strain) {
                 case SATURATED -> 0xFFFFE08A;
                 case OVERLOADED -> 0xFFFFA060;
                 default -> 0xFFFF7080;
-            };
-            collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, lx, 0.0F, line, FULL_BRIGHT, lineColor, LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
+            });
+        }
+        com.mnemolith.echo.graft.Temper temper = echo.graftTemper();
+        if (temper != null) {
+            lines.add(echo.graftLine());
+            colors.add(0xFF000000 | lighten(temper.rgb()));
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            Component line = lines.get(i);
+            float lx = -minecraft.font.width(line) / 2.0F;
+            float ly = -10.0F * (lines.size() - 1 - i);
+            collector.submitSpecial(RenderPhaseKeys.ALWAYS_ON_TOP, new NameTagFeatureRenderer.Submit(pose, lx, ly, line, FULL_BRIGHT, colors.get(i), LABEL_BACKGROUND, Font.DisplayMode.NORMAL));
         }
         poseStack.popPose();
+    }
+
+    /** Mixes {@code rgb} halfway to white, for text on the dark label. */
+    private static int lighten(int rgb) {
+        int r = ((rgb >> 16) & 0xFF) + 0xFF >> 1;
+        int g = ((rgb >> 8) & 0xFF) + 0xFF >> 1;
+        int b = (rgb & 0xFF) + 0xFF >> 1;
+        return r << 16 | g << 8 | b;
+    }
+
+    /** The temper of a grafted echo, read from the synced entity; null for an ungrafted echo or a shell. */
+    private static com.mnemolith.echo.graft.@Nullable Temper temperOf(int entityId) {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.level != null && minecraft.level.getEntity(entityId) instanceof EchoEntity echo ? echo.graftTemper() : null;
+    }
+
+    /**
+     * Body tint: rose pink, or the temper's color for a grafted echo (a volatile one flickers). Same alpha, so a
+     * grafted echo reads as the same kind of body with another memory in it.
+     */
+    private static int bodyTint(int entityId) {
+        com.mnemolith.echo.graft.Temper temper = temperOf(entityId);
+        if (temper == null) {
+            return ECHO_TINT;
+        }
+        int alpha = 0x88;
+        if (temper == com.mnemolith.echo.graft.Temper.VOLATILE) {
+            double phase = ((System.currentTimeMillis() + entityId * 131L) % 400L) / 400.0D * Math.PI * 2.0D;
+            alpha = 0x78 + (int) (0x20 * (0.5D + 0.5D * Math.sin(phase)));
+        }
+        return alpha << 24 | temper.rgb();
     }
 
     @Override
@@ -181,7 +223,7 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
             int alpha = 0xA0 + (int) (0x50 * (0.5D + 0.5D * Math.sin(phase)));
             return (alpha << 24) | 0xFFEAF6;
         }
-        return ECHO_TINT;
+        return bodyTint(state.id);
     }
 
     @Override

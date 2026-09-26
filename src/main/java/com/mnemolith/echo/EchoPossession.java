@@ -124,7 +124,8 @@ public final class EchoPossession {
         EchoShell shell = ModEntities.ECHO_SHELL.get().create(level, EntitySpawnReason.TRIGGERED);
         UUID shellId = shell == null ? UUID.randomUUID() : shell.getUUID();
         PossessionState.Anchor anchor = new PossessionState.Anchor(level.dimension(), player.position(), player.getYRot(), player.getXRot(), shellId);
-        PossessionState.Body body = new PossessionState.Body(echo.getUUID(), echo.getMaxHealth(), Optional.ofNullable(echo.recording()), Optional.of(echo.job().save()));
+        PossessionState.Body body = new PossessionState.Body(echo.getUUID(), echo.getMaxHealth(), Optional.ofNullable(echo.recording()), Optional.of(echo.job().save()),
+                Optional.ofNullable(echo.graft()));
         player.setData(ModAttachments.ECHO_POSSESSION.get(), new PossessionState(new PossessionState.Data(realState, anchor, body)));
 
         if (shell != null) {
@@ -198,6 +199,7 @@ public final class EchoPossession {
                 drop(here, player.getX(), player.getY(), player.getZ(), stack.stack());
             }
             EchoLife.onEchoBodyDied(here, player.getUUID(), data.body().echo(), bodyPos, player.getGameProfile().name());
+            com.mnemolith.echo.graft.EchoGrafts.onPossessedBodyDied(here, player.getUUID(), data.body().graft().orElse(null), bodyPos);
         } else {
             spawnBody(here, player, data, bodyItems, bodySelected, bodyHealth);
         }
@@ -262,6 +264,7 @@ public final class EchoPossession {
         echo.setYBodyRot(player.yBodyRot);
         data.body().recording().ifPresent(echo::keepRecording);
         data.body().job().ifPresent(echo::restoreJobIdle);
+        data.body().graft().ifPresent(echo::setGraft);
         EchoInventory inventory = echo.inventory();
         List<ItemStack> overflow = new ArrayList<>();
         for (SlotStack stack : items) {

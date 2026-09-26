@@ -98,6 +98,9 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
     public static final ModConfigSpec.BooleanValue ECHO_FRACTURE_STOPS;
     public static final ModConfigSpec.IntValue ECHO_FOLLOW_LOST_DISTANCE;
+    public static final ModConfigSpec.BooleanValue ECHO_GRAFTS_ENABLED;
+    public static final ModConfigSpec.DoubleValue ECHO_GRAFT_CHARGE_SCALE;
+    public static final ModConfigSpec.IntValue ECHO_GRAFT_AURA_RADIUS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -211,6 +214,9 @@ public final class CommonConfig {
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
         ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
         ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
+        ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion) can be grafted into your echo to give it a temper.", true);
+        ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
+        ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes.", 8, 0, 16);
         builder.pop();
 
         SPEC = builder.build();

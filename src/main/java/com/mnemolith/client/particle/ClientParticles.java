@@ -30,6 +30,9 @@ public final class ClientParticles {
         sprite(event, ModParticles.STRIDER_TRAIL.get(), MemoryPalette.TRAIL, 0.16F, 14);
         sprite(event, ModParticles.ARCHIVIST_SNATCH.get(), MemoryPalette.BONE, 0.18F, 16);
         sprite(event, ModParticles.REPLICANT_TELEGRAPH.get(), MemoryPalette.TELEGRAPH, 0.18F, 16);
+        for (com.mnemolith.echo.graft.Temper temper : com.mnemolith.echo.graft.Temper.values()) {
+            sprite(event, com.mnemolith.echo.graft.EchoGrafts.particle(temper), temper.rgb(), 0.15F, 22);
+        }
     }
 
     public static void shimmer(LocalPlayer player, ChunkPos chunk) {
