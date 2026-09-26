@@ -326,7 +326,8 @@ public final class StormQa {
                 float full = boss.getHealth();
                 boolean unreadHurt = boss.hurtServer(level, level.damageSources().playerAttack(owner), 10.0F);
                 float afterUnread = boss.getHealth();
-                park(owner, d.offset(-10, 0, 0));
+                // Stay on the flattened pad (radius PAD): off it, real terrain can block the lens line of sight.
+                park(owner, d.offset(-(PAD - 1), 0, 0));
                 owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.CHRONICLE_LENS.get()));
                 owner.startUsingItem(InteractionHand.MAIN_HAND);
                 int ticks = 0;
