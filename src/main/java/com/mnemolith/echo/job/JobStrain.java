@@ -68,12 +68,17 @@ final class JobStrain {
             return;
         }
         this.workActions = 0;
-        boolean written = ImprintWriter.write(level, pos, List.of(ImprintTag.BUILD), echo.ownerId(), false);
+        // Memory grafts: a hush swallows the imprint (and its instability); kindled and volatile work leaves fire or explosion.
+        ImprintTag tag = com.mnemolith.echo.graft.EchoGrafts.workImprint(level, echo, pos);
+        if (tag == null) {
+            return;
+        }
+        boolean written = ImprintWriter.write(level, pos, List.of(tag), echo.ownerId(), false);
         int instability = CommonConfig.ECHO_WORK_INSTABILITY.get();
         if (written && instability > 0) {
             ImprintWriter.spike(level, pos, instability);
         }
-        Mnemolith.LOGGER.info("Mnemolith echo work imprint owner={} at {} written={}", echo.ownerName(), pos.toShortString(), written);
+        Mnemolith.LOGGER.info("Mnemolith echo work imprint owner={} tag={} at {} written={}", echo.ownerName(), tag.getSerializedName(), pos.toShortString(), written);
     }
 
     /** True when this action misfires: only in an overloaded chunk, with {@code echoMisfireChance}. */

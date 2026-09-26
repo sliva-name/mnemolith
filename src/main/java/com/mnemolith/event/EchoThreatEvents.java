@@ -16,7 +16,8 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 /**
  * Stage 3: ordinary hostile mobs may hunt a working echo. The goal sits below their player target (priority 3), only
  * matches an echo while it works ({@link EchoEntity#attractsMobs()}), and skips creepers (no terrain damage from echo
- * work), neutral mobs and this mod's own memory mobs, which have their own echo behaviour.
+ * work), neutral mobs and this mod's own memory mobs, which have their own echo behaviour. A second goal above the
+ * player target picks a grave-grafted decoy echo (see {@code EchoGrafts}); hushed echoes are never picked.
  */
 @EventBusSubscriber(modid = Mnemolith.MOD_ID)
 public final class EchoThreatEvents {
@@ -32,5 +33,8 @@ public final class EchoThreatEvents {
         }
         mob.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(mob, EchoEntity.class, 10, true, false,
                 (target, level) -> target instanceof EchoEntity echo && echo.attractsMobs()));
+        // Memory grafts: a grave echo is a decoy. This goal outranks the player target, so the mob turns to the decoy.
+        mob.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(mob, EchoEntity.class, 10, false, false,
+                (target, level) -> target instanceof EchoEntity echo && echo.attractsMobs() && com.mnemolith.echo.graft.EchoGrafts.decoy(echo)));
     }
 }

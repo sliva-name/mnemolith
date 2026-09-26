@@ -42,6 +42,22 @@ public final class EchoEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (realPlayer(event.getEntity())) {
             EchoRecorder.tick((ServerPlayer) event.getEntity());
+            if (EchoPossession.isPossessing((ServerPlayer) event.getEntity())) {
+                com.mnemolith.echo.graft.EchoGrafts.possessedTick((ServerPlayer) event.getEntity());
+            }
+        }
+    }
+
+    /** Memory grafts: a possessed plunging body takes no fall damage; a plunging echo pays for long drops. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onFall(net.neoforged.neoforge.event.entity.living.LivingFallEvent event) {
+        if (event.isCanceled()) {
+            return;
+        }
+        if (event.getEntity() instanceof ServerPlayer player && EchoPossession.isPossessing(player)) {
+            com.mnemolith.echo.graft.EchoGrafts.possessedFall(player, event);
+        } else if (event.getEntity() instanceof com.mnemolith.entity.echo.EchoEntity echo && !echo.level().isClientSide()) {
+            com.mnemolith.echo.graft.EchoGrafts.onEchoFall(echo, event);
         }
     }
 

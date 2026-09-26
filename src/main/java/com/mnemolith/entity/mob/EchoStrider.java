@@ -206,7 +206,7 @@ public class EchoStrider extends MemoryMob {
         com.mnemolith.entity.echo.EchoEntity best = null;
         double bestDistance = Double.MAX_VALUE;
         for (com.mnemolith.entity.echo.EchoEntity echo : level.getEntitiesOfClass(com.mnemolith.entity.echo.EchoEntity.class, this.getBoundingBox().inflate(16.0D),
-                echo -> echo.isAlive() && !echo.isReplaying() && echo.job().isWorking())) {
+                echo -> echo.isAlive() && !echo.isReplaying() && echo.job().isWorking() && !com.mnemolith.echo.graft.EchoGrafts.unnoticed(echo))) {
             double distance = this.distanceToSqr(echo);
             if (distance < bestDistance) {
                 bestDistance = distance;

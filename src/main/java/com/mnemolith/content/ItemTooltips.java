@@ -93,6 +93,15 @@ public final class ItemTooltips {
                     "item.mnemolith.imprint_slip.cast",
                     Component.translatable(cast.tag().translationKey()),
                     cast.intensity()));
+            // Memory grafts: which temper this slip gives an echo, or why it does not take.
+            com.mnemolith.echo.graft.Temper temper = com.mnemolith.echo.graft.Temper.of(cast.tag());
+            if (temper == null) {
+                builder.accept(Component.translatable("item.mnemolith.imprint_slip.graft_faint").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+            } else {
+                builder.accept(Component.translatable("item.mnemolith.imprint_slip.graft", Component.translatable(temper.key()))
+                        .withStyle(style -> style.withColor(temper.rgb())));
+                builder.accept(Component.translatable(temper.key() + ".hint").withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
         });
     }
 }

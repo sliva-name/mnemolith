@@ -54,16 +54,23 @@ public final class PossessionState {
     }
 
     /** The borrowed echo body. {@code job} (lesson, linked chest, blueprint anchor) was added in stage 2 and is optional in old saves. */
-    public record Body(UUID echo, float maxHealth, Optional<EchoRecording> recording, Optional<com.mnemolith.echo.job.EchoJob.Saved> job) {
+    public record Body(UUID echo, float maxHealth, Optional<EchoRecording> recording, Optional<com.mnemolith.echo.job.EchoJob.Saved> job,
+            Optional<com.mnemolith.echo.graft.EchoGraft> graft) {
         static final Codec<Body> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("echo").forGetter(Body::echo),
                 Codec.FLOAT.optionalFieldOf("max_health", 20.0F).forGetter(Body::maxHealth),
                 EchoRecording.CODEC.optionalFieldOf("recording").forGetter(Body::recording),
-                com.mnemolith.echo.job.EchoJob.Saved.CODEC.optionalFieldOf("job").forGetter(Body::job))
+                com.mnemolith.echo.job.EchoJob.Saved.CODEC.optionalFieldOf("job").forGetter(Body::job),
+                com.mnemolith.echo.graft.EchoGraft.CODEC.optionalFieldOf("graft").forGetter(Body::graft))
                 .apply(instance, Body::new));
 
         public Body(UUID echo, float maxHealth, Optional<EchoRecording> recording) {
-            this(echo, maxHealth, recording, Optional.empty());
+            this(echo, maxHealth, recording, Optional.empty(), Optional.empty());
+        }
+
+        /** The same body with another graft (charges spent while possessed, or none). */
+        public Body withGraft(Optional<com.mnemolith.echo.graft.EchoGraft> value) {
+            return new Body(this.echo, this.maxHealth, this.recording, this.job, value);
         }
     }
 

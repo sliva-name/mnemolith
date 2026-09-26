@@ -141,7 +141,8 @@ public final class EchoHands {
         breaking = echo;
         breakingHand = hand;
         CAPTURED.clear();
-        boolean broken;
+        BlockState before = level.getBlockState(pos);
+        boolean broken = false;
         try {
             broken = hand.gameMode.destroyBlock(pos);
         } finally {
@@ -150,6 +151,10 @@ public final class EchoHands {
             echo.inventory().setItem(slot, after);
             breaking = null;
             breakingHand = null;
+            // Memory grafts: a kindled echo (or one near it) gets ore drops smelted.
+            if (broken) {
+                com.mnemolith.echo.graft.EchoGrafts.smeltDrops(level, echo, before, CAPTURED);
+            }
             // Drops are held until the tool is back in its slot, so the lent slot is never mistaken for an empty one.
             for (ItemStack drop : CAPTURED) {
                 echo.inventory().insert(drop);

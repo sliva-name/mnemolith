@@ -142,7 +142,7 @@ public final class Echo3Qa {
             boolean s3 = EchoUpgradeItem.absorb(owner, EchoProgress.Kind.STURDY);
             double bonus = EchoProgress.bonusHealth(owner);
             boolean recipes = recipe(level, "echo_chorus_slip") && recipe(level, "echo_long_slip") && recipe(level, "echo_sturdy_slip");
-            boolean guide = GuideBook.pageCount() == 19 && Component.translatable("mnemolith.guide.echoes.title").getString().length() > 0;
+            boolean guide = GuideBook.pageCount() == GuideBook.PAGE_COUNT && Component.translatable("mnemolith.guide.echoes.title").getString().length() > 0;
             boolean upgradeCore = limit0 == base && c1 && c2 && !c3 && limit2 == Math.min(CommonConfig.ECHO_MAX_PER_PLAYER_CAP.get(), base + 2)
                     && l1 && l2 && !l3 && frames2 == Math.min(EchoRecording.MAX_FRAMES, frames0 + 2 * CommonConfig.ECHO_RECORD_BONUS_SECONDS.get() * 20)
                     && s1 && s2 && !s3 && Math.abs(bonus - 2 * CommonConfig.ECHO_STURDY_HEALTH_BONUS.get()) < 0.001D && recipes && guide;

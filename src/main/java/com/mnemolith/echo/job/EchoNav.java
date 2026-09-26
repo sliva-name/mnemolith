@@ -83,6 +83,7 @@ public final class EchoNav {
         private State state = State.RUNNING;
         private List<Step> path = List.of();
         private it.unimi.dsi.fastutil.longs.@Nullable LongSet avoid;
+        private int maxDrop = MAX_DROP;
 
         public Search(ServerLevel level, BlockPos start, Goal goal, @Nullable Digger digger, int maxDug, int maxNodes) {
             this.level = level;
@@ -98,6 +99,12 @@ public final class EchoNav {
 
         public State state() {
             return this.state;
+        }
+
+        /** Longest drop in one step (3; a plunging graft allows more). */
+        public Search maxDrop(int blocks) {
+            this.maxDrop = Math.max(1, blocks);
+            return this;
         }
 
         /** Cells (doors or gates that would not open) the search must not pass. */
@@ -168,7 +175,7 @@ public final class EchoNav {
                 this.tryMove(node, side.below(), new BlockPos[] {side.below(), side, side.above()}, 1.3F, null);
                 // Walk off an edge and drop.
                 if (cell(this.level, side, null) == OPEN && cell(this.level, side.above(), null) == OPEN && !supported(this.level, side)) {
-                    for (int k = 1; k <= MAX_DROP; k++) {
+                    for (int k = 1; k <= this.maxDrop; k++) {
                         BlockPos land = side.below(k);
                         if (cell(this.level, land, null) != OPEN) {
                             break;

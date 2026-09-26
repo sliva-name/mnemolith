@@ -106,7 +106,7 @@ North faces are split bone / indigo with an ember seam. The shell is a washed co
 
 ## Particles
 
-Sprites in `textures/particle/` are 16×16 white shapes with a soft alpha halo: star, dash, plus, X, ring, blob, chevron, hook, diamond. They stay white because `MemoryParticle.setColor` multiplies the sprite. Baking indigo into the PNG would dull that tint. The colors are the Phase 7 values in `ClientParticles`.
+Sprites in `textures/particle/` are 16×16 white shapes with a soft alpha halo: star, dash, plus, X, ring, blob, chevron, hook, diamond. They stay white because `MemoryParticle.setColor` multiplies the sprite. Baking indigo into the PNG would dull that tint. The colors are the Phase 7 values in `ClientParticles`. The memory-graft mote (`graft_mote`) follows the same rule; its five particle types take the temper colors from `Temper.rgb()` (hushed `#B8C6DC`, grave `#B6A2E8`, kindled `#FF9A5C`, plunging `#7FE0CF`, volatile `#FF5E4E`), and the echo body is tinted with the same colors.
 
 ## Sounds
 

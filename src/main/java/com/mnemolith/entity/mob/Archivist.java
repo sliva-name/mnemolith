@@ -147,7 +147,9 @@ public class Archivist extends MemoryMob {
 
     private boolean canTargetEcho(com.mnemolith.entity.echo.EchoEntity echo) {
         return echo.isAlive() && !echo.isRemoved() && echo.level() == this.level() && echo.job().isWorking() && !echo.isReplaying()
-                && this.distanceToSqr(echo) <= MobTuning.INTEREST_RANGE * MobTuning.INTEREST_RANGE * 1.5D && echoStealSlot(echo.inventory()) >= 0;
+                && !com.mnemolith.echo.graft.EchoGrafts.unnoticed(echo)
+                && this.distanceToSqr(echo) <= MobTuning.INTEREST_RANGE * MobTuning.INTEREST_RANGE * 1.5D
+                && (echoStealSlot(echo.inventory()) >= 0 || graftWorthStealing(echo));
     }
 
     /**
@@ -158,6 +160,9 @@ public class Archivist extends MemoryMob {
         this.echoTarget = null;
         if (!this.echoLoot.isEmpty() || this.stunTicks > 0 || !com.mnemolith.config.CommonConfig.ECHO_ARCHIVIST_STEAL.get()) {
             return false;
+        }
+        if (graftWorthStealing(echo)) {
+            return this.stealGraft(level, echo);
         }
         int slot = echoStealSlot(echo.inventory());
         if (slot < 0) {
@@ -187,6 +192,40 @@ public class Archivist extends MemoryMob {
         }
         Mnemolith.LOGGER.info("Mnemolith archivist stole from echo owner={} item={} count={} at {}", echo.ownerName(),
                 net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stolen.getItem()), stolen.getCount(), at.toShortString());
+        return true;
+    }
+
+    /** Memory grafts: a graft still worth a slip is the first thing an archivist wants from an echo. */
+    private static boolean graftWorthStealing(com.mnemolith.entity.echo.EchoEntity echo) {
+        com.mnemolith.echo.graft.EchoGraft graft = echo.graft();
+        return graft != null && com.mnemolith.echo.graft.EchoGrafts.enabled() && com.mnemolith.echo.graft.EchoGrafts.worthReturning(graft);
+    }
+
+    /** Tears the graft out as its slip. Like any echo loot it stays with the archivist and drops when it dies. */
+    private boolean stealGraft(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo) {
+        com.mnemolith.echo.graft.EchoGraft graft = echo.graft();
+        if (graft == null) {
+            return false;
+        }
+        echo.setGraft(null);
+        this.echoLoot = com.mnemolith.data.ImprintSlips.of(graft.cast().toImprint());
+        this.setPersistenceRequired();
+        this.stealCooldown = MobTuning.stealCooldown();
+        this.fleeTicks = 80;
+        this.dropped = null;
+        this.setAction(MobActions.FLEE);
+        this.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        BlockPos at = echo.blockPosition();
+        level.playSound(null, at, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 0.9F);
+        MemoryFx.mob(level, com.mnemolith.echo.graft.EchoGrafts.particle(graft.temper()), echo.getX(), echo.getY() + 1.2D, echo.getZ(), 14);
+        Component temper = Component.translatable(graft.temper().key());
+        echo.job().notice(com.mnemolith.echo.job.JobStatus.of(com.mnemolith.echo.job.JobStatus.Kind.STOLEN,
+                com.mnemolith.echo.job.JobStatus.missingDetail(java.util.Map.of(this.echoLoot.getItem(), 1))), 120);
+        if (echo.ownerId() != null && level.getServer().getPlayerList().getPlayer(echo.ownerId()) instanceof ServerPlayer owner
+                && owner.distanceToSqr(echo) <= 64.0D * 64.0D) {
+            owner.sendOverlayMessage(Component.translatable("mnemolith.graft.stolen", temper));
+        }
+        Mnemolith.LOGGER.info("Mnemolith archivist stole graft owner={} temper={} charge={} at {}", echo.ownerName(), graft.temper(), graft.charge(), at.toShortString());
         return true;
     }
 

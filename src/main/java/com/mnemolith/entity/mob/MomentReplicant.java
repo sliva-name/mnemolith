@@ -147,7 +147,8 @@ public class MomentReplicant extends MemoryMob {
     }
 
     private boolean canMimic(com.mnemolith.entity.echo.EchoEntity echo) {
-        return echo.isAlive() && !echo.isReplaying() && echo.job().isWorking() && !echo.job().alarmed() && !echo.job().mimicked();
+        return echo.isAlive() && !echo.isReplaying() && echo.job().isWorking() && !echo.job().alarmed() && !echo.job().mimicked()
+                && !com.mnemolith.echo.graft.EchoGrafts.unnoticed(echo);
     }
 
     /** Looks for a working echo within 12 blocks and starts the telegraph before copying its job. */

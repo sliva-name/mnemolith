@@ -122,13 +122,20 @@ public final class EchoWork {
         if (!state.getFluidState().isEmpty()) {
             return false;
         }
+        // A kindled graft makes the echo lava-proof, so lava beside the block is allowed (never water, never a fluid block).
+        boolean lavaProof = com.mnemolith.echo.graft.EchoGrafts.lavaProof(echo);
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
-            if (!level.isLoaded(next) || !level.getFluidState(next).isEmpty()) {
+            if (!level.isLoaded(next)) {
+                return false;
+            }
+            var fluid = level.getFluidState(next);
+            if (!fluid.isEmpty() && !(lavaProof && fluid.is(net.minecraft.tags.FluidTags.LAVA))) {
                 return false;
             }
         }
-        if (supports(echo, pos) && dropBelow(level, pos) > EchoNav.MAX_DROP) {
+        // A plunging graft lets the echo dig out its own floor over a longer drop.
+        if (supports(echo, pos) && dropBelow(level, pos) > com.mnemolith.echo.graft.EchoGrafts.maxDrop(echo)) {
             return false;
         }
         return true;
@@ -157,7 +164,7 @@ public final class EchoWork {
     public static int dropBelow(ServerLevel level, BlockPos pos) {
         int drop = 1;
         BlockPos.MutableBlockPos cursor = pos.mutable();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < com.mnemolith.echo.graft.EchoGrafts.PLUNGE_DROP + 1; i++) {
             cursor.move(Direction.DOWN);
             if (!level.isLoaded(cursor)) {
                 return 99;
