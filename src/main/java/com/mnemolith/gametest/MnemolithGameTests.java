@@ -69,6 +69,7 @@ public final class MnemolithGameTests {
         suite("residueqa", ResidueQa::check, Map.of());
         suite("mpsmoke", MultiplayerSmoke::check, Map.of());
         suite("stormqa", StormQa::check, Map.of());
+        suite("relayqa", com.mnemolith.command.qa.RelayQa::check, Map.of());
 
         // Formation: pulses every 200 ticks at 1 in 2; 4400 ticks is 22 pulses, a miss chance under 1 in 4 million.
         live("residue_forms_where_player_stands", ResidueLiveTests::formsWherePlayerStands, 4400);
@@ -86,6 +87,11 @@ public final class MnemolithGameTests {
         storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);
         storm("storm_mute_stone_contains", StormLiveTests::muteStoneContains, 300);
         storm("scar_read_then_hurt", StormLiveTests::scarReadThenHurt, 400);
+
+        // Echo relay and archive vault. The vault draws every 200 ticks, so two draws take up to 400.
+        live("relay_thread_links_then_hop", RelayLiveTests::threadLinksThenHop, 100);
+        live("relay_mirror_break", RelayLiveTests::mirrorBreak, 100);
+        live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
     }
 
     private static void suite(String name, BiFunction<ServerLevel, BlockPos, QaReport> check, Map<String, String> waived) {

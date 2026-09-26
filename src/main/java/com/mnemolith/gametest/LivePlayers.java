@@ -85,7 +85,8 @@ public final class LivePlayers {
             QaSupport.discardResidues(level, chunk.getMiddleBlockPosition(level.getSeaLevel()));
             AABB column = new AABB(chunk.getMinBlockX() - 16, level.getMinY(), chunk.getMinBlockZ() - 16, chunk.getMaxBlockX() + 17, level.getMaxY(), chunk.getMaxBlockZ() + 17);
             for (net.minecraft.world.entity.Entity entity : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, column,
-                    e -> e instanceof com.mnemolith.entity.echo.ScarEntity || e instanceof net.minecraft.world.entity.monster.zombie.Zombie)) {
+                    e -> e instanceof com.mnemolith.entity.echo.ScarEntity || e instanceof net.minecraft.world.entity.monster.zombie.Zombie
+                            || e instanceof com.mnemolith.entity.echo.EchoEntity || e instanceof net.minecraft.world.entity.item.ItemEntity)) {
                 entity.discard();
             }
             QaSupport.releaseColumn(level, chunk);
