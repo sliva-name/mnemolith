@@ -2,6 +2,7 @@
   "values": [
     "mnemolith:archival_stratum",
     "mnemolith:scar_glass",
-    "mnemolith:scar_heart"
+    "mnemolith:scar_heart",
+    "mnemolith:archive_vault"
   ]
 }

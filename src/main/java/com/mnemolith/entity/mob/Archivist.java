@@ -450,9 +450,11 @@ public class Archivist extends MemoryMob {
                 }
             }
         }
-        if (this.echoTarget == null && this.echoLoot.isEmpty() && this.stealCooldown <= 0 && this.interest == null && this.stunTicks <= 0
-                && com.mnemolith.echo.residue.Residues.enabled()) {
-            this.seekResidue(level);
+        if (this.echoTarget == null && this.echoLoot.isEmpty() && this.stealCooldown <= 0 && this.interest == null && this.stunTicks <= 0) {
+            boolean residue = com.mnemolith.echo.residue.Residues.enabled() && this.seekResidue(level);
+            if (!residue && this.echoLoot.isEmpty()) {
+                this.seekVault(level);
+            }
         }
         if (this.carried.isEmpty() && (this.dropped == null || !this.dropped.isAlive())) {
             AABB box = this.getBoundingBox().inflate(8.0D);
@@ -466,9 +468,9 @@ public class Archivist extends MemoryMob {
     /**
      * Residual echoes: an archivist with free hands walks to the nearest unread residue within 10 blocks and archives
      * it once close (a read, pinned residue is too bright for it to touch). What it archived drops as a residual shard
-     * when it dies, like anything else it took from an echo.
+     * when it dies, like anything else it took from an echo. False when no residue is in range (then it may go for a vault).
      */
-    private void seekResidue(ServerLevel level) {
+    private boolean seekResidue(ServerLevel level) {
         com.mnemolith.entity.echo.ResidueEntity nearest = null;
         double best = Double.MAX_VALUE;
         for (com.mnemolith.entity.echo.ResidueEntity residue : level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class,
@@ -480,13 +482,48 @@ public class Archivist extends MemoryMob {
             }
         }
         if (nearest == null) {
-            return;
+            return false;
         }
         if (best <= 2.5D * 2.5D) {
             this.archiveResidue(level, nearest);
         } else {
             this.getNavigation().moveTo(nearest.getX(), nearest.getY(), nearest.getZ(), 1.1D);
         }
+        return true;
+    }
+
+    /**
+     * Archive vaults: an archivist with free hands walks to a filled vault within 10 blocks and takes its loudest
+     * imprint as a slip, which it always drops when it dies (like anything it took from an echo).
+     */
+    private void seekVault(ServerLevel level) {
+        BlockPos target = com.mnemolith.vault.ArchiveVaults.raidTarget(level, this.blockPosition());
+        if (target == null) {
+            return;
+        }
+        if (this.distanceToSqr(target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D) <= 2.5D * 2.5D) {
+            this.raidVault(level, target);
+        } else {
+            this.getNavigation().moveTo(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D, 1.1D);
+        }
+    }
+
+    /** Takes the vault's loudest imprint as its echo loot and flees. False when its hands are full or the vault is empty. */
+    public boolean raidVault(ServerLevel level, BlockPos pos) {
+        if (!this.echoLoot.isEmpty()) {
+            return false;
+        }
+        ItemStack slip = com.mnemolith.vault.ArchiveVaults.raid(level, pos);
+        if (slip.isEmpty()) {
+            return false;
+        }
+        this.echoLoot = slip;
+        this.stealCooldown = MobTuning.stealCooldown();
+        this.fleeTicks = 80;
+        this.setAction(MobActions.FLEE);
+        level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 0.9F);
+        MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 14);
+        return true;
     }
 
     /** Takes {@code residue} as its echo loot (a residual shard) and flees. False when its hands are already full. */

@@ -28,6 +28,8 @@ Later content, not built yet:
 | `com.mnemolith.echo.graft` | both | Memory grafts: `Temper` (5 tempers from imprint tags), `EchoGraft` (slip + charge, codec), `EchoGrafts` (every graft rule; echo, job, possession and mob code only call it). See [echo-design.md](echo-design.md) §12 |
 | `com.mnemolith.echo.residue` | both | Residual echoes: `Residues` holds every rule (condense, fester, lash, lens reading, needle capture, shard graft and release, possession absorb, observatory seeding, act-out). See [echo-design.md](echo-design.md) §13 |
 | `com.mnemolith.echo.storm` | both | Recollection storms: `Storms` holds every rule (gate, natural roll, shard call, gather, waves, merge, end, boss bars), `RecollectionStorm` and `StormData` (the `mnemolith:storms` saved data), `ScarSites` (heart and scar glass, daily reseed, heal). The boss itself is `ScarEntity` in `entity.echo`. See [echo-design.md](echo-design.md) §14 |
+| `com.mnemolith.echo.relay` | both | Echo relay: `EchoRelays` holds every rule (tying and cutting with the relay thread, finding the other end through the owner's `EchoRegistry` entries, aura conduit, residue relay, hop, mirror queue, noise, death shock). The link is one UUID on each `EchoEntity` (`echo_relay`) and on the possessed body (`PossessionState.Body.relay`). See [echo-design.md](echo-design.md) §15 |
+| `com.mnemolith.vault` | both | Archive vaults: `ArchiveVaults` holds every rule (draw, bleed load, rupture, spill, extract, discharge, feed, archivist raid target, carried leak); `VaultContents` is the item component. The block and block entity are `content.block.ArchiveVaultBlock` / `ArchiveVaultBlockEntity` |
 | `com.mnemolith.echo.job` | both | Echo job: saved settings and a thin `tick` on `EchoJob`; mine, build, and farm controllers; shared path/dig (`JobMotion`) and chest I/O (`JobChest`) |
 | `com.mnemolith.client.echo` | physical client | Echo renderer, client echo/shell subclasses, lens thermal view, targeting, HUD hints, return key, echo inventory screen |
 | `com.mnemolith.entity.ai` | both | Path ledger, the replicant's action window, and the three mobs' goals |
@@ -39,8 +41,8 @@ Later content, not built yet:
 | `com.mnemolith.worldgen.structure` | both | `ObservatoryStructure`, structure type, reel processor |
 | `com.mnemolith.event` | both | Vanilla listeners. `/mnemolith` is registered here and implemented in `command` |
 | `com.mnemolith.command` | both | `/mnemolith` subcommands. Not loaded as client screens |
-| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`, `stormqa`, `mpsmoke` checklists. Each suite is `check(level, origin)` returning a `QaReport` (named checks and notes); the command only sends it to chat |
-| `com.mnemolith.gametest` | both, game test runs only | NeoForge game tests: every QA suite as one test (`SuiteTests`, reusing `check`), live residue and storm tests with real server players (`ResidueLiveTests`, `StormLiveTests`, `LivePlayers`). Registered only when `GameTestHooks.isGametestEnabled()` (the game test server, dev runs); a production server registers nothing. See [Game tests](#game-tests) |
+| `com.mnemolith.command.qa` | both | `/mnemolith qa`, `echoqa`, `jobqa`, `echo3qa`, `graftqa`, `residueqa`, `stormqa`, `relayqa`, `mpsmoke` checklists. Each suite is `check(level, origin)` returning a `QaReport` (named checks and notes); the command only sends it to chat |
+| `com.mnemolith.gametest` | both, game test runs only | NeoForge game tests: every QA suite as one test (`SuiteTests`, reusing `check`), live residue, storm, relay and vault tests with real server players (`ResidueLiveTests`, `StormLiveTests`, `RelayLiveTests`, `LivePlayers`). Registered only when `GameTestHooks.isGametestEnabled()` (the game test server, dev runs); a production server registers nothing. See [Game tests](#game-tests) |
 | `com.mnemolith.network` | both | Lens request, pressure snapshot, and the catalog-open payload. Client handlers are registered from `MnemolithClient` |
 | `com.mnemolith.client.gui` | physical client | Lens overlay, composition screen, catalog screen, panel textures |
 | `com.mnemolith.data` | both | Data component register |
@@ -193,6 +195,27 @@ Every rule is in `echo.storm.Storms`; design and numbers are in [echo-design.md]
 - **Network.** No new payload. Clients get vanilla boss bars (dark sky and fog flags), sounds, particles, and chat messages; the Scar's state rides its synced entity data.
 - **Persistence.** `StormData` (`mnemolith:storms`) keeps id, dimension, centre chunk, phase, ticks, waves left, residue UUIDs, and cause (natural or shard); boss bars are rebuilt after a restart. `ScarEntity` saves its mask, merged count, home, recall index, and pin timer.
 
+### Echo relay
+
+Every rule is in `echo.relay.EchoRelays`; design and numbers are in [echo-design.md](echo-design.md) §15.
+
+- **Link.** `EchoEntity.interact` hands a held relay thread to `EchoRelays.useThread`: the first click stores the echo's UUID on the stack (`mnemolith:relay_first`), the second (same owner, within `relay.relayLinkRange`) writes one fresh UUID on both echoes and uses the thread. Sneaking cuts. The other end is found by walking the owner's few `EchoRegistry` entries and `level.getEntity`; there is no second index and no chunk scan. An unloaded end simply is not found (the link is "far").
+- **Carries.** `EchoRelays.carries` is false while either end stands in a fractured chunk (cached band read). `EchoGrafts.source` asks `auraPartner` before its radius search, so the hush and kindle hooks (`workImprint`, `kindleSource`) need no changes. `Residues.feed` has a second pass for linked echoes next to the residue (`drinkFor`).
+- **Hop.** No new packet: `EchoNetwork.handleUnpossess` calls `EchoRelays.returnKey`, which hops when the player sneaks with a linked body (`EchoPossession.hop`: the left body is respawned as an echo with its items and graft, the partner is taken over, the shell and real state stay). Cooldown per player (`relay.relayHopCooldownSeconds`), forgotten on logout.
+- **Mirror.** `ImprintEvents` break and place hooks queue at most 64 pending actions for a possessing real player with a linked body; `EchoRelays.serverTick` (server post tick) handles at most 8 per tick through `EchoHands.breakForJob` / `placeForJob` (the job hands: protection, fake-player events, the echo's own tools and blocks). Skipped: block entities, fluids, unbreakable blocks, targets beyond 6 blocks of the partner, a replaying or working partner.
+- **Shock.** `EchoEntity.die` and a possessed body's death (`EchoPossession` `BODY_DIED`) call `EchoRelays.onBodyDied` / `onPossessedBodyDied`: the partner takes 4 magic damage, `ImprintWriter.write` puts a DEATH imprint under it, and both ends lose the link.
+
+### Archive vault
+
+Every rule is in `vault.ArchiveVaults`.
+
+- **Draw.** The block entity ticks (`BaseEntityBlock.createTickerHelper`); every `vault.vaultDrawSeconds` a drawing vault (`drawing` block state, light 7) takes the loudest imprint from the loaded, unmuted 3×3 chunks (`getChunkSource().hasChunk`, never a load) and removes it through `ChunkMemory.removeImprint` + `MemoryPressure.recompute`, the same path extraction uses. An idle vault feeds instead (`EchoGrafts.topUp`, half a slip).
+- **Bleed.** `ChunkMemory.vaultLoad` (saved as `vault_load`) is `ceil(sum of stored contributions × vault.vaultBleed)` over every vault in the chunk, recounted by `refreshLoad` after each change, on the first tick after load or placement, and when a vault is removed. `MemoryPressure.finishScore` adds it before the soft cap, so bands, storms and mobs see it without knowing about vaults.
+- **Rupture and spill.** On its tick, a non-empty vault in a fractured chunk spills half (loudest first) through `ImprintWriter.restore`, which respects mute stones (a muted chunk swallows them). `onExplosionHit` spills everything before the block breaks.
+- **Move.** The loot table copies `mnemolith:vault_contents` from the block entity (`collectImplicitComponents` / `applyImplicitComponents`), so a vault moves with its contents. `ArchiveVaults.carryTick` from the player tick checks once every `vault.vaultLeakSeconds` per player (staggered by entity id) and leaks one imprint.
+- **Raids.** Loaded vaults register in a per-dimension position set (`onLoad` / first tick, removed in `setRemoved`); `Archivist.aiStep` asks `raidTarget` only when its hands are free, its steal cooldown is over and no unread residue is in reach (residues come first).
+- **Network.** No new payload: the block state, sounds, particles and action-bar messages are vanilla.
+
 ## Visual effects
 
 `ModParticles` registers nine `SimpleParticleType` values on both sides: `imprint_shimmer`, `imprint_extract`, `compose_success`, `compose_fail`, `pressure_warn`, `mute_haze`, `strider_trail`, `archivist_snatch`, and `replicant_telegraph`. Sprites are 16×16 white shapes under `assets/mnemolith/textures/particle`. The client tints them. `ClientParticles` registers one `SimpleAnimatedParticle` provider per type from `MnemolithClient`. Those particles are translucent and fullbright.
@@ -227,7 +250,7 @@ The chronicle lens and imprint slip set `ENCHANTMENT_GLINT_OVERRIDE`. Archival s
 5. Network payloads carry deltas: one chunk's imprint change, or pressure near the player. They do not send the world's history.
 6. The client renders particles, the lens pill, screens, the pressure vignette, screen shake, the fracture fringe, and memory audio from synced state and the client config. The overlay and the fracture feel read the latest snapshot. They do not scan chunks and they do not invent a band. Shimmer uses that snapshot and only the chunks next to the player. The client does not decide whether a storm starts. Custom particles are culled by distance and by `visuals.particleDensity`.
 7. Registry work happens while the mod event bus is being constructed. Gameplay ticks do not register content.
-8. Respect `maxImprintsPerChunk` and `maxStormsPerDimension` so a single chunk or dimension cannot queue unbounded work. The storm tick iterates only active storms, rolls once a second per player, walks at most 9 chunk imprint lists per wave, and never loads a chunk.
+8. Respect `maxImprintsPerChunk` and `maxStormsPerDimension` so a single chunk or dimension cannot queue unbounded work. The storm tick iterates only active storms, rolls once a second per player, walks at most 9 chunk imprint lists per wave, and never loads a chunk. The relay mirror handles at most 8 queued actions per tick (64 queued at most), and a vault walks at most 9 loaded chunk lists once per draw interval.
 9. Vein and pocket placement run inside the chunk being generated. Observatory spacing is the structure set (32 / 12). Do not scan the world each tick to find them.
 
 ## Registries

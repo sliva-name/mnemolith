@@ -40,6 +40,8 @@ public final class ModGameEvents {
         MobEvents.clearAll();
         MemoryPressure.clearDeferred();
         com.mnemolith.echo.storm.Storms.clearBars();
+        com.mnemolith.echo.relay.EchoRelays.clearPending();
+        com.mnemolith.vault.ArchiveVaults.clearAll();
     }
 
     /** Replicant attempts that a chunk load queued instead of spawning inside the load event. */
@@ -47,6 +49,7 @@ public final class ModGameEvents {
     public static void onServerTick(ServerTickEvent.Post event) {
         MemoryPressure.runDeferred(event.getServer());
         com.mnemolith.echo.storm.Storms.tick(event.getServer());
+        com.mnemolith.echo.relay.EchoRelays.serverTick(event.getServer());
     }
 
     @SubscribeEvent
@@ -91,6 +94,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("stormqa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.StormQa::run))
+                .then(Commands.literal("relayqa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.RelayQa::run))
                 .then(Commands.literal("echodemo")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .then(Commands.literal("farm").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "farm")))

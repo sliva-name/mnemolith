@@ -78,7 +78,7 @@ public final class QaSupport {
         return ImprintSlips.holdsTag(player, tag);
     }
 
-    static boolean hasTag(ServerLevel level, BlockPos pos, ImprintTag tag) {
+    public static boolean hasTag(ServerLevel level, BlockPos pos, ImprintTag tag) {
         ChunkMemory memory = memory(level, pos);
         return memory != null && memory.tags().contains(tag);
     }

@@ -31,7 +31,9 @@ public class ExtractionNeedleItem extends Item {
             player.sendSystemMessage(Component.translatable("mnemolith.message.extract_cooldown"));
             return InteractionResult.FAIL;
         }
-        Optional<Imprint> extracted = ImprintWriter.extract(level, context.getClickedPos(), player);
+        Optional<Imprint> extracted = level.getBlockEntity(context.getClickedPos()) instanceof com.mnemolith.content.block.ArchiveVaultBlockEntity vault
+                ? com.mnemolith.vault.ArchiveVaults.extract(level, context.getClickedPos(), vault, player)
+                : ImprintWriter.extract(level, context.getClickedPos(), player);
         if (extracted.isEmpty()) {
             player.sendSystemMessage(Component.translatable("mnemolith.message.extract_empty"));
             return InteractionResult.FAIL;

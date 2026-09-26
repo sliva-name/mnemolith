@@ -4,7 +4,7 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated with the recollection storm)
+## 0. Status (updated with the echo relay and archive vault)
 
 | System | Status | Where |
 | --- | --- | --- |
@@ -12,8 +12,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Residual echoes | Implemented on `feature/residual-echoes`, stacked on #22 (draft PR, retargets to `main` after #22 merges) | `echo.residue`, `ResidueEntity`, `residual_shard`, `residueqa` 18/18, §13 |
 | Gametest harness | Implemented on `feature/gametests`, stacked on residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `com.mnemolith.gametest`, `runGameTestServer` in CI, 7 suites + 8 live residue tests, [qa-checklist.md](../qa-checklist.md#automated-game-tests-ci) |
 | Recollection storm and the Scar | Implemented on `feature/recollection-storm`, stacked on the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.storm`, `ScarEntity`, `scar_fragment`, `scar_glass`, `scar_heart`, `stormqa` 19/19, 3 live storm tests, [echo-design.md](../echo-design.md) §14 |
-| Echo relay, archive vault | Next | — |
-| 32x art pass | Its own run | — |
+| Echo relay, archive vault | Implemented on `feature/relay-vault`, stacked on the storm (#25), the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.relay`, `vault`, `relay_thread`, `archive_vault`, `relayqa` 19/19, 3 live relay/vault tests, [echo-design.md](../echo-design.md) §15 |
+| 32x art pass | Next, its own run | — |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
 chunk's own loudest memory condensed into a drifting fragment. That keeps ownership and protection simple (no
@@ -108,6 +108,14 @@ chest. A relay line through a muted corridor becomes a quiet logistics chain; a 
 - *Interactions:* job chest system, pressure misfires, hush grafts, archivist theft in transit.
 - *Items:* **Relay thread** (string + echo slip + copper): linking tool. *Scope:* medium.
 
+*Done* on `feature/relay-vault`, re-scoped. A hand-off chain (miner → carrier → chest) would have been a second item
+logistics system beside hoppers and the job chest I/O, and nothing about it needs an echo. The relay instead links two
+echoes through what only echoes have: a linked end stands inside its partner's hush and kindle aura at any distance,
+drinks residues for its partner, lets the possessing player hop between the ends (sneak + return key, no new packet),
+and repeats the possessing player's breaks and places at the same offset (the recorded hands, through the job hands).
+The pressure misfire survived as noise: a fracture under either end cuts the thread, and a dying end shocks the other
+and writes a death under it. Archivists raid vaults instead of threads.
+
 ### 4. Recollection storm and the Scar
 
 With residual echoes in place a storm has a natural body: a fractured chunk condenses every graftable imprint at
@@ -136,6 +144,14 @@ Archival stratum plus tablets build an **archive** block that stores up to N imp
 nearby, so pressure can be banked and moved (drain a base, feed a graft workshop).
 - *Interactions:* needle, pressure, grafts, archivist raids on vaults. *Scope:* medium.
 
+*Done* on `feature/relay-vault`. The archive vault (4 archival stratum, 4 amethyst, extraction needle) draws the
+loudest imprint of the 3×3 chunks every 10 s up to 12, but deletes nothing: 15% bleeds into its own chunk, a fracture
+there spills half each tick, an explosion spills all, a carried vault leaks every minute, and archivists raid it. It is
+spent through the needle (slips), a discharge (write it all somewhere on purpose) or by feeding grafted echoes. It
+reuses chunk memory, the needle, `ImprintWriter` and the pressure score; the only new storage is its block entity.
+The live tests found one real bug before commit: any held item clicking the vault toggled it, so the needle never
+reached the vault (the block now passes non-empty clicks to the item).
+
 ### 6. Unified 32x art pass
 
 Restyle every item and block texture to 32x32 with one palette and material language (bone paper, indigo ink,
@@ -159,5 +175,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 3. Gametest harness (done, stacked PR on #23), before the storm work, because storms touch many systems at once.
    All QA suites now run in CI as game tests, plus live residue tests with real players.
 4. Recollection storm and the Scar (done, stacked PR on #24).
-5. Echo relay and archive vault, depending on how players use grafts. Next.
-6. The 32x art pass as its own run, once the item list is stable enough that nothing is drawn twice.
+5. Echo relay and archive vault (done, stacked PR on #25).
+6. The 32x art pass as its own run, next: the item list is now stable enough that nothing is drawn twice.

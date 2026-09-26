@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "drawing=false": {
+      "model": "mnemolith:block/archive_vault"
+    },
+    "drawing=true": {
+      "model": "mnemolith:block/archive_vault_on"
+    }
+  }
+}

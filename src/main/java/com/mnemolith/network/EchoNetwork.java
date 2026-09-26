@@ -106,7 +106,7 @@ public final class EchoNetwork {
 
     public static void handleUnpossess(EchoUnpossessPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player && !player.hasDisconnected() && !player.isRemoved() && player.isAlive()) {
-            EchoPossession.unpossess(player, EchoPossession.Reason.KEY);
+            com.mnemolith.echo.relay.EchoRelays.returnKey(player);
         }
     }
 

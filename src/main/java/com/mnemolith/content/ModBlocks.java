@@ -53,7 +53,22 @@ public final class ModBlocks {
             com.mnemolith.content.block.ScarHeartBlock::new,
             scarHeartProperties());
 
+    /** Banks imprints drawn from nearby chunks; what it holds bleeds pressure into its own chunk. */
+    public static final DeferredBlock<com.mnemolith.content.block.ArchiveVaultBlock> ARCHIVE_VAULT = BLOCKS.registerBlock(
+            "archive_vault",
+            com.mnemolith.content.block.ArchiveVaultBlock::new,
+            vaultProperties());
+
     private ModBlocks() {}
+
+    private static UnaryOperator<BlockBehaviour.Properties> vaultProperties() {
+        return properties -> properties
+                .mapColor(MapColor.TERRACOTTA_BLUE)
+                .strength(3.0F, 6.0F)
+                .sound(SoundType.DEEPSLATE_BRICKS)
+                .lightLevel(state -> state.getValue(com.mnemolith.content.block.ArchiveVaultBlock.DRAWING) ? 7 : 2)
+                .requiresCorrectToolForDrops();
+    }
 
     private static UnaryOperator<BlockBehaviour.Properties> scarGlassProperties() {
         return properties -> properties

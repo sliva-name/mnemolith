@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "mnemolith:archival_stratum",
+    "A": "minecraft:amethyst_shard",
+    "N": "mnemolith:extraction_needle"
+  },
+  "pattern": [
+    "SAS",
+    "ANA",
+    "SAS"
+  ],
+  "result": {
+    "id": "mnemolith:archive_vault"
+  }
+}

@@ -100,6 +100,7 @@ public final class MemoryPressure {
     private static int finishScore(ChunkMemory memory, int sum) {
         int strata = Math.min(memory.strataCount(), CommonConfig.ARCHIVAL_BLEED_CAP.get());
         sum += strata * CommonConfig.ARCHIVAL_BLEED.get();
+        sum += memory.vaultLoad();
         return Math.min(CommonConfig.PRESSURE_SOFT_CAP.get(), Math.max(0, sum));
     }
 

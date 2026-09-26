@@ -55,3 +55,16 @@ The storm adds no per-chunk or per-dimension scan. `Storms.tick` iterates only a
 | Main-world copy | 792 | 2794 |
 
 The first wave is dominated by the three entity spawns and their log lines; a raging tick between waves costs the same as a gathering tick. No new network payload: boss bars, particles and sounds are vanilla sends.
+
+## Echo relay and archive vault
+
+Neither adds a per-tick scan. A linked echo looks for its partner through the owner's few `EchoRegistry` entries and `level.getEntity` (a map lookup), only on its 40-tick particle tick and when a hook asks (a work imprint, a residue feed, a hop). The noise check is one cached-band read per end. The mirror queue holds at most 64 actions and handles at most 8 per server tick; each is one `EchoHands` break or place. A vault ticks as a block entity but works once per `vault.vaultDrawSeconds` (200 ticks): a draw walks the imprint lists of at most the 9 already-loaded chunks around it, and a feed looks for echoes within 4 blocks. The chunk's vault load is recounted only when a vault changes, loads or goes. A carried vault is checked once per `vault.vaultLeakSeconds` per player. Archivists ask for a vault target only with free hands, over the loaded vault positions of their dimension.
+
+`/mnemolith relayqa` logs one mirrored break (`mirror` note, `breakUs`: queue-free call, the partner's job hands break a stone) and one vault draw (`vaultDraws` note, `drawUs`: 3×3 chunk walk, removal, rescore of two chunks), dedicated server, this branch:
+
+| World | `breakUs` | `drawUs` |
+| --- | ---: | ---: |
+| Fresh | 1180 | 474 |
+| Main-world copy | 1191 | 553 |
+
+The mirrored break is dominated by the fake player's break event and the drop; it happens only when the player breaks a block while possessing a linked echo. A draw runs once per 10 s per drawing vault. No new network payload: the hop reuses the unpossess payload; block states, particles and sounds are vanilla sends.

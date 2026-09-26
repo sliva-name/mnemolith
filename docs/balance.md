@@ -120,3 +120,27 @@ Why: condensing takes the loudest graftable imprint out, so a residue is relief 
 | Scar glass ward | storms blocked within one chunk; imprints still written | protects a slip farm without muting it |
 
 Why: every storm offers the same choice as a residue at a larger scale. Pay up front (drain, mute, ward), pay during (read, capture, feed echoes, flee out of the area), or let it merge and fight for a permanent echo upgrade and a site that keeps giving.
+
+## Echo relay and archive vault
+
+| Number | Default | Why |
+| --- | --- | --- |
+| Relay thread recipe | string + echo slip + copper ingot → 2 | cheap once echoes exist: the cost of a link is two of your echo slots and the risk below, not the thread |
+| `relayLinkRange` | 16 blocks to tie | you tie the pair together in one place, then walk one end away; the link then works at any distance |
+| Aura conduit | a linked end is always inside its partner's hush and kindle aura | the reason to link: one hushed echo at home silences a miner anywhere. It still pays one charge per swallowed imprint, so a far miner drains the home graft at the normal rate |
+| Residue relay | an end next to a residue drinks it for its partner (half a slip) | lets a scout feed the home graft; same amount as a direct drink, never more |
+| `relayHopCooldownSeconds` | 5 | a hop is travel (possibly hundreds of blocks); 5 s stops ping-ponging as an escape from every hit |
+| Mirror reach | 6 blocks from the partner, at most 8 actions per tick | the partner repeats your hands near itself: two tunnels for one, with its own pick and blocks (it wears its own tools) |
+| Noise | a fracture under either end | the loud places where you would most want remote hush are exactly where the thread fails |
+| Death shock | 4 magic damage + a DEATH imprint under the survivor | losing one end costs the other: a death memory (weight 12) lands in your base if the home end survives |
+| Vault recipe | 4 archival stratum + 4 amethyst + 1 extraction needle → 1 | needs a found vein and a needle: mid-game, after the lens loop |
+| `vaultCapacity` | 12 | twelve deaths is about 324 raw contribution: enough to empty a loud chunk, not a region |
+| `vaultDrawSeconds` | 10 | a full vault in two minutes; slow enough that a storm (six waves of 10 s) still out-paces one vault |
+| `vaultBleed` | 0.15 | twelve deaths bleed about 49 into the vault's chunk: saturated on its own and one step from overloaded, so a full vault must sit somewhere you can afford to be loud |
+| Rupture | half, loudest first, each vault tick while fractured | a vault next to a fracture empties itself back in about a minute; stacking vaults in one chunk invites it |
+| Explosion spill | everything | a creeper at the vault is the worst case, and a volatile echo's death burst counts |
+| `vaultLeakSeconds` | 60 | moving a full vault across the world leaves a trail of its memories; moving it one chunk costs nothing |
+| Echo feed | one imprint of its temper per interval → half a slip | a vault next to your grafted workers is a slow slip farm that also drains the area |
+| Archivist raid | within 10 blocks, loudest imprint, dropped on death | vaults attract the thief mob; kill it to get the slip back |
+
+Why: the relay only moves what already makes echoes special (auras, residues, possession, your recorded hands); it never moves items, so it does not compete with hoppers or chests. The vault turns pressure into stock: drawing moves it, it never deletes it, and every way to hold it (bleed, rupture, blast, leak, thieves) is a risk the player places.

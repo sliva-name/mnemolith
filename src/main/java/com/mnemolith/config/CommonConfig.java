@@ -108,6 +108,15 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue RESIDUE_MAX_NEARBY;
     public static final ModConfigSpec.DoubleValue RESIDUE_LASH_RADIUS;
     public static final ModConfigSpec.BooleanValue RESIDUE_ACTS_OUT;
+    public static final ModConfigSpec.BooleanValue RELAY_ENABLED;
+    public static final ModConfigSpec.IntValue RELAY_LINK_RANGE;
+    public static final ModConfigSpec.IntValue RELAY_HOP_COOLDOWN_SECONDS;
+    public static final ModConfigSpec.BooleanValue RELAY_MIRROR;
+    public static final ModConfigSpec.BooleanValue VAULTS_ENABLED;
+    public static final ModConfigSpec.IntValue VAULT_CAPACITY;
+    public static final ModConfigSpec.IntValue VAULT_DRAW_SECONDS;
+    public static final ModConfigSpec.DoubleValue VAULT_BLEED;
+    public static final ModConfigSpec.IntValue VAULT_LEAK_SECONDS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -234,6 +243,21 @@ public final class CommonConfig {
         RESIDUE_MAX_NEARBY = SpecValues.integer(builder, "residueMaxNearby", "Most residues within 48 blocks before no new one condenses there.", 3, 1, 16);
         RESIDUE_LASH_RADIUS = SpecValues.decimal(builder, "residueLashRadius", "Blocks within which an unread residue lashes out at a player (half while sneaking).", 3.0D, 0.0D, 8.0D);
         RESIDUE_ACTS_OUT = SpecValues.bool(builder, "residueActsOut", "Whether a residue in a fractured chunk acts its memory out when it festers (a zombie, a fire, a small blast, a lift, darkness). Fire and blasts respect mobGriefing.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "relay", "Echo relay: a relay thread links two of your echoes. The link carries hush and kindle auras, residues of the partner's temper, your possession (hop) and what you do while possessing (mirror).");
+        RELAY_ENABLED = SpecValues.bool(builder, "relayEnabled", "Whether relay threads can link echoes, and whether existing links do anything. Links stay saved while this is off.", true);
+        RELAY_LINK_RANGE = SpecValues.integer(builder, "relayLinkRange", "Blocks within which the second echo must stand from the first when you tie the link. Once tied, the link works at any distance in the same dimension while both ends are loaded.", 16, 2, 64);
+        RELAY_HOP_COOLDOWN_SECONDS = SpecValues.integer(builder, "relayHopCooldownSeconds", "Seconds between two relay hops (sneak and press the return key while possessing a linked echo).", 5, 0, 120);
+        RELAY_MIRROR = SpecValues.bool(builder, "relayMirror", "Whether a linked echo repeats the blocks you break and place while you possess its partner, at the same offset from its own feet.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "vault", "Archive vault: a block that banks imprints drawn out of nearby chunks. What it holds bleeds pressure into its own chunk; a fracture there or an explosion spills it.");
+        VAULTS_ENABLED = SpecValues.bool(builder, "vaultsEnabled", "Whether archive vaults draw, bleed, feed echoes and leak. Stored imprints are kept while this is off.", true);
+        VAULT_CAPACITY = SpecValues.integer(builder, "vaultCapacity", "Most imprints one vault holds.", 12, 1, 64);
+        VAULT_DRAW_SECONDS = SpecValues.integer(builder, "vaultDrawSeconds", "Seconds between two draws of a drawing vault (the loudest imprint from its chunk and the eight around it), and between two echo feeds of an idle one.", 10, 1, 600);
+        VAULT_BLEED = SpecValues.decimal(builder, "vaultBleed", "Share of the stored imprints' pressure that bleeds into the vault's own chunk (0.15: twelve deaths add about 49).", 0.15D, 0.0D, 1.0D);
+        VAULT_LEAK_SECONDS = SpecValues.integer(builder, "vaultLeakSeconds", "Seconds between two leaks of a filled vault carried in a player's inventory: one of its imprints is written where the carrier stands. 0 turns leaking off.", 60, 0, 3600);
         builder.pop();
 
         SPEC = builder.build();

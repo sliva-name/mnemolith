@@ -29,7 +29,8 @@ public final class ChunkMemory {
             Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory),
             Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
-            ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional)
+            ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
+            Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
@@ -40,6 +41,8 @@ public final class ChunkMemory {
     private final List<BlockPos> wards = new ArrayList<>();
     /** Set when a recollection storm merged into the Scar here. Optional in the codec. */
     private @org.jspecify.annotations.Nullable ScarSite scar;
+    /** Pressure bled by the archive vaults standing in this chunk (their stored imprints). Optional in the codec. */
+    private int vaultLoad;
     private boolean fractured;
     private boolean archival;
     private boolean observatory;
@@ -54,7 +57,7 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -69,6 +72,7 @@ public final class ChunkMemory {
         memory.residueSeeded = residueSeeded;
         memory.wards.addAll(wards);
         memory.scar = scar.orElse(null);
+        memory.vaultLoad = Math.max(0, vaultLoad);
         memory.refreshCooling();
         return memory;
     }
@@ -80,6 +84,7 @@ public final class ChunkMemory {
                 && this.strata.isEmpty()
                 && this.wards.isEmpty()
                 && this.scar == null
+                && this.vaultLoad == 0
                 && !this.fractured
                 && !this.archival
                 && !this.observatory
@@ -361,6 +366,15 @@ public final class ChunkMemory {
 
     public boolean removeWard(BlockPos pos) {
         return this.wards.remove(pos);
+    }
+
+    public int vaultLoad() {
+        return this.vaultLoad;
+    }
+
+    /** Set by {@code ArchiveVaults.refreshLoad}: the bleed of every vault in this chunk. */
+    public void setVaultLoad(int vaultLoad) {
+        this.vaultLoad = Math.max(0, vaultLoad);
     }
 
     public @org.jspecify.annotations.Nullable ScarSite scar() {

@@ -125,6 +125,9 @@ public final class ImprintEvents {
             return;
         }
         writeBuild(level, event.getPos(), event.getState(), event.getPlayer());
+        if (event.getPlayer() instanceof ServerPlayer player) {
+            com.mnemolith.echo.relay.EchoRelays.onPlayerBreak(player, event.getPos());
+        }
     }
 
     @SubscribeEvent
@@ -137,6 +140,9 @@ public final class ImprintEvents {
             if (player instanceof ServerPlayer serverPlayer && event.getPlacedBlock().getBlock() == ModBlocks.MUTE_STONE.get()) {
                 DiscoveryNotes.noteMute(serverPlayer);
             }
+            if (player instanceof ServerPlayer serverPlayer) {
+                com.mnemolith.echo.relay.EchoRelays.onPlayerPlace(serverPlayer, event.getPos(), event.getPlacedBlock());
+            }
         } else {
             writeBuild(level, event.getPos(), event.getPlacedBlock(), null);
         }
@@ -146,6 +152,7 @@ public final class ImprintEvents {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         PressureSync.forget(event.getEntity().getUUID());
         MobEvents.forget(event.getEntity().getUUID());
+        com.mnemolith.echo.relay.EchoRelays.forget(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -173,6 +180,7 @@ public final class ImprintEvents {
         coolPressure(level, player);
         com.mnemolith.echo.residue.Residues.pulse(level, player);
         com.mnemolith.echo.storm.Storms.onPlayerTick(level, player);
+        com.mnemolith.vault.ArchiveVaults.carryTick(level, player);
         if (!player.hasEffect(ModEffects.FIRE_TRAIL)) {
             return;
         }
