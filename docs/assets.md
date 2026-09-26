@@ -18,6 +18,7 @@ Drawn in the Phase 8 palette (ink `#1C244A`, indigo `#3D4A8A`, bone `#E6DCC8`, v
 | `textures/block/composition_reel.png` | 16×16 | Bevel and grain inside the metal, bone, gel, and indigo quadrants |
 | `textures/block/mute_stone.png` | 16×16 | Mute ring on the cap, stone grain on the body strip |
 | `textures/block/resonator_trap.png` | 16×16 | Same quadrants as the reel, brighter gel center |
+| `models/block/replicated_moment.json` | — | No texture of its own: `cube_all` on vanilla `light_blue_stained_glass`, so it renders translucent |
 
 ## Sounds
 

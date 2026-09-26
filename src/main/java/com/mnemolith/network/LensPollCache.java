@@ -73,6 +73,7 @@ final class LensPollCache {
         private final int z;
         private final boolean lens;
         private final boolean ambient;
+        private final long walked;
         private long shimmer;
 
         Stamp(int epoch, ResourceKey<Level> dimension, int x, int z, boolean lens, boolean ambient, long shimmer) {
@@ -82,6 +83,7 @@ final class LensPollCache {
             this.z = z;
             this.lens = lens;
             this.ambient = ambient;
+            this.walked = shimmer;
             this.shimmer = shimmer;
         }
 
@@ -92,6 +94,19 @@ final class LensPollCache {
                     && this.z == z
                     && this.lens == lens
                     && this.ambient == ambient;
+        }
+
+        /**
+         * Same player view (dimension, chunk, lens and ambient mode) walked less than {@code minTicks} ago. Only the
+         * global memory epoch can have moved, which busy servers bump constantly; the next poll picks the change up.
+         */
+        boolean tooSoon(ResourceKey<Level> dimension, int x, int z, boolean lens, boolean ambient, long now, int minTicks) {
+            return this.dimension.equals(dimension)
+                    && this.x == x
+                    && this.z == z
+                    && this.lens == lens
+                    && this.ambient == ambient
+                    && now - this.walked < minTicks;
         }
 
         long shimmer() {

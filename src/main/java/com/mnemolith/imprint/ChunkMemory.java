@@ -252,6 +252,19 @@ public final class ChunkMemory {
         return addMark(this.muteStones, pos);
     }
 
+    public int muteStoneCount() {
+        return this.muteStones.size();
+    }
+
+    public int resonatorCount() {
+        return this.resonators.size();
+    }
+
+    /** Mark lists stop at {@link ImprintConstants#ABSOLUTE_LIST_CAP}; a full list may leave real blocks untracked. */
+    public static boolean markListFull(int size) {
+        return size >= ImprintConstants.ABSOLUTE_LIST_CAP;
+    }
+
     public boolean removeMuteStone(BlockPos pos) {
         return this.muteStones.remove(pos);
     }
@@ -285,7 +298,7 @@ public final class ChunkMemory {
     }
 
     private static boolean addMark(List<BlockPos> marks, BlockPos pos) {
-        if (marks.size() >= ImprintConstants.ABSOLUTE_LIST_CAP || marks.contains(pos)) {
+        if (markListFull(marks.size()) || marks.contains(pos)) {
             return false;
         }
         marks.add(pos.immutable());

@@ -2,7 +2,6 @@ package com.mnemolith.client.network;
 
 import com.mnemolith.client.gui.CatalogScreen;
 import com.mnemolith.client.render.PressureClient;
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.network.OpenCatalogPayload;
 import com.mnemolith.network.PressureSnapshotPayload;
 
@@ -17,11 +16,9 @@ public final class ClientPayloads {
         event.register(PressureSnapshotPayload.TYPE, (payload, context) -> context.enqueueWork(() -> PressureClient.accept(payload)));
         event.register(com.mnemolith.network.EchoStatePayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.echo.EchoView.setPossessed(payload.possessed())));
         event.register(com.mnemolith.network.EchoGhostPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.echo.EchoJobClient.acceptGhost(payload)));
-        event.register(OpenCatalogPayload.TYPE, (payload, context) -> context.enqueueWork(() -> {
-            if (!CommonConfig.CATALOG_ENABLED.get()) {
-                return;
-            }
-            Minecraft.getInstance().setScreenAndShow(new CatalogScreen(payload.tags(), payload.formulas()));
-        }));
+        // The server already checked gameplay.catalogEnabled before sending; the client's own common config is not
+        // synced and must not veto it.
+        event.register(OpenCatalogPayload.TYPE, (payload, context) -> context.enqueueWork(
+                () -> Minecraft.getInstance().setScreenAndShow(new CatalogScreen(payload.tags(), payload.formulas()))));
     }
 }

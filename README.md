@@ -51,7 +51,7 @@ Three mobs spawn in the overworld only where the chunk is loud enough, and from 
 | --- | --- | --- |
 | Echo strider | Walks your recent path, then charges when the chunk is overloaded or you hit it | Mute stone, or sneak with the chronicle lens |
 | Archivist | Takes one slip from an open container, your hand, or the ground, then runs | Resonator trap, or archivist bait |
-| Moment replicant | Copies your last hit, jump, placed block, or item use after a short tell | Sneak and use the chronicle lens |
+| Moment replicant | Copies your last hit, jump, placed block (as a fading, dropless copy), or item use after a short tell | Sneak and use the chronicle lens |
 
 Three generated places use that loop. They are sparse, and each one can be turned off in `worldGen`.
 

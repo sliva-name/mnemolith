@@ -32,7 +32,11 @@ public class MuteStoneBlock extends Block {
         if (server == null) {
             return;
         }
-        ImprintWriter.tryWrite(server, pos, ImprintTag.SILENCE, null, false);
+        // A pushed stone keeps muting at its new spot, but only a real placement writes silence. Otherwise a piston
+        // loop would be an endless silence farm.
+        if (!ServerPlacement.byPiston(oldState, movedByPiston)) {
+            ImprintWriter.tryWrite(server, pos, ImprintTag.SILENCE, null, false);
+        }
         LoadedChunkMemory.addMuteStone(server, pos);
     }
 

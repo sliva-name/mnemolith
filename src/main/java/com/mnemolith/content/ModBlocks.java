@@ -7,11 +7,13 @@ import com.mnemolith.audio.MemorySoundTypes;
 import com.mnemolith.content.block.ArchivalStratumBlock;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
+import com.mnemolith.content.block.ReplicatedMomentBlock;
 import com.mnemolith.content.block.ResonatorTrapBlock;
 
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -34,6 +36,11 @@ public final class ModBlocks {
             "archival_stratum",
             ArchivalStratumBlock::new,
             stratumProperties());
+    /** Left by a moment replicant's copied block place. No item, no drops, fades on its own. */
+    public static final DeferredBlock<ReplicatedMomentBlock> REPLICATED_MOMENT = BLOCKS.registerBlock(
+            "replicated_moment",
+            ReplicatedMomentBlock::new,
+            momentProperties());
 
     private ModBlocks() {}
 
@@ -47,6 +54,20 @@ public final class ModBlocks {
 
     private static UnaryOperator<BlockBehaviour.Properties> trapProperties() {
         return properties -> properties.mapColor(MapColor.TERRACOTTA_CYAN).strength(1.5F, 6.0F).sound(SoundType.METAL);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> momentProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                .strength(0.3F)
+                .sound(SoundType.AMETHYST)
+                .noOcclusion()
+                .noLootTable()
+                .pushReaction(PushReaction.DESTROY)
+                .isValidSpawn((state, level, pos, type) -> false)
+                .isRedstoneConductor((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .isViewBlocking((state, level, pos) -> false);
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> stratumProperties() {
