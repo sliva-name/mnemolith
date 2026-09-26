@@ -17,8 +17,8 @@ Payloads are registered as version `1` in `ModNetwork`:
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |
-| `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match. The server ignores it as permission. It answers only for a live player who holds a lens, or when `gameplay.allowAmbientPressure` is true. It does not write memory |
-| `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and the server's lens or ambient decision are unchanged |
+| `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match; the client sets it for shimmer without a lens or for fracture feel. The server ignores it as permission. It answers only for a live player who holds a lens, or when `gameplay.allowAmbientPressure` is true. It does not write memory |
+| `mnemolith:pressure_snapshot` | server to that player | Up to 49 nearby chunks. A repeat is skipped when the memory epoch, dimension, chunk, and the server's lens or ambient decision are unchanged. A refused request gets one empty snapshot |
 | `mnemolith:open_catalog` | server to that player | That player's tag and formula bits. The screen class is client-only |
 
 Logout and a dimension change drop the saved lens stamp. The client also drops its snapshot when the dimension changes, so matching chunk coordinates in another dimension cannot keep the previous band on screen. Overworld teleports already miss the stamp because the chunk coordinates are part of it.

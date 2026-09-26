@@ -12,6 +12,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue IMPRINT_PARTICLES;
     public static final ModConfigSpec.BooleanValue PRESSURE_VIGNETTE;
     public static final ModConfigSpec.BooleanValue STORM_SCREEN_SHAKE;
+    public static final ModConfigSpec.BooleanValue FRACTURE_FRINGE;
     public static final ModConfigSpec.DoubleValue MEMORY_AUDIO_VOLUME;
     public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
     public static final ModConfigSpec.IntValue MAX_PARTICLES_PER_TICK;
@@ -30,8 +31,9 @@ public final class ClientConfig {
 
         SpecValues.section(builder, "visuals", "Local presentation of memory. These options stay on this client.");
         IMPRINT_PARTICLES = SpecValues.bool(builder, "imprintParticles", "Whether custom memory particles are shown.", true);
-        PRESSURE_VIGNETTE = SpecValues.bool(builder, "pressureVignette", "Whether rising memory pressure darkens the screen edge.", true);
-        STORM_SCREEN_SHAKE = SpecValues.bool(builder, "stormScreenShake", "Whether a recollection storm shakes the camera.", true);
+        PRESSURE_VIGNETTE = SpecValues.bool(builder, "pressureVignette", "Whether an overloaded or fractured chunk darkens the screen edge. The band comes from the server snapshot.", true);
+        STORM_SCREEN_SHAKE = SpecValues.bool(builder, "stormScreenShake", "Whether an overloaded or fractured chunk shakes the camera. A recollection storm is not started.", true);
+        FRACTURE_FRINGE = SpecValues.bool(builder, "fractureFringe", "Whether the fractured chunk under you desaturates the world and fringes the screen edge. One fullscreen pass. Overloaded chunks do not run it.", true);
         MEMORY_AUDIO_VOLUME = SpecValues.decimal(builder, "memoryAudioVolume", "Volume scale, from 0.0 to 1.0, for the local chronicle lens chime.", 1.0D, 0.0D, 1.0D);
         PARTICLE_DENSITY = SpecValues.decimal(builder, "particleDensity", "Scale, from 0.0 to 1.0, for every custom memory particle. 0 disables them.", 1.0D, 0.0D, 1.0D);
         MAX_PARTICLES_PER_TICK = SpecValues.integer(builder, "maxParticlesPerTick", "Hard cap on custom memory particles spawned in one client tick. Density still scales the budget, and 0 density disables them.", 48, 1, 256);

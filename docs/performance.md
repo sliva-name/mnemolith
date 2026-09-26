@@ -37,7 +37,7 @@ Nanoseconds, dedicated server, same world, `/mnemolith perf`. The before line is
 | --- | --- | --- |
 | `visuals.particleDensity` | 1.0 | Scales custom memory particles. 0 disables them. |
 | `visuals.maxParticlesPerTick` | 48 | Hard cap after the density scale. |
-| `visuals.lensPollInterval` | 20 | Ticks between lens pressure requests. |
+| `visuals.lensPollInterval` | 20 | Ticks between lens and fracture-feel pressure requests. Crossing into another chunk sends the next request on that tick. |
 | `gameplay.veinShimmerTicks` | 40 | Ticks between vein particle repeats on an unchanged snapshot. 0 repeats only on a new snapshot. |
 | `mobs.sensorInterval` | 10 | Ticks between resonator scans, flee pressure scans, and idle repaths. 1 checks every tick. A charge still aims every tick. |
 
