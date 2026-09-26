@@ -258,9 +258,13 @@ public final class GraftQa {
             LoadedChunkMemory.clear(level.getChunkAt(b));
             int fractured = ImprintWriter.spike(level, b, 85);
             EchoGrafts.checkFracture(level, echo);
-            boolean backInWorld = hasTag(level, b, ImprintTag.DEATH) || slipDropped(level, b, ImprintTag.DEATH);
+            // Residual echoes: a fractured chunk has no room for it, so the graft condenses into a residue there.
+            List<com.mnemolith.entity.echo.ResidueEntity> condensed = level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class,
+                    new net.minecraft.world.phys.AABB(b).inflate(6.0D), r -> r.tag() == ImprintTag.DEATH);
+            boolean backInWorld = !condensed.isEmpty() || hasTag(level, b, ImprintTag.DEATH) || slipDropped(level, b, ImprintTag.DEATH);
+            condensed.forEach(Entity::discard);
             fracture = MemoryPressure.band(fractured) == PressureBand.FRACTURE && echo.graft() == null && backInWorld;
-            notes.add("fracture pressure=" + fractured + " graftGone=" + (echo.graft() == null) + " backInWorld=" + backInWorld);
+            notes.add("fracture pressure=" + fractured + " graftGone=" + (echo.graft() == null) + " backInWorld=" + backInWorld + " residue=" + !condensed.isEmpty());
             QaSupport.discardReplicants(level, b);
             LoadedChunkMemory.clear(level.getChunkAt(b));
             clearDrops(level, b);
@@ -320,6 +324,7 @@ public final class GraftQa {
             cleanup(level, owner, a);
             for (BlockPos p : List.of(a, b)) {
                 QaSupport.discardReplicants(level, p);
+                QaSupport.discardResidues(level, p);
                 LoadedChunkMemory.clear(level.getChunkAt(p));
                 releaseColumn(level, ChunkPos.containing(p));
             }

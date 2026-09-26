@@ -118,7 +118,7 @@ The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa
 | `volatileBurst` | *Volatile* digs at ×0.55, pays 1 per dug block, and its body death blasts a pig next to it without breaking the floor |
 | `plunge` | A *plunging* echo dropped from 8 blocks lands without damage, pays 1 charge; its max drop is 12 |
 | `graveDecoy` | An idle *grave* echo draws a husk's target; a hit costs 1 charge and it does not flee |
-| `fractureReject` | Spiking the chunk to fracture rejects the graft into the chunk (or drops it as a slip) |
+| `fractureReject` | Spiking the chunk to fracture rejects the graft: in a fractured chunk it condenses into a residual echo (or goes into the chunk, or drops as a slip where muted) |
 | `archivistSteal` | The archivist steals the graft (as a death slip) before the echo's cobblestone and drops it on death |
 | `possession` | Possessing a volatile echo carries the graft, gives Haste II, spends 1 charge per 200 ticks; the returned body has the remaining charge and the effect is gone |
 | `persistence` | The graft (temper, charge, imprint) survives an NBT reload |
@@ -129,6 +129,42 @@ Manual (client):
 - [ ] A volatile echo flickers red; a kindled echo stands in lava unhurt.
 - [ ] With the needle on your grafted echo you get the slip back; a stranger's echo refuses.
 - [ ] Field guide pages «Запись и вселение» and «Прививки памяти» render with pictures in RU and EN.
+
+## Residual echo QA
+
+`/mnemolith residueqa` (gamemaster) checks residual echoes on a dedicated server with a fake-player owner, one echo and an archivist in three cleared chunks next to the command source. The last line must be `Residual echo QA: 18 of 18`. The fake player is not in the level's player list, so the lash and lens checks hand it to the same `ResidueEntity.sense` code the tick uses (the lens check runs only that sensing step each tick, since a full tick would first sense the empty player list and decay the reading); festers are called directly instead of waiting 60 seconds. The archivist check is not scripted: the archivist is ticked and walks to the residue on its own.
+
+| Flag | What is proved |
+| --- | --- |
+| `form` | An overloaded chunk with death and fire condenses the death imprint (the louder one) into a residue: the imprint is gone, fire stays, pressure drops; a second residue is refused in the same column |
+| `faintNoForm` | An overloaded chunk holding only path and build condenses nothing |
+| `festerWrites` | In a loud chunk a fester writes the residue's tag back |
+| `muteStarves` | Under a mute stone a fester costs 1 strength and writes nothing |
+| `calmFades` | In a calm chunk a strength-1 residue dissolves; an old one holds its strength |
+| `lash` | An unread fire residue sets a survival player within 3 blocks on fire |
+| `lensRead` | The fake player raises the lens (`startUsingItem`) and looks at the residue while it ticks; within 80 ticks it is pinned and the tag is discovered |
+| `needleSlips` | The needle on an unread residue slips: it stays, the player is blinded (silence lash), the needle takes no wear |
+| `needleCaptures` | The needle on a pinned residue gives a residual shard with the same tag and strength (not an imprint slip), costs twice the extraction wear, removes the residue |
+| `shardGraft` | Right-clicking the echo with a strength-4 explosion shard grafts *volatile* at full capacity (96) and consumes the shard |
+| `shardRelease` | A shard used on a block releases a residue with its tag and strength |
+| `echoDrinks` | A kindled echo within 6 blocks drinks a fire residue on its fester: +half a slip of charges, residue strength −1 |
+| `graftCondenses` | A full volatile graft released in an overloaded chunk becomes a strength-6 residue (result `residue`) |
+| `archivist` | An archivist walks to an unread residue on its own, archives it as a shard and drops it on death |
+| `possessionAbsorb` | A possessed player right-clicks a fall residue with an empty hand: the body wears *plunging* at full capacity and the returned echo keeps it |
+| `observatorySeed` | An observatory chunk seeds one old strength-5 residue beside its reel, once |
+| `actOut` | A death residue festering in a fracture writes death and raises one zombie |
+| `persistence` | The residue (tag, strength, old, origin) survives an NBT reload; `ChunkMemory` round-trips `residue_seeded`, and a save without the field loads as unseeded |
+
+`qa` 18/18, `echoqa` 11/11, `jobqa` 12/12, `echo3qa` 13/13, `graftqa` 12/12 and `mpsmoke` stay green (`graftqa` `fractureReject` now accepts the graft condensing into a residue, which is what a fracture does with it).
+
+Manual (client):
+
+- [ ] Overload a chunk and stand in it: within a minute or two a faint fragment in a temper color drifts out; holding the lens makes it clear.
+- [ ] Raise the lens on it: the label reads «Осадок · Огонь · сила 3» and «чтение N%»; after 3 s it glows and «прочитан — игла возьмёт».
+- [ ] Needle on it before reading: you are lashed and nothing is taken. After reading: «Осколок осадка» with tooltip «Осадок: … · сила N».
+- [ ] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
+- [ ] Visit an observatory: an old residue floats by the reel.
+- [ ] Field guide page «Осадки памяти» renders with its picture in RU and EN.
 
 ### Manual stage 3 checks (client)
 

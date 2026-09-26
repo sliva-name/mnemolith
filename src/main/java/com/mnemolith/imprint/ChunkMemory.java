@@ -26,7 +26,8 @@ public final class ChunkMemory {
             Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
-            Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory)
+            Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory),
+            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
@@ -36,6 +37,8 @@ public final class ChunkMemory {
     private boolean fractured;
     private boolean archival;
     private boolean observatory;
+    /** An observatory chunk seeds its one old residue only once (residual echoes). Optional in the codec. */
+    private boolean residueSeeded;
     private long lastWriteGameTime;
     private int cachedPressure;
     private int instability;
@@ -45,7 +48,7 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -57,6 +60,7 @@ public final class ChunkMemory {
         memory.resonators.addAll(resonators);
         memory.strata.addAll(strata);
         memory.observatory = observatory;
+        memory.residueSeeded = residueSeeded;
         memory.refreshCooling();
         return memory;
     }
@@ -315,6 +319,19 @@ public final class ChunkMemory {
 
     public void setObservatory(boolean observatory) {
         this.observatory = observatory;
+    }
+
+    public boolean residueSeeded() {
+        return this.residueSeeded;
+    }
+
+    public void setResidueSeeded(boolean residueSeeded) {
+        this.residueSeeded = residueSeeded;
+    }
+
+    /** Removes exactly {@code imprint} (residual echoes condense one chosen imprint). */
+    public boolean removeImprint(Imprint imprint) {
+        return this.imprints.remove(imprint);
     }
 
     public List<ImprintTag> tags() {

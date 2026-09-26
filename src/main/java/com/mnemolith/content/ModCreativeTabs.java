@@ -34,6 +34,9 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.CATALOG_FRAGMENT.get());
                 output.accept(ModItems.ARCHIVIST_HUSK.get());
                 output.accept(ModItems.UNSTABLE_SLIP.get());
+                for (com.mnemolith.echo.graft.Temper temper : com.mnemolith.echo.graft.Temper.values()) {
+                    output.accept(com.mnemolith.echo.residue.Residues.shard(temper.tag(), 4, net.minecraft.core.BlockPos.ZERO, 0L));
+                }
                 output.accept(ModItems.ECHO_STRIDER_SPAWN_EGG.get());
                 output.accept(ModItems.ARCHIVIST_SPAWN_EGG.get());
                 output.accept(ModItems.MOMENT_REPLICANT_SPAWN_EGG.get());

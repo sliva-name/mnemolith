@@ -571,6 +571,9 @@ public class EchoEntity extends MemoryAvatar {
         if (!serverPlayer.isShiftKeyDown() && com.mnemolith.data.ImprintSlips.isSlip(held)) {
             return com.mnemolith.echo.graft.EchoGrafts.graft(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
+        if (!serverPlayer.isShiftKeyDown() && com.mnemolith.echo.residue.Residues.isShard(held)) {
+            return com.mnemolith.echo.graft.EchoGrafts.graftShard(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+        }
         if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.EXTRACTION_NEEDLE.get())) {
             return com.mnemolith.echo.graft.EchoGrafts.unpick(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }

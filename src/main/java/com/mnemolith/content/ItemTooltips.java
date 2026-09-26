@@ -83,10 +83,22 @@ public final class ItemTooltips {
             ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
             if (cast == null) {
                 // The appender runs for every stack; only a blank imprint slip is an "empty slip".
+                if (stack.is(ModItems.RESIDUAL_SHARD.get())) {
+                    builder.accept(Component.translatable("item.mnemolith.residual_shard.blank"));
+                    return;
+                }
                 if (!stack.is(ModItems.IMPRINT_SLIP.get())) {
                     return;
                 }
                 builder.accept(Component.translatable("item.mnemolith.imprint_slip.empty"));
+                return;
+            }
+            if (stack.is(ModItems.RESIDUAL_SHARD.get())) {
+                com.mnemolith.echo.graft.Temper shardTemper = com.mnemolith.echo.graft.Temper.of(cast.tag());
+                builder.accept(Component.translatable("item.mnemolith.residual_shard.cast", Component.translatable(cast.tag().translationKey()), cast.intensity())
+                        .withStyle(style -> shardTemper == null ? style : style.withColor(shardTemper.rgb())));
+                builder.accept(Component.translatable("item.mnemolith.residual_shard.hint").withStyle(net.minecraft.ChatFormatting.GRAY));
+                builder.accept(Component.translatable("item.mnemolith.residual_shard.hint_release").withStyle(net.minecraft.ChatFormatting.GRAY));
                 return;
             }
             builder.accept(Component.translatable(

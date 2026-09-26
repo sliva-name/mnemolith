@@ -15,6 +15,7 @@ public final class ModEntityRenderers {
     public static final ModelLayerLocation ECHO_STRIDER = layer("echo_strider");
     public static final ModelLayerLocation ARCHIVIST = layer("archivist");
     public static final ModelLayerLocation MOMENT_REPLICANT = layer("moment_replicant");
+    public static final ModelLayerLocation RESIDUE = layer("residue");
 
     private ModEntityRenderers() {}
 
@@ -22,12 +23,14 @@ public final class ModEntityRenderers {
         event.registerLayerDefinition(ECHO_STRIDER, EchoStriderModel::createBodyLayer);
         event.registerLayerDefinition(ARCHIVIST, ArchivistModel::createBodyLayer);
         event.registerLayerDefinition(MOMENT_REPLICANT, ReplicantModel::createBodyLayer);
+        event.registerLayerDefinition(RESIDUE, com.mnemolith.client.model.ResidueModel::createBodyLayer);
     }
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ECHO_STRIDER.get(), EchoStriderRenderer::new);
         event.registerEntityRenderer(ModEntities.ARCHIVIST.get(), ArchivistRenderer::new);
         event.registerEntityRenderer(ModEntities.MOMENT_REPLICANT.get(), ReplicantRenderer::new);
+        event.registerEntityRenderer(ModEntities.RESIDUE.get(), ResidueRenderer::new);
         registerAvatar(event, ModEntities.ECHO.get(), true);
         registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);
     }

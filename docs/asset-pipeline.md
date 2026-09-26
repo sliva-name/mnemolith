@@ -130,3 +130,8 @@ Mono Vorbis, 22050 Hz, short tones with a fade. No music bed. `sounds.json` name
 ## Out of this pass
 
 Scar, a rebuilt observatory, a decoration set, and a music loop. The reel does not have a block-entity idle animation.
+
+## Generated art (tools/art)
+
+`tools/art/graft_art.py` and `tools/art/residue_art.py` draw the newer guide pages and sprites procedurally with Pillow so they match the hand-made panels (indigo striped paper sampled from the existing pages, bone and verdigris frame, flat shapes, 1:1 pixels). `residue_art.py` imports the palette and helpers from `graft_art.py` and writes `textures/entity/residue.png` (kept pale: the client multiplies it by the temper color and an alpha of 0x38 / 0xA0 with the lens / 0xE0 when read), `textures/item/residual_shard.png` and `textures/gui/guide/residues.png`. Both scripts skip their own output pages when sampling the paper (`GENERATED`). Run them from the repo root with `python tools/art/<script>.py`.
+

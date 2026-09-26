@@ -101,6 +101,13 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue ECHO_GRAFTS_ENABLED;
     public static final ModConfigSpec.DoubleValue ECHO_GRAFT_CHARGE_SCALE;
     public static final ModConfigSpec.IntValue ECHO_GRAFT_AURA_RADIUS;
+    public static final ModConfigSpec.BooleanValue RESIDUES_ENABLED;
+    public static final ModConfigSpec.DoubleValue RESIDUE_FORM_CHANCE;
+    public static final ModConfigSpec.DoubleValue RESIDUE_FRACTURE_FORM_CHANCE;
+    public static final ModConfigSpec.IntValue RESIDUE_FESTER_SECONDS;
+    public static final ModConfigSpec.IntValue RESIDUE_MAX_NEARBY;
+    public static final ModConfigSpec.DoubleValue RESIDUE_LASH_RADIUS;
+    public static final ModConfigSpec.BooleanValue RESIDUE_ACTS_OUT;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -217,6 +224,16 @@ public final class CommonConfig {
         ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion) can be grafted into your echo to give it a temper.", true);
         ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
         ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes.", 8, 0, 16);
+        builder.pop();
+
+        SpecValues.section(builder, "residue", "Residual echoes: a loud imprint in an overloaded chunk condenses into a drifting fragment that festers, lashes, and can be read, captured, fed or starved.");
+        RESIDUES_ENABLED = SpecValues.bool(builder, "residuesEnabled", "Whether residual echoes condense in overloaded chunks, from released grafts, and in observatory ruins.", true);
+        RESIDUE_FORM_CHANCE = SpecValues.decimal(builder, "residueFormChance", "Chance per check (every 10 seconds near a player) that an overloaded chunk condenses its loudest graftable imprint into a residue.", 0.2D, 0.0D, 1.0D);
+        RESIDUE_FRACTURE_FORM_CHANCE = SpecValues.decimal(builder, "residueFractureFormChance", "The same chance in a chunk at the fracture band.", 0.5D, 0.0D, 1.0D);
+        RESIDUE_FESTER_SECONDS = SpecValues.integer(builder, "residueFesterSeconds", "Seconds between two festers of a residue: it writes its memory back into the chunk, or feeds a matching echo, fades in a calm chunk, or starves under a mute stone.", 60, 10, 600);
+        RESIDUE_MAX_NEARBY = SpecValues.integer(builder, "residueMaxNearby", "Most residues within 48 blocks before no new one condenses there.", 3, 1, 16);
+        RESIDUE_LASH_RADIUS = SpecValues.decimal(builder, "residueLashRadius", "Blocks within which an unread residue lashes out at a player (half while sneaking).", 3.0D, 0.0D, 8.0D);
+        RESIDUE_ACTS_OUT = SpecValues.bool(builder, "residueActsOut", "Whether a residue in a fractured chunk acts its memory out when it festers (a zombie, a fire, a small blast, a lift, darkness). Fire and blasts respect mobGriefing.", true);
         builder.pop();
 
         SPEC = builder.build();

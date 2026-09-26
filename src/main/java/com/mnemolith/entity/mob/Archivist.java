@@ -450,6 +450,10 @@ public class Archivist extends MemoryMob {
                 }
             }
         }
+        if (this.echoTarget == null && this.echoLoot.isEmpty() && this.stealCooldown <= 0 && this.interest == null && this.stunTicks <= 0
+                && com.mnemolith.echo.residue.Residues.enabled()) {
+            this.seekResidue(level);
+        }
         if (this.carried.isEmpty() && (this.dropped == null || !this.dropped.isAlive())) {
             AABB box = this.getBoundingBox().inflate(8.0D);
             for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, box, item -> ImprintSlips.isSlip(item.getItem()))) {
@@ -457,6 +461,49 @@ public class Archivist extends MemoryMob {
                 break;
             }
         }
+    }
+
+    /**
+     * Residual echoes: an archivist with free hands walks to the nearest unread residue within 10 blocks and archives
+     * it once close (a read, pinned residue is too bright for it to touch). What it archived drops as a residual shard
+     * when it dies, like anything else it took from an echo.
+     */
+    private void seekResidue(ServerLevel level) {
+        com.mnemolith.entity.echo.ResidueEntity nearest = null;
+        double best = Double.MAX_VALUE;
+        for (com.mnemolith.entity.echo.ResidueEntity residue : level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class,
+                this.getBoundingBox().inflate(com.mnemolith.echo.residue.Residues.ARCHIVIST_RANGE), r -> r.isAlive() && !r.isPinned())) {
+            double distance = this.distanceToSqr(residue);
+            if (distance < best) {
+                best = distance;
+                nearest = residue;
+            }
+        }
+        if (nearest == null) {
+            return;
+        }
+        if (best <= 2.5D * 2.5D) {
+            this.archiveResidue(level, nearest);
+        } else {
+            this.getNavigation().moveTo(nearest.getX(), nearest.getY(), nearest.getZ(), 1.1D);
+        }
+    }
+
+    /** Takes {@code residue} as its echo loot (a residual shard) and flees. False when its hands are already full. */
+    public boolean archiveResidue(ServerLevel level, com.mnemolith.entity.echo.ResidueEntity residue) {
+        if (!this.echoLoot.isEmpty() || !residue.isAlive()) {
+            return false;
+        }
+        this.echoLoot = com.mnemolith.echo.residue.Residues.shardOf(level, residue);
+        this.stealCooldown = MobTuning.stealCooldown();
+        this.fleeTicks = 80;
+        this.setAction(MobActions.FLEE);
+        BlockPos pos = residue.blockPosition();
+        Mnemolith.LOGGER.info("Mnemolith archivist archived residue tag={} strength={} at {}", residue.tag().getSerializedName(), residue.strength(), pos.toShortString());
+        level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 0.8F);
+        MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), residue.getX(), residue.getY() + 0.8D, residue.getZ(), 14);
+        residue.discard();
+        return true;
     }
 
     @Override

@@ -116,6 +116,14 @@ public final class QaSupport {
         }
     }
 
+    /** Removes residual echoes in the chunk column of {@code pos} (and one chunk around), so suites stay isolated. */
+    static void discardResidues(ServerLevel level, BlockPos pos) {
+        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(pos).inflate(24.0D, 64.0D, 24.0D);
+        for (com.mnemolith.entity.echo.ResidueEntity residue : level.getEntitiesOfClass(com.mnemolith.entity.echo.ResidueEntity.class, box)) {
+            residue.discard();
+        }
+    }
+
     /**
      * Loads the column as entity-ticking. A plain {@code getChunk} leaves far columns hidden from entity queries,
      * and the tracking promotion is queued on the server thread after the chunk future completes.
