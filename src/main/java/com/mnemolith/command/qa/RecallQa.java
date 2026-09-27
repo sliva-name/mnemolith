@@ -26,6 +26,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
@@ -103,14 +104,17 @@ public final class RecallQa {
                 player.setPos(site.getX() - 1.2D, site.getY(), site.getZ() + 0.5D);
                 player.setHealth(player.getMaxHealth());
                 float health = player.getHealth();
-                Gesture attack = gesture(GestureKind.ATTACK, dimension, site, oldTime, false);
+                Gesture attack = gesture(GestureKind.ATTACK, dimension, site, 0.0F, oldTime, false, "minecraft:iron_sword", "");
                 recall.beginRecall(player, attack);
                 int idle = CommonConfig.RECALL_IDLE_TICKS.get();
                 int match = CommonConfig.RECALL_MATCH_TICKS.get();
                 for (int i = 0; i < idle; i++) {
                     recall.tickRecall(level);
                 }
-                checks[7] = recall.recalling() && recall.recallPhase() == 2 && player.getHealth() == health && !recall.recallPlayed();
+                checks[7] = recall.recalling() && recall.recallPhase() == 2 && player.getHealth() == health && !recall.recallPlayed()
+                        && recall.getMainHandItem().is(Items.IRON_SWORD)
+                        && MomentReplicant.recallHand(gesture(GestureKind.ATTACK, dimension, site, oldTime, false)).is(Items.WOODEN_SWORD)
+                        && MomentReplicant.recallHand(gesture(GestureKind.FALL, dimension, site, oldTime, false)).isEmpty();
                 for (int i = 0; i < match; i++) {
                     recall.tickRecall(level);
                 }
@@ -120,13 +124,14 @@ public final class RecallQa {
                 MomentReplicant builder = MobSpawns.summonReplicant(level, site.offset(6, 0, 0));
                 boolean ghostOk = false;
                 if (builder != null) {
-                    builder.beginRecall(player, gesture(GestureKind.PLACE, dimension, site, 90.0F, oldTime, false));
+                    builder.beginRecall(player, gesture(GestureKind.PLACE, dimension, site, 90.0F, oldTime, false, "", "minecraft:oak_planks"));
                     for (int i = 0; i < idle + match + 1; i++) {
                         builder.tickRecall(level);
                     }
                     ghost = builder.blockPosition().relative(Direction.fromYRot(90.0F));
                     boolean griefing = level.getGameRules().get(GameRules.MOB_GRIEFING);
-                    ghostOk = builder.recallPlayed() && (!griefing || level.getBlockState(ghost).is(ModBlocks.REPLICATED_MOMENT.get()));
+                    ghostOk = builder.recallPlayed() && builder.getMainHandItem().is(Items.OAK_PLANKS)
+                            && (!griefing || level.getBlockState(ghost).is(ModBlocks.REPLICATED_MOMENT.get()));
                     notes.add("griefing=" + griefing + " ghost=" + (ghost == null ? "-" : level.getBlockState(ghost).getBlock().toString()));
                     builder.discard();
                 }
@@ -210,10 +215,14 @@ public final class RecallQa {
     }
 
     private static Gesture gesture(GestureKind kind, String dimension, BlockPos pos, long time, boolean distorted) {
-        return gesture(kind, dimension, pos, 0.0F, time, distorted);
+        return gesture(kind, dimension, pos, 0.0F, time, distorted, "", "");
     }
 
     private static Gesture gesture(GestureKind kind, String dimension, BlockPos pos, float yaw, long time, boolean distorted) {
-        return new Gesture(kind, dimension, pos, yaw, 0.0F, "", "", -1, "", time, distorted, java.util.List.of());
+        return gesture(kind, dimension, pos, yaw, time, distorted, "", "");
+    }
+
+    private static Gesture gesture(GestureKind kind, String dimension, BlockPos pos, float yaw, long time, boolean distorted, String item, String block) {
+        return new Gesture(kind, dimension, pos, yaw, 0.0F, item, block, -1, "", time, distorted, java.util.List.of());
     }
 }

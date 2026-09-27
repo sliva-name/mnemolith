@@ -54,6 +54,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -265,9 +267,54 @@ public class MomentReplicant extends MemoryMob {
     }
 
     private void equipRecall(Gesture gesture) {
-        Identifier id = Identifier.tryParse(gesture.itemId());
-        Item item = id == null ? Items.AIR : BuiltInRegistries.ITEM.getOptional(id).orElse(Items.AIR);
-        this.setItemSlot(EquipmentSlot.MAINHAND, item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item));
+        ItemStack stack = recallHand(gesture);
+        this.setItemSlot(EquipmentSlot.MAINHAND, stack);
+        if (!stack.isEmpty()) {
+            this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        }
+    }
+
+    /**
+     * What the recall holds. The stored item wins, then the stored block as an item.
+     * Attack, place, and use still get a plain stand-in so the hand is not blank.
+     * A fall stays empty. The stack does not drop.
+     */
+    public static ItemStack recallHand(Gesture gesture) {
+        Item fromItem = itemOrAir(gesture.itemId());
+        if (fromItem != Items.AIR) {
+            return new ItemStack(fromItem);
+        }
+        Item fromBlock = blockItem(gesture.blockId());
+        if (fromBlock != Items.AIR) {
+            return new ItemStack(fromBlock);
+        }
+        return switch (gesture.kind()) {
+            case ATTACK -> new ItemStack(Items.WOODEN_SWORD);
+            case PLACE -> new ItemStack(Items.OAK_PLANKS);
+            case USE -> new ItemStack(Items.STICK);
+            case FALL -> ItemStack.EMPTY;
+        };
+    }
+
+    private static Item itemOrAir(String id) {
+        Identifier parsed = Identifier.tryParse(id);
+        if (parsed == null) {
+            return Items.AIR;
+        }
+        return BuiltInRegistries.ITEM.getOptional(parsed).orElse(Items.AIR);
+    }
+
+    private static Item blockItem(String id) {
+        Identifier parsed = Identifier.tryParse(id);
+        if (parsed == null) {
+            return Items.AIR;
+        }
+        Block block = BuiltInRegistries.BLOCK.getOptional(parsed).orElse(Blocks.AIR);
+        if (block == Blocks.AIR) {
+            return Items.AIR;
+        }
+        Item item = block.asItem();
+        return item == null ? Items.AIR : item;
     }
 
     private void playRecall(ServerLevel level, Gesture gesture) {
