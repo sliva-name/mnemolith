@@ -139,9 +139,10 @@ public final class ArchiveVaults {
     // ---- the block entity tick ----
 
     public static void tick(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault) {
+        // Every live tick, not only the refresh one. Placing a vault can track it and then untrack it before the
+        // refresh flag is consumed, and a store in that same tick would otherwise find no vault.
+        track(level, pos);
         if (vault.consumeRefresh()) {
-            // First tick after loading or placing: count its bleed and let archivists find it (onLoad also tracks it).
-            track(level, pos);
             refreshLoad(level, pos);
         }
         if (!enabled() || vault.advance() < CommonConfig.VAULT_DRAW_SECONDS.get() * 20) {
@@ -394,6 +395,44 @@ public final class ArchiveVaults {
         ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, ImprintSlips.of(imprint));
         drop.setDefaultPickUpDelay();
         return level.addFreshEntity(drop);
+    }
+
+    /** The nearest tracked vault that still has room, within {@code blocks} of {@code from}, or null. */
+    public static @Nullable BlockPos nearestOpen(ServerLevel level, BlockPos from, double blocks) {
+        if (!enabled()) {
+            return null;
+        }
+        Set<BlockPos> set = LOADED.get(level.dimension());
+        if (set == null || set.isEmpty()) {
+            return null;
+        }
+        BlockPos best = null;
+        double bestDistance = blocks * blocks;
+        for (BlockPos pos : set) {
+            double distance = pos.distSqr(from);
+            if (distance > bestDistance) {
+                continue;
+            }
+            if (!(level.getBlockEntity(pos) instanceof ArchiveVaultBlockEntity vault) || vault.count() >= capacity()) {
+                continue;
+            }
+            bestDistance = distance;
+            best = pos;
+        }
+        return best;
+    }
+
+    /** Puts one imprint into a vault that has room. The same particles as a draw, and no chat. */
+    public static boolean keep(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault, Imprint imprint) {
+        if (!enabled() || vault.count() >= capacity()) {
+            return false;
+        }
+        vault.add(imprint);
+        refreshLoad(level, pos);
+        level.sendParticles(ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 6, 0.25D, 0.1D, 0.25D, 0.01D);
+        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.6F, 0.7F);
+        Mnemolith.LOGGER.info("Mnemolith vault kept tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
+        return true;
     }
 
     /** Archivists: the nearest tracked vault holding something within {@link #RAID_RANGE} of {@code from}, or null. */

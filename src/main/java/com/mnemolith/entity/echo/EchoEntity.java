@@ -99,9 +99,19 @@ public class EchoEntity extends MemoryAvatar {
     /** Chorus bolt mark. Server only, saved so a reload keeps the walk. */
     private @Nullable BlockPos huntMark;
     private long huntUntil;
+    /** Which recorded gesture this body leans toward, or -1. Living memory sets it; a costly choice clears it. */
+    private int bearing = -1;
 
     public com.mnemolith.echo.EchoRole role() {
         return this.role;
+    }
+
+    public int bearing() {
+        return this.bearing;
+    }
+
+    public void setBearing(int bearing) {
+        this.bearing = bearing;
     }
 
     public void markHunt(BlockPos pos, long until) {
@@ -309,6 +319,9 @@ public class EchoEntity extends MemoryAvatar {
             this.stepReplay(level);
             if (!this.isReplaying() && this.isAlive()) {
                 this.job.tick(level, this);
+                if (this.job.mode() == EchoJob.Mode.IDLE && this.tickCount % 20 == 7) {
+                    com.mnemolith.recall.UseMemory.glance(this);
+                }
             }
             if (this.job.consumeDirty()) {
                 this.syncJob();
@@ -809,6 +822,9 @@ public class EchoEntity extends MemoryAvatar {
             output.store("echo_hunt", BlockPos.CODEC, this.huntMark);
             output.putLong("echo_hunt_until", this.huntUntil);
         }
+        if (this.bearing >= 0) {
+            output.putInt("echo_bearing", this.bearing);
+        }
     }
 
     @Override
@@ -835,6 +851,7 @@ public class EchoEntity extends MemoryAvatar {
         this.role = com.mnemolith.echo.EchoRole.byName(input.getStringOr("echo_role", "none"));
         this.huntMark = input.read("echo_hunt", BlockPos.CODEC).orElse(null);
         this.huntUntil = input.getLongOr("echo_hunt_until", 0L);
+        this.bearing = input.getIntOr("echo_bearing", -1);
         // Only graftable tags with charges left are kept; anything else in a hand-edited save is dropped.
         this.setGraft(input.read("echo_graft", com.mnemolith.echo.graft.EchoGraft.CODEC)
                 .filter(g -> g.charge() > 0 && com.mnemolith.echo.graft.Temper.of(g.cast().tag()) != null)
