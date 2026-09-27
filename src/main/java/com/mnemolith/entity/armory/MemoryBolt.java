@@ -37,7 +37,9 @@ public class MemoryBolt extends ThrowableItemProjectile {
     protected void onHitEntity(EntityHitResult hit) {
         super.onHitEntity(hit);
         if (hit.getEntity() instanceof LivingEntity living && this.getOwner() instanceof LivingEntity owner) {
-            living.hurt(this.damageSources().thrown(this, owner), 4.0F);
+            if (this.level() instanceof ServerLevel level) {
+                living.hurtServer(level, this.damageSources().thrown(this, owner), 4.0F);
+            }
             living.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, true));
         }
     }

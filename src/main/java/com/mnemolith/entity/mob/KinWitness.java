@@ -105,6 +105,13 @@ public class KinWitness extends PathfinderMob {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        // Trust and anger are server fields. Predicting a shrink here desyncs the stack when the server refuses.
+        if (this.level().isClientSide()) {
+            if (stack.is(ArmoryItems.HUSH_FIBER.get()) || stack.is(Items.PAPER)) {
+                return InteractionResult.SUCCESS;
+            }
+            return super.mobInteract(player, hand);
+        }
         if (this.angryTicks > 0) {
             return InteractionResult.FAIL;
         }
@@ -116,7 +123,7 @@ public class KinWitness extends PathfinderMob {
             if (player instanceof net.minecraft.server.level.ServerPlayer server) {
                 server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_trust", this.trust), true);
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
         }
         if (stack.is(Items.PAPER) && this.trust >= 3 && this.level() instanceof ServerLevel serverLevel) {
             long now = serverLevel.getGameTime();
@@ -127,7 +134,7 @@ public class KinWitness extends PathfinderMob {
                 return InteractionResult.FAIL;
             }
             if (!(player instanceof net.minecraft.server.level.ServerPlayer server)) {
-                return InteractionResult.SUCCESS;
+                return InteractionResult.PASS;
             }
             ItemStack tablet = new ItemStack(ModItems.ARCHIVAL_TABLET.get());
             if (!com.mnemolith.content.InventorySpace.fitsAfterUse(server, hand, stack, tablet)) {
@@ -140,7 +147,7 @@ public class KinWitness extends PathfinderMob {
             this.nextGift = now + 24000L;
             server.getInventory().add(tablet);
             server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_gift"), true);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
         }
         return super.mobInteract(player, hand);
     }

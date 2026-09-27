@@ -1,5 +1,8 @@
 package com.mnemolith.echo;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -33,11 +36,25 @@ import net.neoforged.neoforge.event.level.BlockDropsEvent;
 public final class EchoHands {
     /** Maximum distance from the echo's eyes to the block, so a desynced replay cannot edit far away. */
     private static final double REACH = 7.0D;
-    private static @Nullable EchoEntity breaking;
-    private static @Nullable FakePlayer breakingHand;
+    /**
+     * One frame per in-progress break. {@code destroyBlock} can re-enter this class (a drop listener, another echo),
+     * and a single static list would clear the outer break's drops or hand them to the inner echo.
+     */
+    private static final ArrayDeque<BreakSession> BREAKS = new ArrayDeque<>();
     /** Profile id of the last fake player seen by the break or place event. Read by {@code /mnemolith echoqa}. */
     public static volatile @Nullable UUID lastEventActor;
-    private static final java.util.List<ItemStack> CAPTURED = new java.util.ArrayList<>();
+
+    /** Drops captured for the break that is currently inside {@code destroyBlock}. */
+    private static final class BreakSession {
+        final EchoEntity echo;
+        final FakePlayer hand;
+        final List<ItemStack> captured = new ArrayList<>();
+
+        BreakSession(EchoEntity echo, FakePlayer hand) {
+            this.echo = echo;
+            this.hand = hand;
+        }
+    }
 
     private EchoHands() {}
 
@@ -61,6 +78,44 @@ public final class EchoHands {
             player.setGameMode(GameType.SURVIVAL);
         }
         return player;
+    }
+
+    /**
+     * Empty-handed right-click, the same call a recorded use makes. Main and off hand are emptied for the call and the
+     * same stack objects are put back, so a nested break does not lose its tool and sneak does not suppress the block.
+     * When the block has a horizontal facing, the fake player looks that way: a fence gate only retargets its facing
+     * when the player faces the opposite direction, and this use should open or close without spinning the gate.
+     */
+    public static boolean useEmpty(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        UUID owner = echo.ownerId();
+        if (owner == null || !level.isLoaded(pos)) {
+            return false;
+        }
+        FakePlayer hand = hand(level, owner, echo.ownerName());
+        BlockState state = level.getBlockState(pos);
+        float yaw = echo.getYRot();
+        if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            yaw = state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).toYRot();
+        }
+        hand.snapTo(echo.getX(), echo.getY(), echo.getZ(), yaw, echo.getXRot());
+        hand.setYHeadRot(yaw);
+        boolean shift = hand.isShiftKeyDown();
+        hand.setShiftKeyDown(false);
+        Inventory inventory = hand.getInventory();
+        int selected = inventory.getSelectedSlot();
+        ItemStack main = inventory.getItem(selected);
+        ItemStack off = inventory.getItem(Inventory.SLOT_OFFHAND);
+        inventory.setItem(selected, ItemStack.EMPTY);
+        inventory.setItem(Inventory.SLOT_OFFHAND, ItemStack.EMPTY);
+        try {
+            BlockHitResult hit = new BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+            InteractionResult result = hand.gameMode.useItemOn(hand, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, hit);
+            return result.consumesAction();
+        } finally {
+            inventory.setItem(selected, main);
+            inventory.setItem(Inventory.SLOT_OFFHAND, off);
+            hand.setShiftKeyDown(shift);
+        }
     }
 
     public static Outcome perform(ServerLevel level, EchoEntity echo, EchoAction action, EchoRecording.Frame frame) {
@@ -87,8 +142,6 @@ public final class EchoHands {
             };
         } finally {
             sweep(level, echo, hand);
-            breaking = null;
-            breakingHand = null;
         }
         log(echo, action, outcome);
         return outcome;
@@ -135,34 +188,37 @@ public final class EchoHands {
      */
     private static boolean destroyWith(ServerLevel level, EchoEntity echo, FakePlayer hand, BlockPos pos, int slot) {
         ItemStack tool = echo.inventory().getItem(slot);
+        // The same cached fake player is shared by every echo of this owner. Keep whatever a nested break had lent.
+        ItemStack displaced = hand.getInventory().getItem(slot);
         hand.getInventory().setSelectedSlot(slot);
         hand.getInventory().setItem(slot, tool);
         echo.inventory().setItem(slot, ItemStack.EMPTY);
-        breaking = echo;
-        breakingHand = hand;
-        CAPTURED.clear();
+        BreakSession session = new BreakSession(echo, hand);
+        BREAKS.push(session);
         BlockState before = level.getBlockState(pos);
         boolean broken = false;
         try {
             broken = hand.gameMode.destroyBlock(pos);
         } finally {
+            if (BREAKS.peek() == session) {
+                BREAKS.pop();
+            } else {
+                BREAKS.remove(session);
+            }
             ItemStack after = hand.getInventory().getItem(slot);
-            hand.getInventory().setItem(slot, ItemStack.EMPTY);
+            hand.getInventory().setItem(slot, displaced);
             echo.inventory().setItem(slot, after);
-            breaking = null;
-            breakingHand = null;
             // Memory grafts: a kindled echo (or one near it) gets ore drops smelted.
             if (broken) {
-                com.mnemolith.echo.graft.EchoGrafts.smeltDrops(level, echo, before, CAPTURED);
+                com.mnemolith.echo.graft.EchoGrafts.smeltDrops(level, echo, before, session.captured);
             }
             // Drops are held until the tool is back in its slot, so the lent slot is never mistaken for an empty one.
-            for (ItemStack drop : CAPTURED) {
+            for (ItemStack drop : session.captured) {
                 echo.inventory().insert(drop);
                 if (!drop.isEmpty()) {
                     echo.spawnAtLocation(level, drop);
                 }
             }
-            CAPTURED.clear();
         }
         return broken;
     }
@@ -215,8 +271,6 @@ public final class EchoHands {
             broken = destroyWith(level, echo, hand, pos, slot);
         } finally {
             sweep(level, echo, hand);
-            breaking = null;
-            breakingHand = null;
         }
         echo.swing(InteractionHand.MAIN_HAND);
         boolean toolBroke = damageable && !inventory.getItem(slot).is(toolItem);
@@ -227,8 +281,9 @@ public final class EchoHands {
     /**
      * A job placement: the owner's fake player uses the echo's own block item on a neighbouring face (sneaking, so no
      * block is "used"), which fires the normal place events. If the block came out with other properties than the
-     * blueprint asks for (facing, axis, half), the properties are set to the blueprint state afterwards; the block
-     * itself is never swapped, and multi-block parts (doors, beds, double chests) are left as placed.
+     * blueprint asks for (facing, axis, half), those properties are committed through the same fake player so the
+     * place event fires again. The block itself is never swapped, and multi-block parts (doors, beds, double chests)
+     * are left as placed. A listener that cancels the correction leaves the block as the item placed it.
      */
     public static Outcome placeForJob(ServerLevel level, EchoEntity echo, BlockPos pos, BlockState target) {
         UUID owner = echo.ownerId();
@@ -263,6 +318,7 @@ public final class EchoHands {
         sweep(level, echo, hand);
         int handSlot = 0;
         ItemStack stack = inventory.getItem(slot);
+        ItemStack displaced = hand.getInventory().getItem(handSlot);
         InteractionResult result;
         try {
             hand.getInventory().setSelectedSlot(handSlot);
@@ -272,7 +328,7 @@ public final class EchoHands {
                 result = hand.gameMode.useItemOn(hand, level, stack, InteractionHand.MAIN_HAND, hit);
             } finally {
                 ItemStack after = hand.getInventory().getItem(handSlot);
-                hand.getInventory().setItem(handSlot, ItemStack.EMPTY);
+                hand.getInventory().setItem(handSlot, displaced);
                 inventory.setItem(slot, after);
             }
         } finally {
@@ -286,7 +342,8 @@ public final class EchoHands {
             return Outcome.REFUSED;
         }
         if (now != target && correctable(target) && target.canSurvive(level, pos)) {
-            level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
+            // Same block type, so ImprintEvents does not write a second build imprint for this correction.
+            FakePlace.commit(level, hand, pos, target, hit.getDirection(), net.minecraft.world.level.block.Block.UPDATE_ALL, false);
         }
         return Outcome.DONE;
     }
@@ -427,6 +484,7 @@ public final class EchoHands {
         }
         int handSlot = 0;
         ItemStack stack = inventory.getItem(slot);
+        ItemStack displaced = hand.getInventory().getItem(handSlot);
         hand.getInventory().setSelectedSlot(handSlot);
         hand.getInventory().setItem(handSlot, stack);
         inventory.setItem(slot, ItemStack.EMPTY);
@@ -435,7 +493,7 @@ public final class EchoHands {
             result = hand.gameMode.useItemOn(hand, level, stack, InteractionHand.MAIN_HAND, action.hit());
         } finally {
             ItemStack after = hand.getInventory().getItem(handSlot);
-            hand.getInventory().setItem(handSlot, ItemStack.EMPTY);
+            hand.getInventory().setItem(handSlot, displaced);
             inventory.setItem(slot, after);
         }
         echo.swing(InteractionHand.MAIN_HAND);
@@ -453,8 +511,14 @@ public final class EchoHands {
         return result.consumesAction() ? Outcome.DONE : Outcome.REFUSED;
     }
 
-    /** Anything left in the fake player goes to the echo, or on the ground at the echo. Nothing stays behind. */
+    /**
+     * Anything left in the fake player goes to the echo, or on the ground at the echo. Nothing stays behind.
+     * A nested call skips the sweep: the outer break still has a tool lent in this same cached player.
+     */
     private static void sweep(ServerLevel level, EchoEntity echo, FakePlayer hand) {
+        if (handInUse(hand)) {
+            return;
+        }
         Inventory inventory = hand.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.removeItemNoUpdate(i);
@@ -480,7 +544,8 @@ public final class EchoHands {
      * the echo once the break call returns; whatever does not fit falls at the echo.
      */
     public static void onBlockDrops(BlockDropsEvent event) {
-        if (breaking == null || event.getBreaker() != breakingHand || event.isCanceled()) {
+        BreakSession session = BREAKS.peek();
+        if (session == null || event.getBreaker() != session.hand || event.isCanceled()) {
             return;
         }
         var iterator = event.getDrops().iterator();
@@ -488,10 +553,19 @@ public final class EchoHands {
             ItemEntity drop = iterator.next();
             ItemStack stack = drop.getItem();
             if (!stack.isEmpty()) {
-                CAPTURED.add(stack.copy());
+                session.captured.add(stack.copy());
             }
             iterator.remove();
         }
+    }
+
+    private static boolean handInUse(FakePlayer hand) {
+        for (BreakSession session : BREAKS) {
+            if (session.hand == hand) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void log(EchoEntity echo, EchoAction action, Outcome outcome) {

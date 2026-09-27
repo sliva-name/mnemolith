@@ -17,7 +17,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The three memory mobs, plus the echo body, the shell left behind while a player possesses it, and residual echoes. The Scar stays unregistered. */
+/** The three memory mobs, plus the echo body, the shell left behind while a player possesses it, residual echoes, and the Scar. */
 public final class ModEntities {
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Mnemolith.MOD_ID);
 

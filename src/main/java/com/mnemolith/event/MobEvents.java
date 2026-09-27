@@ -70,9 +70,10 @@ public final class MobEvents {
 
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.RightClickItem event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            ActionMemory.record(player, CopiedActionKind.USE, player.blockPosition(), event.getItemStack());
+        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer player)) {
+            return;
         }
+        ActionMemory.record(player, CopiedActionKind.USE, player.blockPosition(), event.getItemStack());
     }
 
     @SubscribeEvent

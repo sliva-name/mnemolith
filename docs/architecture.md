@@ -9,7 +9,6 @@ The world writes its history into stone. Players read imprints, compose memory, 
 Later content, not built yet:
 
 - the rest of a ~16 block / ~18 item set
-- 1 boss event (the Scar, during a recollection storm)
 - strikethrough shafts
 
 ## Package map
@@ -134,7 +133,7 @@ Fracture sets `ChunkMemory.fractured`, logs `Mnemolith fracture`, and asks `MobS
 | fall + player | Residual shard of fall, strength 4. A full plunging graft (48 charges) |
 | silence + player | Residual shard of silence, strength 4. A full hushed graft (24 charges) |
 
-A full inventory refuses the shard and does not consume the slips. A mismatch consumes one slip, adds `gameplay.failurePressureSpike` (default 18) as instability, plays the fail sound, and asks for a moment replicant only when the chunk is then overloaded or fractured. A failed compose on a calm chunk does not spawn one. There is no compose cooldown: the lost slip and the spike are the limiter. `gameplay.compositionEnabled` refuses the attempt without consuming slips. Every attempt logs `Mnemolith compose status={} formula={}`. A spike logs `Mnemolith instability spike amount={} pressure={} band={}`, and a failure also logs `Mnemolith compose fail pressure={} band={} replicantAsked={}`.
+A full inventory refuses the shard and does not consume the slips. A mismatch consumes one slip, adds `gameplay.failurePressureSpike` (default 18) as instability, plays the fail sound, and asks for a moment replicant only when the chunk is then overloaded or fractured. A failed compose on a calm chunk does not spawn one. There is no compose cooldown: the lost slip and the spike are the limiter. `gameplay.compositionEnabled` refuses the attempt without consuming slips. Every attempt logs `Mnemolith compose status={} formula={}`. A spike logs `Mnemolith instability spike amount={} pressure={} band={}` at info, and a failure also logs `Mnemolith compose fail pressure={} band={} replicantAsked={}`. The same spike line from echo work is debug, once per work imprint, so a mining loop does not flood the log.
 
 ### Discovery
 
@@ -158,7 +157,7 @@ Server-authoritative. Client classes under `client.model` and `client.render` ar
 | --- | --- | --- | --- |
 | Echo strider | Natural spawn at `mobs.echoStriderMinPressure` (default 20, saturated). A path imprint lowers that gate by 8 when `worldGen.striderPathBias` is on. A muted chunk refuses the natural attempt. Charges at overloaded, or when hurt | `PathLedger` waypoints from a player in the same dimension whose oldest buffered step is within 48 blocks, then path and player imprint origins, then the higher-pressure neighbor among the 9 loaded chunks around it. A short phase step crosses non-solid blocks, at most 12 ticks | Mute radius or a mute pocket, or sneak while holding the chronicle lens |
 | Archivist | Natural spawn at `mobs.archivistMinPressure` (default 50, overloaded). An observatory flag within 2 loaded chunks lowers that gate by 14 when `worldGen.archivistObservatoryBias` is on | `PlayerContainerEvent.Open`, a tossed slip, or a nearby player holding a high-weight slip. It takes one slip from the open container first, and from that player's inventory only when the container has none, then runs toward a higher-pressure chunk. Cooldown is `mobs.archivistStealCooldown` (default 300 ticks) | Resonator trap, or bait from silence + player |
-| Moment replicant | Fracture, a failed composition that leaves the chunk overloaded or fractured, or natural spawn at `mobs.replicantMinPressure` (default 80). The telegraph is 60 ticks | Copies the last melee, jump, block place, or item use from the last 5 seconds, after a telegraph. A copied place becomes `mnemolith:replicated_moment` (no item, no loot table, fades after 200 ticks) in air only, gated by `EventHooks.canEntityGrief`. Fake-player actions (echo hands) are not recorded | Sneak and use the chronicle lens. Anything outside the whitelist is not copied |
+| Moment replicant | Fracture, a failed composition that leaves the chunk overloaded or fractured, or natural spawn at `mobs.replicantMinPressure` (default 80). The telegraph is 60 ticks | Copies the last melee, jump, block place, or item use from the last 5 seconds, after a telegraph. A copied place becomes `mnemolith:replicated_moment` (no item, no loot table, fades after 200 ticks) in air only, gated by `EventHooks.canEntityGrief`, then placed by a fake player so claims see it. That ghost writes no build imprint. Fake-player actions (echo hands and the ghost) are not recorded | Sneak and use the chronicle lens. Anything outside the whitelist is not copied |
 
 A natural attempt is also kept only `mobs.*SpawnWeight` percent of the time. Eggs and `/mnemolith spawn` skip the pressure and weight gates. Biome weights live in `data/mnemolith/neoforge/biome_modifier/memory_mobs.json` (`neoforge:add_spawns` on `#minecraft:is_overworld`). The three types are in the `mnemolith:memory_mobs` entity tag.
 
@@ -218,7 +217,7 @@ Every rule is in `vault.ArchiveVaults`.
 
 ## Visual effects
 
-`ModParticles` registers nine `SimpleParticleType` values on both sides: `imprint_shimmer`, `imprint_extract`, `compose_success`, `compose_fail`, `pressure_warn`, `mute_haze`, `strider_trail`, `archivist_snatch`, and `replicant_telegraph`. Sprites are 32×32 white shapes under `assets/mnemolith/textures/particle` (generated by `tools/art/build.py`). The client tints them. `ClientParticles` registers one `SimpleAnimatedParticle` provider per type from `MnemolithClient`. Those particles are translucent and fullbright.
+`ModParticles` registers fourteen `SimpleParticleType` values on both sides: `imprint_shimmer`, `imprint_extract`, `compose_success`, `compose_fail`, `pressure_warn`, `mute_haze`, `strider_trail`, `archivist_snatch`, `replicant_telegraph`, and one graft particle per temper (`graft_hushed`, `graft_grave`, `graft_kindled`, `graft_plunging`, `graft_volatile`). Sprites are 32×32 white shapes under `assets/mnemolith/textures/particle` (generated by `tools/art/build.py`). The client tints them. `ClientParticles` registers one `SimpleAnimatedParticle` provider per type from `MnemolithClient`. Those particles are translucent and fullbright.
 
 `MemoryFx` is the only sender. It calls `ServerLevel.sendParticles`, which is the vanilla level-particles packet. There is no second custom FX payload and no per-tick stream. Call sites:
 
@@ -259,20 +258,20 @@ Attached to the mod event bus during `Mnemolith` construction.
 
 | Register | Contents |
 | --- | --- |
-| Blocks | Mute stone, composition reel, resonator trap, archival stratum |
-| Items | Chronicle lens, extraction needle, imprint slip, archival tablet, bait, catalog fragment, husk, unstable slip, spawn eggs, block items |
+| Blocks | Mute stone, composition reel, resonator trap, archival stratum, replicated moment, scar glass, scar heart, archive vault |
+| Items | Chronicle lens, extraction needle, imprint slip, archival tablet, bait, catalog fragment, husk, unstable slip, echo slip and recording, upgrade slips, residual shard, scar fragment, relay thread, archive vault, armory pieces, spawn eggs, block items |
 | Features | Archival vein, mute pocket |
 | Structure types | Chronicle observatory |
 | Structure processors | Observatory (marks the chunk that receives the reel) |
-| Block entities | Composition reel |
+| Block entities | Composition reel, archive vault |
 | Menus | Composition reel (`MenuType`, three slip slots, status data slots) |
 | Creative tab | `mnemolith` |
 | Sound events | Lens focus, imprint, extract, compose, pressure warn, mute and stratum break/place, and ambient / hurt / death / special for each mob. Each event plays a short mono ogg (`docs/asset-pipeline.md`) |
-| Particle types | Shimmer, extract, compose success, compose fail, pressure warn, mute haze, strider trail, archivist snatch, replicant telegraph |
+| Particle types | Shimmer, extract, compose success, compose fail, pressure warn, mute haze, strider trail, archivist snatch, replicant telegraph, and the five graft tempers |
 | Effects | Unrecorded, fire trail, landing burst |
-| Entity types | Echo strider, archivist, moment replicant |
-| Data components | `imprint_cast` |
-| Attachments | `chunk_memory` (server only), `discovery` (player, owner sync, copied on death) |
+| Entity types | Echo strider, archivist, moment replicant, ledger mite, kin witness, fracture stalker, memory bolt, echo, echo shell, residue, scar |
+| Data components | `imprint_cast`, `echo_recording`, `echo_lesson`, `echo_farm`, `relay_first`, `vault_contents` |
+| Attachments | `chunk_memory` (server only), `discovery` and `echo_progress` (player, owner sync, copied on death), `echo_possession` (player, copied on death) |
 
 ## Config
 

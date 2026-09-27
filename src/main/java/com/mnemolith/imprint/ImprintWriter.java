@@ -105,18 +105,32 @@ public final class ImprintWriter {
     }
 
     public static int spike(ServerLevel level, BlockPos pos, int amount) {
+        return spike(level, pos, amount, true);
+    }
+
+    /**
+     * Same as {@link #spike(ServerLevel, BlockPos, int)}, but the line is debug. The work loop calls this once per
+     * imprint; a player-driven spike stays on the info line.
+     */
+    public static int spikeQuiet(ServerLevel level, BlockPos pos, int amount) {
+        return spike(level, pos, amount, false);
+    }
+
+    private static int spike(ServerLevel level, BlockPos pos, int amount, boolean announce) {
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
         if (amount > 0) {
             memory.addInstability(amount, CommonConfig.PRESSURE_SOFT_CAP.get());
             MemoryPressure.recompute(chunk, memory);
         }
-        Mnemolith.LOGGER.info(
-                "Mnemolith instability spike amount={} pressure={} band={}",
-                amount,
-                memory.cachedPressure(),
-                MemoryPressure.band(memory.cachedPressure()));
-        return memory.cachedPressure();
+        int pressure = memory.cachedPressure();
+        PressureBand band = MemoryPressure.band(pressure);
+        if (announce) {
+            Mnemolith.LOGGER.info("Mnemolith instability spike amount={} pressure={} band={}", amount, pressure, band);
+        } else {
+            Mnemolith.LOGGER.debug("Mnemolith instability spike amount={} pressure={} band={}", amount, pressure, band);
+        }
+        return pressure;
     }
 
     public static Optional<Imprint> extract(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player) {
@@ -141,6 +155,7 @@ public final class ImprintWriter {
         if (origin.strataCount() <= 0 || player == null) {
             return Optional.empty();
         }
+        boolean blocked = false;
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 if (dx == 0 && dz == 0) {
@@ -161,8 +176,10 @@ public final class ImprintWriter {
                 if (highest.isEmpty()) {
                     continue;
                 }
-                if (!roomFor(player, highest.get())) {
-                    return Optional.empty();
+                // A full inventory for this slip is not a reason to ignore the other loaded neighbors.
+                if (!com.mnemolith.content.InventorySpace.fits(player.getInventory(), ImprintSlips.of(highest.get()))) {
+                    blocked = true;
+                    continue;
                 }
                 Optional<Imprint> removed = takeHighest(chunk, memory);
                 if (removed.isEmpty()) {
@@ -172,6 +189,9 @@ public final class ImprintWriter {
                 Mnemolith.LOGGER.info("Mnemolith extract reach at {},{},{}", neighbor.getX(), neighbor.getY(), neighbor.getZ());
                 return removed;
             }
+        }
+        if (blocked) {
+            com.mnemolith.content.InventorySpace.refuse(player);
         }
         return Optional.empty();
     }

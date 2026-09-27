@@ -58,7 +58,7 @@ public class ScarBrandItem extends Item {
             if (toward.normalize().dot(look) < 0.55D) {
                 continue;
             }
-            living.hurt(server.damageSources().playerAttack(serverPlayer), 7.0F);
+            living.hurtServer(server, server.damageSources().playerAttack(serverPlayer), 7.0F);
             living.setRemainingFireTicks(40);
             struck++;
         }

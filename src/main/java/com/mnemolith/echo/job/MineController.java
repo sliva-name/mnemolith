@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -106,14 +107,14 @@ final class MineController {
         for (EchoLesson.MineTarget mineTarget : this.job.lesson.mining()) {
             Block block = mineTarget.block();
             this.targets.add(block);
-            block.builtInRegistryHolder().tags()
+            BuiltInRegistries.BLOCK.wrapAsHolder(block).tags()
                     .filter(tag -> tag.location().getNamespace().equals("c") && tag.location().getPath().startsWith("ores/"))
                     .forEach(tag -> addTag(this.targets, tag));
         }
     }
 
     private static void addTag(Set<Block> into, TagKey<Block> tag) {
-        net.minecraft.core.registries.BuiltInRegistries.BLOCK.getTagOrEmpty(tag).forEach(holder -> into.add(holder.value()));
+        BuiltInRegistries.BLOCK.getTagOrEmpty(tag).forEach(holder -> into.add(holder.value()));
     }
 
     boolean isTarget(BlockState state) {

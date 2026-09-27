@@ -287,6 +287,8 @@ public class EchoStrider extends MemoryMob {
         Vec3 forward = look.normalize();
         BlockPos ahead = BlockPos.containing(this.getX() + forward.x, this.getY() + 0.4D, this.getZ() + forward.z);
         BlockState state = this.level().getBlockState(ahead);
+        // isSolid() is the legacySolid flag. 26.2 has no other reader of it, and NeoForge FluidUtil still calls it.
+        // isSolidRender() and an empty collision shape disagree on forceSolidOn fences and signs, and on forceSolidOff snow.
         boolean soft = !state.isAir() && !state.isSolid();
         if (soft && this.phaseTicks < MobTuning.PHASE_LIMIT) {
             this.noPhysics = true;

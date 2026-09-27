@@ -12,6 +12,7 @@ import com.mnemolith.echo.job.EchoJob;
 import com.mnemolith.network.EchoCommandPayload;
 import com.mnemolith.network.EchoPossessPayload;
 import com.mnemolith.network.EchoUnpossessPayload;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 
 import net.minecraft.client.KeyMapping;
@@ -143,7 +144,11 @@ public final class ThermalClient {
             }
             return;
         }
-        chain.process(minecraft.gameRenderer.mainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
+        var mainTarget = minecraft.gameRenderer.mainRenderTarget();
+        FrameGraphBuilder frame = new FrameGraphBuilder();
+        PostChain.TargetBundle targets = PostChain.TargetBundle.of(PostChain.MAIN_TARGET_ID, frame.importExternal("main", mainTarget));
+        chain.addToFrame(frame, mainTarget.width, mainTarget.height, targets);
+        frame.execute(GraphicsResourceAllocator.UNPOOLED);
     }
 
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {

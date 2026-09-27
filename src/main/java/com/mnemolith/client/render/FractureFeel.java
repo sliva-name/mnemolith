@@ -7,6 +7,7 @@ import com.mnemolith.echo.EchoView;
 import com.mnemolith.network.ChunkPressure;
 import com.mnemolith.pressure.PressureBand;
 
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 
 import net.minecraft.client.DeltaTracker;
@@ -114,7 +115,11 @@ public final class FractureFeel {
             }
             return;
         }
-        chain.process(minecraft.gameRenderer.mainRenderTarget(), GraphicsResourceAllocator.UNPOOLED);
+        var mainTarget = minecraft.gameRenderer.mainRenderTarget();
+        FrameGraphBuilder frame = new FrameGraphBuilder();
+        PostChain.TargetBundle targets = PostChain.TargetBundle.of(PostChain.MAIN_TARGET_ID, frame.importExternal("main", mainTarget));
+        chain.addToFrame(frame, mainTarget.width, mainTarget.height, targets);
+        frame.execute(GraphicsResourceAllocator.UNPOOLED);
     }
 
     private static void renderVignette(GuiGraphicsExtractor graphics, DeltaTracker delta) {

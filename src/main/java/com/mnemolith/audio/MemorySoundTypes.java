@@ -2,6 +2,7 @@ package com.mnemolith.audio;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
+import net.neoforged.neoforge.common.util.DeferredSoundType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
@@ -16,23 +17,13 @@ public final class MemorySoundTypes {
     private MemorySoundTypes() {}
 
     private static SoundType layered(SoundType fallback, DeferredHolder<SoundEvent, SoundEvent> breakSound, DeferredHolder<SoundEvent, SoundEvent> placeSound) {
-        return new SoundType(
+        return new DeferredSoundType(
                 fallback.getVolume(),
                 fallback.getPitch(),
-                fallback.getBreakSound(),
-                fallback.getStepSound(),
-                fallback.getPlaceSound(),
-                fallback.getHitSound(),
-                fallback.getFallSound()) {
-            @Override
-            public SoundEvent getBreakSound() {
-                return breakSound.get();
-            }
-
-            @Override
-            public SoundEvent getPlaceSound() {
-                return placeSound.get();
-            }
-        };
+                breakSound,
+                fallback::getStepSound,
+                placeSound,
+                fallback::getHitSound,
+                fallback::getFallSound);
     }
 }
