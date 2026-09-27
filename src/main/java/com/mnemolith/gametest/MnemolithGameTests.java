@@ -97,6 +97,12 @@ public final class MnemolithGameTests {
         live("relay_thread_links_then_hop", RelayLiveTests::threadLinksThenHop, 100);
         live("relay_mirror_break", RelayLiveTests::mirrorBreak, 100);
         live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
+
+        quick("pleading_chair", ChairTests::run);
+    }
+
+    private static void quick(String name, Consumer<GameTestHelper> body) {
+        SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), "suites", 100));
     }
 
     private static void suite(String name, BiFunction<ServerLevel, BlockPos, QaReport> check, Map<String, String> waived) {

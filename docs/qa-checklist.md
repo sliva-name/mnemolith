@@ -22,6 +22,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
 | `mnemolith:suite_investigateqa` | `/mnemolith investigateqa` (15) | Anchors from this play, a lens origin reading, catalog bits unlocked only by that reading. Gamemaster-only; no player tutorial |
+| `mnemolith:pleading_chair` | village chair | Closed room gets a floor spot, an open yard does not, the voice cooldown holds, plains small houses are wired and farms are not. In a world: `/mnemolith spawn pleading_chair` |
 
 **Live residue tests** (`com.mnemolith.gametest.ResidueLiveTests`). Real server players join through `PlayerList.placeNewPlayer` on an in-memory connection negotiated as a NeoForge client, stand in survival and are ticked every game tick the way the network layer ticks a connected player (`ServerPlayer.doTick`), so `PlayerTickEvent`, item use and `level.players()` are the real paths. Setup writes chunk memory and places residues directly; what is under test runs on its own. Players and forced chunks are removed by the `mnemolith:live` environment's teardown, pass or fail.
 

@@ -74,6 +74,12 @@ public final class ModEntities {
             MobCategory.MISC,
             builder -> builder.sized(0.6F, 1.6F).eyeHeight(1.3F).clientTrackingRange(10).noLootTable().fireImmune());
 
+    public static final DeferredHolder<EntityType<?>, EntityType<PleadingChair>> PLEADING_CHAIR = ENTITY_TYPES.registerEntityType(
+            "pleading_chair",
+            PleadingChair::new,
+            MobCategory.MISC,
+            builder -> builder.sized(0.8F, 1.2F).eyeHeight(0.9F).clientTrackingRange(10).updateInterval(3).fireImmune().noLootTable());
+
     public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.ScarEntity>> SCAR = ENTITY_TYPES.registerEntityType(
             "scar",
             com.mnemolith.entity.echo.ScarEntity::new,

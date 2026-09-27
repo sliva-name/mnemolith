@@ -199,6 +199,16 @@ com.mnemolith
   server/                dedicated server @Mod
 ```
 
+## Village chair
+
+Some generated village houses (about one in eight, plains and the other village types, not farms or stables) contain a turquoise plastic chair on the floor. It bobs and leans toward a nearby player. Walking up to it, or sitting on it, plays a short voice clip, then waits before it can play again. Punching removes it.
+
+`/mnemolith spawn pleading_chair` or `/summon mnemolith:pleading_chair` places one where you stand.
+
+This work is based on "Стул Алексея Навального" (https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66) by Chaalen (https://sketchfab.com/Chaalen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+The model is baked down to a voxel shell so Minecraft can draw it. The voice is a user-provided meme recording, converted to ogg.
+
 ## Art
 
 The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist bait, composition reel, mute stone, archival stratum, resonator trap, and the three mobs share one palette: deep indigo, bone, verdigris, and mute gray. Ember is reserved for failure and fire. The lens is a 32×32 ring. The four blocks are multi-part models, not flat cubes. Strider, archivist, and replicant silhouettes stay on the existing part-posing animation: walk, charge, snatch, and telegraph. Sounds are short mono `.ogg` tones. Particle sprites stay white and the client tints them. Sizes, pivots, and UV notes are in [`docs/asset-pipeline.md`](docs/asset-pipeline.md). Scar, a decoration set, and a music album are not in this pass.
@@ -210,6 +220,10 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 Этап 1 живой памяти — в [docs/design/living-memory.md](docs/design/living-memory.md) и в [дорожной карте](docs/design/roadmap.md). Полевой справочник его не разбирает.
 
 Это **фаза 12**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти, общий художественный проход и настройка баланса для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. В разломе один дешёвый проход может обесцветить экран. Нового биома и Шрама нет. В фазе 12 добавлены крафт фрагмента каталога, иллюстрированный полевой справочник и `/mnemolith qa`.
+
+В некоторых домах деревни (примерно в одном из восьми; не в фермах и конюшнях) на полу стоит бирюзовый стул. Он покачивается к игроку. Рядом или когда на него садятся, один раз звучит голос, потом пауза. Удар рукой убирает его. `/mnemolith spawn pleading_chair` ставит стул у ног.
+
+This work is based on "Стул Алексея Навального" (https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66) by Chaalen (https://sketchfab.com/Chaalen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 
 ### Оформление
 
