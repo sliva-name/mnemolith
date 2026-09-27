@@ -3,6 +3,7 @@ package com.mnemolith.gametest;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mnemolith.entity.ModEntities;
 import com.mnemolith.entity.PleadingChair;
 import com.mnemolith.worldgen.structure.ChairHouses;
 import com.mnemolith.worldgen.structure.PleadingChairProcessor;
@@ -51,15 +52,10 @@ final class ChairTests {
         helper.assertTrue(spot != null, "a closed room had no floor");
         helper.assertTrue(ChairHouses.chooseSpot(yard, net.minecraft.util.RandomSource.create(1L)) == null, "an open yard grew a chair");
 
-        // The virtual room sits at a fixed origin. The entity has to be in the loaded test chunk.
-        BlockPos feet = helper.absolutePos(BlockPos.ZERO);
-        ChairHouses.spawn(level, feet, 0.0F);
-        List<PleadingChair> chairs = level.getEntitiesOfClass(PleadingChair.class, new net.minecraft.world.phys.AABB(feet).inflate(2.0D));
-        helper.assertTrue(chairs.size() == 1, "spawned " + chairs.size());
-        PleadingChair chair = chairs.getFirst();
+        // Not added to the level: a real spawn shares this batch with the other suites and shifts their random.
+        PleadingChair chair = new PleadingChair(ModEntities.PLEADING_CHAIR.get(), level);
         helper.assertTrue(chair.tryVoice(level), "the clip did not start");
         helper.assertTrue(!chair.tryVoice(level), "the clip restarted inside its cooldown");
-        chair.discard();
 
         VillageChairPools.attach(level.registryAccess());
         Registry<StructureTemplatePool> pools = level.registryAccess().lookupOrThrow(Registries.TEMPLATE_POOL);
