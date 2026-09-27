@@ -156,6 +156,8 @@ public final class ImprintEvents {
     @SubscribeEvent
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         PressureSync.forget(event.getEntity().getUUID());
+        // The copied moment and the path buffer are positions in the dimension the player just left.
+        MobEvents.forget(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
