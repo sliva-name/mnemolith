@@ -117,6 +117,24 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue VAULT_DRAW_SECONDS;
     public static final ModConfigSpec.DoubleValue VAULT_BLEED;
     public static final ModConfigSpec.IntValue VAULT_LEAK_SECONDS;
+    public static final ModConfigSpec.BooleanValue RECALL_ENABLED;
+    public static final ModConfigSpec.IntValue RECALL_MAX_GESTURES;
+    public static final ModConfigSpec.IntValue RECALL_MIN_AGE;
+    public static final ModConfigSpec.IntValue RECALL_MAX_AGE;
+    public static final ModConfigSpec.IntValue RECALL_COOLDOWN;
+    public static final ModConfigSpec.DoubleValue RECALL_CHANCE;
+    public static final ModConfigSpec.DoubleValue RECALL_LOCAL_CHANCE;
+    public static final ModConfigSpec.DoubleValue RECALL_DISTORTION_CHANCE;
+    public static final ModConfigSpec.BooleanValue RECALL_RECORD_ATTACKS;
+    public static final ModConfigSpec.BooleanValue RECALL_RECORD_PLACES;
+    public static final ModConfigSpec.BooleanValue RECALL_RECORD_USES;
+    public static final ModConfigSpec.BooleanValue RECALL_RECORD_FALLS;
+    public static final ModConfigSpec.IntValue RECALL_IDLE_TICKS;
+    public static final ModConfigSpec.IntValue RECALL_MATCH_TICKS;
+    public static final ModConfigSpec.IntValue RECALL_VANISH_TICKS;
+    public static final ModConfigSpec.IntValue RECALL_LOCAL_RADIUS;
+    public static final ModConfigSpec.BooleanValue RECALL_SKIP_CREATIVE;
+    public static final ModConfigSpec.BooleanValue RECALL_SKIP_STORM;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -258,6 +276,27 @@ public final class CommonConfig {
         VAULT_DRAW_SECONDS = SpecValues.integer(builder, "vaultDrawSeconds", "Seconds between two draws of a drawing vault (the loudest imprint from its chunk and the eight around it), and between two echo feeds of an idle one.", 10, 1, 600);
         VAULT_BLEED = SpecValues.decimal(builder, "vaultBleed", "Share of the stored imprints' pressure that bleeds into the vault's own chunk (0.15: twelve deaths add about 49).", 0.15D, 0.0D, 1.0D);
         VAULT_LEAK_SECONDS = SpecValues.integer(builder, "vaultLeakSeconds", "Seconds between two leaks of a filled vault carried in a player's inventory: one of its imprints is written where the carrier stands. 0 turns leaking off.", 60, 0, 3600);
+        builder.pop();
+
+        SpecValues.section(builder, "recall", "Living memory, stage 1. A few old gestures can surface again. Nothing here writes a chat line.");
+        RECALL_ENABLED = builder.comment("Whether gestures are recorded and whether a replicant or a local flash may show one.").translation("mnemolith.configuration.recallEnabled").define("enabled", true);
+        RECALL_MAX_GESTURES = builder.comment("Gestures kept per player. Oldest are dropped first.").translation("mnemolith.configuration.recallMaxGestures").defineInRange("maxGesturesPerPlayer", 48, 8, 128);
+        RECALL_MIN_AGE = builder.comment("Ticks a gesture must age before it can be shown. 3600 is three minutes.").translation("mnemolith.configuration.recallMinAge").defineInRange("minAgeTicks", 3600, 200, 72_000);
+        RECALL_MAX_AGE = builder.comment("Ticks after which a gesture is dropped. 72000 is one hour.").translation("mnemolith.configuration.recallMaxAge").defineInRange("maxAgeTicks", 72_000, 400, 720_000);
+        RECALL_COOLDOWN = builder.comment("Ticks between wow moments for one player, shared by replicant recall and a local flash. 6000 is five minutes.").translation("mnemolith.configuration.recallCooldown").defineInRange("playerCooldownTicks", 6000, 200, 72_000);
+        RECALL_CHANCE = builder.comment("Chance, from 0.0 to 1.0, that a replicant near a player with an old enough gesture enters recall instead of copying the last five seconds. Rolled once per replicant per player.").translation("mnemolith.configuration.recallChance").defineInRange("replicantRecallChance", 0.35D, 0.0D, 1.0D);
+        RECALL_LOCAL_CHANCE = builder.comment("Chance, checked about every two seconds, that an old gesture within localRadius flashes for that player. A muted chunk at the site never flashes.").translation("mnemolith.configuration.recallLocalChance").defineInRange("localGhostChance", 0.08D, 0.0D, 1.0D);
+        RECALL_DISTORTION_CHANCE = builder.comment("Chance a recorded gesture is marked distorted. A local flash of it shifts yaw by 15 degrees and the site by one block. The replicant still uses the stored yaw.").translation("mnemolith.configuration.recallDistortionChance").defineInRange("distortionChance", 0.15D, 0.0D, 1.0D);
+        RECALL_RECORD_ATTACKS = builder.comment("Whether a melee attack is stored.").translation("mnemolith.configuration.recallRecordAttacks").define("recordAttacks", true);
+        RECALL_RECORD_PLACES = builder.comment("Whether placing a block is stored.").translation("mnemolith.configuration.recallRecordPlaces").define("recordPlaces", true);
+        RECALL_RECORD_USES = builder.comment("Whether using a door, trapdoor, gate, lever, or button is stored.").translation("mnemolith.configuration.recallRecordUses").define("recordUses", true);
+        RECALL_RECORD_FALLS = builder.comment("Whether a hard fall is stored.").translation("mnemolith.configuration.recallRecordFalls").define("recordFalls", true);
+        RECALL_IDLE_TICKS = builder.comment("Ticks a recalling replicant stands and looks before it turns.").translation("mnemolith.configuration.recallIdleTicks").defineInRange("idleTicks", 50, 20, 200);
+        RECALL_MATCH_TICKS = builder.comment("Ticks it spends turning to the stored yaw before the gesture.").translation("mnemolith.configuration.recallMatchTicks").defineInRange("matchTicks", 12, 5, 40);
+        RECALL_VANISH_TICKS = builder.comment("Ticks after the gesture before it disappears.").translation("mnemolith.configuration.recallVanishTicks").defineInRange("vanishTicks", 30, 10, 80);
+        RECALL_LOCAL_RADIUS = builder.comment("Blocks within which an old gesture may flash for the player who made it.").translation("mnemolith.configuration.recallLocalRadius").defineInRange("localRadius", 12, 4, 32);
+        RECALL_SKIP_CREATIVE = builder.comment("Whether creative and spectator players are skipped for recall and local flashes. Gestures are still recorded.").translation("mnemolith.configuration.recallSkipCreative").define("skipCreative", true);
+        RECALL_SKIP_STORM = builder.comment("Whether a player standing in a recollection storm is skipped for recall and local flashes.").translation("mnemolith.configuration.recallSkipStorm").define("skipDuringStorm", true);
         builder.pop();
 
         SPEC = builder.build();

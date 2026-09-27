@@ -43,6 +43,14 @@ public final class ModAttachments {
                     .sync((holder, player) -> holder == player, com.mnemolith.echo.EchoProgress.STREAM_CODEC)
                     .build());
 
+    /** Stage 1 living memory. Saved with the player, kept through death, not synced. */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<com.mnemolith.recall.GestureLog>> GESTURE_LOG = ATTACHMENT_TYPES.register(
+            "gesture_log",
+            () -> AttachmentType.builder(com.mnemolith.recall.GestureLog::new)
+                    .serialize(com.mnemolith.recall.GestureLog.CODEC, log -> !log.isEmpty())
+                    .copyOnDeath()
+                    .build());
+
     private ModAttachments() {}
 
     public static void register(IEventBus modEventBus) {

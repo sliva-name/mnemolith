@@ -3,6 +3,9 @@ package com.mnemolith.client.model;
 import com.mnemolith.client.render.MemoryMobRenderState;
 import com.mnemolith.entity.MobActions;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -11,13 +14,14 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 
 /**
  * Slim split figure with a second shell offset behind it.
  * Telegraph lifts the real arms; the shell lags. The strike drops one arm
  * while the shell is still raised. Texture is 64×64.
  */
-public class ReplicantModel extends EntityModel<MemoryMobRenderState> {
+public class ReplicantModel extends EntityModel<MemoryMobRenderState> implements ArmedModel<MemoryMobRenderState> {
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart armLeft;
@@ -141,5 +145,12 @@ public class ReplicantModel extends EntityModel<MemoryMobRenderState> {
             this.echoHead.y = sink;
             this.head.xScale = Math.max(0.2F, 1.0F - state.deathTime * 0.03F);
         }
+    }
+
+    /** Shoulder pivot, same contract as {@code HumanoidModel}: the item layer hangs the mesh down the arm. */
+    @Override
+    public void translateToHand(MemoryMobRenderState state, HumanoidArm arm, PoseStack pose) {
+        this.root().translateAndRotate(pose);
+        (arm == HumanoidArm.LEFT ? this.armLeft : this.armRight).translateAndRotate(pose);
     }
 }

@@ -73,6 +73,7 @@ public final class MnemolithGameTests {
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
+        suite("recallqa", com.mnemolith.command.qa.RecallQa::check, Map.of());
 
         // Formation: pulses every 200 ticks at 1 in 2; 4400 ticks is 22 pulses, a miss chance under 1 in 4 million.
         live("residue_forms_where_player_stands", ResidueLiveTests::formsWherePlayerStands, 4400);

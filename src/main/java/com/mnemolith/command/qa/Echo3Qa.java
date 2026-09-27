@@ -262,7 +262,10 @@ public final class Echo3Qa {
             BlockPos siteB = b.offset(-2, 0, -4);
             fillMaterials(echo, blueprint);
             echo.snapTo(Vec3.atBottomCenterOf(b.offset(2, 0, 2)), 0.0F, 0.0F);
-            EchoJob.qaMisfireChance = 0.4D;
+            // Every placement misfires until one wrong block is down, then the rest are placed for real.
+            // A flat 0.4 roll can put both "wrong" attempts after the stone bricks are gone: only planks
+            // remain, placeWrong has nothing else to set, and the check sees skips but never a wrong block.
+            EchoJob.qaMisfireChance = 1.0D;
             int misfiresBefore = echo.job().misfireCount();
             echo.job().setBlueprintAnchor(siteB, Rotation.NONE);
             echo.job().startBuilding(echo);
@@ -273,6 +276,9 @@ public final class Echo3Qa {
                 sawStrain |= echo.job().strain() == PressureBand.OVERLOADED;
                 sawNotice |= echo.job().shownStatus().kind() == JobStatus.Kind.MISFIRE;
                 sawWrong |= echo.job().misfiredCount() > 0;
+                if (sawWrong) {
+                    EchoJob.qaMisfireChance = 0.0D;
+                }
                 ticksB++;
             }
             EchoJob.qaMisfireChance = null;

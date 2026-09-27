@@ -16,7 +16,7 @@ public final class ApproachGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return MobTuning.replicantEnabled() && !this.replicant.blinded() && !this.replicant.telegraphing();
+        return MobTuning.replicantEnabled() && !this.replicant.blinded() && !this.replicant.telegraphing() && !this.replicant.recalling();
     }
 
     @Override
