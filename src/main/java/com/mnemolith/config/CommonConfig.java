@@ -135,6 +135,20 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue RECALL_LOCAL_RADIUS;
     public static final ModConfigSpec.BooleanValue RECALL_SKIP_CREATIVE;
     public static final ModConfigSpec.BooleanValue RECALL_SKIP_STORM;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_ENABLED;
+    public static final ModConfigSpec.IntValue INVESTIGATE_MAX_ANCHORS;
+    public static final ModConfigSpec.IntValue INVESTIGATE_MAX_AGE;
+    public static final ModConfigSpec.IntValue INVESTIGATE_READ_TICKS;
+    public static final ModConfigSpec.IntValue INVESTIGATE_READ_RANGE;
+    public static final ModConfigSpec.IntValue INVESTIGATE_TRACE_RADIUS;
+    public static final ModConfigSpec.IntValue INVESTIGATE_LINGER;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_DEATH;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_MUTE;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_BLANK;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_ECHO;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_FRACTURE;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_LOUD;
+    public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_TRACES;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -297,6 +311,23 @@ public final class CommonConfig {
         RECALL_LOCAL_RADIUS = builder.comment("Blocks within which an old gesture may flash for the player who made it.").translation("mnemolith.configuration.recallLocalRadius").defineInRange("localRadius", 12, 4, 32);
         RECALL_SKIP_CREATIVE = builder.comment("Whether creative and spectator players are skipped for recall and local flashes. Gestures are still recorded.").translation("mnemolith.configuration.recallSkipCreative").define("skipCreative", true);
         RECALL_SKIP_STORM = builder.comment("Whether a player standing in a recollection storm is skipped for recall and local flashes.").translation("mnemolith.configuration.recallSkipStorm").define("skipDuringStorm", true);
+        builder.pop();
+
+        SpecValues.section(builder, "investigate", "Living memory, stage 2. A few places from this play can be read with the raised chronicle lens. Nothing here writes a chat line.");
+        INVESTIGATE_ENABLED = builder.comment("Whether this play leaves anchors, and whether the raised lens can name a place.").translation("mnemolith.configuration.investigateEnabled").define("enabled", true);
+        INVESTIGATE_MAX_ANCHORS = builder.comment("Anchors kept per player. Gesture traces, recall traces and fractures are dropped first.").translation("mnemolith.configuration.investigateMaxAnchors").defineInRange("maxAnchors", 32, 8, 128);
+        INVESTIGATE_MAX_AGE = builder.comment("Ticks after which a fracture or a gesture trace is forgotten. A first death, mute, blank slip, echo and the loudest place stay. 216000 is three hours.").translation("mnemolith.configuration.investigateMaxAge").defineInRange("maxAgeTicks", 216_000, 1_200, 720_000);
+        INVESTIGATE_READ_TICKS = builder.comment("Ticks the raised lens must stay on one place before it names that place. 40 is two seconds.").translation("mnemolith.configuration.investigateReadTicks").defineInRange("readTicks", 40, 1, 200);
+        INVESTIGATE_READ_RANGE = builder.comment("How far, in blocks, the raised lens looks. A trace is named only when that look lands within two blocks of it.").translation("mnemolith.configuration.investigateReadRange").defineInRange("readRange", 8, 2, 16);
+        INVESTIGATE_TRACE_RADIUS = builder.comment("Blocks within which holding the lens shows lingering footsteps at one of your traces.").translation("mnemolith.configuration.investigateTraceRadius").defineInRange("traceRadius", 12, 4, 32);
+        INVESTIGATE_LINGER = builder.comment("Ticks those footsteps stay. Longer than a stage-1 flash. 160 is eight seconds.").translation("mnemolith.configuration.investigateLinger").defineInRange("lingerTicks", 160, 20, 600);
+        INVESTIGATE_RECORD_DEATH = builder.comment("Whether the first death leaves a trace.").translation("mnemolith.configuration.investigateRecordDeath").define("recordDeath", true);
+        INVESTIGATE_RECORD_MUTE = builder.comment("Whether the first mute stone leaves a trace.").translation("mnemolith.configuration.investigateRecordMute").define("recordMute", true);
+        INVESTIGATE_RECORD_BLANK = builder.comment("Whether the first blank echo slip leaves a trace.").translation("mnemolith.configuration.investigateRecordBlank").define("recordBlank", true);
+        INVESTIGATE_RECORD_ECHO = builder.comment("Whether the first echo met nearby leaves a trace.").translation("mnemolith.configuration.investigateRecordEcho").define("recordEcho", true);
+        INVESTIGATE_RECORD_FRACTURE = builder.comment("Whether standing in a chunk as it fractures leaves a trace.").translation("mnemolith.configuration.investigateRecordFracture").define("recordFracture", true);
+        INVESTIGATE_RECORD_LOUD = builder.comment("Whether the loudest saturated chunk you have stood in is kept as one trace.").translation("mnemolith.configuration.investigateRecordLoud").define("recordLoud", true);
+        INVESTIGATE_RECORD_TRACES = builder.comment("Whether a local flash, a replicant recall, or a finished lens reading of a gesture leaves a trace you can come back to.").translation("mnemolith.configuration.investigateRecordTraces").define("recordTraces", true);
         builder.pop();
 
         SPEC = builder.build();

@@ -51,6 +51,15 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** Stage 2 catalog of memory types this player has read. Saved, kept through death, synced only to them. */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<com.mnemolith.recall.FoundMemory>> FOUND_MEMORY = ATTACHMENT_TYPES.register(
+            "found_memory",
+            () -> AttachmentType.builder(com.mnemolith.recall.FoundMemory::new)
+                    .serialize(com.mnemolith.recall.FoundMemory.CODEC, memory -> !memory.isEmpty())
+                    .copyOnDeath()
+                    .sync((holder, player) -> holder == player, com.mnemolith.recall.FoundMemory.STREAM_CODEC)
+                    .build());
+
     private ModAttachments() {}
 
     public static void register(IEventBus modEventBus) {

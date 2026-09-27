@@ -81,6 +81,9 @@ public final class ImprintEvents {
                 ? player.getUUID()
                 : event.getSource().getEntity() instanceof Player attacker ? attacker.getUUID() : null;
         ImprintWriter.write(level, pos, ImprintWriter.witnessedTags(level, pos, tags), playerId, false);
+        if (event.getEntity() instanceof ServerPlayer dead) {
+            com.mnemolith.recall.Investigate.onDeath(dead);
+        }
     }
 
     @SubscribeEvent
@@ -155,6 +158,7 @@ public final class ImprintEvents {
             writeBuild(level, event.getPos(), event.getPlacedBlock(), player);
             if (player instanceof ServerPlayer serverPlayer && event.getPlacedBlock().getBlock() == ModBlocks.MUTE_STONE.get()) {
                 DiscoveryNotes.noteMute(serverPlayer);
+                com.mnemolith.recall.Investigate.onMute(serverPlayer, event.getPos());
             }
             if (player instanceof ServerPlayer serverPlayer) {
                 com.mnemolith.echo.relay.EchoRelays.onPlayerPlace(serverPlayer, event.getPos(), event.getPlacedBlock());

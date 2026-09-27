@@ -155,6 +155,7 @@ public final class MemoryPressure {
                     chunk.getPos().z(),
                     next);
             if (chunk.getLevel() instanceof ServerLevel server) {
+                com.mnemolith.recall.Investigate.onFracture(server, chunk.getPos(), next);
                 if (effects) {
                     spawnReplicant(server, chunk.getPos());
                 } else {
