@@ -114,6 +114,7 @@ public final class UseQa {
             UseMemory.forget(player);
 
             BlockPos truePos = site.offset(0, 0, -16);
+            ready(level, truePos);
             help = UseMemory.offer(player, AnchorKind.DEATH, truePos, 0.0F, false);
             stand(player, truePos);
             ResidueEntity residue = help == null ? null : (UseMemory.condense(player) ? residueAt(level, player.getUUID(), truePos) : null);
@@ -142,6 +143,7 @@ public final class UseQa {
             UseMemory.forget(player);
 
             BlockPos leftPos = site.offset(-16, 0, 0);
+            ready(level, leftPos);
             UseMemory.offer(player, AnchorKind.DEATH, leftPos, 0.0F, false);
             stand(player, leftPos.offset(0, 0, 80));
             boolean notYet = !UseMemory.depart(player);
@@ -159,6 +161,7 @@ public final class UseQa {
             UseMemory.forget(player);
 
             BlockPos mutePos = site.offset(16, 0, 0);
+            ready(level, mutePos);
             Investigate.forget(player);
             Investigate.keep(player, AnchorKind.DEATH, mutePos, -1, false, 0, 0.0F);
             Investigate.keep(player, AnchorKind.MUTE, mutePos.offset(0, 0, 24), -1, false, 0, 0.0F);
@@ -181,6 +184,7 @@ public final class UseQa {
             Investigate.forget(player);
 
             BlockPos takePos = site.offset(0, 0, 32);
+            ready(level, takePos);
             UseMemory.offer(player, AnchorKind.DEATH, takePos, 0.0F, false);
             stand(player, takePos);
             boolean rose = UseMemory.condense(player);
@@ -202,6 +206,7 @@ public final class UseQa {
             UseMemory.forget(player);
 
             BlockPos bankPos = site.offset(0, 0, 16);
+            ready(level, bankPos);
             UseMemory.offer(player, AnchorKind.ECHO, bankPos, 0.0F, false);
             stand(player, bankPos);
             boolean bankedResidue = UseMemory.condense(player);
@@ -209,6 +214,7 @@ public final class UseQa {
             level.setBlock(vaultPos, ModBlocks.ARCHIVE_VAULT.get().defaultBlockState(), 3);
             ArchiveVaultBlockEntity vault = level.getBlockEntity(vaultPos) instanceof ArchiveVaultBlockEntity entity ? entity : null;
             if (vault != null) {
+                ArchiveVaults.track(level, vaultPos);
                 ArchiveVaults.tick(level, vaultPos, vault);
             }
             boolean stored = bank != null && UseMemory.store(player, bank);
@@ -236,6 +242,7 @@ public final class UseQa {
                 UseMemory.stamp(echo, player);
                 voiced = UseMemory.voiceOf(player) == GestureKind.ATTACK.ordinal() && echo.bearing() == GestureKind.ATTACK.ordinal();
                 BlockPos quietPos = site.offset(-32, 0, 0);
+                ready(level, quietPos);
                 UseMemory.offer(player, AnchorKind.DEATH, quietPos, 0.0F, false);
                 stand(player, quietPos);
                 echo.snapTo(quietPos.getX() + 0.5D, quietPos.getY(), quietPos.getZ() + 0.5D, 0.0F, 0.0F);
@@ -286,7 +293,16 @@ public final class UseQa {
             Investigate.forget(other);
             UseMemory.forget(player);
             UseMemory.forget(other);
-            QaSupport.releaseColumn(level, net.minecraft.world.level.ChunkPos.containing(site));
+            for (BlockPos extra : List.of(
+                    site,
+                    site.offset(0, 0, -16),
+                    site.offset(-16, 0, 0),
+                    site.offset(16, 0, 0),
+                    site.offset(0, 0, 16),
+                    site.offset(0, 0, 32),
+                    site.offset(-32, 0, 0))) {
+                QaSupport.releaseColumn(level, net.minecraft.world.level.ChunkPos.containing(extra));
+            }
         }
         return new QaReport("useqa", NAMES, checks, notes).log();
     }
@@ -302,6 +318,11 @@ public final class UseQa {
             UseMemory.condense(player);
             player.setPos(mark.getX() - player.getDirection().getStepX() * 4 + 0.5D, mark.getY(), mark.getZ() - player.getDirection().getStepZ() * 4 + 0.5D);
         }
+    }
+
+    /** Neighbor columns are inside the site ticket, but they are not entity-ticking until this wait finishes. */
+    private static void ready(ServerLevel level, BlockPos pos) {
+        QaSupport.tickColumn(level, pos);
     }
 
     private static void stand(ServerPlayer player, BlockPos pos) {

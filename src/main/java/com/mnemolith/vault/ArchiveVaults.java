@@ -139,9 +139,10 @@ public final class ArchiveVaults {
     // ---- the block entity tick ----
 
     public static void tick(ServerLevel level, BlockPos pos, ArchiveVaultBlockEntity vault) {
+        // Every live tick, not only the refresh one. Placing a vault can track it and then untrack it before the
+        // refresh flag is consumed, and a store in that same tick would otherwise find no vault.
+        track(level, pos);
         if (vault.consumeRefresh()) {
-            // First tick after loading or placing: count its bleed and let archivists find it (onLoad also tracks it).
-            track(level, pos);
             refreshLoad(level, pos);
         }
         if (!enabled() || vault.advance() < CommonConfig.VAULT_DRAW_SECONDS.get() * 20) {
