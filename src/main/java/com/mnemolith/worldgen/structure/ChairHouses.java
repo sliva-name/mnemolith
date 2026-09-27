@@ -26,6 +26,7 @@ import net.minecraft.world.phys.AABB;
 /**
  * Picks one indoor floor cell in a village house piece and stands a chair there.
  * About one house in eight. Farms, pens, stables, and meeting points are not passed in.
+ * The block list may already have had its air removed; a missing cell is treated as empty.
  */
 public final class ChairHouses {
     public static final int CHANCE = 8;
@@ -129,9 +130,13 @@ public final class ChairHouses {
         return state.blocksMotion() && state.isCollisionShapeFullBlock(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
     }
 
+    /**
+     * Empty enough to stand in. A missing cell counts: village houses are legacy pieces, and that path
+     * drops air (and structure blocks) before {@code finalizeProcessing}, so the indoor volume is holes in the list.
+     */
     private static boolean open(Map<BlockPos, BlockState> at, BlockPos pos) {
         BlockState state = at.get(pos);
-        return state != null && (state.isAir() || state.getBlock() instanceof CarpetBlock);
+        return state == null || state.isAir() || state.getBlock() instanceof CarpetBlock;
     }
 
     private static boolean hasCeiling(Map<BlockPos, BlockState> at, BlockPos stand) {

@@ -203,7 +203,7 @@ com.mnemolith
 
 Some generated village houses (about one in eight, plains and the other village types, not farms or stables) contain a turquoise plastic chair on the floor. It bobs and leans toward a nearby player. Walking up to it, or sitting on it, plays a short voice clip, then waits before it can play again. Punching removes it.
 
-`/mnemolith spawn pleading_chair` or `/summon mnemolith:pleading_chair` places one where you stand.
+The chair is written when that chunk is first generated. A village you already explored stays empty; look in newly generated chunks, or start a new world. `/mnemolith spawn pleading_chair` or `/summon mnemolith:pleading_chair` still places one where you stand.
 
 This work is based on "Стул Алексея Навального" (https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66) by Chaalen (https://sketchfab.com/Chaalen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 
@@ -221,7 +221,7 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Это **фаза 12**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти, общий художественный проход и настройка баланса для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. В разломе один дешёвый проход может обесцветить экран. Нового биома и Шрама нет. В фазе 12 добавлены крафт фрагмента каталога, иллюстрированный полевой справочник и `/mnemolith qa`.
 
-В некоторых домах деревни (примерно в одном из восьми; не в фермах и конюшнях) на полу стоит бирюзовый стул. Он покачивается к игроку. Рядом или когда на него садятся, один раз звучит голос, потом пауза. Удар рукой убирает его. `/mnemolith spawn pleading_chair` ставит стул у ног.
+В некоторых домах деревни (примерно в одном из восьми; не в фермах и конюшнях) на полу стоит бирюзовый стул. Он покачивается к игроку. Рядом или когда на него садятся, один раз звучит голос, потом пауза. Удар рукой убирает его. Стул записывается только при первой генерации чанка: уже исследованная деревня останется пустой, ищите новую деревню в новых чанках или в новом мире. `/mnemolith spawn pleading_chair` по-прежнему ставит стул у ног.
 
 This work is based on "Стул Алексея Навального" (https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66) by Chaalen (https://sketchfab.com/Chaalen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 

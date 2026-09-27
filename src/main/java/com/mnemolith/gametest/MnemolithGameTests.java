@@ -36,8 +36,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * required one fails; in a dev world {@code /test runmultiple mnemolith:} runs them by hand.
  * <p>
  * Batches (one per environment), run one after the other: {@code mnemolith:suites} (the QA suites, each done within
- * its first tick), {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the environment's
- * teardown), and one batch per storm test (storms are capped per dimension, so they must not run side by side).
+ * its first tick), {@code mnemolith:village} (one real village house, kept off the suites' world random),
+ * {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the environment's teardown), and one
+ * batch per storm test (storms are capped per dimension, so they must not run side by side).
  */
 public final class MnemolithGameTests {
     private MnemolithGameTests() {}
@@ -101,10 +102,16 @@ public final class MnemolithGameTests {
         live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
 
         quick("pleading_chair", ChairTests::run);
+        // Own batch: placing a real house must not share the suites' world random.
+        village("village_chair", ChairTests::villageHouse);
     }
 
     private static void quick(String name, Consumer<GameTestHelper> body) {
         SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), "suites", 100));
+    }
+
+    private static void village(String name, Consumer<GameTestHelper> body) {
+        SPECS.add(new Spec(FUNCTIONS.register(name, () -> body), "village", 100));
     }
 
     private static void suite(String name, BiFunction<ServerLevel, BlockPos, QaReport> check, Map<String, String> waived) {
@@ -133,10 +140,12 @@ public final class MnemolithGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> suites = event.registerEnvironment(id("suites"));
+        Holder<TestEnvironmentDefinition<?>> village = event.registerEnvironment(id("village"));
         Holder<TestEnvironmentDefinition<?>> live = event.registerEnvironment(id("live"), new LivePlayers.Environment());
         for (Spec spec : SPECS) {
             Holder<TestEnvironmentDefinition<?>> environment = switch (spec.environment()) {
                 case "suites" -> suites;
+                case "village" -> village;
                 case "live" -> live;
                 default -> event.registerEnvironment(id(spec.environment()), new LivePlayers.Environment(true));
             };
