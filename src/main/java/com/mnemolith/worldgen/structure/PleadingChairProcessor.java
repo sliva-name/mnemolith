@@ -12,7 +12,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
-/** Rare chair on the floor of a village house. Wired onto house template-pool elements, not streets. */
+/**
+ * Rare chair on the floor of a village house. Wired onto house template-pool elements, not streets.
+ * Village houses are legacy pieces, so the block list that arrives here has already had its air removed.
+ */
 public final class PleadingChairProcessor implements StructureProcessor {
     public static final PleadingChairProcessor INSTANCE = new PleadingChairProcessor();
     public static final MapCodec<PleadingChairProcessor> CODEC = MapCodec.unit(INSTANCE);
