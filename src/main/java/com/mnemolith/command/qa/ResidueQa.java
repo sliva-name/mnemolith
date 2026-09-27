@@ -64,6 +64,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -365,8 +366,43 @@ public final class ResidueQa {
             int zombiesBefore = zombies(level, b);
             Residues.Fester actResult = grave == null ? null : Residues.fester(level, grave);
             int zombiesAfter = zombies(level, b);
-            ok[16] = fractureBand == PressureBand.FRACTURE && actResult == Residues.Fester.WROTE && zombiesAfter == zombiesBefore + 1;
-            notes.add("actOut band=" + fractureBand + " result=" + actResult + " zombies " + zombiesBefore + "->" + zombiesAfter);
+            boolean griefing = level.getGameRules().get(GameRules.MOB_GRIEFING);
+            level.getGameRules().set(GameRules.MOB_GRIEFING, true, level.getServer());
+            BlockPos flame = null;
+            Residues.Fester fireResult = null;
+            try {
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        level.setBlock(b.offset(dx, 0, dz), Blocks.SHORT_GRASS.defaultBlockState(), 3);
+                    }
+                }
+                ResidueEntity kindled = Residues.spawn(level, b.offset(0, 1, 0), ImprintTag.FIRE, 4, false);
+                fireResult = kindled == null ? null : Residues.fester(level, kindled);
+                for (int dx = -4; dx <= 4 && flame == null; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        BlockPos spot = b.offset(dx, 0, dz);
+                        if (level.getBlockState(spot).is(Blocks.FIRE)) {
+                            flame = spot;
+                            break;
+                        }
+                    }
+                }
+                discard(kindled);
+            } finally {
+                level.getGameRules().set(GameRules.MOB_GRIEFING, griefing, level.getServer());
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        BlockPos spot = b.offset(dx, 0, dz);
+                        if (level.getBlockState(spot).is(Blocks.FIRE) || level.getBlockState(spot).is(Blocks.SHORT_GRASS)) {
+                            level.setBlock(spot, Blocks.AIR.defaultBlockState(), 3);
+                        }
+                    }
+                }
+            }
+            ok[16] = fractureBand == PressureBand.FRACTURE && actResult == Residues.Fester.WROTE && zombiesAfter == zombiesBefore + 1
+                    && fireResult == Residues.Fester.WROTE && flame != null;
+            notes.add("actOut band=" + fractureBand + " result=" + actResult + " zombies " + zombiesBefore + "->" + zombiesAfter
+                    + " fire=" + fireResult + " flame=" + (flame == null ? "-" : flame.toShortString()));
             for (Zombie zombie : level.getEntitiesOfClass(Zombie.class, new AABB(b).inflate(24.0D))) {
                 zombie.discard();
             }

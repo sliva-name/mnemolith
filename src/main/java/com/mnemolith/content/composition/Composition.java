@@ -11,7 +11,6 @@ import com.mnemolith.config.CommonConfig;
 import com.mnemolith.entity.MobSpawns;
 import com.mnemolith.data.ImprintCast;
 import com.mnemolith.data.ModDataComponents;
-import com.mnemolith.entity.ModEffects;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.imprint.DiscoveryNotes;
 import com.mnemolith.imprint.ImprintConstants;
@@ -20,7 +19,9 @@ import com.mnemolith.imprint.ImprintWriter;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.audio.ModSounds;
+import com.mnemolith.content.InventorySpace;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.echo.residue.Residues;
 import com.mnemolith.particle.MemoryFx;
 
 import net.minecraft.core.BlockPos;
@@ -29,8 +30,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 
 /** Server-side composition. The menu button and the smoke command both call {@link #compose}. */
@@ -83,15 +82,17 @@ public final class Composition {
         if (formula.isEmpty()) {
             return fail(level, pos, player, container, tags);
         }
-        if (formula.get() == CompositionFormula.BAIT && player != null
-                && !com.mnemolith.content.InventorySpace.fits(player.getInventory(), new ItemStack(ModItems.ARCHIVIST_BAIT.get()))) {
-            com.mnemolith.content.InventorySpace.refuse(player);
+        ItemStack reward = player == null
+                ? ItemStack.EMPTY
+                : Residues.shard(formula.get().product(), CompositionFormula.SHARD_STRENGTH, pos, level.getGameTime());
+        if (player != null && !InventorySpace.fits(player.getInventory(), reward)) {
+            InventorySpace.refuse(player);
             return finish(ComposeResult.FULL, -1);
         }
         for (int slot : slots) {
             container.removeItem(slot, 1);
         }
-        apply(player, formula.get());
+        give(player, reward);
         level.playSound(null, pos, ModSounds.COMPOSE_SUCCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         MemoryFx.composeSuccess(level, pos);
         if (player != null) {
@@ -134,23 +135,12 @@ public final class Composition {
         return new ComposeResult(status, formulaOrdinal);
     }
 
-    private static void apply(@Nullable ServerPlayer player, CompositionFormula formula) {
-        if (player == null) {
+    private static void give(@Nullable ServerPlayer player, ItemStack reward) {
+        if (player == null || reward.isEmpty()) {
             return;
         }
-        switch (formula) {
-            case UNRECORDED -> player.addEffect(new MobEffectInstance(ModEffects.UNRECORDED, ImprintConstants.UNRECORDED_DURATION_TICKS, 0, false, true));
-            case FIRE_TRAIL -> {
-                player.addEffect(new MobEffectInstance(ModEffects.FIRE_TRAIL, ImprintConstants.FIRE_TRAIL_DURATION_TICKS, 0, false, true));
-                player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, ImprintConstants.FIRE_TRAIL_DURATION_TICKS, 0, false, true));
-            }
-            case LANDING_BURST -> player.addEffect(new MobEffectInstance(ModEffects.LANDING_BURST, ImprintConstants.LANDING_BURST_DURATION_TICKS, 0, false, false));
-            case BAIT -> {
-                ItemStack bait = new ItemStack(ModItems.ARCHIVIST_BAIT.get());
-                if (!player.getInventory().add(bait) && !bait.isEmpty()) {
-                    player.drop(bait, false);
-                }
-            }
+        if (!player.getInventory().add(reward) && !reward.isEmpty()) {
+            player.drop(reward, false);
         }
     }
 }

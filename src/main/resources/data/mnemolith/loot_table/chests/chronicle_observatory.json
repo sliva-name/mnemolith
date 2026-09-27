@@ -45,8 +45,8 @@
                 "mnemolith:imprint_cast": {
                   "tag": "silence",
                   "intensity": 2,
-                  "origin": [0, 64, 0],
-                  "context_hash": 1,
+                  "origin": [0, 0, 0],
+                  "context_hash": 4617605,
                   "written_at": 0
                 }
               }
@@ -64,8 +64,8 @@
                 "mnemolith:imprint_cast": {
                   "tag": "player",
                   "intensity": 2,
-                  "origin": [0, 64, 0],
-                  "context_hash": 2,
+                  "origin": [0, 0, 0],
+                  "context_hash": 5541126,
                   "written_at": 0
                 }
               }

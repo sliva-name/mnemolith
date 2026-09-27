@@ -4,9 +4,12 @@ import static com.mnemolith.command.qa.QaSupport.*;
 import java.util.List;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
+import com.mnemolith.content.ModItems;
 import com.mnemolith.content.composition.ComposeResult;
 import com.mnemolith.content.composition.CompositionFormula;
 import com.mnemolith.content.item.CatalogFragmentItem;
+import com.mnemolith.data.ImprintCast;
+import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ImprintWriter;
@@ -16,6 +19,8 @@ import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.util.FakePlayer;
 
@@ -97,6 +102,10 @@ public final class QaLoop {
         if (ImprintWriter.extract(level, pos, player).isEmpty()) {
             return false;
         }
+        BlockPos again = pos.offset(3, 0, 0);
+        if (!ImprintWriter.tryWrite(level, again, ImprintTag.FALL, null, false) || ImprintWriter.extract(level, again, player).isEmpty() || !oneStack(player, ImprintTag.FALL, 2)) {
+            return false;
+        }
         OpenCatalogPayload payload = CatalogFragmentItem.payloadFor(player);
         boolean noted = holdsTag(player, ImprintTag.FALL)
                 && payload.tags() == (1 << ImprintTag.FALL.ordinal())
@@ -110,7 +119,39 @@ public final class QaLoop {
         }
         boolean refused = ImprintWriter.extract(level, pos, player).isEmpty();
         inventory.setItem(0, net.minecraft.world.item.ItemStack.EMPTY);
-        return refused && !ImprintWriter.extract(level, pos, player).isEmpty() && holdsTag(player, ImprintTag.DEATH);
+        boolean extracted = refused && !ImprintWriter.extract(level, pos, player).isEmpty() && holdsTag(player, ImprintTag.DEATH);
+        return extracted && legacySlipsStack(level, player);
+    }
+
+    /** Two falls extracted from different blocks are one stack. Two older slips of one tag, saved with different places, join too. */
+    private static boolean oneStack(FakePlayer player, ImprintTag tag, int count) {
+        int stacks = 0;
+        int total = 0;
+        net.minecraft.world.entity.player.Inventory inventory = player.getInventory();
+        for (int slot = 0; slot < net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE; slot++) {
+            net.minecraft.world.item.ItemStack stack = inventory.getItem(slot);
+            com.mnemolith.data.ImprintCast cast = stack.get(com.mnemolith.data.ModDataComponents.IMPRINT_CAST.get());
+            if (cast != null && cast.tag() == tag && stack.is(com.mnemolith.content.ModItems.IMPRINT_SLIP.get())) {
+                stacks++;
+                total += stack.getCount();
+            }
+        }
+        return stacks == 1 && total == count;
+    }
+
+    private static boolean legacySlipsStack(ServerLevel level, FakePlayer player) {
+        player.getInventory().clearContent();
+        net.minecraft.world.item.ItemStack left = new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.IMPRINT_SLIP.get());
+        net.minecraft.world.item.ItemStack right = new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.IMPRINT_SLIP.get());
+        left.set(com.mnemolith.data.ModDataComponents.IMPRINT_CAST.get(),
+                new com.mnemolith.data.ImprintCast(ImprintTag.DEATH, 3, new BlockPos(1, 2, 3), java.util.Optional.empty(), 1, 5L));
+        right.set(com.mnemolith.data.ModDataComponents.IMPRINT_CAST.get(),
+                new com.mnemolith.data.ImprintCast(ImprintTag.DEATH, 3, new BlockPos(4, 5, 6), java.util.Optional.empty(), 9, 8L));
+        player.getInventory().setItem(0, left);
+        player.getInventory().setItem(1, right);
+        left.getItem().inventoryTick(left, level, player, null);
+        right.getItem().inventoryTick(right, level, player, null);
+        return oneStack(player, ImprintTag.DEATH, 2);
     }
 
     static boolean formulas(ServerLevel level, FakePlayer player, BlockPos pos) {
@@ -125,9 +166,24 @@ public final class QaLoop {
             ComposeResult result = compose(level, pos, player, tags.get(0), tags.get(1));
             all &= result.success() && result.formulaOrdinal() == formula.ordinal();
             all &= player.getData(ModAttachments.DISCOVERY.get()).hasFormula(formula.ordinal());
+            all &= tookShard(player, formula.product());
         }
         OpenCatalogPayload payload = CatalogFragmentItem.payloadFor(player);
         return all && Integer.bitCount(payload.formulas() & ((1 << CompositionFormula.values().length) - 1)) == CompositionFormula.values().length;
+    }
+
+    /** The compose put a strength-4 shard of {@code tag} in the inventory, and that shard is taken back out. */
+    private static boolean tookShard(FakePlayer player, ImprintTag tag) {
+        Inventory inventory = player.getInventory();
+        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
+            if (cast != null && stack.is(ModItems.RESIDUAL_SHARD.get()) && cast.tag() == tag && cast.intensity() == CompositionFormula.SHARD_STRENGTH) {
+                inventory.setItem(slot, ItemStack.EMPTY);
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean quietFail(ServerLevel level, FakePlayer player, BlockPos pos) {

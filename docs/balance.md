@@ -61,6 +61,8 @@ Loud events were large enough that one death (36) jumped to saturated and a deat
 
 Formula times are long enough to use and short enough to recast. Fire trail no longer adds most of a player's walk speed. Landing burst still saves a hard fall, and it no longer lasts half a minute or reduces the hit to a fifth. The needle's 64 durability now covers 32 extracts, with a one second rest so a click does not empty a chunk.
 
+The reel no longer pays those effects. A successful formula seals the two slips into a residual shard of strength 4, a full graft of one temper: volatile from death and silence (96 charges), kindled from fire and build (64), plunging from fall and player (48), or hushed from silence and player (24). A full inventory refuses the compose and the slips stay.
+
 Veins were common enough to tint a lot of stone and rare enough that the bleed never mattered. 8% keeps them as a mining find. Mute pockets at 2% were easy to miss for a whole session; 4% makes a silent room a place you can plan around. Observatories moved from 40/16 to 32/12 so a first reel is more likely inside the early loop, and the chest teaches the tools instead of sometimes hiding both of them.
 
 Catalog unlock is unchanged: a tag is learned when you extract it or put it in the reel, and a formula is learned when that compose succeeds. Hints still count unread patterns. They do not list them.

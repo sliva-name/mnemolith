@@ -25,8 +25,8 @@
                 "mnemolith:imprint_cast": {
                   "tag": "silence",
                   "intensity": 2,
-                  "origin": [0, 32, 0],
-                  "context_hash": 3,
+                  "origin": [0, 0, 0],
+                  "context_hash": 4617605,
                   "written_at": 0
                 }
               }

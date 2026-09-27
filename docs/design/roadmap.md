@@ -33,8 +33,7 @@ Two loops share one world.
 **Memory loop.** World events (death, explosion, fall, fire, mute stone, block changes, walking) write imprints on
 the chunk where they happened. The imprints add up to memory pressure: calm, saturated (20), overloaded (50),
 fracture (80). The chronicle lens reads the band. The extraction needle lifts the strongest imprint into an imprint
-slip. Two slips on the composition reel make one of four formulas (Unrecorded, Fire trail, Landing burst, Archivist
-bait) or a failure that spikes pressure. Three memory mobs live on pressure: the echo strider (saturated), the
+slip. Two slips on the composition reel seal into a residual shard of strength 4 (a full volatile, kindled, plunging, or hushed graft) or a failure that spikes pressure. Three memory mobs live on pressure: the echo strider (saturated), the
 archivist (overloaded, steals slips) and the moment replicant (fracture, copies your last action). Worldgen feeds
 the loop with archival veins, mute pockets and chronicle observatories.
 
@@ -58,7 +57,7 @@ shadow it. Three crafted slips raise the echo limit, recording length and body h
 4. **Few reasons to explore.** One observatory gives the tools; veins are a small bleed; mute pockets are a room. No
    place in the world holds something you cannot make at home.
 5. **Items with thin use.** Unstable slip, archival tablet and archivist husk only feed the upgrade recipes. The
-   needle has one target (a block). Archivist bait has one use.
+   needle has one target (a block).
 6. **The guide lags the code.** The echo slip recipe, recording, possession and the lens thermal view are not
    explained in the book. The quick sheet lists only 7 of 11 recipes.
 7. **Visual consistency.** Items and blocks are 16x16 while the lens is 32x32; guide art is flat diagrams; every echo
@@ -80,7 +79,7 @@ for as long as it lasts.
   base, a stealth body to scout in). Slips gain a steady sink, so loud chunks become worth harvesting and causing.
 - *Interactions:* needle (unpicks a graft), pressure (charges come from slips; kindled and volatile work writes loud
   imprints; fracture rejects grafts back into the chunk), mute stone, archivist (steals grafts), strider and
-  replicant (ignore hushed echoes), hostile mobs (decoy), possession, compose (competes for the same slips).
+  replicant (ignore hushed echoes), hostile mobs (decoy), possession, compose (seals two slips into a strength-4 shard, a full graft).
 - *Items:* none new. Imprint slips are the graft; the needle unpicks. This is deliberate: it gives the existing
   slips and needle a second job instead of adding a parallel item set.
 - *Risks/costs:* charges run out; a graft is lost when worn below half; volatile and kindled work makes the chunk

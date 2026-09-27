@@ -389,9 +389,10 @@ public final class Residues {
             }
             case FIRE -> {
                 if (griefing) {
-                    BlockPos ground = groundBelow(level, pos.offset(level.getRandom().nextInt(9) - 4, 0, level.getRandom().nextInt(9) - 4));
-                    if (level.getBlockState(ground).isAir()) {
-                        level.setBlockAndUpdate(ground, net.minecraft.world.level.block.BaseFireBlock.getState(level, ground));
+                    BlockPos spot = fireSpot(level, pos.offset(level.getRandom().nextInt(9) - 4, 0, level.getRandom().nextInt(9) - 4));
+                    if (spot != null) {
+                        level.setBlockAndUpdate(spot, net.minecraft.world.level.block.BaseFireBlock.getState(level, spot));
+                        Mnemolith.LOGGER.info("Mnemolith residue fire at {}", spot.toShortString());
                     }
                 }
             }
@@ -410,6 +411,26 @@ public final class Residues {
             default -> {}
         }
         Mnemolith.LOGGER.info("Mnemolith residue acted out tag={} at {}", tag.getSerializedName(), pos.toShortString());
+    }
+
+    /**
+     * A cell where fire survives being placed: air, or a replaceable plant such as short grass, on a block fire accepts.
+     * Air directly above grass fails that check, and vanilla removes the flame in the same tick. Searches down at most 8.
+     * Null when this column has nowhere fire can stay.
+     */
+    private static @Nullable BlockPos fireSpot(ServerLevel level, BlockPos pos) {
+        BlockPos.MutableBlockPos cursor = pos.mutable();
+        for (int i = 0; i < 8; i++) {
+            net.minecraft.world.level.block.state.BlockState here = level.getBlockState(cursor);
+            if (here.canBeReplaced() && here.getFluidState().isEmpty()) {
+                net.minecraft.world.level.block.state.BlockState fire = net.minecraft.world.level.block.BaseFireBlock.getState(level, cursor);
+                if (fire.canSurvive(level, cursor)) {
+                    return cursor.immutable();
+                }
+            }
+            cursor.move(0, -1, 0);
+        }
+        return null;
     }
 
     /** The first air block with a solid block under it, searching down at most 8 blocks. */

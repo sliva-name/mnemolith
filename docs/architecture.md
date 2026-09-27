@@ -129,12 +129,12 @@ Fracture sets `ChunkMemory.fractured`, logs `Mnemolith fracture`, and asks `MobS
 
 | Slips | Result |
 | --- | --- |
-| death + silence | Unrecorded, 300 ticks. `LivingChangeTargetEvent` drops a mob target that is a player with the effect |
-| fire + build | Fire Trail, 240 ticks, plus fire resistance. Movement speed gains +0.04, flame particles play, and snow under the player melts |
-| fall + player | Landing Burst, 400 ticks. The next landing of at least 2 blocks uses a 0.35 damage multiplier, then the effect is removed |
-| silence + player | Archivist bait, given to the player. Dropping it lures an archivist |
+| death + silence | Residual shard of explosion, strength 4. A full volatile graft (96 charges at scale 1) |
+| fire + build | Residual shard of fire, strength 4. A full kindled graft (64 charges) |
+| fall + player | Residual shard of fall, strength 4. A full plunging graft (48 charges) |
+| silence + player | Residual shard of silence, strength 4. A full hushed graft (24 charges) |
 
-A mismatch consumes one slip, adds `gameplay.failurePressureSpike` (default 18) as instability, plays the fail sound, and asks for a moment replicant only when the chunk is then overloaded or fractured. A failed compose on a calm chunk does not spawn one. There is no compose cooldown: the lost slip and the spike are the limiter. `gameplay.compositionEnabled` refuses the attempt without consuming slips. Every attempt logs `Mnemolith compose status={} formula={}`. A spike logs `Mnemolith instability spike amount={} pressure={} band={}`, and a failure also logs `Mnemolith compose fail pressure={} band={} replicantAsked={}`.
+A full inventory refuses the shard and does not consume the slips. A mismatch consumes one slip, adds `gameplay.failurePressureSpike` (default 18) as instability, plays the fail sound, and asks for a moment replicant only when the chunk is then overloaded or fractured. A failed compose on a calm chunk does not spawn one. There is no compose cooldown: the lost slip and the spike are the limiter. `gameplay.compositionEnabled` refuses the attempt without consuming slips. Every attempt logs `Mnemolith compose status={} formula={}`. A spike logs `Mnemolith instability spike amount={} pressure={} band={}`, and a failure also logs `Mnemolith compose fail pressure={} band={} replicantAsked={}`.
 
 ### Discovery
 
@@ -228,7 +228,7 @@ Every rule is in `vault.ArchiveVaults`.
 | Extract, including a neighbor reach | `imprint_extract` | Once. Logs `Mnemolith fx extract` |
 | Compose success | `compose_success` | Once. Logs `Mnemolith fx compose_success` |
 | Compose fail | `compose_fail` | Once. Logs `Mnemolith fx compose_fail` |
-| Landing burst | `compose_success` | Once, when the effect fires. No extra log |
+| Landing burst | `compose_success` | Once, if the effect is already on the player when they land. The reel no longer applies it |
 | Pressure band rises into overloaded or fracture | `pressure_warn` | Eight packets, one ring. Logs `Mnemolith fx pressure`. A saved cache that already matches does not fire it. Saturated alone does not |
 | Mute stone newly registered on a `ServerLevel` | `mute_haze` | Once. Logs `Mnemolith fx mute`. Worldgen calls the `ChunkAccess` overload and does not |
 | Strider charge | `strider_trail` | Once at `beginCharge`. Flee leaves a trail of two every 10 ticks |
