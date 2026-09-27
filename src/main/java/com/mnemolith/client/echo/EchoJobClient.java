@@ -60,8 +60,8 @@ public final class EchoJobClient {
     }
 
     private record Ghost(BlockPos anchor, Rotation rotation, EchoLesson.Blueprint blueprint, List<EchoLesson.Entry> placed) {
-        static Ghost of(BlockPos anchor, Rotation rotation, EchoLesson.Blueprint blueprint) {
-            return new Ghost(anchor, rotation, blueprint, blueprint.placed(anchor, rotation));
+        static Ghost of(ClientLevel level, BlockPos anchor, Rotation rotation, EchoLesson.Blueprint blueprint) {
+            return new Ghost(anchor, rotation, blueprint, blueprint.placed(level, anchor, rotation));
         }
     }
 
@@ -103,7 +103,12 @@ public final class EchoJobClient {
         if (payload.blueprint().isEmpty()) {
             BUILDING.remove(payload.entityId());
         } else {
-            BUILDING.put(payload.entityId(), Ghost.of(payload.anchor(), payload.rotation(), payload.blueprint().get()));
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) {
+                BUILDING.remove(payload.entityId());
+            } else {
+                BUILDING.put(payload.entityId(), Ghost.of(level, payload.anchor(), payload.rotation(), payload.blueprint().get()));
+            }
         }
     }
 
@@ -153,7 +158,7 @@ public final class EchoJobClient {
         if (mode == Mode.PLACE && blueprint != null) {
             net.minecraft.core.Direction facing = player.getDirection();
             Rotation rotation = blueprint.rotationTo(facing);
-            preview = aimAnchor(minecraft, level).map(anchor -> Ghost.of(awayFromViewer(anchor, rotation, facing, blueprint), rotation, blueprint)).orElse(null);
+            preview = aimAnchor(minecraft, level).map(anchor -> Ghost.of(level, awayFromViewer(level, anchor, rotation, facing, blueprint), rotation, blueprint)).orElse(null);
         }
     }
 
@@ -161,9 +166,9 @@ public final class EchoJobClient {
      * The anchor is the first-placed corner, so a blueprint may reach back toward the viewer. Slide it along the
      * view direction so that its nearest row starts at the aimed block and the whole build lies in front of you.
      */
-    private static BlockPos awayFromViewer(BlockPos aimed, Rotation rotation, net.minecraft.core.Direction facing, EchoLesson.Blueprint blueprint) {
+    private static BlockPos awayFromViewer(ClientLevel level, BlockPos aimed, Rotation rotation, net.minecraft.core.Direction facing, EchoLesson.Blueprint blueprint) {
         int nearest = 0;
-        for (EchoLesson.Entry entry : blueprint.placed(aimed, rotation)) {
+        for (EchoLesson.Entry entry : blueprint.placed(level, aimed, rotation)) {
             BlockPos d = entry.offset().subtract(aimed);
             nearest = Math.min(nearest, d.getX() * facing.getStepX() + d.getZ() * facing.getStepZ());
         }

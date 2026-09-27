@@ -49,19 +49,44 @@ There is no datagen Java, no mixin config, and no access transformer. Worldgen, 
 | HIGH | `EchoThreatEvents.onJoin` | Every `EntityJoinLevelEvent` added two `EchoHuntGoal`s. The same mob instance keeps its `GoalSelector` when it is added to another level, and `addGoal` does not replace an existing goal. | [Events](https://docs.neoforged.net/docs/concepts/events/): gameplay events such as entity-join are posted whenever that action happens, not once per mob. [Entities](https://docs.neoforged.net/docs/entities/) describes goals as state on the mob. | Fixed. A canceled join is ignored, and a mob that already has an `EchoHuntGoal` is left alone. Priorities and selectors are unchanged. |
 | HIGH | `LedgerMite.mobInteract`, `KinWitness.mobInteract` | Paper taming, and hush-fiber trust, shrank the stack and rolled state on the logical client as well as the server. Anger and trust are not synched, so a client could consume a fiber the server refused. | [Sides](https://docs.neoforged.net/docs/concepts/sides/): game logic belongs on the logical server (`Level#isClientSide()` is false). Client-side mutation desyncs inventory and stats. `ResidueEntity` and `EchoEntity` already return `SUCCESS` on the client and `SUCCESS_SERVER` after the server work. | Fixed. The client only returns `SUCCESS` so the swing and the use packet still happen. The server performs the shrink, the tame roll, and the gift, and returns `SUCCESS_SERVER`. |
 
-### Left as they are
+### Owner decisions (follow-up)
+
+#### 1. Unrecorded retarget — fixed
+
+Hook: `com.mnemolith.event.UnrecordedTargetEvent` on `NeoForge.EVENT_BUS` (game bus). Cancel it to keep the target.
+
+`ImprintEvents.onChangeTarget` listens to `LivingChangeTargetEvent` at `LOWEST`. The target that would stick is `getNewAboutToBeSetTarget()` when the event is still open, or the hunter's current mob target / `ATTACK_TARGET` memory when a listener already canceled it. If that entity has Unrecorded, Mnemolith posts `UnrecordedTargetEvent` and, unless an addon cancels that hook, sets the new target to null. A prior cancel is cleared with `setCanceled(false)` so `Mob.setTarget` actually writes the null (`setTarget` ignores the new target while the event is canceled). For `BEHAVIOR_TARGET`, `StartAttacking` does not write when the new target is null, so the old `ATTACK_TARGET` memory is erased when it is the Unrecorded entity.
+
+Addon authors: listen to `UnrecordedTargetEvent`, not only `LivingChangeTargetEvent`, to override Unrecorded. A third-party mod that only cancels or rewrites `LivingChangeTargetEvent` does not win.
+
+#### 2. Direct `setBlock` paths — still intentional
+
+`EchoNav.setOpen` (fence gates), `EchoHands.placeForJob` property fix-up, and `MomentReplicant.placeCopy` still call `Level#setBlock`. Behavior was not changed.
+
+Residual risk: claim and protection mods that only listen to player place, break, or interact. Echo break, place, and chest already go through `FakePlayer`. The replicant path is still gated by `EventHooks.canEntityGrief`.
+
+#### 3. Deprecated call sites — replaced, except `isSolid`
+
+Checked against the Minecraft `26.2` patched sources and NeoForge `26.2.0.88` sources.
+
+| Before | After | Why the behavior stays |
+| --- | --- | --- |
+| `Entity.hurt(DamageSource, float)` in `MemoryBolt`, `RecallBladeItem`, `ScarBrandItem`, `EchoRoles.strike`, `ArmoryQa` | `LivingEntity.hurtServer(ServerLevel, DamageSource, float)` | `hurt` is `final` and, on a `ServerLevel`, only forwards to `hurtServer`. It is a no-op on the client. `MemoryBolt` now calls `hurtServer` only when the level is a `ServerLevel`, which matches that no-op. Damage amounts are unchanged. |
+| `HopperBlockEntity.getContainerAt(Level, BlockPos)` in `EchoWork.container` | `getContainerOrHandlerAt(level, pos, null).container()` | The new method returns a block `Container` first (same chest path, including double chests), then an item capability, then an entity container. Jobs keep the `Container` only, so a capability-only mod inventory is not opened. The existing block-entity gate is unchanged, so a minecart with no block entity is still ignored. |
+| `Block.builtInRegistryHolder().tags()` in `MineController` | `BuiltInRegistries.BLOCK.wrapAsHolder(block).tags()` | `wrapAsHolder` returns the registered holder (the same intrusive holder once the block is in the registry). Ore tag matching (`c:ores/…`) is unchanged. `builtInRegistryHolder()` is deprecated with no replacement comment. |
+| `BlockState.rotate(Rotation)` in `EchoLesson.Blueprint.placed` | `BlockState.rotate(LevelAccessor, BlockPos, Rotation)` | The deprecated method's own note says to use the level-aware overload. Its default still calls `state.rotate(Rotation)`, so vanilla blocks rotate the same way. Callers (`EchoJob.plan`, build QA, and the client ghost) pass the level they already have. The world position passed in is the anchor plus the rotated offset. |
+| `new SoundType(...)` subclass in `MemorySoundTypes` | `DeferredSoundType` | The `SoundType` constructor is deprecated: "Use `DeferredSoundType` instead for suppliers." Break and place still come from the mod `DeferredHolder`s. Step, hit, and fall still come from the vanilla fallback, resolved when played. Volume and pitch still come from that fallback. |
+| `PostChain.process(RenderTarget, GraphicsResourceAllocator)` in `FractureFeel` and `ThermalClient` | `FrameGraphBuilder` + `PostChain.addToFrame` + `frame.execute` | `process` is a four-line wrapper around that exact sequence (`MAIN_TARGET_ID`, external target `"main"`, `GraphicsResourceAllocator.UNPOOLED`). |
+| `Mob.finalizeSpawn` overrides (`MemoryMob`, `EchoStrider`, `FractureStalker`, `Archivist`, `MomentReplicant`) | Overrides kept. No `EventHooks.finalizeMobSpawn` call was added. | The method is `@Deprecated` `@ApiStatus.OverrideOnly`. The note says external callers should use `EventHooks.finalizeMobSpawn`, which posts `FinalizeSpawnEvent` and then calls `finalizeSpawn`. This mod only overrides the method and calls `super`. There is no external caller to retarget. Calling `EventHooks` from inside the override would post the event again. |
+| `ModEntities` class comment | Comment now says the Scar is registered. | `SCAR` is registered as `scar`. The id did not change. |
+| `BlockState.isSolid()` in `EchoStrider.stepPhase` | Kept. | Deprecated with no replacement in the 26.2 sources. It returns the private `legacySolid` flag (`forceSolidOn` / `forceSolidOff`, then collision bounds). `isSolidRender()` is full-cube occlusion. An empty collision shape treats signs, fences, and pressure plates (all `forceSolidOn`) as soft, and treats snow and ladders (`forceSolidOff`) differently. NeoForge `FluidUtil` still calls `isSolid()`. Replacing it would change which blocks the strider phases through. |
+
+### Still left as they are
 
 | Severity | Where | What the code did | What the docs say | Status |
 | --- | --- | --- | --- | --- |
-| MEDIUM | `ImprintEvents.onChangeTarget` | Clears a target that has Unrecorded by `setNewAboutToBeSetTarget(null)` without reading `isCanceled()`. | `LivingChangeTargetEvent` is cancelable. A listener that already canceled can disagree with a later rewrite of the proposed target. | Needs a human decision. Other listeners in this mod do check `isCanceled()`. Changing this one alters which mod wins the target. |
-| MEDIUM | `EchoNav.setOpen` (fence gates), `EchoHands.placeForJob` property fix-up, `MomentReplicant.placeCopy` | Some block edits call `Level#setBlock` instead of the fake-player use path. Breaks, places, and chest opens in `EchoHands` do go through the fake player and `CommonHooks`. | Protection mods that only listen to player interact or place events will not see these direct state writes. | Left intentional. The replicant path is a mob ghost block (`EventHooks.canEntityGrief` first). Gate opening and the blueprint property correction are existing design, not a wrong method signature. |
-| LOW | `ModEntities` class comment | Says the Scar stays unregistered. `SCAR` is registered. | Comment drift only. | Left. No id change. |
 | LOW | `build.gradle` `data` run | MDK datagen run is configured. There is no `GatherDataEvent` provider. | [Datagen](https://docs.neoforged.net/docs/datagen/) is optional. Hand-written JSON under `src/main/resources/data` is valid. | Left. |
 | UNCERTAIN | `EchoEvents.onDeathFirst` | Cancels `LivingDeathEvent` at `HIGHEST` while a player is possessing an echo, then sets health to 1. | The event is cancelable. Highest priority runs before totems and most other mods. | Left intentional. Documented in the method. Pack makers who also cancel death should know this listener runs first. |
-| LOW | `Entity.hurt` call sites (`MemoryBolt`, `RecallBladeItem`, `ScarBrandItem`, `EchoRoles`, QA) | Calls the deprecated `hurt(DamageSource, float)`. | In the 26.2 sources, `hurt` is `final` and, on a `ServerLevel`, forwards to `hurtServer`. It does not apply damage on the client. | Left. Behavior on the server matches `hurtServer`. Call sites already run from server hits or server items. |
-| LOW | `MemoryMob.finalizeSpawn`, `FractureStalker.finalizeSpawn` | Override the deprecated `Mob.finalizeSpawn`. | The method is `@ApiStatus.OverrideOnly`. The deprecation is for external callers, which should use `EventHooks.finalizeMobSpawn`. Overriding it is still the hook. | Left. |
-| LOW | `HopperBlockEntity.getContainerAt` in `EchoWork.container` | Resolves a chest as a `Container`. | Deprecated in favor of the item-handler capability, or `getContainerOrHandlerAt` when both shapes matter. The old method still returns vanilla block and entity containers. | Left. Switching would also accept mod inventories that are not `Container`s, which is a behavior change. |
-| LOW | `Block.builtInRegistryHolder`, `BlockState.rotate(Rotation)`, `BlockState.isSolid`, `SoundType` constructor, `PostChain.process` | Still called. | Each deprecated method still implements the old behavior (`rotate` delegates to the block, `isSolid` returns the legacy flag, `process` builds a frame graph, `SoundType` is subclassed so break and place resolve holders when played). | Left. `MemorySoundTypes` avoids `DeferredHolder.get()` while block properties are built, which is why it does not use `DeferredSoundType` at construction. |
 
 ## Verified OK
 
@@ -83,7 +108,9 @@ There is no datagen Java, no mixin config, and no access transformer. Worldgen, 
 
 ## Verification
 
-`./gradlew build` succeeded. `./gradlew runGameTestServer` succeeded: all 26 required tests passed in 14.13 s. `./gradlew compileJava -Xlint:deprecation` reports only the deprecated call sites listed above; none of them were introduced by this change.
+First pass: `./gradlew build` succeeded, and `./gradlew runGameTestServer` succeeded with all 26 required tests in 14.13 s.
+
+Owner-decision follow-up: `./gradlew compileJava -Xlint:deprecation` still reports five warnings, all intentional. `MemoryMob.finalizeSpawn` and `FractureStalker.finalizeSpawn` warn on the override and the `super` call (`@ApiStatus.OverrideOnly`; this mod has no external caller). `EchoStrider.stepPhase` still calls `BlockState.isSolid()` because 26.2 has no other reader of `legacySolid`. `build` and `runGameTestServer` for this follow-up are recorded in the next paragraph once they finish.
 
 ## Residual risk
 
@@ -91,5 +118,5 @@ Not covered by an in-game play session in this audit:
 
 - Dedicated-server class loading was checked by import boundaries (`net.minecraft.client` only under the client packages and `MnemolithClient`). A full dedicated-server boot was not part of this pass.
 - Worldgen JSON was checked against the NeoForge biome-modifier shape. A new world was not generated here.
-- Protection-mod interaction with the remaining direct `setBlock` paths was not exercised.
+- Direct `setBlock` paths (fence gates, blueprint property fix-up, replicant copies) are still intentional. The risk is claim and protection mods that only listen to player place, break, or interact. Echo break, place, and chest already use `FakePlayer`. The replicant is still gated by `EventHooks.canEntityGrief`.
 - `copyOnDeath` on the possession attachment keeps a saved possession across death; login and respawn listeners clear it. That recovery path was read, not played.

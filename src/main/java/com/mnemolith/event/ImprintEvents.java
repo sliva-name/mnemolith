@@ -26,13 +26,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
@@ -200,15 +204,48 @@ public final class ImprintEvents {
         }
     }
 
-    @SubscribeEvent
+    /**
+     * Unrecorded wins over a third party that already canceled or rewrote {@link LivingChangeTargetEvent}.
+     * An addon wins only by canceling {@link UnrecordedTargetEvent}, which is posted before the clear.
+     * Lowest priority so this sees the target those other listeners left behind.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onChangeTarget(LivingChangeTargetEvent event) {
         if (event.getEntity().level().isClientSide()) {
             return;
         }
-        LivingEntity next = event.getNewAboutToBeSetTarget();
-        if (next != null && next.hasEffect(ModEffects.UNRECORDED)) {
-            event.setNewAboutToBeSetTarget(null);
+        LivingEntity sticking = targetThatWouldStick(event);
+        if (sticking == null || !sticking.hasEffect(ModEffects.UNRECORDED)) {
+            return;
         }
+        if (NeoForge.EVENT_BUS.post(new UnrecordedTargetEvent(event.getEntity(), sticking)).isCanceled()) {
+            return;
+        }
+        event.setNewAboutToBeSetTarget(null);
+        if (!event.isCanceled()) {
+            return;
+        }
+        // Mob.setTarget ignores the new target while the event is canceled, so a prior cancel would keep the Unrecorded entity.
+        event.setCanceled(false);
+        if (event.getTargetType() == LivingChangeTargetEvent.LivingTargetType.BEHAVIOR_TARGET
+                && event.getEntity().getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) == sticking) {
+            // StartAttacking returns without writing when the new target is null, so the old attack memory has to be dropped here.
+            event.getEntity().getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        }
+    }
+
+    /** The entity that would remain the target after this event, including a target a cancel would leave in place. */
+    private static LivingEntity targetThatWouldStick(LivingChangeTargetEvent event) {
+        if (!event.isCanceled()) {
+            return event.getNewAboutToBeSetTarget();
+        }
+        if (event.getTargetType() == LivingChangeTargetEvent.LivingTargetType.BEHAVIOR_TARGET) {
+            return event.getEntity().getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+        }
+        if (event.getEntity() instanceof Mob mob) {
+            return mob.getTarget();
+        }
+        return null;
     }
 
     private static void coolPressure(ServerLevel level, ServerPlayer player) {

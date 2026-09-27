@@ -19,6 +19,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -67,7 +68,7 @@ public record EchoLesson(int frames, int breaks, int places, int uses, List<Mine
         }
     }
 
-    /** Placed blocks in placing order, bottom layer first once rotated (see {@link #placed(BlockPos, Rotation)}). */
+    /** Placed blocks in placing order, bottom layer first once rotated (see {@link #placed(LevelAccessor, BlockPos, Rotation)}). */
     public record Blueprint(Direction facing, List<Entry> entries) {
         public static final Codec<Blueprint> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Direction.CODEC.optionalFieldOf("facing", Direction.SOUTH).forGetter(Blueprint::facing),
@@ -107,14 +108,15 @@ public record EchoLesson(int frames, int breaks, int places, int uses, List<Mine
          * World positions and rotated states, sorted bottom-up (then in placing order). Upper door halves and bed heads
          * are left out: placing the lower half or the foot creates them.
          */
-        public List<Entry> placed(BlockPos anchor, Rotation rotation) {
+        public List<Entry> placed(LevelAccessor level, BlockPos anchor, Rotation rotation) {
             List<Entry> out = new ArrayList<>(this.entries.size());
             for (Entry entry : this.entries) {
                 BlockState state = entry.state();
                 if (isSecondaryPart(state)) {
                     continue;
                 }
-                out.add(new Entry(anchor.offset(entry.offset().rotate(rotation)), state.rotate(rotation)));
+                BlockPos pos = anchor.offset(entry.offset().rotate(rotation));
+                out.add(new Entry(pos, state.rotate(level, pos, rotation)));
             }
             // Stable sort keeps the placing order inside one layer.
             out.sort((a, b) -> Integer.compare(a.offset().getY(), b.offset().getY()));

@@ -216,7 +216,7 @@ public final class EchoNetwork {
                     return false;
                 }
                 echo.sendGhostToOwner();
-                player.sendSystemMessage(Component.translatable("mnemolith.job.msg.blueprint_placed", job.plan().size()), true);
+                player.sendSystemMessage(Component.translatable("mnemolith.job.msg.blueprint_placed", job.plan(level).size()), true);
             }
             case CLEAR_BLUEPRINT -> {
                 if (job.mode() == EchoJob.Mode.BUILD) {

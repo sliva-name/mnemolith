@@ -38,7 +38,7 @@ public class RecallBladeItem extends Item {
         if (attacker instanceof Player player) {
             player.getCooldowns().addCooldown(stack, 30);
         }
-        target.hurt(attacker.damageSources().mobAttack(attacker), 2.0F);
+        target.hurtServer(level, attacker.damageSources().mobAttack(attacker), 2.0F);
         target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 40, 0, false, false));
         level.playSound(null, target.blockPosition(), ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.6F, 1.4F);
     }

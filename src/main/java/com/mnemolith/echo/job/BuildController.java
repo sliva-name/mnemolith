@@ -61,7 +61,7 @@ final class BuildController {
         }
         switch (this.job.motion.phase) {
             case START -> {
-                this.plan = this.job.plan();
+                this.plan = this.job.plan(level);
                 this.job.motion.phase = JobMotion.Phase.SELECT;
             }
             case SELECT -> this.selectBuildTarget(level, echo);

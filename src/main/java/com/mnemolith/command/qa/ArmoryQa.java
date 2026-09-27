@@ -119,7 +119,7 @@ public final class ArmoryQa {
                 notes.add("stalker missing");
                 return false;
             }
-            stalker.hurt(level.damageSources().playerAttack(player), 100.0F);
+            stalker.hurtServer(level, level.damageSources().playerAttack(player), 100.0F);
             dropped = !stalker.isAlive() && stalker.gaveScale();
             if (!stalker.isRemoved()) {
                 stalker.discard();
