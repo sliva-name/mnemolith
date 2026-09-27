@@ -110,7 +110,7 @@ Checked against the Minecraft `26.2` patched sources and NeoForge `26.2.0.88` so
 
 First pass: `./gradlew build` succeeded, and `./gradlew runGameTestServer` succeeded with all 26 required tests in 14.13 s.
 
-Owner-decision follow-up: `./gradlew compileJava -Xlint:deprecation` still reports five warnings, all intentional. `MemoryMob.finalizeSpawn` and `FractureStalker.finalizeSpawn` warn on the override and the `super` call (`@ApiStatus.OverrideOnly`; this mod has no external caller). `EchoStrider.stepPhase` still calls `BlockState.isSolid()` because 26.2 has no other reader of `legacySolid`. `build` and `runGameTestServer` for this follow-up are recorded in the next paragraph once they finish.
+Owner-decision follow-up: `./gradlew build` succeeded. `./gradlew runGameTestServer` succeeded: all 26 required tests passed in 16.57 s. `./gradlew compileJava -Xlint:deprecation` still reports five warnings, all intentional. `MemoryMob.finalizeSpawn` and `FractureStalker.finalizeSpawn` warn on the override and the `super` call (`@ApiStatus.OverrideOnly`; this mod has no external caller). `EchoStrider.stepPhase` still calls `BlockState.isSolid()` because 26.2 has no other reader of `legacySolid`.
 
 ## Residual risk
 
