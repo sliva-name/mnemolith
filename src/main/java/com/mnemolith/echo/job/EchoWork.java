@@ -187,7 +187,8 @@ public final class EchoWork {
         if (!level.isLoaded(pos) || level.getBlockEntity(pos) == null) {
             return null;
         }
-        return HopperBlockEntity.getContainerAt(level, pos);
+        // Container side only. A capability-only inventory is left closed so jobs stay on vanilla chests.
+        return HopperBlockEntity.getContainerOrHandlerAt(level, pos, null).container();
     }
 
     /** Whether the owner's fake player may open the block: protection mods cancel or deny the right-click event. */

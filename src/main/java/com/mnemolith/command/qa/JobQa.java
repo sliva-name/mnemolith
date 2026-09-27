@@ -510,7 +510,7 @@ public final class JobQa {
 
     private static int mismatches(ServerLevel level, EchoLesson.Blueprint blueprint, BlockPos anchor, Rotation rotation) {
         int wrong = 0;
-        for (EchoLesson.Entry entry : blueprint.placed(anchor, rotation)) {
+        for (EchoLesson.Entry entry : blueprint.placed(level, anchor, rotation)) {
             if (level.getBlockState(entry.offset()) != entry.state()) {
                 wrong++;
             }

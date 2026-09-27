@@ -286,7 +286,7 @@ public final class Echo3Qa {
                     + " label=\"" + Component.translatable("mnemolith.job.strain", Component.translatable(PressureBand.OVERLOADED.translationKey())).getString() + "\"");
 
             // ---------- fracture stop (chunk B) ----------
-            for (EchoLesson.Entry entry : blueprint.placed(siteB, Rotation.NONE)) {
+            for (EchoLesson.Entry entry : blueprint.placed(level, siteB, Rotation.NONE)) {
                 level.setBlock(entry.offset(), Blocks.AIR.defaultBlockState(), 2);
             }
             fillMaterials(echo, blueprint);
@@ -298,7 +298,7 @@ public final class Echo3Qa {
             // The strain band is re-read every few ticks, so a last overload misfire can still put a wrong block down before
             // the fracture stop; it stays in the world (a documented limit), so count every filled spot, not only exact ones.
             int filledF = 0;
-            for (EchoLesson.Entry entry : blueprint.placed(siteB, Rotation.NONE)) {
+            for (EchoLesson.Entry entry : blueprint.placed(level, siteB, Rotation.NONE)) {
                 if (!level.getBlockState(entry.offset()).isAir()) {
                     filledF++;
                 }
@@ -731,7 +731,7 @@ public final class Echo3Qa {
 
     private static int mismatches(ServerLevel level, EchoLesson.Blueprint blueprint, BlockPos anchor) {
         int wrong = 0;
-        for (EchoLesson.Entry entry : blueprint.placed(anchor, Rotation.NONE)) {
+        for (EchoLesson.Entry entry : blueprint.placed(level, anchor, Rotation.NONE)) {
             if (level.getBlockState(entry.offset()) != entry.state()) {
                 wrong++;
             }

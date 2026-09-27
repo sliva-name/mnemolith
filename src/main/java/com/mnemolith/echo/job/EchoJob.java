@@ -20,6 +20,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -431,11 +432,11 @@ public final class EchoJob {
     }
 
     /** World positions and states the build places (rotated, bottom-up). Empty when no blueprint is placed. */
-    public List<EchoLesson.Entry> plan() {
+    public List<EchoLesson.Entry> plan(LevelAccessor level) {
         if (this.buildAnchor == null || this.lesson.blueprint().isEmpty()) {
             return List.of();
         }
-        return this.lesson.blueprint().get().placed(this.buildAnchor, this.rotation);
+        return this.lesson.blueprint().get().placed(level, this.buildAnchor, this.rotation);
     }
 
     void restartPhase() {

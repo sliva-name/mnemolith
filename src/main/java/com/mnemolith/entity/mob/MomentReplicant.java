@@ -43,7 +43,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -336,8 +335,9 @@ public class MomentReplicant extends MemoryMob {
 
     /**
      * Copies a block place as a fading {@link ModBlocks#REPLICATED_MOMENT}, never the block itself, so the copy cannot
-     * be mined for a free block. Only air is filled, never fluids or plants, only when mob griefing (and any claim
-     * mod listening to it) allows, and never inside an entity.
+     * be mined for a free block. Only air is filled, never fluids or plants, only when mob griefing allows, and never
+     * inside an entity. The ghost is then placed by a fake player (the linked player, or a stable replicant profile)
+     * so claim mods see the right-click and the place. That place does not write an owner imprint.
      */
     private void placeCopy(ServerLevel level, @Nullable ServerPlayer player, ItemStack stack) {
         this.swing(InteractionHand.MAIN_HAND);
@@ -350,7 +350,7 @@ public class MomentReplicant extends MemoryMob {
         if (!level.getBlockState(target).isAir() || !level.isUnobstructed(copy, target, CollisionContext.empty())) {
             return;
         }
-        if (level.setBlock(target, copy, Block.UPDATE_ALL)) {
+        if (com.mnemolith.echo.FakePlace.placeGhost(level, player, this, target, copy)) {
             MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D, 6);
         }
     }

@@ -120,7 +120,7 @@ public final class EchoRoles {
         if (damage < 1.0F) {
             damage = 1.0F;
         }
-        target.hurt(level.damageSources().mobAttack(echo), damage);
+        target.hurtServer(level, level.damageSources().mobAttack(echo), damage);
         echo.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
     }
 

@@ -6,6 +6,7 @@ import com.mnemolith.entity.echo.EchoEntity;
 
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
@@ -26,10 +27,12 @@ public final class EchoThreatEvents {
 
     @SubscribeEvent
     public static void onJoin(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof PathfinderMob mob) || !(mob instanceof Enemy)) {
+        // Join fires again when the same mob is added to another level (a portal, a teleport). Goals stay on the
+        // instance, and GoalSelector does not replace a goal that is already there.
+        if (event.isCanceled() || event.getLevel().isClientSide() || !(event.getEntity() instanceof PathfinderMob mob) || !(mob instanceof Enemy)) {
             return;
         }
-        if (mob instanceof Creeper || mob instanceof NeutralMob || mob instanceof MemoryMob) {
+        if (mob instanceof Creeper || mob instanceof NeutralMob || mob instanceof MemoryMob || alreadyHunts(mob)) {
             return;
         }
         mob.targetSelector.addGoal(3, new EchoHuntGoal(mob, true,
@@ -37,6 +40,15 @@ public final class EchoThreatEvents {
         // Memory grafts: a grave echo is a decoy. This goal outranks the player target, so the mob turns to the decoy.
         mob.targetSelector.addGoal(1, new EchoHuntGoal(mob, false,
                 (target, level) -> target instanceof EchoEntity echo && echo.attractsMobs() && com.mnemolith.echo.graft.EchoGrafts.decoy(echo)));
+    }
+
+    private static boolean alreadyHunts(PathfinderMob mob) {
+        for (WrappedGoal wrapped : mob.targetSelector.getAvailableGoals()) {
+            if (wrapped.getGoal() instanceof EchoHuntGoal) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The echo target goals above, as their own type so QA can tell them from the mob's vanilla targets. */
