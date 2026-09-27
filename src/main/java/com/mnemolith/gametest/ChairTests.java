@@ -51,8 +51,10 @@ final class ChairTests {
         helper.assertTrue(spot != null, "a closed room had no floor");
         helper.assertTrue(ChairHouses.chooseSpot(yard, net.minecraft.util.RandomSource.create(1L)) == null, "an open yard grew a chair");
 
-        ChairHouses.spawn(level, spot, 0.0F);
-        List<PleadingChair> chairs = level.getEntitiesOfClass(PleadingChair.class, new net.minecraft.world.phys.AABB(spot).inflate(1.0D));
+        // The virtual room sits at a fixed origin. The entity has to be in the loaded test chunk.
+        BlockPos feet = helper.absolutePos(BlockPos.ZERO);
+        ChairHouses.spawn(level, feet, 0.0F);
+        List<PleadingChair> chairs = level.getEntitiesOfClass(PleadingChair.class, new net.minecraft.world.phys.AABB(feet).inflate(2.0D));
         helper.assertTrue(chairs.size() == 1, "spawned " + chairs.size());
         PleadingChair chair = chairs.getFirst();
         helper.assertTrue(chair.tryVoice(level), "the clip did not start");
