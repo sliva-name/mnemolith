@@ -22,12 +22,17 @@ public record EchoJobPayload(int entityId, Action action, BlockPos pos, int valu
         PLACE_BLUEPRINT,
         CLEAR_BLUEPRINT,
         /** Stage 3: appended so the ordinals above stay. */
-        MODE_FARM;
+        MODE_FARM,
+        /**
+         * Must stay last. An id this build does not know decodes as this and is rejected, so a bad packet cannot be
+         * read as {@link #STOP}. Add further actions above this constant so their ordinals stay stable.
+         */
+        INVALID;
 
         private static final Action[] VALUES = values();
 
         static Action byId(int id) {
-            return id >= 0 && id < VALUES.length ? VALUES[id] : STOP;
+            return id >= 0 && id < VALUES.length ? VALUES[id] : INVALID;
         }
     }
 

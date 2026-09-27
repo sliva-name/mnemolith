@@ -155,15 +155,24 @@ public final class EchoNetwork {
             }
             case MODE_MINE -> {
                 echo.stopReplayIfRunning();
-                job.startMining(echo);
+                if (!job.startMining(echo)) {
+                    return false;
+                }
             }
             case MODE_BUILD -> {
                 echo.stopReplayIfRunning();
-                job.startBuilding(echo);
+                if (!job.startBuilding(echo)) {
+                    return false;
+                }
             }
             case MODE_FARM -> {
                 echo.stopReplayIfRunning();
-                job.startFarming(echo);
+                if (!job.startFarming(echo)) {
+                    return false;
+                }
+            }
+            case INVALID -> {
+                return false;
             }
             case STOP -> {
                 echo.stopReplayIfRunning();
@@ -203,7 +212,9 @@ public final class EchoNetwork {
                 }
                 echo.stopReplayIfRunning();
                 job.setBlueprintAnchor(pos, Rotation.values()[Math.floorMod(payload.value(), 4)]);
-                job.startBuilding(echo);
+                if (!job.startBuilding(echo)) {
+                    return false;
+                }
                 echo.sendGhostToOwner();
                 player.sendSystemMessage(Component.translatable("mnemolith.job.msg.blueprint_placed", job.plan().size()), true);
             }

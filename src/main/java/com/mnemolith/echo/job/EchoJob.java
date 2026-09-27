@@ -490,7 +490,11 @@ public final class EchoJob {
         this.mode = saved.mode() == Mode.REPLAY ? Mode.IDLE : saved.mode();
         this.lesson = saved.lesson();
         this.workAnchor = saved.workAnchor().orElse(null);
-        this.radius = saved.radius();
+        // setRadius is what the screen uses. A saved value skips it, and the scan walks every section in the radius.
+        int loadedRadius = saved.radius();
+        this.radius = loadedRadius < 0
+                ? -1
+                : Math.max(2, Math.min(CommonConfig.ECHO_MINE_MAX_RADIUS.get(), loadedRadius));
         this.chest = saved.chest().orElse(null);
         this.buildAnchor = saved.buildAnchor().orElse(null);
         this.rotation = saved.rotation();
