@@ -5,6 +5,7 @@ import com.mnemolith.entity.ai.ApproachGoal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.audio.ModSounds;
@@ -16,11 +17,15 @@ import com.mnemolith.entity.MobActions;
 import com.mnemolith.entity.MobTuning;
 import com.mnemolith.entity.ai.ActionMemory;
 import com.mnemolith.entity.ai.CopiedActionKind;
+import com.mnemolith.recall.Gesture;
+import com.mnemolith.recall.GestureKind;
+import com.mnemolith.recall.LivingMemory;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.particle.ModParticles;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +35,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -37,8 +44,12 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -60,6 +71,12 @@ public class MomentReplicant extends MemoryMob {
     private com.mnemolith.entity.echo.@Nullable EchoEntity mimicEcho;
     private int mimicTicks;
     private int mimicCooldown;
+    /** Player this replicant already rolled recall for. A failed roll does not try again. */
+    private @Nullable UUID recallDeclined;
+    private @Nullable Gesture recallGesture;
+    private int recallPhase;
+    private int recallTicks;
+    private boolean recallPlayed;
 
     public MomentReplicant(EntityType<? extends MomentReplicant> type, Level level) {
         super(type, level);
@@ -104,6 +121,7 @@ public class MomentReplicant extends MemoryMob {
         this.mimicTicks = 0;
         this.telegraphTicks = 0;
         this.executeTicks = 0;
+        this.clearRecall();
         this.blindTicks = MobTuning.BLIND_TICKS;
         this.setTarget(null);
         this.setAction(MobActions.FLEE);
@@ -131,6 +149,178 @@ public class MomentReplicant extends MemoryMob {
 
     public boolean telegraphing() {
         return this.telegraphTicks > 0;
+    }
+
+    public boolean recalling() {
+        return this.recallPhase > 0 && this.recallGesture != null;
+    }
+
+    public int recallPhase() {
+        return this.recallPhase;
+    }
+
+    public boolean recallPlayed() {
+        return this.recallPlayed;
+    }
+
+    /**
+     * Idle, turn to the old yaw, play that gesture once, then discard. No chat.
+     * Does not hurt the player. A block gesture places a replicated moment through {@code FakePlace}.
+     */
+    public void beginRecall(ServerPlayer player, Gesture gesture) {
+        this.pending = null;
+        this.pendingEcho = null;
+        this.mimicEcho = null;
+        this.mimicTicks = 0;
+        this.telegraphTicks = 0;
+        this.executeTicks = 0;
+        this.focus = player;
+        this.recallDeclined = player.getUUID();
+        this.recallGesture = gesture;
+        this.recallPhase = 1;
+        this.recallTicks = 0;
+        this.recallPlayed = false;
+        this.setTarget(null);
+        this.getNavigation().stop();
+        this.setAction(MobActions.IDLE);
+        BlockPos at = this.blockPosition();
+        Mnemolith.LOGGER.info("Mnemolith replicant recall kind={} at {},{},{}", gesture.kind().getSerializedName(), at.getX(), at.getY(), at.getZ());
+    }
+
+    public void tickRecall(ServerLevel level) {
+        Gesture gesture = this.recallGesture;
+        if (gesture == null || this.recallPhase <= 0) {
+            this.clearRecall();
+            return;
+        }
+        this.getNavigation().stop();
+        this.setTarget(null);
+        ServerPlayer player = this.focus != null && this.focus.isAlive() ? this.focus : null;
+        int idle = com.mnemolith.config.CommonConfig.RECALL_IDLE_TICKS.get();
+        int match = com.mnemolith.config.CommonConfig.RECALL_MATCH_TICKS.get();
+        int vanish = com.mnemolith.config.CommonConfig.RECALL_VANISH_TICKS.get();
+        switch (this.recallPhase) {
+            case 1 -> {
+                this.setAction(MobActions.IDLE);
+                if (player != null) {
+                    this.getLookControl().setLookAt(player.getX(), player.getEyeY(), player.getZ(), 30.0F, 30.0F);
+                }
+                if (++this.recallTicks >= idle) {
+                    this.recallPhase = 2;
+                    this.recallTicks = 0;
+                    this.equipRecall(gesture);
+                }
+            }
+            case 2 -> {
+                this.setAction(MobActions.IDLE);
+                this.lookAlong(gesture);
+                if (++this.recallTicks >= match) {
+                    this.recallPhase = 3;
+                    this.recallTicks = 0;
+                }
+            }
+            case 3 -> {
+                this.setAction(MobActions.ATTACK);
+                this.lookAlong(gesture);
+                if (!this.recallPlayed) {
+                    this.recallPlayed = true;
+                    this.playRecall(level, gesture);
+                }
+                if (++this.recallTicks >= 8) {
+                    this.recallPhase = 4;
+                    this.recallTicks = 0;
+                    this.setAction(MobActions.IDLE);
+                }
+            }
+            case 4 -> {
+                this.setAction(MobActions.IDLE);
+                if (this.recallTicks == 0) {
+                    MemoryFx.mob(level, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 0.2D, this.getZ(), 8);
+                    MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 10);
+                }
+                if (++this.recallTicks >= vanish) {
+                    this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                    this.discard();
+                }
+            }
+            default -> this.clearRecall();
+        }
+    }
+
+    private void clearRecall() {
+        this.recallGesture = null;
+        this.recallPhase = 0;
+        this.recallTicks = 0;
+        this.recallPlayed = false;
+        this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+    }
+
+    private void lookAlong(Gesture gesture) {
+        float yaw = gesture.yaw() * ((float) Math.PI / 180.0F);
+        float pitch = gesture.pitch() * ((float) Math.PI / 180.0F);
+        float cosPitch = Mth.cos(pitch);
+        Vec3 dir = new Vec3(-Mth.sin(yaw) * cosPitch, -Mth.sin(pitch), Mth.cos(yaw) * cosPitch);
+        Vec3 at = this.getEyePosition().add(dir.scale(4.0D));
+        this.getLookControl().setLookAt(at.x, at.y, at.z, 40.0F, 40.0F);
+    }
+
+    private void equipRecall(Gesture gesture) {
+        Identifier id = Identifier.tryParse(gesture.itemId());
+        Item item = id == null ? Items.AIR : BuiltInRegistries.ITEM.getOptional(id).orElse(Items.AIR);
+        this.setItemSlot(EquipmentSlot.MAINHAND, item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item));
+    }
+
+    private void playRecall(ServerLevel level, Gesture gesture) {
+        switch (gesture.kind()) {
+            case ATTACK -> {
+                this.swing(InteractionHand.MAIN_HAND);
+                this.hurtRemembered(level, gesture);
+            }
+            case PLACE -> this.placeRecall(level, gesture);
+            case USE -> {
+                this.swing(InteractionHand.MAIN_HAND);
+                MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 6);
+            }
+            case FALL -> {
+                this.setDeltaMovement(this.getDeltaMovement().x, 0.42D, this.getDeltaMovement().z);
+                this.hasImpulse = true;
+                MemoryFx.mob(level, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 0.1D, this.getZ(), 6);
+            }
+        }
+    }
+
+    /** One swing at a nearby mob of the remembered type. Never the player. */
+    private void hurtRemembered(ServerLevel level, Gesture gesture) {
+        Identifier id = Identifier.tryParse(gesture.targetId());
+        if (id == null) {
+            return;
+        }
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+        if (type == null) {
+            return;
+        }
+        AABB box = this.getBoundingBox().inflate(3.0D);
+        for (LivingEntity nearby : level.getEntitiesOfClass(LivingEntity.class, box, entity -> entity != this && entity.isAlive() && !(entity instanceof Player) && entity.getType() == type)) {
+            this.doHurtTarget(level, nearby);
+            return;
+        }
+    }
+
+    /** Ghost block in front of this body, facing the stored yaw. No owner imprint. */
+    private void placeRecall(ServerLevel level, Gesture gesture) {
+        this.swing(InteractionHand.MAIN_HAND);
+        if (!EventHooks.canEntityGrief(level, this)) {
+            return;
+        }
+        Direction facing = Direction.fromYRot(gesture.yaw());
+        BlockPos target = this.blockPosition().relative(facing);
+        BlockState copy = ModBlocks.REPLICATED_MOMENT.get().defaultBlockState();
+        if (!level.getBlockState(target).isAir() || !level.isUnobstructed(copy, target, CollisionContext.empty())) {
+            return;
+        }
+        if (com.mnemolith.echo.FakePlace.placeGhost(level, this.focus, this, target, copy)) {
+            MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D, 6);
+        }
     }
 
     public @Nullable ServerPlayer focus() {
@@ -222,10 +412,14 @@ public class MomentReplicant extends MemoryMob {
             this.setAction(MobActions.FLEE);
             return;
         }
+        if (this.recalling()) {
+            this.tickRecall(level);
+            return;
+        }
         if (this.mimicCooldown > 0) {
             this.mimicCooldown--;
         }
-        if (!MobTuning.replicantEnabled() && this.telegraphTicks <= 0 && this.pending == null && this.mimicTicks <= 0) {
+        if (!MobTuning.replicantEnabled() && this.telegraphTicks <= 0 && this.pending == null && this.mimicTicks <= 0 && !this.recalling()) {
             return;
         }
         if (this.telegraphTicks > 0) {
@@ -260,6 +454,14 @@ public class MomentReplicant extends MemoryMob {
             return;
         }
         this.focus = chosen;
+        if (this.recallDeclined == null || !this.recallDeclined.equals(chosen.getUUID())) {
+            if (LivingMemory.canRollRecall(chosen)) {
+                this.recallDeclined = chosen.getUUID();
+                if (LivingMemory.rollRecall(this, chosen)) {
+                    return;
+                }
+            }
+        }
         Optional<ActionMemory.CopiedAction> recent = ActionMemory.recent(level, chosen);
         if (recent.isEmpty()) {
             this.tryMimicEcho(level);

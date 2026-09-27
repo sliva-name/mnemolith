@@ -110,6 +110,9 @@ public final class ImprintEvents {
             level.playSound(null, player.blockPosition(), ModSounds.COMPOSE_SUCCESS.get(), SoundSource.PLAYERS, 0.5F, 1.4F);
             MemoryFx.landing(level, player.getX(), player.getY(), player.getZ());
         }
+        if (entity instanceof ServerPlayer serverPlayer) {
+            com.mnemolith.recall.LivingMemory.onFall(serverPlayer, event.getDistance());
+        }
         if (!CommonConfig.WRITE_FALL.get() || event.getDistance() < CommonConfig.FALL_DISTANCE_MIN.get()) {
             return;
         }

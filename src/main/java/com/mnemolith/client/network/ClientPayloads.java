@@ -20,5 +20,6 @@ public final class ClientPayloads {
         // synced and must not veto it.
         event.register(OpenCatalogPayload.TYPE, (payload, context) -> context.enqueueWork(
                 () -> Minecraft.getInstance().setScreenAndShow(new CatalogScreen(payload.tags(), payload.formulas(), payload.hints()))));
+        event.register(com.mnemolith.network.RecallGhostPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.recall.RecallGhosts.accept(payload)));
     }
 }

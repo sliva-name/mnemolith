@@ -42,6 +42,7 @@ public final class MobEvents {
         boolean grounded = player.onGround();
         Boolean was = WAS_ON_GROUND.put(player.getUUID(), grounded);
         PathLedger.note(serverPlayer);
+        com.mnemolith.recall.LivingMemory.tick(serverPlayer);
         if (was != null && was && !grounded && player.getDeltaMovement().y > 0.2D) {
             ActionMemory.record(serverPlayer, CopiedActionKind.JUMP, serverPlayer.blockPosition(), ItemStack.EMPTY);
         }
@@ -52,6 +53,7 @@ public final class MobEvents {
         WAS_ON_GROUND.remove(player);
         ActionMemory.forget(player);
         PathLedger.forget(player);
+        com.mnemolith.recall.LivingMemory.forgetSteps(player);
     }
 
     /** Drops all per-player mob state (server stopped). */
@@ -59,12 +61,14 @@ public final class MobEvents {
         WAS_ON_GROUND.clear();
         ActionMemory.clearAll();
         PathLedger.clearAll();
+        com.mnemolith.recall.LivingMemory.clearSteps();
     }
 
     @SubscribeEvent
     public static void onAttack(AttackEntityEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && !event.isCanceled()) {
             ActionMemory.record(player, CopiedActionKind.MELEE, player.blockPosition(), player.getMainHandItem());
+            com.mnemolith.recall.LivingMemory.onAttack(player, event.getTarget());
         }
     }
 
@@ -82,6 +86,16 @@ public final class MobEvents {
             return;
         }
         ActionMemory.record(player, CopiedActionKind.PLACE, event.getPos(), new ItemStack(event.getPlacedBlock().getBlock()));
+        com.mnemolith.recall.LivingMemory.onPlace(player, event.getPos(), event.getPlacedBlock());
+    }
+
+    @SubscribeEvent
+    public static void onUseBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer player) || player.level().isClientSide()) {
+            return;
+        }
+        var hit = event.getHitVec();
+        com.mnemolith.recall.LivingMemory.onUse(player, hit.getBlockPos(), hit.getDirection(), player.level().getBlockState(hit.getBlockPos()));
     }
 
     @SubscribeEvent

@@ -57,6 +57,9 @@ public final class MnemolithClient {
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.EchoJobClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.EchoJobClient::onInteraction);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.EchoJobClient::onSubmitGeometry);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.RecallGhosts::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.RecallGhosts::onSubmitGeometry);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.RecallGhosts::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.EchoJobClient::onLoggingOut);
         modEventBus.addListener(com.mnemolith.client.echo.EchoJobClient::registerHud);
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, false, net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre.class, com.mnemolith.client.echo.EchoRenderer::onRenderPlayerPre);

@@ -146,3 +146,19 @@ Why: every storm offers the same choice as a residue at a larger scale. Pay up f
 | Archivist raid | within 10 blocks, loudest imprint, dropped on death | vaults attract the thief mob; kill it to get the slip back |
 
 Why: the relay only moves what already makes echoes special (auras, residues, possession, your recorded hands); it never moves items, so it does not compete with hoppers or chests. The vault turns pressure into stock: drawing moves it, it never deletes it, and every way to hold it (bleed, rupture, blast, leak, thieves) is a risk the player places.
+
+## Living memory, stage 1
+
+Defaults live in the `recall` section. The player-facing plan is [design/living-memory.md](design/living-memory.md). These numbers only keep the first proof rare.
+
+| Key | Default | Why |
+| --- | --- | --- |
+| `maxGesturesPerPlayer` | 48 | a few recognizable moments, not a log of every click |
+| `minAgeTicks` | 3600 (3 min) | a gesture from just now is not a memory |
+| `maxAgeTicks` | 72000 (1 hour) | old enough to forget the exact swing, not a permanent diary |
+| `playerCooldownTicks` | 6000 (5 min) | one surprise, then quiet |
+| `replicantRecallChance` | 0.35 | only when a replicant is already near someone with an old gesture |
+| `localGhostChance` | 0.08 | a return to an old spot usually shows nothing |
+| `distortionChance` | 0.15 | a few local flashes are slightly wrong |
+| `idleTicks` / `matchTicks` / `vanishTicks` | 50 / 12 / 30 | stand, turn, one gesture, gone |
+| `localRadius` | 12 | the flash is where you are standing, not across the map |
