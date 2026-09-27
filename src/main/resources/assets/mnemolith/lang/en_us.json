@@ -83,7 +83,7 @@
   "mnemolith.configuration.maxParticlesPerTick": "Max Particles Per Tick",
   "mnemolith.configuration.maxParticlesPerTick.tooltip": "Hard cap on custom memory particles spawned in one client tick. Density still scales the budget, and 0 density disables them.",
   "mnemolith.configuration.ambientWithoutLens": "Ambient Without Lens",
-  "mnemolith.configuration.ambientWithoutLens.tooltip": "Whether saturated chunks shimmer when the chronicle lens is not held. Vein marks stay lens-only.",
+  "mnemolith.configuration.ambientWithoutLens.tooltip": "Whether this client keeps asking for pressure without a chronicle lens. Saturated shimmer still needs a lens or the server option allowAmbientPressure. Vein marks stay lens-only.",
   "mnemolith.configuration.lensPollInterval": "Lens Poll Interval",
   "mnemolith.configuration.lensPollInterval.tooltip": "Ticks between chronicle lens pressure requests.",
   "mnemolith.configuration.writeImprints": "Write Imprints",

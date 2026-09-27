@@ -37,7 +37,7 @@ public final class ClientConfig {
         MEMORY_AUDIO_VOLUME = SpecValues.decimal(builder, "memoryAudioVolume", "Volume scale, from 0.0 to 1.0, for the local chronicle lens chime.", 1.0D, 0.0D, 1.0D);
         PARTICLE_DENSITY = SpecValues.decimal(builder, "particleDensity", "Scale, from 0.0 to 1.0, for every custom memory particle. 0 disables them.", 1.0D, 0.0D, 1.0D);
         MAX_PARTICLES_PER_TICK = SpecValues.integer(builder, "maxParticlesPerTick", "Hard cap on custom memory particles spawned in one client tick. Density still scales the budget, and 0 density disables them.", 48, 1, 256);
-        AMBIENT_WITHOUT_LENS = SpecValues.bool(builder, "ambientWithoutLens", "Whether saturated chunks shimmer without a chronicle lens. Vein marks stay lens-only.", false);
+        AMBIENT_WITHOUT_LENS = SpecValues.bool(builder, "ambientWithoutLens", "Whether this client keeps asking for pressure without a chronicle lens. Saturated shimmer still needs a lens or the server option allowAmbientPressure. Vein marks stay lens-only.", false);
         LENS_POLL_INTERVAL = SpecValues.integer(builder, "lensPollInterval", "Ticks between chronicle lens pressure requests.", 20, 1, 200);
         LENS_OVERLAY = SpecValues.bool(builder, "lensOverlay", "Whether the chronicle lens draws the pressure pill above the hotbar.", true);
         OVERLAY_OPACITY = SpecValues.decimal(builder, "overlayOpacity", "Opacity, from 0.2 to 1.0, of the lens pressure pill. The band name stays readable.", 0.85D, 0.2D, 1.0D);

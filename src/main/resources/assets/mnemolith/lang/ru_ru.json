@@ -83,7 +83,7 @@
   "mnemolith.configuration.maxParticlesPerTick": "Максимум частиц за тик",
   "mnemolith.configuration.maxParticlesPerTick.tooltip": "Жёсткий предел своих частиц памяти за один клиентский тик. Плотность по-прежнему масштабирует бюджет, а плотность 0 их отключает.",
   "mnemolith.configuration.ambientWithoutLens": "Мерцание без линзы",
-  "mnemolith.configuration.ambientWithoutLens.tooltip": "Мерцают ли насыщенные чанки, когда хроникальная линза не в руке. Метки жил остаются только с линзой.",
+  "mnemolith.configuration.ambientWithoutLens.tooltip": "Продолжает ли клиент запрашивать давление без хроникальной линзы. Мерцание насыщенных чанков всё равно требует линзу или серверную опцию allowAmbientPressure. Метки жил остаются только с линзой.",
   "mnemolith.configuration.lensPollInterval": "Интервал опроса линзы",
   "mnemolith.configuration.lensPollInterval.tooltip": "Тики между запросами давления хроникальной линзы.",
   "mnemolith.configuration.writeImprints": "Запись отпечатков",
