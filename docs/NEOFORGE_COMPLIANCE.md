@@ -81,6 +81,10 @@ There is no datagen Java, no mixin config, and no access transformer. Worldgen, 
 - **Client rendering.** Layers, renderers, particles, key mappings (category then keys), and GUI layers (`RegisterGuiLayersEvent`, `VanillaGuiLayers`) are registered from `MnemolithClient`. `ConfigurationScreen` is registered with `IConfigScreenFactory`.
 - **Cancelable events that are used correctly.** Possession cancels death and dimension travel. Imprint and mob listeners bail out when the event is already canceled. Echo recording listens at `LOWEST` and ignores canceled breaks and clicks.
 
+## Verification
+
+`./gradlew build` succeeded. `./gradlew runGameTestServer` succeeded: all 26 required tests passed in 14.13 s. `./gradlew compileJava -Xlint:deprecation` reports only the deprecated call sites listed above; none of them were introduced by this change.
+
 ## Residual risk
 
 Not covered by an in-game play session in this audit:
