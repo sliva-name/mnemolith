@@ -114,7 +114,7 @@ public final class LivingMemory {
         remember(player, GestureKind.PLACE, pos, player.getYRot(), player.getXRot(), "", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString(), -1, "");
     }
 
-    public static void onUse(ServerPlayer player, BlockPos pos, @Nullable net.minecraft.core.Direction face, BlockState state) {
+    public static void onUse(ServerPlayer player, BlockPos pos, net.minecraft.core.@Nullable Direction face, BlockState state) {
         if (!accept(player) || !CommonConfig.RECALL_RECORD_USES.get() || !trackedUse(state)) {
             return;
         }

@@ -120,7 +120,7 @@ public final class RecallQa {
                 MomentReplicant builder = MobSpawns.summonReplicant(level, site.offset(6, 0, 0));
                 boolean ghostOk = false;
                 if (builder != null) {
-                    builder.beginRecall(player, gesture(GestureKind.PLACE, dimension, site, 90.0F, 0.0F, oldTime, false));
+                    builder.beginRecall(player, gesture(GestureKind.PLACE, dimension, site, 90.0F, oldTime, false));
                     for (int i = 0; i < idle + match + 1; i++) {
                         builder.tickRecall(level);
                     }

@@ -283,7 +283,6 @@ public class MomentReplicant extends MemoryMob {
             }
             case FALL -> {
                 this.setDeltaMovement(this.getDeltaMovement().x, 0.42D, this.getDeltaMovement().z);
-                this.hasImpulse = true;
                 MemoryFx.mob(level, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 0.1D, this.getZ(), 6);
             }
         }
