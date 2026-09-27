@@ -79,6 +79,10 @@ public class LedgerMite extends TamableAnimal {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (this.isFood(stack) && !this.isTame()) {
+            // The logical client only predicts the swing. Taming rolls and the stack live on the server.
+            if (this.level().isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
@@ -88,7 +92,7 @@ public class LedgerMite extends TamableAnimal {
             } else {
                 this.level().broadcastEntityEvent(this, (byte) 6);
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
         }
         return super.mobInteract(player, hand);
     }
