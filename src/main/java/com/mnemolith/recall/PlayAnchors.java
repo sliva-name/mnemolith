@@ -146,6 +146,11 @@ public final class PlayAnchors extends SavedData {
         }
     }
 
+    /** A copy of one player's anchors. Empty when they have none. */
+    public List<Anchor> of(UUID owner) {
+        return List.copyOf(this.owners.getOrDefault(owner, List.of()));
+    }
+
     private boolean purge(List<Anchor> list, long now, long maxAge) {
         if (maxAge <= 0L) {
             return false;

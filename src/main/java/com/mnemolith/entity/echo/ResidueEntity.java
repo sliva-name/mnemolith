@@ -10,7 +10,10 @@ import com.mnemolith.echo.graft.Temper;
 import com.mnemolith.echo.residue.Residues;
 import com.mnemolith.imprint.ImprintTag;
 
+import java.util.UUID;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -57,6 +60,8 @@ public final class ResidueEntity extends Mob {
     private int lashCooldown;
     /** The recollection storm that condensed this residue (0 = none): its waves drive it instead of the fester. */
     private long storm;
+    /** Set when this residue is an offer from this play. Server only. */
+    private @Nullable UUID legendOwner;
     private @Nullable Vec3 driftTarget;
 
     public ResidueEntity(EntityType<? extends ResidueEntity> type, Level level) {
@@ -115,6 +120,18 @@ public final class ResidueEntity extends Mob {
             this.origin = this.blockPosition().immutable();
         }
         return this.origin;
+    }
+
+    public void markLegend(UUID owner) {
+        this.legendOwner = owner;
+    }
+
+    public @Nullable UUID legendOwner() {
+        return this.legendOwner;
+    }
+
+    public boolean legendary() {
+        return this.legendOwner != null;
     }
 
     public boolean isOld() {
@@ -318,6 +335,9 @@ public final class ResidueEntity extends Mob {
             if (EchoPossession.isPossessing(serverPlayer)) {
                 return Residues.absorb(serverPlayer, this) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
             }
+            if (this.legendary() && serverPlayer.isShiftKeyDown() && com.mnemolith.recall.UseMemory.store(serverPlayer, this)) {
+                return InteractionResult.SUCCESS_SERVER;
+            }
             serverPlayer.sendSystemMessage(Component.translatable(this.isPinned() ? "mnemolith.residue.hint_pinned" : "mnemolith.residue.hint",
                     Component.translatable(this.tag.translationKey()), this.strength()), true);
             return InteractionResult.SUCCESS_SERVER;
@@ -372,6 +392,9 @@ public final class ResidueEntity extends Mob {
         if (this.storm != 0L) {
             output.putLong("residue_storm", this.storm);
         }
+        if (this.legendOwner != null) {
+            output.store("residue_legend", UUIDUtil.CODEC, this.legendOwner);
+        }
     }
 
     @Override
@@ -385,6 +408,7 @@ public final class ResidueEntity extends Mob {
         this.festerTicks = Math.max(0, input.getIntOr("residue_fester", 0));
         this.pinTicks = Math.max(0, input.getIntOr("residue_pin", 0));
         this.storm = input.getLongOr("residue_storm", 0L);
+        this.legendOwner = input.read("residue_legend", UUIDUtil.CODEC).orElse(null);
         this.entityData.set(DATA_PINNED, this.pinTicks > 0);
         Mnemolith.LOGGER.debug("Mnemolith residue loaded tag={} strength={}", this.tag.getSerializedName(), this.strength());
     }

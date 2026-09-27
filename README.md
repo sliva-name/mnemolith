@@ -2,7 +2,7 @@
 
 The world writes its history into stone. Read imprints, compose memory, survive recollection storms.
 
-Stage 1 of living memory is noted in [docs/design/living-memory.md](docs/design/living-memory.md) and on the [roadmap](docs/design/roadmap.md). The field guide does not teach it.
+Living memory stages 1 and 2 are on main. Stage 3 — whether to take what a place offers — is in [docs/design/living-memory.md](docs/design/living-memory.md) and on the [roadmap](docs/design/roadmap.md). The field guide does not teach it.
 
 This repository is **Phase 12**: the core memory loop, three mobs, three worldgen features, the archival interface, budgeted memory particles, a shared art pass, a balance pass, a dedicated-server performance pass, and a multiplayer pass on NeoForge 26.2. World events write imprints, chunks accumulate memory pressure, and a player can extract and compose a small set of formulas. Echo striders, archivists, and moment replicants use that pressure. Archival veins, mute pockets, and chronicle observatories feed the same systems. The chronicle lens draws a pressure pill, the composition reel has its own screen, and a catalog fragment remembers what you have learned. Writes, extracts, compose results, pressure warnings, mute stones, and mob tells each have their own particle. `visuals.particleDensity` set to 0 turns those particles off. A fractured chunk can desaturate the screen with one cheap fringe pass; there is no new biome. Phase 12 adds the catalog-fragment recipe, a craftable illustrated field guide, `/mnemolith qa`, higher-contrast catalog and reel text, and a pass on the key item textures and sounds.
 
@@ -207,7 +207,7 @@ The chronicle lens, extraction needle, imprint slip, catalog fragment, archivist
 
 Мир записывает свою историю в камень. Читайте отпечатки, собирайте память, переживайте бури воспоминаний.
 
-Этап 1 живой памяти — в [docs/design/living-memory.md](docs/design/living-memory.md) и в [дорожной карте](docs/design/roadmap.md). Полевой справочник его не разбирает.
+Этапы 1 и 2 живой памяти уже в `main`. Этап 3 — стоит ли забирать то, что предлагает место — в [docs/design/living-memory.md](docs/design/living-memory.md) и в [дорожной карте](docs/design/roadmap.md). Полевой справочник его не разбирает.
 
 Это **фаза 12**: основной цикл памяти, три моба, три места генерации, интерфейс архива, частицы памяти, общий художественный проход и настройка баланса для NeoForge 26.2. События мира пишут отпечатки, в чанке растёт давление памяти, игрок извлекает бланк и составляет короткие формулы. Эхо-странник, архивариус и репликант момента живут на этом давлении. Архивные жилы, глухие карманы и хроникальные обсерватории работают с теми же системами. Хроникальная линза рисует плашку давления, у барабана составления свой экран, а фрагмент каталога помнит изученное. Запись, извлечение, успех и провал составления, предупреждение давления, глушащий камень и телеграфы мобов имеют свои частицы. `visuals.particleDensity` равный 0 их выключает. В разломе один дешёвый проход может обесцветить экран. Нового биома и Шрама нет. В фазе 12 добавлены крафт фрагмента каталога, иллюстрированный полевой справочник и `/mnemolith qa`.
 

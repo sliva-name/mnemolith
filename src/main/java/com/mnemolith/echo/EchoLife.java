@@ -110,6 +110,7 @@ public final class EchoLife {
             return null;
         }
         echo.setOwner(owner);
+        com.mnemolith.recall.UseMemory.stamp(echo, owner);
         echo.applyBonusHealth(EchoProgress.bonusHealth(owner));
         echo.setHealth(echo.getMaxHealth());
         echo.setGeneration(EchoRegistry.get(level.getServer()).put(owner.getUUID(), echo.getUUID()));

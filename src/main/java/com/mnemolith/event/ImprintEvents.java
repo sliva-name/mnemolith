@@ -159,6 +159,7 @@ public final class ImprintEvents {
             if (player instanceof ServerPlayer serverPlayer && event.getPlacedBlock().getBlock() == ModBlocks.MUTE_STONE.get()) {
                 DiscoveryNotes.noteMute(serverPlayer);
                 com.mnemolith.recall.Investigate.onMute(serverPlayer, event.getPos());
+                com.mnemolith.recall.UseMemory.onMute(serverPlayer, event.getPos());
             }
             if (player instanceof ServerPlayer serverPlayer) {
                 com.mnemolith.echo.relay.EchoRelays.onPlayerPlace(serverPlayer, event.getPos(), event.getPlacedBlock());

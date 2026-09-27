@@ -6,6 +6,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
  * Version 5: the lens origin line and trace footsteps. Version 4 added the owner-only recall ghost.
+ * A stage-3 guide reuses that ghost; it does not add a packet.
  */
 public final class ModNetwork {
     private ModNetwork() {}
