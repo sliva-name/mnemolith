@@ -319,7 +319,11 @@ public final class EchoRelays {
 
     private static void queue(ServerPlayer player, BlockPos pos, @Nullable BlockState placed) {
         if (!enabled() || !CommonConfig.RELAY_MIRROR.get() || player instanceof net.neoforged.neoforge.common.util.FakePlayer
-                || !EchoPossession.isPossessing(player) || possessedRelay(player) == null || PENDING.size() >= 64) {
+                || !EchoPossession.isPossessing(player) || possessedRelay(player) == null) {
+            return;
+        }
+        if (PENDING.size() >= 64) {
+            Mnemolith.LOGGER.debug("Mnemolith relay mirror dropped player={} at {}", player.getGameProfile().name(), pos.toShortString());
             return;
         }
         PENDING.add(new Pending(player.getUUID(), pos.immutable(), placed));

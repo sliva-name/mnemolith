@@ -80,9 +80,9 @@ final class JobStrain {
         boolean written = ImprintWriter.write(level, pos, List.of(tag), echo.ownerId(), false);
         int instability = CommonConfig.ECHO_WORK_INSTABILITY.get();
         if (written && instability > 0) {
-            ImprintWriter.spike(level, pos, instability);
+            ImprintWriter.spikeQuiet(level, pos, instability);
         }
-        Mnemolith.LOGGER.info("Mnemolith echo work imprint owner={} tag={} at {} written={}", echo.ownerName(), tag.getSerializedName(), pos.toShortString(), written);
+        Mnemolith.LOGGER.debug("Mnemolith echo work imprint owner={} tag={} at {} written={}", echo.ownerName(), tag.getSerializedName(), pos.toShortString(), written);
     }
 
     /** True when this action misfires: only in an overloaded chunk, with {@code echoMisfireChance}. */

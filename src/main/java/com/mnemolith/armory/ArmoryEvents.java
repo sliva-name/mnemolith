@@ -4,7 +4,6 @@ import com.mnemolith.Mnemolith;
 import com.mnemolith.entity.MemoryMob;
 import com.mnemolith.entity.mob.FractureStalker;
 import com.mnemolith.imprint.ChunkMemory;
-import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.resources.Identifier;
@@ -76,7 +75,6 @@ public final class ArmoryEvents {
             ChunkMemory memory = LoadedChunkMemory.existing(chunk);
             if (memory != null) {
                 com.mnemolith.imprint.ImprintWriter.spike(level, player.blockPosition(), 1);
-                MemoryPressure.recompute(chunk, memory);
             }
         }
     }
