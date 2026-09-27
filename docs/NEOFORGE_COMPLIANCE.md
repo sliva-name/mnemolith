@@ -37,7 +37,7 @@ There is no datagen Java, no mixin config, and no access transformer. Worldgen, 
 | Datagen | Not used. The `data` run config in `build.gradle` is unused MDK scaffolding. |
 | Side safety | Client classes are confined to `com.mnemolith.client` and `MnemolithClient`, except the interaction bug fixed below. |
 | Game tests | OK. Gated on `GameTestHooks.isGametestEnabled()`. Namespace `mnemolith` is set on the game-test run. |
-| Fake players | OK. Echo edits go through `FakePlayerFactory` and the survival game mode so break, place, and use events fire. Replicant ghost blocks stay on `setBlock` by design. |
+| Fake players | OK. Echo edits, doorway toggles, blueprint property fix-ups, and replicant ghosts go through `FakePlayerFactory` and the survival game mode so break, place, and use events fire. A ghost place does not write an owner imprint. |
 | Mixins / ATs | None. |
 
 ## Findings
@@ -59,11 +59,22 @@ Hook: `com.mnemolith.event.UnrecordedTargetEvent` on `NeoForge.EVENT_BUS` (game 
 
 Addon authors: listen to `UnrecordedTargetEvent`, not only `LivingChangeTargetEvent`, to override Unrecorded. A third-party mod that only cancels or rewrites `LivingChangeTargetEvent` does not win.
 
-#### 2. Direct `setBlock` paths — still intentional
+#### 2. Direct `setBlock` paths — fixed via FakePlayer
 
-`EchoNav.setOpen` (fence gates), `EchoHands.placeForJob` property fix-up, and `MomentReplicant.placeCopy` still call `Level#setBlock`. Behavior was not changed.
+The three gameplay edits that used to call `Level#setBlock` now go through the owner's fake player, survival game mode, and the same hooks echo break/place/chest already use (`useItemOn`, `CommonHooks.onRightClickBlock`, `EventHooks.onBlockPlace`). No packet ordinal, config key, or id changed.
 
-Residual risk: claim and protection mods that only listen to player place, break, or interact. Echo break, place, and chest already go through `FakePlayer`. The replicant path is still gated by `EventHooks.canEntityGrief`.
+| Where | What it does now |
+| --- | --- |
+| `EchoNav.setOpen` | Wooden doors and fence gates open and close with an empty-handed `useItemOn` from the echo owner's fake player (`EchoHands.hand`). The fake player faces the doorway, so a gate toggles `OPEN` and does not spin. A powered doorway is still left alone. If the use does not leave the doorway in the requested state, the cell is refused and a close is retried. There is no `setBlock` fallback. |
+| `EchoHands.placeForJob` property fix-up | After the block item places, a facing/axis/half correction is committed with `FakePlace.commit` (snapshot capture, `EntityPlaceEvent`, then `onPlace` and `markAndNotifyBlock`). A cancel restores the item-placed state. The block type is not swapped. |
+| `MomentReplicant.placeCopy` | Still only air, still only `replicated_moment`, and still only after `EventHooks.canEntityGrief`. The ghost is then placed by `FakePlace.placeGhost`: a right-click hook, then the same commit, so claim mods see the player. The fake profile is the linked player's UUID and `name + "#replicant"` when `placeCopy` has a player, otherwise the stable profile `MomentReplicant` / `UUID.nameUUIDFromBytes("mnemolith:moment_replicant")`. Not a new UUID per place. |
+
+Imprint-ignore guarantee:
+
+- `EchoEvents` still records only a real `ServerPlayer`. A `FakePlayer` is not an echo recording. `ActionMemory.record` still returns immediately for every `FakePlayer`, so a ghost is not the owner's copied moment.
+- While the ghost place event is posted, `FakePlace.skippingOwnerImprint()` is true. `ImprintEvents.onPlace` returns without writing a build or player imprint. `EchoEvents.onPlace` does not set `EchoHands.lastEventActor` for that event, so it is not attributed to the echo owner.
+- A blueprint property correction is a second place of the same block by a fake player. `ImprintEvents.onPlace` skips that one too, so the item place keeps the single owner imprint and the correction does not add another. A normal echo place of a new block still writes the owner imprint.
+- `onPlace` still runs after a ghost commit that is not canceled, so the replicated moment still schedules its 200-tick fade. Mob griefing is checked before any fake-player event. A denied right-click or a canceled place does not fall back to `setBlock`.
 
 #### 3. Deprecated call sites — replaced, except `isSolid`
 
@@ -102,7 +113,7 @@ Checked against the Minecraft `26.2` patched sources and NeoForge `26.2.0.88` so
 - **Config.** `modContainer.registerConfig` for `COMMON`, `SERVER`, and (client entry only) `CLIENT`. Common values are read in `FMLCommonSetupEvent`. Server values are read from `ServerStartingEvent`, not during common setup. Keys go through `SpecValues` with translation keys `mnemolith.configuration.<key>`.
 - **Commands.** `/mnemolith` is built in `RegisterCommandsEvent`. Operator subcommands require gamemaster permissions. `inspect` is intentionally available without that check.
 - **Game tests.** `MnemolithGameTests.register` returns immediately unless game tests are enabled, so a normal client or dedicated server does not register test functions. `LivePlayers` uses `NetworkRegistry.configureMockConnection` so the fake connection negotiates mod channels.
-- **Fake players.** `FakePlayerFactory.get(level, profile)`, forced survival, then `gameMode.destroyBlock` / `useItemOn`. `EchoEvents` records those fake-player breaks and places and does not treat them as the real owner recording. `ActionMemory` ignores `FakePlayer`.
+- **Fake players.** `FakePlayerFactory.get(level, profile)`, forced survival, then `gameMode.destroyBlock` / `useItemOn`. Door and gate toggles use that empty-handed `useItemOn`. Blueprint property fix-ups and replicant ghosts use `FakePlace.commit`, which posts `EntityPlaceEvent` the way `CommonHooks.onPlaceItemIntoWorld` does. `EchoEvents` does not record a `FakePlayer` as the owner. `ActionMemory` ignores `FakePlayer`. A ghost place also sets `FakePlace.skippingOwnerImprint()` so `ImprintEvents` writes nothing for it.
 - **Client rendering.** Layers, renderers, particles, key mappings (category then keys), and GUI layers (`RegisterGuiLayersEvent`, `VanillaGuiLayers`) are registered from `MnemolithClient`. `ConfigurationScreen` is registered with `IConfigScreenFactory`.
 - **Cancelable events that are used correctly.** Possession cancels death and dimension travel. Imprint and mob listeners bail out when the event is already canceled. Echo recording listens at `LOWEST` and ignores canceled breaks and clicks.
 
@@ -118,5 +129,5 @@ Not covered by an in-game play session in this audit:
 
 - Dedicated-server class loading was checked by import boundaries (`net.minecraft.client` only under the client packages and `MnemolithClient`). A full dedicated-server boot was not part of this pass.
 - Worldgen JSON was checked against the NeoForge biome-modifier shape. A new world was not generated here.
-- Direct `setBlock` paths (fence gates, blueprint property fix-up, replicant copies) are still intentional. The risk is claim and protection mods that only listen to player place, break, or interact. Echo break, place, and chest already use `FakePlayer`. The replicant is still gated by `EventHooks.canEntityGrief`.
+- Gameplay `setBlock` on fence gates, blueprint property fix-up, and replicant copies now goes through `FakePlayer`, so claim mods that listen to right-click or place see those edits. Worldgen, vault drawing, snow melt, residues, scar sites, and QA scaffolding still call `setBlock` directly; those are not player actions. The replicant is still gated by `EventHooks.canEntityGrief` before the fake player is used. A ghost place does not write an owner imprint.
 - `copyOnDeath` on the possession attachment keeps a saved possession across death; login and respawn listeners clear it. That recovery path was read, not played.

@@ -80,6 +80,44 @@ public final class EchoHands {
         return player;
     }
 
+    /**
+     * Empty-handed right-click, the same call a recorded use makes. Main and off hand are emptied for the call and the
+     * same stack objects are put back, so a nested break does not lose its tool and sneak does not suppress the block.
+     * When the block has a horizontal facing, the fake player looks that way: a fence gate only retargets its facing
+     * when the player faces the opposite direction, and this use should open or close without spinning the gate.
+     */
+    public static boolean useEmpty(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        UUID owner = echo.ownerId();
+        if (owner == null || !level.isLoaded(pos)) {
+            return false;
+        }
+        FakePlayer hand = hand(level, owner, echo.ownerName());
+        BlockState state = level.getBlockState(pos);
+        float yaw = echo.getYRot();
+        if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            yaw = state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).toYRot();
+        }
+        hand.snapTo(echo.getX(), echo.getY(), echo.getZ(), yaw, echo.getXRot());
+        hand.setYHeadRot(yaw);
+        boolean shift = hand.isShiftKeyDown();
+        hand.setShiftKeyDown(false);
+        Inventory inventory = hand.getInventory();
+        int selected = inventory.getSelectedSlot();
+        ItemStack main = inventory.getItem(selected);
+        ItemStack off = inventory.getItem(Inventory.SLOT_OFFHAND);
+        inventory.setItem(selected, ItemStack.EMPTY);
+        inventory.setItem(Inventory.SLOT_OFFHAND, ItemStack.EMPTY);
+        try {
+            BlockHitResult hit = new BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+            InteractionResult result = hand.gameMode.useItemOn(hand, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, hit);
+            return result.consumesAction();
+        } finally {
+            inventory.setItem(selected, main);
+            inventory.setItem(Inventory.SLOT_OFFHAND, off);
+            hand.setShiftKeyDown(shift);
+        }
+    }
+
     public static Outcome perform(ServerLevel level, EchoEntity echo, EchoAction action, EchoRecording.Frame frame) {
         UUID owner = echo.ownerId();
         if (owner == null) {
@@ -243,8 +281,9 @@ public final class EchoHands {
     /**
      * A job placement: the owner's fake player uses the echo's own block item on a neighbouring face (sneaking, so no
      * block is "used"), which fires the normal place events. If the block came out with other properties than the
-     * blueprint asks for (facing, axis, half), the properties are set to the blueprint state afterwards; the block
-     * itself is never swapped, and multi-block parts (doors, beds, double chests) are left as placed.
+     * blueprint asks for (facing, axis, half), those properties are committed through the same fake player so the
+     * place event fires again. The block itself is never swapped, and multi-block parts (doors, beds, double chests)
+     * are left as placed. A listener that cancels the correction leaves the block as the item placed it.
      */
     public static Outcome placeForJob(ServerLevel level, EchoEntity echo, BlockPos pos, BlockState target) {
         UUID owner = echo.ownerId();
@@ -303,7 +342,8 @@ public final class EchoHands {
             return Outcome.REFUSED;
         }
         if (now != target && correctable(target) && target.canSurvive(level, pos)) {
-            level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
+            // Same block type, so ImprintEvents does not write a second build imprint for this correction.
+            FakePlace.commit(level, hand, pos, target, hit.getDirection(), net.minecraft.world.level.block.Block.UPDATE_ALL, false);
         }
         return Outcome.DONE;
     }

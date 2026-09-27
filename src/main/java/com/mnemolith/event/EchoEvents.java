@@ -3,6 +3,7 @@ package com.mnemolith.event;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.echo.EchoHands;
 import com.mnemolith.echo.EchoPossession;
+import com.mnemolith.echo.FakePlace;
 import com.mnemolith.echo.EchoRecorder;
 import com.mnemolith.entity.echo.MemoryAvatar;
 
@@ -80,7 +81,8 @@ public final class EchoEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
-        if (!event.isCanceled() && event.getEntity() instanceof FakePlayer fake) {
+        // A replicant ghost also uses a fake player. It is not an echo hand, so it does not become the QA actor.
+        if (!event.isCanceled() && event.getEntity() instanceof FakePlayer fake && !FakePlace.skippingOwnerImprint()) {
             EchoHands.lastEventActor = fake.getUUID();
         }
         if (!event.isCanceled() && realPlayer(event.getEntity())) {

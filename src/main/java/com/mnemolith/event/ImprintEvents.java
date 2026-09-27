@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModBlocks;
+import com.mnemolith.echo.FakePlace;
 import com.mnemolith.entity.ModEffects;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.imprint.ChunkMemory;
@@ -37,6 +38,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
@@ -135,6 +137,15 @@ public final class ImprintEvents {
     @SubscribeEvent
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        // Ghost commits are a fake player so claims see them, but they are not the owner's build.
+        if (FakePlace.skippingOwnerImprint()) {
+            return;
+        }
+        // A blueprint property fix-up places the same block again. The item use already wrote the imprint.
+        if (event.getEntity() instanceof FakePlayer
+                && event.getBlockSnapshot().getState().getBlock() == event.getPlacedBlock().getBlock()) {
             return;
         }
         if (event.getEntity() instanceof Player player) {

@@ -20,8 +20,9 @@ public final class ActionMemory {
     private ActionMemory() {}
 
     /**
-     * Fake players (an echo's hands, other mods' machines) are skipped: their actions are not a player's moment,
-     * and they would be filed under the owner's UUID long after the owner logged out.
+     * Fake players (an echo's hands, a replicant ghost, other mods' machines) are skipped: their actions are not a
+     * player's moment, and they would be filed under the owner's UUID long after the owner logged out.
+     * Ghost places also skip the build imprint; see {@link com.mnemolith.echo.FakePlace#skippingOwnerImprint()}.
      */
     public static void record(ServerPlayer player, CopiedActionKind kind, BlockPos pos, ItemStack stack) {
         if (player instanceof FakePlayer) {

@@ -336,7 +336,11 @@ public final class EchoNav {
                     this.refused.add(base.above().asLong());
                     return false;
                 }
-                setOpen(level, echo, base, true);
+                if (!setOpen(level, echo, base, true)) {
+                    this.refused.add(base.asLong());
+                    this.refused.add(base.above().asLong());
+                    return false;
+                }
                 this.opened.add(base);
                 this.doorsOpened++;
             }
@@ -359,8 +363,7 @@ public final class EchoNav {
                 if (body.intersects(new net.minecraft.world.phys.AABB(base).expandTowards(0.0D, 1.0D, 0.0D))) {
                     return false;
                 }
-                setOpen(level, echo, base, false);
-                return true;
+                return setOpen(level, echo, base, false);
             });
         }
     }
@@ -388,24 +391,23 @@ public final class EchoNav {
         return state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).getAxis();
     }
 
-    /** Opens or closes a doorway (lower half for doors), with the vanilla sound and game event. Never fights redstone. */
-    static void setOpen(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo, BlockPos base, boolean open) {
+    /**
+     * Opens or closes a doorway (lower half for doors) with an empty-handed use from the owner's fake player.
+     * Doors and fence gates both take that path, so the right-click event fires and the block plays its own sound.
+     * The fake player faces the doorway, so a gate does not spin. A powered doorway is left alone.
+     * False only when the doorway is still not in the requested state (no owner, or the use was refused).
+     */
+    static boolean setOpen(ServerLevel level, com.mnemolith.entity.echo.EchoEntity echo, BlockPos base, boolean open) {
         BlockState state = level.getBlockState(base);
         if (!doorway(state) || isOpenDoorway(state) == open) {
-            return;
+            return true;
         }
         if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)
                 && state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)) {
-            return;
+            return true;
         }
-        if (state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door) {
-            door.setOpen(echo, level, state, base, open);
-        } else if (state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock gate) {
-            level.setBlock(base, state.setValue(net.minecraft.world.level.block.FenceGateBlock.OPEN, open), 10);
-            level.playSound(null, base, open ? gate.openSound : gate.closeSound, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F,
-                    level.getRandom().nextFloat() * 0.1F + 0.9F);
-            level.gameEvent(echo, open ? net.minecraft.world.level.gameevent.GameEvent.BLOCK_OPEN : net.minecraft.world.level.gameevent.GameEvent.BLOCK_CLOSE, base);
-        }
+        com.mnemolith.echo.EchoHands.useEmpty(level, echo, base);
+        return isOpenDoorway(level.getBlockState(base)) == open;
     }
 
     /** Ladders, vines and the like a body can climb (not scaffolding, which it would stand on). */
