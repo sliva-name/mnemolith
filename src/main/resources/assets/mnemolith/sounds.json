@@ -118,5 +118,8 @@
   "stalker_death": {
     "subtitle": "subtitles.mnemolith.stalker_death",
     "sounds": [{ "name": "mnemolith:replicant_death", "stream": false, "pitch": 0.5 }]
+  },
+  "chair_voice": {
+    "sounds": [{ "name": "mnemolith:chair_voice", "stream": true }]
   }
 }

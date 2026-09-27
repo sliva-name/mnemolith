@@ -147,6 +147,7 @@ public final class MobSpawns {
             case "echo_strider" -> summon(ModEntities.ECHO_STRIDER.get(), level, pos);
             case "archivist" -> summon(ModEntities.ARCHIVIST.get(), level, pos);
             case "moment_replicant" -> summon(ModEntities.MOMENT_REPLICANT.get(), level, pos);
+            case "pleading_chair" -> com.mnemolith.entity.PleadingChair.summon(level, pos);
             default -> null;
         };
     }

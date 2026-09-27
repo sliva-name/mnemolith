@@ -16,6 +16,9 @@ public final class ModProcessors {
     public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<ObservatoryProcessor>> OBSERVATORY = PROCESSORS.register(
             "observatory",
             () -> ObservatoryProcessor.CODEC);
+    public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<PleadingChairProcessor>> PLEADING_CHAIR = PROCESSORS.register(
+            "pleading_chair",
+            () -> PleadingChairProcessor.CODEC);
 
     private ModProcessors() {}
 
