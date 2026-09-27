@@ -123,6 +123,8 @@ First pass: `./gradlew build` succeeded, and `./gradlew runGameTestServer` succe
 
 Owner-decision follow-up: `./gradlew build` succeeded. `./gradlew runGameTestServer` succeeded: all 26 required tests passed in 16.57 s. `./gradlew compileJava -Xlint:deprecation` still reports five warnings, all intentional. `MemoryMob.finalizeSpawn` and `FractureStalker.finalizeSpawn` warn on the override and the `super` call (`@ApiStatus.OverrideOnly`; this mod has no external caller). `EchoStrider.stepPhase` still calls `BlockState.isSolid()` because 26.2 has no other reader of `legacySolid`.
 
+FakePlayer routing: `./gradlew build` succeeded. `./gradlew runGameTestServer` succeeded: all 26 required tests passed in 14.65 s. Door and gate navigation, blueprint placement, and the other suites still pass with the use and place hooks in place of those three `setBlock` calls.
+
 ## Residual risk
 
 Not covered by an in-game play session in this audit:
