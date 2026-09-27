@@ -206,12 +206,14 @@ public final class LivingMemory {
         if (player.getRandom().nextDouble() >= CommonConfig.RECALL_CHANCE.get()) {
             return false;
         }
-        Optional<Gesture> gesture = qualifying(player);
-        if (gesture.isEmpty()) {
+        Optional<Gesture> chosen = qualifying(player);
+        if (chosen.isEmpty()) {
             return false;
         }
         markWow(player);
-        replicant.beginRecall(player, gesture.get());
+        Gesture gesture = chosen.get();
+        replicant.beginRecall(player, gesture);
+        Investigate.onRecall(player, gesture);
         return true;
     }
 
@@ -259,6 +261,7 @@ public final class LivingMemory {
         if (trail.size() > Gesture.TRAIL_CAP) {
             trail = trail.subList(trail.size() - Gesture.TRAIL_CAP, trail.size());
         }
+        Investigate.onFlash(player, gesture);
         PacketDistributor.sendToPlayer(player, new RecallGhostPayload(
                 RecallSpace.place(gesture),
                 RecallSpace.yaw(gesture),

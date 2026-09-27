@@ -1,6 +1,7 @@
 package com.mnemolith.client.gui;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.client.recall.OriginView;
 import com.mnemolith.client.render.PressureClient;
 import com.mnemolith.common.MemoryPalette;
 import com.mnemolith.client.config.ClientConfig;
@@ -64,7 +65,8 @@ public final class LensOverlay {
         }
         ChunkPressure here = PressureClient.origin(player);
         boolean sneak = player.isShiftKeyDown();
-        int key = cacheKey(here, sneak, ClientConfig.SHOW_NUMERIC_PRESSURE.get());
+        Component origin = OriginView.line();
+        int key = cacheKey(here, sneak, ClientConfig.SHOW_NUMERIC_PRESSURE.get(), OriginView.revision());
         if (key != cachedKey) {
             cachedKey = key;
             cachedLine = line(here);
@@ -77,25 +79,39 @@ public final class LensOverlay {
         if (detail != null) {
             textWidth = Math.max(textWidth, font.width(detail));
         }
+        if (origin != null) {
+            textWidth = Math.max(textWidth, font.width(origin));
+        }
         int boxWidth = textWidth + 16;
-        int boxHeight = detail == null ? 16 : 26;
+        int boxHeight = 16;
+        if (detail != null) {
+            boxHeight += 10;
+        }
+        if (origin != null) {
+            boxHeight += 10;
+        }
         int x = (minecraft.getWindow().getGuiScaledWidth() - boxWidth) / 2;
-        int y = minecraft.getWindow().getGuiScaledHeight() - 68 - messageLift();
+        int y = minecraft.getWindow().getGuiScaledHeight() - 68 - messageLift() - (boxHeight - 16);
         int alpha = (int) Math.round(ClientConfig.OVERLAY_OPACITY.get() * 255.0D);
         alpha = Math.max(48, Math.min(255, alpha));
         graphics.fill(x, y, x + boxWidth, y + boxHeight, (alpha << 24) | (GuiArt.INK & 0xFFFFFF));
         graphics.fill(x, y, x + 2, y + boxHeight, MemoryPalette.opaque(MemoryPalette.PIGMENT));
         GuiArt.label(graphics, font, line, x + 8, y + 4, GuiArt.BONE);
+        int textY = y + 14;
         if (detail != null) {
-            GuiArt.label(graphics, font, detail, x + 8, y + 14, GuiArt.BONE);
+            GuiArt.label(graphics, font, detail, x + 8, textY, GuiArt.BONE);
+            textY += 10;
+        }
+        if (origin != null) {
+            GuiArt.label(graphics, font, origin, x + 8, textY, GuiArt.VERDIGRIS);
         }
     }
 
-    private static int cacheKey(ChunkPressure here, boolean sneak, boolean numeric) {
+    private static int cacheKey(ChunkPressure here, boolean sneak, boolean numeric, int originRevision) {
         if (here == null) {
-            return (sneak ? 1 : 0) ^ (numeric ? 2 : 0);
+            return (sneak ? 1 : 0) ^ (numeric ? 2 : 0) ^ (originRevision * 31);
         }
-        return java.util.Objects.hash(here.chunkX(), here.chunkZ(), here.pressure(), here.band(), here.state(), sneak, numeric);
+        return java.util.Objects.hash(here.chunkX(), here.chunkZ(), here.pressure(), here.band(), here.state(), sneak, numeric, originRevision);
     }
 
     private static Component line(ChunkPressure here) {

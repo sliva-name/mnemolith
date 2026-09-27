@@ -5,7 +5,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
- * Version 4: adds the owner-only recall ghost. Version 3 carried the catalog discovery-hints flag.
+ * Version 5: the lens origin line and trace footsteps. Version 4 added the owner-only recall ghost.
  */
 public final class ModNetwork {
     private ModNetwork() {}
@@ -15,7 +15,7 @@ public final class ModNetwork {
     }
 
     private static void onRegister(RegisterPayloadHandlersEvent event) {
-        event.registrar("4")
+        event.registrar("5")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)
@@ -25,6 +25,8 @@ public final class ModNetwork {
                 .playToServer(EchoJobPayload.TYPE, EchoJobPayload.STREAM_CODEC, EchoNetwork::handleJob)
                 .playToClient(EchoGhostPayload.TYPE, EchoGhostPayload.STREAM_CODEC)
                 .playToClient(RecallGhostPayload.TYPE, RecallGhostPayload.STREAM_CODEC)
+                .playToClient(OriginReadPayload.TYPE, OriginReadPayload.STREAM_CODEC)
+                .playToClient(TraceMarkPayload.TYPE, TraceMarkPayload.STREAM_CODEC)
                 .playToServer(EchoCommandPayload.TYPE, EchoCommandPayload.STREAM_CODEC, EchoNetwork::handleCommand);
     }
 }

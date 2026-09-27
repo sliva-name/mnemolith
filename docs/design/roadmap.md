@@ -13,7 +13,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Gametest harness | Implemented on `feature/gametests`, stacked on residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `com.mnemolith.gametest`, `runGameTestServer` in CI, 7 suites + 8 live residue tests, [qa-checklist.md](../qa-checklist.md#automated-game-tests-ci) |
 | Recollection storm and the Scar | Implemented on `feature/recollection-storm`, stacked on the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.storm`, `ScarEntity`, `scar_fragment`, `scar_glass`, `scar_heart`, `stormqa` 19/19, 3 live storm tests, [echo-design.md](../echo-design.md) §14 |
 | Echo relay, archive vault | Implemented on `feature/relay-vault`, stacked on the storm (#25), the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.relay`, `vault`, `relay_thread`, `archive_vault`, `relayqa` 19/19, 3 live relay/vault tests, [echo-design.md](../echo-design.md) §15 |
-| Living memory, stage 1 | In progress: a few gestures, sometimes shown back | [living-memory.md](living-memory.md), `recall` config, `/mnemolith recallqa` |
+| Living memory, stage 1 | Done on main (PR #33) | [living-memory.md](living-memory.md), `recall` config, `/mnemolith recallqa` |
+| Living memory, stage 2 | In progress: read a place, find a trace from this play, keep what the lens has named | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
 | 32x art pass | Next, its own run | — |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -177,4 +178,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 4. Recollection storm and the Scar (done, stacked PR on #24).
 5. Echo relay and archive vault (done, stacked PR on #25).
 6. The 32x art pass as its own run, next: the item list is now stable enough that nothing is drawn twice.
-7. Living memory, stage 1 («Мир меня заметил»), started. The plan and the narrow first playable are in [living-memory.md](living-memory.md). The field guide does not explain it.
+7. Living memory, stage 1 («Мир меня заметил»), done on main (PR #33). The field guide does not explain it.
+8. Living memory, stage 2 («Я могу это исследовать»), in progress. The plan and the narrow playable are in [living-memory.md](living-memory.md). The field guide does not explain it.
