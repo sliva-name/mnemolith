@@ -541,7 +541,7 @@ public final class Residues {
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.message.extract_cooldown"), true);
             return false;
         }
-        if (!residue.isPinned()) {
+        if (residue.washed() || !residue.isPinned()) {
             lash(level, residue, player);
             residue.lashed();
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.residue.slipped"), true);
@@ -565,6 +565,7 @@ public final class Residues {
         player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.residue.captured",
                 net.minecraft.network.chat.Component.translatable(residue.tag().translationKey()), residue.strength()), true);
         Mnemolith.LOGGER.info("Mnemolith residue captured tag={} strength={} by {}", residue.tag().getSerializedName(), residue.strength(), player.getGameProfile().name());
+        com.mnemolith.recall.UseMemory.onHarvest(player, residue);
         residue.discard();
         return true;
     }

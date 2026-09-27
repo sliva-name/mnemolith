@@ -44,6 +44,7 @@ public final class MobEvents {
         PathLedger.note(serverPlayer);
         com.mnemolith.recall.LivingMemory.tick(serverPlayer);
         com.mnemolith.recall.Investigate.tick(serverPlayer);
+        com.mnemolith.recall.UseMemory.tick(serverPlayer);
         if (was != null && was && !grounded && player.getDeltaMovement().y > 0.2D) {
             ActionMemory.record(serverPlayer, CopiedActionKind.JUMP, serverPlayer.blockPosition(), ItemStack.EMPTY);
         }
@@ -56,6 +57,7 @@ public final class MobEvents {
         PathLedger.forget(player);
         com.mnemolith.recall.LivingMemory.forgetSteps(player);
         com.mnemolith.recall.Investigate.forgetSession(player);
+        com.mnemolith.recall.UseMemory.forgetSession(player);
     }
 
     /** Drops all per-player mob state (server stopped). */
@@ -65,6 +67,7 @@ public final class MobEvents {
         PathLedger.clearAll();
         com.mnemolith.recall.LivingMemory.clearSteps();
         com.mnemolith.recall.Investigate.clearSessions();
+        com.mnemolith.recall.UseMemory.clearSessions();
     }
 
     @SubscribeEvent

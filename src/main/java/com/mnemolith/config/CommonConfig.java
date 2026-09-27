@@ -149,6 +149,22 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_FRACTURE;
     public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_LOUD;
     public static final ModConfigSpec.BooleanValue INVESTIGATE_RECORD_TRACES;
+    public static final ModConfigSpec.BooleanValue USE_ENABLED;
+    public static final ModConfigSpec.IntValue USE_MIN_ANCHORS;
+    public static final ModConfigSpec.DoubleValue USE_LIE_CHANCE;
+    public static final ModConfigSpec.DoubleValue USE_LIE_AFTER_LEAVE;
+    public static final ModConfigSpec.IntValue USE_LIE_OFFSET;
+    public static final ModConfigSpec.IntValue USE_GUIDE_RANGE;
+    public static final ModConfigSpec.IntValue USE_GUIDE_COOLDOWN;
+    public static final ModConfigSpec.IntValue USE_CONDENSE_RANGE;
+    public static final ModConfigSpec.IntValue USE_WITNESS_RANGE;
+    public static final ModConfigSpec.IntValue USE_LEAVE_RANGE;
+    public static final ModConfigSpec.IntValue USE_STORE_RANGE;
+    public static final ModConfigSpec.IntValue USE_RESIDUE_STRENGTH;
+    public static final ModConfigSpec.BooleanValue INTERVENE_ENABLED;
+    public static final ModConfigSpec.IntValue INTERVENE_RANGE;
+    public static final ModConfigSpec.BooleanValue INTERVENE_ONCE;
+    public static final ModConfigSpec.IntValue INTERVENE_INSTABILITY;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -328,6 +344,28 @@ public final class CommonConfig {
         INVESTIGATE_RECORD_FRACTURE = builder.comment("Whether standing in a chunk as it fractures leaves a trace.").translation("mnemolith.configuration.investigateRecordFracture").define("recordFracture", true);
         INVESTIGATE_RECORD_LOUD = builder.comment("Whether the loudest saturated chunk you have stood in is kept as one trace.").translation("mnemolith.configuration.investigateRecordLoud").define("recordLoud", true);
         INVESTIGATE_RECORD_TRACES = builder.comment("Whether a local flash, a replicant recall, or a finished lens reading of a gesture leaves a trace you can come back to.").translation("mnemolith.configuration.investigateRecordTraces").define("recordTraces", true);
+        builder.pop();
+
+        SpecValues.section(builder, "use", "Living memory, stage 3. A place from this play can condense into an offer. Taking, muting, storing or leaving it closes that place. Nothing here writes a chat line.");
+        USE_ENABLED = builder.comment("Whether a place from this play can become an offer.").translation("mnemolith.configuration.useEnabled").define("enabled", true);
+        USE_MIN_ANCHORS = builder.comment("How many traces this play must already have before a place can condense. The offer itself is chosen from those traces.").translation("mnemolith.configuration.useMinAnchors").defineInRange("minAnchors", 2, 1, 32);
+        USE_LIE_CHANCE = builder.comment("Chance, from 0.0 to 1.0, that the silhouette walks to the wrong place, where a replicant is waiting. The residue stays at the true place.").translation("mnemolith.configuration.useLieChance").defineInRange("lieChance", 0.28D, 0.0D, 1.0D);
+        USE_LIE_AFTER_LEAVE = builder.comment("The same chance after the player has once walked away from an offer, and for an offer whose source trace was already distorted.").translation("mnemolith.configuration.useLieAfterLeave").defineInRange("lieAfterLeave", 0.75D, 0.0D, 1.0D);
+        USE_LIE_OFFSET = builder.comment("Blocks the false place sits from the true one, horizontally, along the trace's facing.").translation("mnemolith.configuration.useLieOffset").defineInRange("lieOffset", 8, 2, 24);
+        USE_GUIDE_RANGE = builder.comment("Blocks within which the silhouette may walk, and within which an idle echo with a bearing looks toward the offer.").translation("mnemolith.configuration.useGuideRange").defineInRange("guideRange", 24, 8, 64);
+        USE_GUIDE_COOLDOWN = builder.comment("Ticks between two silhouettes for one player while they stay near an offer. 600 is thirty seconds.").translation("mnemolith.configuration.useGuideCooldown").defineInRange("guideCooldown", 600, 40, 72_000);
+        USE_CONDENSE_RANGE = builder.comment("Blocks within which standing near the true place lets the residue condense, if the chunk is not muted.").translation("mnemolith.configuration.useCondenseRange").defineInRange("condenseRange", 32, 8, 64);
+        USE_WITNESS_RANGE = builder.comment("Blocks within which the player is treated as having stood at the offer. Walking farther than leaveRange after that refuses the place.").translation("mnemolith.configuration.useWitnessRange").defineInRange("witnessRange", 10, 2, 32);
+        USE_LEAVE_RANGE = builder.comment("Blocks from a witnessed offer beyond which walking away refuses that spot. The next offer is more likely to lie.").translation("mnemolith.configuration.useLeaveRange").defineInRange("leaveRange", 48, 16, 128);
+        USE_STORE_RANGE = builder.comment("Blocks from a legendary residue within which a vault with room can take it, when the player sneaks with an empty hand.").translation("mnemolith.configuration.useStoreRange").defineInRange("storeRange", 8, 2, 32);
+        USE_RESIDUE_STRENGTH = builder.comment("Strength of the residue an offer condenses. 4 is a full graft if it is read and taken with the needle.").translation("mnemolith.configuration.useResidueStrength").defineInRange("residueStrength", 4, 1, 6);
+        builder.pop();
+
+        SpecValues.section(builder, "intervene", "Living memory, stage 4. A scar fragment used on a block can change the tag of a memory already written there. Nothing here writes a chat line.");
+        INTERVENE_ENABLED = builder.comment("Whether a scar fragment used on a block can rewrite an imprint.").translation("mnemolith.configuration.interveneEnabled").define("enabled", true);
+        INTERVENE_RANGE = builder.comment("Blocks within which the loudest imprint is rewritten, and within which a scarred echo's temper is read.").translation("mnemolith.configuration.interveneRange").defineInRange("range", 8, 1, 16);
+        INTERVENE_ONCE = builder.comment("Whether an imprint that has already been rewritten is left alone. The fragment is not consumed.").translation("mnemolith.configuration.interveneOnce").define("once", true);
+        INTERVENE_INSTABILITY = builder.comment("Instability added to the chunk when a tag changes. 0 adds none. The new tag is still scored.").translation("mnemolith.configuration.interveneInstability").defineInRange("instability", 6, 0, 40);
         builder.pop();
 
         SPEC = builder.build();
