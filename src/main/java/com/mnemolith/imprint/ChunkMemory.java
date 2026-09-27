@@ -427,6 +427,17 @@ public final class ChunkMemory {
         return this.imprints.remove(imprint);
     }
 
+    /** Swaps one stored imprint for another. Order stays, so a later read sees the new tag in the same place. */
+    public boolean replaceImprint(Imprint previous, Imprint next) {
+        int index = this.imprints.indexOf(previous);
+        if (index < 0) {
+            return false;
+        }
+        this.imprints.set(index, next);
+        this.refreshCooling();
+        return true;
+    }
+
     public List<ImprintTag> tags() {
         return this.imprints.stream().map(Imprint::tag).sorted(Comparator.comparing(Enum::ordinal)).toList();
     }

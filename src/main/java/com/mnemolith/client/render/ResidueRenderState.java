@@ -10,4 +10,5 @@ public class ResidueRenderState extends LivingEntityRenderState {
     public boolean pinned;
     public float read;
     public boolean volatileFlicker;
+    public boolean washed;
 }

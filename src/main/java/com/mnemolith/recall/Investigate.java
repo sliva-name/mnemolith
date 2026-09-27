@@ -376,7 +376,7 @@ public final class Investigate {
             return null;
         }
         long age = Math.max(0L, now - best.writtenAt());
-        Origin origin = new Origin(Origin.IMPRINT, best.tag().ordinal(), Origin.ageBand(age), false, best.player().isPresent());
+        Origin origin = new Origin(Origin.IMPRINT, best.tag().ordinal(), Origin.ageBand(age), best.rewritten(), best.player().isPresent());
         return new Subject(origin, best.origin(), 0.0F, null, key(origin, best.origin()));
     }
 

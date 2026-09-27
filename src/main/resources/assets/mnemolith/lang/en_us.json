@@ -908,5 +908,14 @@
   "mnemolith.configuration.useStoreRange": "Store Range",
   "mnemolith.configuration.useStoreRange.tooltip": "Blocks from a legendary residue within which a vault with room can take it.",
   "mnemolith.configuration.useResidueStrength": "Offer Strength",
-  "mnemolith.configuration.useResidueStrength.tooltip": "Strength of the residue an offer condenses. 4 is a full graft if it is read and taken."
+  "mnemolith.configuration.useResidueStrength.tooltip": "Strength of the residue an offer condenses. 4 is a full graft if it is read and taken.",
+  "mnemolith.configuration.intervene": "Intervene",
+  "mnemolith.configuration.interveneEnabled": "Rewrite Memory",
+  "mnemolith.configuration.interveneEnabled.tooltip": "Whether a scar fragment used on a block can change an imprint's tag.",
+  "mnemolith.configuration.interveneRange": "Rewrite Range",
+  "mnemolith.configuration.interveneRange.tooltip": "Blocks within which the loudest imprint is rewritten, and a scarred echo's temper is read.",
+  "mnemolith.configuration.interveneOnce": "Once",
+  "mnemolith.configuration.interveneOnce.tooltip": "Whether an imprint that has already been rewritten is left alone.",
+  "mnemolith.configuration.interveneInstability": "Disturbance",
+  "mnemolith.configuration.interveneInstability.tooltip": "Instability added to the chunk when a tag changes. 0 adds none."
 }

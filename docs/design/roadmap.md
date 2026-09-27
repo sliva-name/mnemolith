@@ -15,7 +15,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Echo relay, archive vault | Implemented on `feature/relay-vault`, stacked on the storm (#25), the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.relay`, `vault`, `relay_thread`, `archive_vault`, `relayqa` 19/19, 3 live relay/vault tests, [echo-design.md](../echo-design.md) §15 |
 | Living memory, stage 1 | Done on main (PR #33) | [living-memory.md](living-memory.md), `recall` config, `/mnemolith recallqa` |
 | Living memory, stage 2 | Done on main (PR #34) | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
-| Living memory, stage 3 | In progress: an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
+| Living memory, stage 3 | Done on this branch (draft PR #35): an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
+| Living memory, stage 4 | Playable on the same branch: a scar fragment rewrites an imprint's tag, and a lie leaves a pale residue that cannot be kept | [living-memory.md](living-memory.md), `intervene` config, `/mnemolith interveneqa` |
 | 32x art pass | Next, its own run | — |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -181,4 +182,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 6. The 32x art pass as its own run, next: the item list is now stable enough that nothing is drawn twice.
 7. Living memory, stage 1 («Мир меня заметил»), done on main (PR #33). The field guide does not explain it.
 8. Living memory, stage 2 («Я могу это исследовать»), done on main (PR #34). The field guide does not explain it.
-9. Living memory, stage 3 («Я могу использовать память»), in progress. The plan and the narrow playable are in [living-memory.md](living-memory.md). The field guide does not explain it.
+9. Living memory, stage 3 («Я могу использовать память»), done on this branch (draft PR #35). The plan is in [living-memory.md](living-memory.md). The field guide does not explain it.
+10. Living memory, stage 4 («Я могу вмешиваться»), playable on the same branch. A scar fragment rewrites one imprint. The field guide does not explain it.

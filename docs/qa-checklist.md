@@ -23,6 +23,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
 | `mnemolith:suite_investigateqa` | `/mnemolith investigateqa` (15) | Anchors from this play, a lens origin reading, catalog bits unlocked only by that reading. Gamemaster-only; no player tutorial |
 | `mnemolith:suite_useqa` | `/mnemolith useqa` (13) | A legendary offer from this play: a true guide and a lie, then the cost of leaving, muting, taking or storing it. Gamemaster-only; no player tutorial |
+| `mnemolith:suite_interveneqa` | `/mnemolith interveneqa` (9) | A scar fragment rewrites an imprint's tag (silence, a scarred echo's temper, or the next temper). A lie also leaves a pale residue that cannot be kept. Gamemaster-only; no player tutorial |
 
 **Live residue tests** (`com.mnemolith.gametest.ResidueLiveTests`). Real server players join through `PlayerList.placeNewPlayer` on an in-memory connection negotiated as a NeoForge client, stand in survival and are ticked every game tick the way the network layer ticks a connected player (`ServerPlayer.doTick`), so `PlayerTickEvent`, item use and `level.players()` are the real paths. Setup writes chunk memory and places residues directly; what is under test runs on its own. Players and forced chunks are removed by the `mnemolith:live` environment's teardown, pass or fail.
 

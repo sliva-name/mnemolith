@@ -161,6 +161,10 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue USE_LEAVE_RANGE;
     public static final ModConfigSpec.IntValue USE_STORE_RANGE;
     public static final ModConfigSpec.IntValue USE_RESIDUE_STRENGTH;
+    public static final ModConfigSpec.BooleanValue INTERVENE_ENABLED;
+    public static final ModConfigSpec.IntValue INTERVENE_RANGE;
+    public static final ModConfigSpec.BooleanValue INTERVENE_ONCE;
+    public static final ModConfigSpec.IntValue INTERVENE_INSTABILITY;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -355,6 +359,13 @@ public final class CommonConfig {
         USE_LEAVE_RANGE = builder.comment("Blocks from a witnessed offer beyond which walking away refuses that spot. The next offer is more likely to lie.").translation("mnemolith.configuration.useLeaveRange").defineInRange("leaveRange", 48, 16, 128);
         USE_STORE_RANGE = builder.comment("Blocks from a legendary residue within which a vault with room can take it, when the player sneaks with an empty hand.").translation("mnemolith.configuration.useStoreRange").defineInRange("storeRange", 8, 2, 32);
         USE_RESIDUE_STRENGTH = builder.comment("Strength of the residue an offer condenses. 4 is a full graft if it is read and taken with the needle.").translation("mnemolith.configuration.useResidueStrength").defineInRange("residueStrength", 4, 1, 6);
+        builder.pop();
+
+        SpecValues.section(builder, "intervene", "Living memory, stage 4. A scar fragment used on a block can change the tag of a memory already written there. Nothing here writes a chat line.");
+        INTERVENE_ENABLED = builder.comment("Whether a scar fragment used on a block can rewrite an imprint.").translation("mnemolith.configuration.interveneEnabled").define("enabled", true);
+        INTERVENE_RANGE = builder.comment("Blocks within which the loudest imprint is rewritten, and within which a scarred echo's temper is read.").translation("mnemolith.configuration.interveneRange").defineInRange("range", 8, 1, 16);
+        INTERVENE_ONCE = builder.comment("Whether an imprint that has already been rewritten is left alone. The fragment is not consumed.").translation("mnemolith.configuration.interveneOnce").define("once", true);
+        INTERVENE_INSTABILITY = builder.comment("Instability added to the chunk when a tag changes. 0 adds none. The new tag is still scored.").translation("mnemolith.configuration.interveneInstability").defineInRange("instability", 6, 0, 40);
         builder.pop();
 
         SPEC = builder.build();

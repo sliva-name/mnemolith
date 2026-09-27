@@ -50,11 +50,13 @@ public class ResidueRenderer extends MobRenderer<ResidueEntity, ResidueRenderSta
         super.extractRenderState(entity, state, partialTick);
         state.id = entity.getId();
         Temper temper = entity.temper();
-        state.rgb = temper.rgb();
+        state.washed = entity.washed();
+        // Same pale as a distorted recall silhouette: the false place, without a new line of text.
+        state.rgb = state.washed ? 0xC5D4F0 : temper.rgb();
         state.strength = entity.strength();
         state.pinned = entity.isPinned();
         state.read = entity.readProgress() / (float) Residues.READ_TICKS;
-        state.volatileFlicker = temper == Temper.VOLATILE;
+        state.volatileFlicker = temper == Temper.VOLATILE && !state.washed;
         // Always lit a little from inside.
         state.lightCoords = Math.max(state.lightCoords, 0xA000A0);
     }

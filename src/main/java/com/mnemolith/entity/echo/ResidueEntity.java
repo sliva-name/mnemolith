@@ -49,6 +49,8 @@ public final class ResidueEntity extends Mob {
     private static final EntityDataAccessor<Integer> DATA_STRENGTH = SynchedEntityData.defineId(ResidueEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_PINNED = SynchedEntityData.defineId(ResidueEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_READ = SynchedEntityData.defineId(ResidueEntity.class, EntityDataSerializers.INT);
+    /** A lie's false place: pale on the client, and the needle cannot keep it. Synced, no extra packet. */
+    private static final EntityDataAccessor<Boolean> DATA_WASHED = SynchedEntityData.defineId(ResidueEntity.class, EntityDataSerializers.BOOLEAN);
     private static final double DRIFT_SPEED = 0.035D;
 
     private ImprintTag tag = ImprintTag.FIRE;
@@ -82,6 +84,7 @@ public final class ResidueEntity extends Mob {
         entityData.define(DATA_STRENGTH, 3);
         entityData.define(DATA_PINNED, false);
         entityData.define(DATA_READ, 0);
+        entityData.define(DATA_WASHED, false);
     }
 
     /** Called once by {@link Residues#spawn} before the entity is added. */
@@ -132,6 +135,24 @@ public final class ResidueEntity extends Mob {
 
     public boolean legendary() {
         return this.legendOwner != null;
+    }
+
+    /** The false place of a lie. Pale, and it cannot be kept or stored. */
+    public void markWashed() {
+        this.entityData.set(DATA_WASHED, true);
+    }
+
+    public boolean washed() {
+        return this.entityData.get(DATA_WASHED);
+    }
+
+    /** The imprint's new tag. A washed lie keeps the color it was given. */
+    public void retint(ImprintTag tag) {
+        if (this.washed() || !Residues.graftable(tag)) {
+            return;
+        }
+        this.tag = tag;
+        this.entityData.set(DATA_TEMPER, this.temper0().id());
     }
 
     public boolean isOld() {
@@ -395,6 +416,9 @@ public final class ResidueEntity extends Mob {
         if (this.legendOwner != null) {
             output.store("residue_legend", UUIDUtil.CODEC, this.legendOwner);
         }
+        if (this.washed()) {
+            output.putBoolean("residue_washed", true);
+        }
     }
 
     @Override
@@ -409,6 +433,7 @@ public final class ResidueEntity extends Mob {
         this.pinTicks = Math.max(0, input.getIntOr("residue_pin", 0));
         this.storm = input.getLongOr("residue_storm", 0L);
         this.legendOwner = input.read("residue_legend", UUIDUtil.CODEC).orElse(null);
+        this.entityData.set(DATA_WASHED, input.getBooleanOr("residue_washed", false));
         this.entityData.set(DATA_PINNED, this.pinTicks > 0);
         Mnemolith.LOGGER.debug("Mnemolith residue loaded tag={} strength={}", this.tag.getSerializedName(), this.strength());
     }

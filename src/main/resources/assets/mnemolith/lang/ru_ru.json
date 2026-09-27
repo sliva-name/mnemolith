@@ -908,5 +908,14 @@
   "mnemolith.configuration.useStoreRange": "Дальность хранения",
   "mnemolith.configuration.useStoreRange.tooltip": "В скольких блоках от осадка хранилище с местом может его принять.",
   "mnemolith.configuration.useResidueStrength": "Сила предложения",
-  "mnemolith.configuration.useResidueStrength.tooltip": "Сила осадка, в который сгущается предложение. 4 — полная прививка, если его прочитали и забрали иглой."
+  "mnemolith.configuration.useResidueStrength.tooltip": "Сила осадка, в который сгущается предложение. 4 — полная прививка, если его прочитали и забрали иглой.",
+  "mnemolith.configuration.intervene": "Вмешательство",
+  "mnemolith.configuration.interveneEnabled": "Переписать память",
+  "mnemolith.configuration.interveneEnabled.tooltip": "Может ли осколок Шрама по блоку сменить метку отпечатка.",
+  "mnemolith.configuration.interveneRange": "Дальность перезаписи",
+  "mnemolith.configuration.interveneRange.tooltip": "В скольких блоках берётся самый громкий отпечаток и закалка ближайшего отголоска.",
+  "mnemolith.configuration.interveneOnce": "Один раз",
+  "mnemolith.configuration.interveneOnce.tooltip": "Остаётся ли уже переписанный отпечаток в покое.",
+  "mnemolith.configuration.interveneInstability": "Тревога",
+  "mnemolith.configuration.interveneInstability.tooltip": "Нестабильность, которую чанк получает при смене метки. 0 — ничего."
 }

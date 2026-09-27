@@ -208,18 +208,36 @@ public final class UseMemory {
         if (player.blockPosition().distSqr(legend.pos()) > range * range) {
             return false;
         }
-        if (residueNear(level, player.getUUID(), legend.pos()) != null) {
-            return false;
+        boolean spawned = false;
+        if (trueResidue(level, player.getUUID(), legend.pos()) == null) {
+            ImprintTag tag = ImprintTag.byOrdinal(legend.tag());
+            int strength = CommonConfig.USE_RESIDUE_STRENGTH.get();
+            ResidueEntity residue = Residues.spawn(level, Residues.airAbove(level, legend.pos()), tag, strength, false);
+            if (residue != null) {
+                residue.markLegend(player.getUUID());
+                spawned = true;
+                Mnemolith.LOGGER.info("Mnemolith legend condensed tag={} at {}", tag.getSerializedName(), legend.pos().toShortString());
+            }
+        }
+        if (legend.lie()) {
+            wash(player, level, legend);
+        }
+        return spawned;
+    }
+
+    /** A lie also leaves a pale residue at the false place. It cannot be kept. The true residue stays full color. */
+    private static void wash(ServerPlayer player, ServerLevel level, Legend legend) {
+        if (!level.isLoaded(legend.guide()) || washedNear(level, player.getUUID(), legend.guide()) != null) {
+            return;
         }
         ImprintTag tag = ImprintTag.byOrdinal(legend.tag());
         int strength = CommonConfig.USE_RESIDUE_STRENGTH.get();
-        ResidueEntity residue = Residues.spawn(level, Residues.airAbove(level, legend.pos()), tag, strength, false);
+        ResidueEntity residue = Residues.spawn(level, Residues.airAbove(level, legend.guide()), tag, strength, false);
         if (residue == null) {
-            return false;
+            return;
         }
         residue.markLegend(player.getUUID());
-        Mnemolith.LOGGER.info("Mnemolith legend condensed tag={} at {}", tag.getSerializedName(), legend.pos().toShortString());
-        return true;
+        residue.markWashed();
     }
 
     /**
@@ -309,9 +327,9 @@ public final class UseMemory {
         return close(player, Choice.MUTED);
     }
 
-    /** The needle took a legendary residue. An ordinary residue is ignored. */
+    /** The needle took a legendary residue. An ordinary residue, and a washed lie, are ignored. */
     public static boolean onHarvest(ServerPlayer player, ResidueEntity residue) {
-        if (!enabled() || residue.legendOwner() == null || !residue.legendOwner().equals(player.getUUID())) {
+        if (!enabled() || residue.washed() || residue.legendOwner() == null || !residue.legendOwner().equals(player.getUUID())) {
             return false;
         }
         Legend legend = open(player);
@@ -329,7 +347,7 @@ public final class UseMemory {
         if (!enabled() || !(player.level() instanceof ServerLevel level)) {
             return false;
         }
-        if (residue.legendOwner() == null || !residue.legendOwner().equals(player.getUUID()) || open(player) == null) {
+        if (residue.washed() || residue.legendOwner() == null || !residue.legendOwner().equals(player.getUUID()) || open(player) == null) {
             return false;
         }
         double range = CommonConfig.USE_STORE_RANGE.get();
@@ -607,19 +625,32 @@ public final class UseMemory {
         }
     }
 
-    private static @Nullable ResidueEntity residueNear(ServerLevel level, UUID owner, BlockPos pos) {
-        AABB box = new AABB(pos).inflate(24.0D);
-        for (ResidueEntity residue : level.getEntitiesOfClass(ResidueEntity.class, box, entity -> owner.equals(entity.legendOwner()))) {
+    private static @Nullable ResidueEntity trueResidue(ServerLevel level, UUID owner, BlockPos pos) {
+        AABB box = new AABB(pos).inflate(reach());
+        for (ResidueEntity residue : level.getEntitiesOfClass(ResidueEntity.class, box, entity -> owner.equals(entity.legendOwner()) && !entity.washed())) {
+            return residue;
+        }
+        return null;
+    }
+
+    private static @Nullable ResidueEntity washedNear(ServerLevel level, UUID owner, BlockPos pos) {
+        AABB box = new AABB(pos).inflate(6.0D);
+        for (ResidueEntity residue : level.getEntitiesOfClass(ResidueEntity.class, box, entity -> owner.equals(entity.legendOwner()) && entity.washed())) {
             return residue;
         }
         return null;
     }
 
     private static void discardResidues(ServerLevel level, UUID owner, BlockPos pos) {
-        AABB box = new AABB(pos).inflate(24.0D);
+        AABB box = new AABB(pos).inflate(reach());
         for (ResidueEntity residue : level.getEntitiesOfClass(ResidueEntity.class, box, entity -> owner.equals(entity.legendOwner()))) {
             residue.discard();
         }
+    }
+
+    /** Far enough to include the false place when a lie offset is at its config maximum. */
+    private static double reach() {
+        return Math.max(24.0D, CommonConfig.USE_LIE_OFFSET.get() + 8.0D);
     }
 
     private static Legends.Sheet sheet(ServerPlayer player) {
