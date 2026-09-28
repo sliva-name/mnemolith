@@ -17,7 +17,7 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Living memory, stage 2 | Done on main (PR #34). Field guide page `traces` | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
 | Living memory, stage 3 | Done on main (PR #35): an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave. Field guide page `offer` | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
 | Living memory, stage 4 | Done on main (PR #35): a scar fragment rewrites an imprint's tag, and a lie leaves a pale residue that cannot be kept. Field guide page `rewrite` | [living-memory.md](living-memory.md), `intervene` config, `/mnemolith interveneqa` |
-| 32x art pass | Next, its own run | — |
+| 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
 chunk's own loudest memory condensed into a drifting fragment. That keeps ownership and protection simple (no
@@ -64,8 +64,8 @@ shadow it. Three crafted slips raise the echo limit, recording length and body h
    needle has one target (a block).
 6. **The guide lags the code.** The echo slip recipe, recording, possession and the lens thermal view are not
    explained in the book. The quick sheet lists only 7 of 11 recipes.
-7. **Visual consistency.** Items and blocks are 16x16 while the lens is 32x32; guide art is flat diagrams; every echo
-   looks identical. There is no visual language for "what kind of memory is this".
+7. **Visual consistency.** Items and blocks were 16x16 while the lens was 32x32, and the guide art was flat diagrams.
+   The 32× pass (see §3.6) put them on one density and one palette. Echoes still share a body; a temper is a tint, not a new mesh.
 8. **Technical.** No automated tests (only in-game QA commands); the gametest run crashes without a registered test.
 
 ## 3. Candidate systems (ranked)
@@ -160,6 +160,13 @@ Restyle every item and block texture to 32x32 with one palette and material lang
 verdigris copper, amethyst glass), multi-element models for the reel, resonator and stratum, and richer guide art.
 *Scope:* medium, no gameplay risk; do it as a dedicated run so every asset changes at once.
 
+*Done.* Item sprites and block faces are 32× (a 16-unit face is a 32-texel region on a 64×64 sheet). The reel,
+resonator, stratum, mute stone, vault and scar heart are multi-element models; their ground plates cover the full
+footprint. The field guide is 30 pages, including the living-memory pages `noticed`, `traces`, `offer`, and
+`rewrite`, redrawn in the same language. The reference plate includes scar glass and the scar heart. Armor, weapons
+and the three role mobs are the same pipeline (`mnart/armory.py`). The pleading
+chair stays the baked easter-egg scan. Regenerate with `python tools/art/build.py`.
+
 ### 7. Gametest harness
 
 Move the checks behind `/mnemolith qa|echoqa|jobqa|echo3qa|graftqa` into NeoForge game tests so CI runs them.
@@ -179,4 +186,4 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 4. Recollection storm and the Scar (done, stacked PR on #24).
 5. Echo relay and archive vault (done, stacked PR on #25).
 6. Living memory, stages 1–4 («Мир меня заметил» through «Я могу вмешиваться»), done on main (PRs #33, #34, and #35). The field guide explains each stage: `noticed`, `traces`, `offer`, `rewrite`. The plan is in [living-memory.md](living-memory.md).
-7. The 32x art pass as its own run, next: the item list is stable enough that nothing is drawn twice.
+7. The 32x art pass (done): one palette, 32× items and block faces, multi-element plates, guide art from the same pipeline.

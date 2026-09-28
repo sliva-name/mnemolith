@@ -63,6 +63,79 @@ def _size(b, f, s):
     return w, h
 
 
+def _pack_skyline(items, groups):
+    """Lowest fitting skyline, leftmost on a tie. Returns None if a rectangle cannot cross a hole."""
+    regions = {}
+    sky = [0] * SHEET
+    for g in items:
+        w, h, _s = groups[g]
+        best = None
+        for x in range(0, SHEET - w + 1):
+            y = max(sky[x:x + w])
+            if y + h <= SHEET and (best is None or y < best[1]):
+                best = (x, y)
+        if best is None:
+            return None
+        x, y = best
+        for i in range(x, x + w):
+            sky[i] = y + h
+        regions[g] = (x, y, w, h)
+    return regions
+
+
+def _pack_maxrects(items, groups):
+    """Best-short-side MaxRects. Deterministic. Used only when the skyline fails."""
+    free = [(0, 0, SHEET, SHEET)]
+    regions = {}
+
+    def overlaps(a, b):
+        return a[0] < b[0] + b[2] and a[0] + a[2] > b[0] and a[1] < b[1] + b[3] and a[1] + a[3] > b[1]
+
+    def contained(a, b):
+        return a[0] >= b[0] and a[1] >= b[1] and a[0] + a[2] <= b[0] + b[2] and a[1] + a[3] <= b[1] + b[3]
+
+    for g in items:
+        w, h = groups[g][0], groups[g][1]
+        best = None
+        for i, (fx, fy, fw, fh) in enumerate(free):
+            if w <= fw and h <= fh:
+                short = min(fw - w, fh - h)
+                long = max(fw - w, fh - h)
+                cand = (short, long, fy, fx, i)
+                if best is None or cand < best:
+                    best = cand
+        if best is None:
+            return None
+        _short, _long, y, x, _i = best
+        used = (x, y, w, h)
+        regions[g] = used
+        nxt = []
+        for fr in free:
+            if not overlaps(fr, used):
+                nxt.append(fr)
+                continue
+            fx, fy, fw, fh = fr
+            px, py, pw, ph = used
+            if py > fy and py < fy + fh:
+                nxt.append((fx, fy, fw, py - fy))
+            if py + ph < fy + fh:
+                nxt.append((fx, py + ph, fw, fy + fh - (py + ph)))
+            if px > fx and px < fx + fw:
+                nxt.append((fx, fy, px - fx, fh))
+            if px + pw < fx + fw:
+                nxt.append((px + pw, fy, fx + fw - (px + pw), fh))
+        pruned = []
+        for a in nxt:
+            if a[2] <= 0 or a[3] <= 0:
+                continue
+            if any(a != b and contained(a, b) for b in nxt):
+                continue
+            if a not in pruned:
+                pruned.append(a)
+        free = pruned
+    return regions
+
+
 class Model:
     def __init__(self, name, folder='block', seed=None):
         self.name, self.folder = name, folder
@@ -101,22 +174,12 @@ class Model:
                 else:
                     groups[g][0] = max(groups[g][0], w)
                     groups[g][1] = max(groups[g][1], h)
-        regions = {}
         items = sorted(order, key=lambda g: (-groups[g][0] * groups[g][1], -groups[g][1]))
-        sky = [0] * SHEET   # skyline packer: lowest fitting spot, leftmost
-        for g in items:
-            w, h, s = groups[g]
-            best = None
-            for x in range(0, SHEET - w + 1):
-                y = max(sky[x:x + w])
-                if y + h <= SHEET and (best is None or y < best[1]):
-                    best = (x, y)
-            if best is None:
-                raise ValueError(f'{self.name}: faces do not fit a {SHEET}px sheet')
-            x, y = best
-            for i in range(x, x + w):
-                sky[i] = y + h
-            regions[g] = (x, y, w, h)
+        # Skyline keeps every model that already shipped byte-stable. A few full-footprint
+        # plates (the reel) leave a hole the skyline cannot cross; MaxRects fills those.
+        regions = _pack_skyline(items, groups) or _pack_maxrects(items, groups)
+        if regions is None:
+            raise ValueError(f'{self.name}: faces do not fit a {SHEET}px sheet')
         img = core.Canvas(SHEET, SHEET).image()
         for g in items:
             x0, y0, w, h = regions[g]

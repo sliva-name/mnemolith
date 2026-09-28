@@ -65,11 +65,17 @@ def stratum_band_top(w, h, rng):
 
 
 def archival_stratum():
+    """Navy column, bone band, and a full-footprint plinth so the block below does not show through.
+
+    The plinth top reuses the bone band (one 32×32 region). A third full top, beside the column
+    side, does not fit the 64×64 sheet. The column's underside sits inside the plinth.
+    """
     m = Model('archival_stratum')
     core_side = P(stratum_core_side, 'core_side')
-    m.box((0, 0, 0), (16, 2, 16), core_side, up=P(stratum_top, 'core_top'), down=P(stratum_top, 'core_top'))
-    m.box((2, 0, 2), (14, 16, 14), core_side, up=P(stratum_top, 'core_top'), down=P(stratum_top, 'core_top'))
-    m.box((0, 5, 0), (16, 9, 16), P(stratum_band_side, 'band_side'), up=P(stratum_band_top, 'band_top'), down=P(stratum_band_top, 'band_top'))
+    bone = P(stratum_band_top, 'band_top')
+    m.box((0, 0, 0), (16, 2, 16), core_side, up=bone, down=bone)
+    m.box((2, 0, 2), (14, 16, 14), core_side, up=P(stratum_top, 'core_top'), down=None)
+    m.box((0, 5, 0), (16, 9, 16), P(stratum_band_side, 'band_side'), up=bone, down=bone)
     return m.build()
 
 
