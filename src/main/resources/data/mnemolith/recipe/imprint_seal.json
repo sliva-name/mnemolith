@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "P": "minecraft:paper",
+    "I": "minecraft:ink_sac"
+  },
+  "pattern": [
+    " A ",
+    "IPI"
+  ],
+  "result": {
+    "id": "mnemolith:imprint_seal",
+    "count": 2
+  }
+}

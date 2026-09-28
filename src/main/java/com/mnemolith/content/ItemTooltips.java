@@ -1,6 +1,7 @@
 package com.mnemolith.content;
 
 import com.mnemolith.data.ImprintCast;
+import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.data.ModDataComponents;
 
 import net.minecraft.network.chat.Component;
@@ -22,10 +23,28 @@ public final class ItemTooltips {
             if (stack.getItem() == ModItems.CHRONICLE_LENS.get()) {
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.hint"));
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.echo_hint"));
+                ImprintTag filter = stack.get(ModDataComponents.FILTER_TAG.get());
+                if (filter != null) {
+                    builder.accept(Component.translatable("item.mnemolith.chronicle_lens.filter", Component.translatable(filter.translationKey()))
+                            .withStyle(net.minecraft.ChatFormatting.AQUA));
+                }
             } else if (stack.getItem() == ModItems.ARCHIVIST_BAIT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archivist_bait.hint"));
             } else if (stack.getItem() == ModItems.EXTRACTION_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
+            } else if (stack.getItem() == ModItems.REINFORCED_NEEDLE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.reinforced_needle.hint"));
+            } else if (stack.getItem() == ModItems.TWIN_NEEDLE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.twin_needle.hint"));
+            } else if (stack.getItem() == ModItems.IMPRINT_SEAL.get()) {
+                builder.accept(Component.translatable("item.mnemolith.imprint_seal.hint"));
+            } else if (stack.getItem() == ModItems.SELECTIVE_MUTE_STONE.get()) {
+                builder.accept(Component.translatable("block.mnemolith.selective_mute_stone.hint"));
+                ImprintTag allowed = stack.get(ModDataComponents.FILTER_TAG.get());
+                if (allowed != null) {
+                    builder.accept(Component.translatable("block.mnemolith.selective_mute_stone.allowed", Component.translatable(allowed.translationKey()))
+                            .withStyle(net.minecraft.ChatFormatting.AQUA));
+                }
             } else if (stack.getItem() == ModItems.ARCHIVAL_TABLET.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {

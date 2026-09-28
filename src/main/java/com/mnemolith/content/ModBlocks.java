@@ -7,6 +7,7 @@ import com.mnemolith.audio.MemorySoundTypes;
 import com.mnemolith.content.block.ArchivalStratumBlock;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
+import com.mnemolith.content.block.SelectiveMuteStoneBlock;
 import com.mnemolith.content.block.ReplicatedMomentBlock;
 import com.mnemolith.content.block.PressureSensorBlock;
 import com.mnemolith.content.block.ResonatorTrapBlock;
@@ -24,6 +25,10 @@ public final class ModBlocks {
     public static final DeferredBlock<MuteStoneBlock> MUTE_STONE = BLOCKS.registerBlock(
             "mute_stone",
             MuteStoneBlock::new,
+            stoneProperties());
+    public static final DeferredBlock<SelectiveMuteStoneBlock> SELECTIVE_MUTE_STONE = BLOCKS.registerBlock(
+            "selective_mute_stone",
+            SelectiveMuteStoneBlock::new,
             stoneProperties());
     public static final DeferredBlock<CompositionReelBlock> COMPOSITION_REEL = BLOCKS.registerBlock(
             "composition_reel",

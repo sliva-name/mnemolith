@@ -36,6 +36,11 @@ public final class CompositionRecipes {
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "landing_burst"),
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "bait"),
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "signal_path"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "tuned_lens"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "selective_hush"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "reinforced_needle"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "twin_needle"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "imprint_seal"),
     };
 
     private static List<CompositionRecipe> RECIPES = builtins();
@@ -91,7 +96,11 @@ public final class CompositionRecipes {
                         tags.add(ImprintTag.CODEC.parse(JsonOps.INSTANCE, el).getOrThrow());
                     }
                     ImprintTag product = ImprintTag.CODEC.parse(JsonOps.INSTANCE, json.get("product")).getOrThrow();
-                    loaded.add(new CompositionRecipe(id, tags, product));
+                    Optional<Identifier> resultItem = Optional.empty();
+                    if (json.has("result")) {
+                        resultItem = Optional.of(Identifier.parse(json.get("result").getAsString()));
+                    }
+                    loaded.add(new CompositionRecipe(id, tags, product, resultItem));
                 } catch (Exception ex) {
                     Mnemolith.LOGGER.error("Failed to load composition formula {}", fileId, ex);
                 }
@@ -131,6 +140,16 @@ public final class CompositionRecipes {
                 new CompositionRecipe(BUILTIN_ORDER[1], List.of(ImprintTag.FIRE, ImprintTag.BUILD), ImprintTag.FIRE),
                 new CompositionRecipe(BUILTIN_ORDER[2], List.of(ImprintTag.FALL, ImprintTag.PLAYER), ImprintTag.FALL),
                 new CompositionRecipe(BUILTIN_ORDER[3], List.of(ImprintTag.SILENCE, ImprintTag.PLAYER), ImprintTag.SILENCE),
-                new CompositionRecipe(BUILTIN_ORDER[4], List.of(ImprintTag.REDSTONE, ImprintTag.PATH, ImprintTag.BUILD), ImprintTag.PLAYER));
+                new CompositionRecipe(BUILTIN_ORDER[4], List.of(ImprintTag.REDSTONE, ImprintTag.PATH, ImprintTag.BUILD), ImprintTag.PLAYER),
+                new CompositionRecipe(BUILTIN_ORDER[5], List.of(ImprintTag.FIRE, ImprintTag.PATH), ImprintTag.FIRE,
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "chronicle_lens"))),
+                new CompositionRecipe(BUILTIN_ORDER[6], List.of(ImprintTag.DEATH, ImprintTag.PATH), ImprintTag.DEATH,
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "selective_mute_stone"))),
+                new CompositionRecipe(BUILTIN_ORDER[7], List.of(ImprintTag.REDSTONE, ImprintTag.SILENCE), ImprintTag.SILENCE,
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "reinforced_needle"))),
+                new CompositionRecipe(BUILTIN_ORDER[8], List.of(ImprintTag.FALL, ImprintTag.REDSTONE), ImprintTag.FALL,
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "twin_needle"))),
+                new CompositionRecipe(BUILTIN_ORDER[9], List.of(ImprintTag.FALL, ImprintTag.BUILD), ImprintTag.BUILD,
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "imprint_seal"))));
     }
 }

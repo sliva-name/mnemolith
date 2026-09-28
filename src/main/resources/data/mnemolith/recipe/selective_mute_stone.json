@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:mute_stone",
+    "minecraft:amethyst_shard",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "mnemolith:selective_mute_stone"
+  }
+}

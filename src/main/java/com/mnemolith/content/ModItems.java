@@ -8,6 +8,7 @@ import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.content.item.EchoRecordingItem;
 import com.mnemolith.content.item.EchoSlipItem;
 import com.mnemolith.content.item.ExtractionNeedleItem;
+import com.mnemolith.content.item.ImprintSealItem;
 import com.mnemolith.content.item.FieldGuideItem;
 import com.mnemolith.content.item.ImprintSlipItem;
 import com.mnemolith.content.item.ScarFragmentItem;
@@ -31,6 +32,18 @@ public final class ModItems {
             "extraction_needle",
             ExtractionNeedleItem::new,
             needle());
+    public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(
+            "reinforced_needle",
+            properties -> new ExtractionNeedleItem(properties, true, false),
+            needle());
+    public static final DeferredItem<ExtractionNeedleItem> TWIN_NEEDLE = ITEMS.registerItem(
+            "twin_needle",
+            properties -> new ExtractionNeedleItem(properties, true, true),
+            needle());
+    public static final DeferredItem<ImprintSealItem> IMPRINT_SEAL = ITEMS.registerItem(
+            "imprint_seal",
+            ImprintSealItem::new,
+            stackTo(16));
     public static final DeferredItem<ImprintSlipItem> IMPRINT_SLIP = ITEMS.registerItem(
             "imprint_slip",
             ImprintSlipItem::new,
@@ -48,6 +61,7 @@ public final class ModItems {
     public static final DeferredItem<Item> UNSTABLE_SLIP = ITEMS.registerItem("unstable_slip", Item::new, stackTo(16));
     public static final DeferredItem<Item> ARCHIVAL_TABLET = ITEMS.registerItem("archival_tablet", Item::new, stackTo(16));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> SELECTIVE_MUTE_STONE = ITEMS.registerSimpleBlockItem(ModBlocks.SELECTIVE_MUTE_STONE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> COMPOSITION_REEL = ITEMS.registerSimpleBlockItem(ModBlocks.COMPOSITION_REEL);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> RESONATOR_TRAP = ITEMS.registerSimpleBlockItem(ModBlocks.RESONATOR_TRAP);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM);

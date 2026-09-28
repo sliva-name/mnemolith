@@ -364,7 +364,7 @@ public final class Storms {
                 }
                 LevelChunk chunk = level.getChunk(x, z);
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-                if (memory == null || memory.hasMuteStone()) {
+                if (memory == null || memory.hasAnyMute()) {
                     continue;
                 }
                 for (Imprint imprint : memory.imprintsCopy()) {

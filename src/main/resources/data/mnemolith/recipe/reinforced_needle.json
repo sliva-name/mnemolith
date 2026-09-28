@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "mnemolith:extraction_needle",
+    "minecraft:iron_ingot",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "mnemolith:reinforced_needle"
+  }
+}

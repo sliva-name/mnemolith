@@ -296,7 +296,7 @@ public final class ImprintEvents {
     }
 
     private static void writeBuild(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        if (!CommonConfig.WRITE_BUILD.get() || state.getBlock() == ModBlocks.MUTE_STONE.get()) {
+        if (!CommonConfig.WRITE_BUILD.get() || state.getBlock() == ModBlocks.MUTE_STONE.get() || state.getBlock() == ModBlocks.SELECTIVE_MUTE_STONE.get()) {
             return;
         }
         if (!ImprintWriter.acceptsThrottled(level, pos)) {

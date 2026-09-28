@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mnemolith:block/selective_mute_stone"
+    }
+  }
+}

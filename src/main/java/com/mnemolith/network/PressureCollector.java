@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.ImprintTag;
+import com.mnemolith.content.item.ChronicleLensItem;
+import net.minecraft.world.entity.player.Player;
 import com.mnemolith.imprint.ImprintConstants;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.pressure.PressureBand;
@@ -55,6 +58,10 @@ final class PressureCollector {
     }
 
     static List<ChunkPressure> collect(ServerLevel level, BlockPos playerPos) {
+        return collect(level, playerPos, null);
+    }
+
+    static List<ChunkPressure> collect(ServerLevel level, BlockPos playerPos, @org.jspecify.annotations.Nullable Player player) {
         ChunkPos origin = ChunkPos.containing(playerPos);
         ChunkMemory originMemory = LoadedChunkMemory.existing(level.getChunk(origin.x(), origin.z()));
         int radius = ImprintConstants.LENS_CHUNK_RADIUS;
@@ -62,6 +69,7 @@ final class PressureCollector {
             radius += 1;
         }
         int muteRadius = CommonConfig.MUTE_RADIUS_CHUNKS.get();
+        ImprintTag filter = player == null ? null : ChronicleLensItem.heldFilter(player).orElse(null);
         List<ChunkPressure> chunks = new ArrayList<>();
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
@@ -75,10 +83,13 @@ final class PressureCollector {
                 }
                 LevelChunk chunk = level.getChunk(chunkX, chunkZ);
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+                if (filter != null && !matchesFilter(memory, filter)) {
+                    continue;
+                }
                 int pressure = memory == null ? 0 : memory.cachedPressure();
                 PressureBand band = MemoryPressure.band(pressure);
                 BlockPos sample = new BlockPos((chunkX << 4) + 8, playerPos.getY(), (chunkZ << 4) + 8);
-                boolean muted = memory != null && memory.hasMuteStone();
+                boolean muted = memory != null && memory.hasAnyMute();
                 if (!muted && muteRadius > 0) {
                     muted = LoadedChunkMemory.isMuted(level, sample);
                 }
@@ -86,5 +97,18 @@ final class PressureCollector {
             }
         }
         return chunks;
+    }
+
+    /** True when the chunk has any imprint of {@code filter}, or its loudest imprint matches. */
+    private static boolean matchesFilter(@org.jspecify.annotations.Nullable ChunkMemory memory, ImprintTag filter) {
+        if (memory == null || memory.imprintCount() == 0) {
+            return false;
+        }
+        for (int i = 0; i < memory.imprintCount(); i++) {
+            if (memory.imprintAt(i).tag() == filter) {
+                return true;
+            }
+        }
+        return false;
     }
 }

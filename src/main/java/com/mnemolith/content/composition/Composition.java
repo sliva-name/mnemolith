@@ -27,12 +27,16 @@ import com.mnemolith.echo.residue.Residues;
 import com.mnemolith.particle.MemoryFx;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /** Server-side composition. The menu button and the smoke command both call {@link #compose}. */
 public final class Composition {
@@ -78,9 +82,7 @@ public final class Composition {
         if (formula.isEmpty()) {
             return fail(level, pos, player, container, tags);
         }
-        ItemStack reward = player == null
-                ? ItemStack.EMPTY
-                : Residues.shard(formula.get().product(), CompositionFormula.SHARD_STRENGTH, pos, level.getGameTime());
+        ItemStack reward = player == null ? ItemStack.EMPTY : rewardOf(formula.get(), pos, level.getGameTime());
         if (player != null && !InventorySpace.fits(player.getInventory(), reward)) {
             InventorySpace.refuse(player);
             return finish(level, pos, player, ComposeResult.FULL, -1);
@@ -96,6 +98,24 @@ public final class Composition {
             player.sendSystemMessage(Component.translatable("mnemolith.message.composed", Component.translatable(formula.get().translationKey())));
         }
         return finish(level, pos, player, ComposeResult.SUCCESS, CompositionRecipes.indexOf(formula.get()));
+    }
+
+    /** Shard of {@code product}, or the optional result item (with filter bound from product when relevant). */
+    public static ItemStack rewardOf(CompositionRecipe recipe, BlockPos pos, long gameTime) {
+        if (recipe.resultItem().isPresent()) {
+            Identifier id = recipe.resultItem().get();
+            Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(Items.AIR);
+            if (item == Items.AIR) {
+                Mnemolith.LOGGER.warn("Mnemolith composition result {} is missing; falling back to shard", id);
+                return Residues.shard(recipe.product(), CompositionFormula.SHARD_STRENGTH, pos, gameTime);
+            }
+            ItemStack stack = new ItemStack(item);
+            if (item == ModItems.CHRONICLE_LENS.get() || item == ModItems.SELECTIVE_MUTE_STONE.get()) {
+                stack.set(ModDataComponents.FILTER_TAG.get(), recipe.product());
+            }
+            return stack;
+        }
+        return Residues.shard(recipe.product(), CompositionFormula.SHARD_STRENGTH, pos, gameTime);
     }
 
     private static ComposeResult fail(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container, List<ImprintTag> tags) {

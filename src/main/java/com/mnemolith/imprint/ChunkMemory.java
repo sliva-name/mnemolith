@@ -30,11 +30,13 @@ public final class ChunkMemory {
             Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
             ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
-            Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad)
+            Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad),
+            Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
+    private final List<SelectiveMuteMark> selectiveMutes = new ArrayList<>();
     private final List<BlockPos> resonators = new ArrayList<>();
     private final List<BlockPos> strata = new ArrayList<>();
     /** Scar glass in this chunk: a recollection storm cannot gather within one chunk of it. Optional in the codec. */
@@ -57,10 +59,11 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
+        memory.selectiveMutes.addAll(selectiveMutes);
         memory.fractured = fractured;
         memory.archival = archival;
         memory.lastWriteGameTime = lastWriteGameTime;
@@ -80,6 +83,7 @@ public final class ChunkMemory {
     public boolean isEmpty() {
         return this.imprints.isEmpty()
                 && this.muteStones.isEmpty()
+                && this.selectiveMutes.isEmpty()
                 && this.resonators.isEmpty()
                 && this.strata.isEmpty()
                 && this.wards.isEmpty()
@@ -109,6 +113,11 @@ public final class ChunkMemory {
 
     public boolean hasMuteStone() {
         return !this.muteStones.isEmpty();
+    }
+
+    /** Full mute stone or selective mute present. */
+    public boolean hasAnyMute() {
+        return hasMuteStone() || hasSelectiveMute();
     }
 
     public boolean fractured() {
@@ -314,6 +323,45 @@ public final class ChunkMemory {
 
     public boolean removeMuteStone(BlockPos pos) {
         return this.muteStones.remove(pos);
+    }
+
+    public List<SelectiveMuteMark> selectiveMutesCopy() {
+        return List.copyOf(this.selectiveMutes);
+    }
+
+    public boolean hasSelectiveMute() {
+        return !this.selectiveMutes.isEmpty();
+    }
+
+    public int selectiveMuteCount() {
+        return this.selectiveMutes.size();
+    }
+
+    /** True when this chunk's selective mutes allow {@code tag} (at least one mark matches). */
+    public boolean selectiveAllows(ImprintTag tag) {
+        for (SelectiveMuteMark mark : this.selectiveMutes) {
+            if (mark.allowed() == tag) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addSelectiveMute(BlockPos pos, ImprintTag allowed) {
+        if (markListFull(this.selectiveMutes.size())) {
+            return false;
+        }
+        for (int i = 0; i < this.selectiveMutes.size(); i++) {
+            if (this.selectiveMutes.get(i).pos().equals(pos)) {
+                this.selectiveMutes.set(i, new SelectiveMuteMark(pos, allowed));
+                return true;
+            }
+        }
+        return this.selectiveMutes.add(new SelectiveMuteMark(pos, allowed));
+    }
+
+    public boolean removeSelectiveMute(BlockPos pos) {
+        return this.selectiveMutes.removeIf(mark -> mark.pos().equals(pos));
     }
 
     public List<BlockPos> resonatorsCopy() {

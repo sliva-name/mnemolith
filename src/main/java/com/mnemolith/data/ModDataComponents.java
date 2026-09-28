@@ -1,6 +1,7 @@
 package com.mnemolith.data;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.imprint.ImprintTag;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -40,6 +41,14 @@ public final class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.vault.VaultContents>> VAULT_CONTENTS = DATA_COMPONENTS.registerComponentType(
             "vault_contents",
             builder -> builder.persistent(com.mnemolith.vault.VaultContents.CODEC).networkSynchronized(com.mnemolith.vault.VaultContents.STREAM_CODEC));
+
+    /**
+     * Lens filter or selective-mute allowance: only chunks / writes matching this imprint tag pass.
+     * Absence means unfiltered lens or an unbound selective mute (blocks every write).
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ImprintTag>> FILTER_TAG = DATA_COMPONENTS.registerComponentType(
+            "filter_tag",
+            builder -> builder.persistent(ImprintTag.CODEC).networkSynchronized(ImprintTag.STREAM_CODEC));
 
     private ModDataComponents() {}
 

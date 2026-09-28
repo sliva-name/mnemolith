@@ -186,7 +186,7 @@ public final class ArchiveVaults {
                 }
                 LevelChunk chunk = level.getChunk(cx + dx, cz + dz);
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-                if (memory == null || memory.hasMuteStone()) {
+                if (memory == null || memory.hasAnyMute()) {
                     continue;
                 }
                 for (int i = 0; i < memory.imprintCount(); i++) {
