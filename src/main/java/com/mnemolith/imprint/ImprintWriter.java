@@ -250,6 +250,11 @@ public final class ImprintWriter {
             case BUILD -> ImprintConstants.BUILD_INTENSITY;
             case REDSTONE -> ImprintConstants.REDSTONE_INTENSITY;
             case PATH -> ImprintConstants.PATH_INTENSITY;
+            case LIGHTNING -> ImprintConstants.LIGHTNING_INTENSITY;
+            case PORTAL -> ImprintConstants.PORTAL_INTENSITY;
+            case SCULK -> ImprintConstants.SCULK_INTENSITY;
+            case BOSS -> ImprintConstants.BOSS_INTENSITY;
+            case TRADE -> ImprintConstants.TRADE_INTENSITY;
         };
         return Math.max(ImprintConstants.INTENSITY_MIN, Math.min(ImprintConstants.INTENSITY_MAX, intensity));
     }

@@ -7,8 +7,8 @@ import org.jspecify.annotations.Nullable;
 import com.mnemolith.imprint.ImprintTag;
 
 /**
- * What a grafted memory makes of an echo. One temper per graftable tag. Path, build, redstone and player slips only
- * remember who was there (an echo already is that), so they do not take as a graft.
+ * What a grafted memory makes of an echo. One temper per graftable tag. Path, build, redstone, player, trade and boss
+ * slips only remember who was there or what was won (an echo already is that), so they do not take as a graft.
  */
 public enum Temper {
     /** Silence: its own and nearby echoes' work leaves no imprints; mobs and memory mobs do not notice it; slower. */
@@ -20,7 +20,13 @@ public enum Temper {
     /** Fall: takes long drops and digs out its own floor. */
     PLUNGING(ImprintTag.FALL, 24, 0x7FE0CF, null),
     /** Explosion: digs fast, work writes explosions, bursts when its body dies. */
-    VOLATILE(ImprintTag.EXPLOSION, 48, 0xFF5E4E, ImprintTag.EXPLOSION);
+    VOLATILE(ImprintTag.EXPLOSION, 48, 0xFF5E4E, ImprintTag.EXPLOSION),
+    /** Lightning: shrugs off bolts; work writes lightning; possessed body gains a brief charge of speed. */
+    CHARGED(ImprintTag.LIGHTNING, 28, 0x7EC8FF, ImprintTag.LIGHTNING),
+    /** Portal: when told to follow, crosses with its owner into another dimension (costs a charge). */
+    WANDERING(ImprintTag.PORTAL, 20, 0xC77DFF, ImprintTag.PORTAL),
+    /** Sculk: work writes sculk; shrugs off darkness; possessed body sees in the deep. */
+    DEEP(ImprintTag.SCULK, 16, 0x1A8A8A, ImprintTag.SCULK);
 
     private final ImprintTag tag;
     private final int baseCharge;
@@ -66,7 +72,7 @@ public enum Temper {
         return null;
     }
 
-    /** 0 is "no temper"; 1..5 are the tempers (used in the synced entity field). */
+    /** 0 is "no temper"; 1..N are the tempers (used in the synced entity field). */
     public static @Nullable Temper byId(int id) {
         Temper[] values = values();
         return id <= 0 || id > values.length ? null : values[id - 1];

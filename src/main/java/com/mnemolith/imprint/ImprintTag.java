@@ -18,7 +18,13 @@ public enum ImprintTag implements StringRepresentable {
     SILENCE("silence", 4),
     PLAYER("player", 2),
     REDSTONE("redstone", 2),
-    PATH("path", 1);
+    PATH("path", 1),
+    // Append only: ordinals are saved in discovery bits and imprint NBT.
+    LIGHTNING("lightning", 6),
+    PORTAL("portal", 5),
+    SCULK("sculk", 4),
+    BOSS("boss", 10),
+    TRADE("trade", 2);
 
     public static final Codec<ImprintTag> CODEC = StringRepresentable.fromEnum(ImprintTag::values);
     public static final StreamCodec<ByteBuf, ImprintTag> STREAM_CODEC = ByteBufCodecs.idMapper(ImprintTag::byOrdinal, ImprintTag::ordinal);

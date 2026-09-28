@@ -189,8 +189,8 @@ public final class ChunkMemory {
     }
 
     /**
-     * Drops the oldest build, redstone, or path imprint that has aged past {@code fadeTicks}.
-     * Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.
+     * Drops the oldest build, redstone, path, or trade imprint that has aged past {@code fadeTicks}.
+     * Deaths, explosions, falls, fire, silence, player, lightning, portal, sculk, and boss imprints stay until extracted.
      */
     public boolean fadeQuiet(long now, int fadeTicks) {
         if (fadeTicks <= 0 || this.imprints.isEmpty()) {
@@ -225,7 +225,7 @@ public final class ChunkMemory {
     }
 
     private static boolean isQuiet(ImprintTag tag) {
-        return tag == ImprintTag.BUILD || tag == ImprintTag.REDSTONE || tag == ImprintTag.PATH;
+        return tag == ImprintTag.BUILD || tag == ImprintTag.REDSTONE || tag == ImprintTag.PATH || tag == ImprintTag.TRADE;
     }
 
     public boolean acceptsThrottledWrite(long gameTime, int debounceTicks) {

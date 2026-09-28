@@ -41,6 +41,10 @@ public final class CompositionRecipes {
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "reinforced_needle"),
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "twin_needle"),
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "imprint_seal"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "charged_bolt"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "wanderers_gate"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "deep_hush"),
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "triumph"),
     };
 
     private static List<CompositionRecipe> RECIPES = builtins();
@@ -150,6 +154,10 @@ public final class CompositionRecipes {
                 new CompositionRecipe(BUILTIN_ORDER[8], List.of(ImprintTag.FALL, ImprintTag.REDSTONE), ImprintTag.FALL,
                         Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "twin_needle"))),
                 new CompositionRecipe(BUILTIN_ORDER[9], List.of(ImprintTag.FALL, ImprintTag.BUILD), ImprintTag.BUILD,
-                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "imprint_seal"))));
+                        Optional.of(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "imprint_seal"))),
+                new CompositionRecipe(BUILTIN_ORDER[10], List.of(ImprintTag.LIGHTNING, ImprintTag.FIRE), ImprintTag.LIGHTNING),
+                new CompositionRecipe(BUILTIN_ORDER[11], List.of(ImprintTag.PORTAL, ImprintTag.PATH), ImprintTag.PORTAL),
+                new CompositionRecipe(BUILTIN_ORDER[12], List.of(ImprintTag.SCULK, ImprintTag.SILENCE), ImprintTag.SCULK),
+                new CompositionRecipe(BUILTIN_ORDER[13], List.of(ImprintTag.BOSS, ImprintTag.DEATH), ImprintTag.DEATH));
     }
 }

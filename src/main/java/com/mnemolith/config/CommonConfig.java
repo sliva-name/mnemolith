@@ -20,6 +20,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue WRITE_EXPLOSION;
     public static final ModConfigSpec.BooleanValue WRITE_FALL;
     public static final ModConfigSpec.BooleanValue WRITE_BUILD;
+    public static final ModConfigSpec.BooleanValue WRITE_LIGHTNING;
+    public static final ModConfigSpec.BooleanValue WRITE_PORTAL;
+    public static final ModConfigSpec.BooleanValue WRITE_SCULK;
+    public static final ModConfigSpec.BooleanValue WRITE_BOSS;
+    public static final ModConfigSpec.BooleanValue WRITE_TRADE;
     public static final ModConfigSpec.DoubleValue FALL_DISTANCE_MIN;
     public static final ModConfigSpec.IntValue EXTRACTION_DURABILITY_COST;
     public static final ModConfigSpec.IntValue EXTRACTION_COOLDOWN_TICKS;
@@ -220,13 +225,18 @@ public final class CommonConfig {
         WRITE_EXPLOSION = SpecValues.bool(builder, "writeExplosion", "Whether an explosion writes an explosion imprint.", true);
         WRITE_FALL = SpecValues.bool(builder, "writeFall", "Whether a significant fall writes a fall imprint.", true);
         WRITE_BUILD = SpecValues.bool(builder, "writeBuild", "Whether placing or breaking a block writes a build or redstone imprint.", true);
+        WRITE_LIGHTNING = SpecValues.bool(builder, "writeLightning", "Whether a lightning strike writes a lightning imprint.", true);
+        WRITE_PORTAL = SpecValues.bool(builder, "writePortal", "Whether travelling to another dimension writes a portal imprint at the departure.", true);
+        WRITE_SCULK = SpecValues.bool(builder, "writeSculk", "Whether a sculk sensor click or shrieker shriek writes a sculk imprint.", true);
+        WRITE_BOSS = SpecValues.bool(builder, "writeBoss", "Whether killing a boss (dragon, wither, warden, elder guardian, or the Scar) writes a boss imprint.", true);
+        WRITE_TRADE = SpecValues.bool(builder, "writeTrade", "Whether trading with a villager writes a trade imprint.", true);
         FALL_DISTANCE_MIN = SpecValues.decimal(builder, "fallDistanceMin", "Minimum fall distance, in blocks, before a fall imprint is written.", 4.0D, 1.0D, 40.0D);
         EXTRACTION_DURABILITY_COST = SpecValues.integer(builder, "extractionDurabilityCost", "Durability the extraction needle loses on a successful extract.", 2, 0, 32);
         EXTRACTION_COOLDOWN_TICKS = SpecValues.integer(builder, "extractionCooldownTicks", "Ticks before the extraction needle can extract again. 0 disables the cooldown.", 20, 0, 200);
         FAILURE_PRESSURE_SPIKE = SpecValues.integer(builder, "failurePressureSpike", "Instability added to the composition reel's chunk when a formula fails. A moment replicant is asked only if the chunk is then overloaded or fractured.", 18, 0, 100);
         INSTABILITY_DECAY = SpecValues.integer(builder, "instabilityDecay", "Instability removed from a player's chunk on each decay pulse. 0 disables cooling. Loud imprints stay until extracted.", 1, 0, 20);
         INSTABILITY_DECAY_TICKS = SpecValues.integer(builder, "instabilityDecayTicks", "Ticks between instability and quiet-imprint pulses while a player is in the chunk. 0 disables the pulse.", 200, 0, 20_000);
-        QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.", 6000, 0, 72_000);
+        QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, path, or trade imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, player, lightning, portal, sculk, and boss imprints stay until extracted.", 6000, 0, 72_000);
         VEIN_SHIMMER_TICKS = SpecValues.integer(builder, "veinShimmerTicks", "Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.", 40, 0, 200);
         ALLOW_AMBIENT_PRESSURE = SpecValues.bool(builder, "allowAmbientPressure", "Whether the server may send full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it such a player gets only the band-only snapshot (overloaded and fracture chunks) used for fracture feel. Vein marks stay lens-only. The client visuals.ambientWithoutLens toggle only decides whether the client asks and draws; it cannot grant the snapshot by itself.", false);
         SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 20, 1, 10_000);
@@ -290,8 +300,8 @@ public final class CommonConfig {
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
         ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
         ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
-        ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion) can be grafted into your echo to give it a temper.", true);
-        ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
+        ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion, lightning, portal, sculk) can be grafted into your echo to give it a temper.", true);
+        ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48, charged 28, wandering 20, deep 16). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
         ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes. A hushed echo (anyone's) also swallows a residue's or the Scar's act-out within this radius, for one charge.", 8, 0, 16);
         builder.pop();
 

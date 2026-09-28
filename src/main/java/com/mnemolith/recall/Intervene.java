@@ -34,7 +34,8 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 public final class Intervene {
     /** Graftable tags, in the order a second pass walks when the chosen temper is already the imprint's tag. */
     private static final ImprintTag[] CYCLE = {
-            ImprintTag.SILENCE, ImprintTag.DEATH, ImprintTag.FIRE, ImprintTag.FALL, ImprintTag.EXPLOSION
+            ImprintTag.SILENCE, ImprintTag.DEATH, ImprintTag.FIRE, ImprintTag.FALL, ImprintTag.EXPLOSION,
+            ImprintTag.LIGHTNING, ImprintTag.PORTAL, ImprintTag.SCULK
     };
 
     private Intervene() {}

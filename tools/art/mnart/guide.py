@@ -389,23 +389,32 @@ def p_loop():
 
 def p_sources():
     p = Page('sources')
-    rows = [('path', 1), ('build', 2), ('redstone', 2), ('player', 4), ('fire', 8), ('silence', 8), ('fall', 10), ('explosion', 24), ('death', 27)]
+    # First-copy contribution ≈ weight × intensity. Two columns so fourteen tags fit the page.
+    rows = [
+        ('path', 1), ('build', 2), ('redstone', 2), ('trade', 2), ('player', 4),
+        ('portal', 10), ('sculk', 8), ('fire', 8), ('silence', 8), ('fall', 10),
+        ('lightning', 18), ('explosion', 24), ('death', 27), ('boss', 40),
+    ]
+    top, row_h, max_v = 28, 15, 40
     for k, (t, v) in enumerate(rows):
-        y = 34 + k * 22
+        col = k // 7
+        row = k % 7
+        x0 = 236 + col * 140
+        y = top + row * row_h
         i = gui.TAG_ORDER.index(t)
-        ic = tags_img().crop((i * 32, 0, i * 32 + 32, 32)).resize((20, 20), Image.NEAREST)
-        p.paste(ic, 250, y - 8, shadow=False)
-        col = c('verdigris', 4) if v <= 4 else c('ember', 4) if v <= 10 else c('red', 4)
-        p.plate(276, y - 5, 478, y + 7)
-        p.d.rectangle([278, y - 3, 278 + int(198 * v / 27), y + 5], fill=(*col, 255))
-    d = Diorama(230, 220, 28)
+        ic = tags_img().crop((i * 32, 0, i * 32 + 32, 32)).resize((14, 14), Image.NEAREST)
+        p.paste(ic, x0, y - 5, shadow=False)
+        tint = c('verdigris', 4) if v <= 4 else c('ember', 4) if v <= 18 else c('red', 4)
+        p.plate(x0 + 18, y - 3, x0 + 132, y + 7)
+        p.d.rectangle([x0 + 20, y - 1, x0 + 20 + int(110 * v / max_v), y + 5], fill=(*tint, 255))
+    d = Diorama(220, 210, 26)
     d.ground(4, 4, 2)
     d.add(mob_quads('wanderer', -0.8, 0, 0.8, 215))
     d.add(block_quads('mnemolith:block/archival_stratum', 0.2, 0, -0.8))
     d.add(cube('plank', 'plank', 1.0, 0, -1.8))
     d.add(mob_quads('archivist', 1.2, 0, 1.2, 250))
-    p.center(d.render(0, -0.3, 0), 122, 130)
-    p.spark(120, 120, 60, c('echo', 4), 12)
+    p.center(d.render(0, -0.3, 0), 118, 128)
+    p.spark(118, 118, 55, c('echo', 4), 12)
     return p.image()
 
 

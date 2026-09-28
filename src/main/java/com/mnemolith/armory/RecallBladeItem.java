@@ -82,6 +82,16 @@ public class RecallBladeItem extends Item {
                 target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
                 target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, false, false));
             }
+            case LIGHTNING -> {
+                target.hurtServer(level, level.damageSources().lightningBolt(), 3.0F);
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 40, 0, false, false));
+            }
+            case PORTAL -> target.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 30, 0, false, false));
+            case SCULK -> {
+                target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, false, false));
+                target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 0, false, false));
+            }
+            case BOSS -> target.hurtServer(level, level.damageSources().magic(), 6.0F);
             default -> target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 40, 0, false, false));
         }
     }

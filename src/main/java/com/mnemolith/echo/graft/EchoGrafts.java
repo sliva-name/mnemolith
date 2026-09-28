@@ -521,6 +521,57 @@ public final class EchoGrafts {
         return is(echo, Temper.KINDLED);
     }
 
+    /** A charged echo shrugs off lightning bolts. */
+    public static boolean lightningProof(EchoEntity echo) {
+        return is(echo, Temper.CHARGED);
+    }
+
+    /** A deep echo shrugs off darkness and blindness from sculk / silence lashes. */
+    public static boolean deepSight(EchoEntity echo) {
+        return is(echo, Temper.DEEP);
+    }
+
+    /**
+     * Before the owner leaves this dimension: any of their wandering echoes that are following within range
+     * cross with them, at one charge each. Partial portal behaviour — they do not seek portals on their own.
+     */
+    public static void bringWanderingFollowers(ServerPlayer player, ServerLevel from, net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> destKey) {
+        if (!enabled()) {
+            return;
+        }
+        ServerLevel dest = from.getServer().getLevel(destKey);
+        if (dest == null || dest == from) {
+            return;
+        }
+        double range = CommonConfig.ECHO_FOLLOW_LOST_DISTANCE.get();
+        java.util.List<EchoEntity> followers = from.getEntitiesOfClass(EchoEntity.class, player.getBoundingBox().inflate(range),
+                echo -> echo.isAlive()
+                        && player.getUUID().equals(echo.ownerId())
+                        && is(echo, Temper.WANDERING)
+                        && echo.job().order() == com.mnemolith.echo.job.EchoJob.Order.FOLLOW);
+        if (followers.isEmpty()) {
+            return;
+        }
+        for (EchoEntity echo : followers) {
+            EchoGraft graft = echo.graft();
+            if (graft == null || graft.charge() < 1) {
+                continue;
+            }
+            boolean moved = echo.teleportTo(dest, player.getX(), player.getY(), player.getZ(), java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+            if (!moved) {
+                continue;
+            }
+            spend(echo, 1);
+            from.sendParticles(particle(Temper.WANDERING), player.getX(), player.getY() + 1.0D, player.getZ(), 12, 0.35D, 0.5D, 0.35D, 0.03D);
+            dest.sendParticles(particle(Temper.WANDERING), player.getX(), player.getY() + 1.0D, player.getZ(), 18, 0.4D, 0.6D, 0.4D, 0.04D);
+            dest.playSound(null, BlockPos.containing(player.getX(), player.getY(), player.getZ()),
+                    net.minecraft.sounds.SoundEvents.CHORUS_FRUIT_TELEPORT, net.minecraft.sounds.SoundSource.NEUTRAL, 0.8F, 1.2F);
+            // Owner is still in {@code from} when travel fires; speak to them here.
+            player.sendOverlayMessage(Component.translatable("mnemolith.graft.wandered", Component.translatable(Temper.WANDERING.key())));
+            Mnemolith.LOGGER.info("Mnemolith wandering echo followed owner={} into {}", echo.ownerName(), destKey.identifier());
+        }
+    }
+
     // ---- the chunk ----
 
     /** Every 40 ticks: a fracture under a grafted echo rejects the graft into that chunk. */
@@ -594,8 +645,9 @@ public final class EchoGrafts {
 
     /**
      * Player tick while possessing: the body's temper becomes an effect on the player (hushed: unrecorded, grave:
-     * resistance, kindled: fire resistance, volatile: haste II) and costs one charge every 10 seconds (kindled only
-     * while burning or in lava). Plunging works through {@link #possessedFall}.
+     * resistance, kindled: fire resistance, volatile: haste II, charged: speed, wandering: slow falling, deep: night
+     * vision) and costs one charge every 10 seconds (kindled only while burning or in lava). Plunging works through
+     * {@link #possessedFall}.
      */
     public static void possessedTick(ServerPlayer player) {
         if (!enabled() || player.tickCount % 20 != 0) {
@@ -612,6 +664,9 @@ public final class EchoGrafts {
             case KINDLED -> MobEffects.FIRE_RESISTANCE;
             case VOLATILE -> MobEffects.HASTE;
             case PLUNGING -> null;
+            case CHARGED -> MobEffects.SPEED;
+            case WANDERING -> MobEffects.SLOW_FALLING;
+            case DEEP -> MobEffects.NIGHT_VISION;
         };
         if (effect == null) {
             return;
@@ -655,6 +710,9 @@ public final class EchoGrafts {
             case KINDLED -> MobEffects.FIRE_RESISTANCE;
             case VOLATILE -> MobEffects.HASTE;
             case PLUNGING -> MobEffects.SLOW_FALLING;
+            case CHARGED -> MobEffects.SPEED;
+            case WANDERING -> MobEffects.SLOW_FALLING;
+            case DEEP -> MobEffects.NIGHT_VISION;
         };
     }
 
@@ -667,6 +725,9 @@ public final class EchoGrafts {
             case KINDLED -> ModParticles.GRAFT_KINDLED.get();
             case PLUNGING -> ModParticles.GRAFT_PLUNGING.get();
             case VOLATILE -> ModParticles.GRAFT_VOLATILE.get();
+            case CHARGED -> ModParticles.GRAFT_CHARGED.get();
+            case WANDERING -> ModParticles.GRAFT_WANDERING.get();
+            case DEEP -> ModParticles.GRAFT_DEEP.get();
         };
     }
 

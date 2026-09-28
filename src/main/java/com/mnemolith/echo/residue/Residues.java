@@ -473,6 +473,15 @@ public final class Residues {
                 player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 60, 0));
                 player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 80, 0));
             }
+            case LIGHTNING -> {
+                player.hurtServer(level, level.damageSources().lightningBolt(), 2.0F);
+                player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.GLOWING, 40, 0));
+            }
+            case PORTAL -> player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.LEVITATION, 25, 0));
+            case SCULK -> {
+                player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 100, 0));
+                player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 60, 0));
+            }
             default -> {}
         }
         level.sendParticles(EchoGrafts.particle(temper), player.getX(), player.getY() + 1.0D, player.getZ(), 12, 0.3D, 0.5D, 0.3D, 0.05D);
