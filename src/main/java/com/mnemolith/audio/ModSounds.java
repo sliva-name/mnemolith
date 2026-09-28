@@ -48,6 +48,10 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> STALKER_DEATH = register("stalker_death");
     /** The chair's meme clip. Streamed; it is about nineteen seconds. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CHAIR_VOICE = register("chair_voice");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_STEP = register("echo_step");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_HURT = register("echo_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_DEATH = register("echo_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_POSSESS = register("echo_possess");
 
     private ModSounds() {}
 

@@ -9,10 +9,19 @@ import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
 import com.mnemolith.content.block.SelectiveMuteStoneBlock;
 import com.mnemolith.content.block.ReplicatedMomentBlock;
+import com.mnemolith.content.block.EchoHomeBlock;
+import com.mnemolith.content.block.PressureLampBlock;
 import com.mnemolith.content.block.PressureSensorBlock;
 import com.mnemolith.content.block.ResonatorTrapBlock;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -74,6 +83,43 @@ public final class ModBlocks {
             "player_memorial",
             com.mnemolith.content.block.PlayerMemorialBlock::new,
             memorialProperties());
+
+
+    public static final DeferredBlock<EchoHomeBlock> ECHO_HOME = BLOCKS.registerBlock(
+            "echo_home",
+            EchoHomeBlock::new,
+            homeProperties());
+
+    public static final DeferredBlock<Block> ARCHIVAL_STRATUM_BRICKS = BLOCKS.registerSimpleBlock(
+            "archival_stratum_bricks", brickStratumProperties());
+    public static final DeferredBlock<StairBlock> ARCHIVAL_STRATUM_STAIRS = BLOCKS.register(
+            "archival_stratum_stairs",
+            key -> new StairBlock(ARCHIVAL_STRATUM_BRICKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.ofLegacyCopy(ARCHIVAL_STRATUM_BRICKS.get())
+                            .setId(ResourceKey.create(Registries.BLOCK, key))));
+    public static final DeferredBlock<SlabBlock> ARCHIVAL_STRATUM_SLAB = BLOCKS.registerBlock(
+            "archival_stratum_slab", SlabBlock::new, brickStratumProperties());
+    public static final DeferredBlock<WallBlock> ARCHIVAL_STRATUM_WALL = BLOCKS.registerBlock(
+            "archival_stratum_wall", WallBlock::new,
+            props -> brickStratumProperties().apply(props).forceSolidOn());
+
+    public static final DeferredBlock<Block> MUTE_STONE_BRICKS = BLOCKS.registerSimpleBlock(
+            "mute_stone_bricks", brickMuteProperties());
+    public static final DeferredBlock<StairBlock> MUTE_STONE_STAIRS = BLOCKS.register(
+            "mute_stone_stairs",
+            key -> new StairBlock(MUTE_STONE_BRICKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.ofLegacyCopy(MUTE_STONE_BRICKS.get())
+                            .setId(ResourceKey.create(Registries.BLOCK, key))));
+    public static final DeferredBlock<SlabBlock> MUTE_STONE_SLAB = BLOCKS.registerBlock(
+            "mute_stone_slab", SlabBlock::new, brickMuteProperties());
+    public static final DeferredBlock<WallBlock> MUTE_STONE_WALL = BLOCKS.registerBlock(
+            "mute_stone_wall", WallBlock::new,
+            props -> brickMuteProperties().apply(props).forceSolidOn());
+
+    public static final DeferredBlock<IronBarsBlock> SCAR_GLASS_PANE = BLOCKS.registerBlock(
+            "scar_glass_pane", IronBarsBlock::new, paneProperties());
+    public static final DeferredBlock<PressureLampBlock> PRESSURE_LAMP = BLOCKS.registerBlock(
+            "pressure_lamp", PressureLampBlock::new, lampProperties());
 
     private ModBlocks() {}
 
@@ -164,5 +210,51 @@ public final class ModBlocks {
                 .strength(2.0F, 6.0F)
                 .sound(SoundType.STONE)
                 .noOcclusion();
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> homeProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_CYAN)
+                .strength(2.0F, 6.0F)
+                .sound(SoundType.AMETHYST)
+                .noOcclusion()
+                .lightLevel(state -> 4);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> brickStratumProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_BLUE)
+                .strength(2.5F, 6.0F)
+                .sound(MemorySoundTypes.STRATUM)
+                .requiresCorrectToolForDrops();
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> brickMuteProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_BLUE)
+                .strength(1.5F, 6.0F)
+                .sound(MemorySoundTypes.MUTE)
+                .requiresCorrectToolForDrops();
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> paneProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_PURPLE)
+                .strength(1.0F, 3.0F)
+                .sound(SoundType.AMETHYST)
+                .noOcclusion()
+                .isValidSpawn((state, level, pos, type) -> false)
+                .isRedstoneConductor((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .isViewBlocking((state, level, pos) -> false);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> lampProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_CYAN)
+                .strength(1.0F, 3.0F)
+                .sound(SoundType.GLASS)
+                .noOcclusion()
+                .lightLevel(PressureLampBlock::lightFor);
     }
 }

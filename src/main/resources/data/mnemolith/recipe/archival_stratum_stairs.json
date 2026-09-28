@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": "mnemolith:archival_stratum_bricks"
+  },
+  "result": {
+    "id": "mnemolith:archival_stratum_stairs",
+    "count": 4
+  }
+}

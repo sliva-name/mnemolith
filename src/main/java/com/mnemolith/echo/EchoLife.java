@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.data.ModDataComponents;
+import com.mnemolith.content.block.EchoHomeBlockEntity;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.imprint.ImprintTag;
@@ -169,5 +170,80 @@ public final class EchoLife {
         int pressure = spike > 0 ? ImprintWriter.spike(level, pos, spike) : -1;
         ImprintWriter.write(level, pos, List.of(ImprintTag.DEATH), owner, false);
         Mnemolith.LOGGER.info("Mnemolith echo body died owner={} at {} spike={} pressure={}", ownerName, pos.toShortString(), spike, pressure);
+    }
+
+    /** Despawns an idle owned echo into the pedestal (O3). Frees the live registry slot. */
+    public static boolean house(ServerPlayer player, EchoEntity echo, EchoHomeBlockEntity home) {
+        if (!echo.isOwnedBy(player) || echo.isReplaying() || !echo.isAlive()) {
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.home.busy"), true);
+            return false;
+        }
+        if (home.isFull()) {
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.home.full", EchoHomeBlockEntity.CAP), true);
+            return false;
+        }
+        StoredEcho stored = StoredEcho.capture(echo);
+        if (!home.offer(stored)) {
+            return false;
+        }
+        EchoRegistry.get(player.level().getServer()).remove(player.getUUID(), echo.getUUID());
+        echo.discardSilently();
+        player.level().playSound(null, home.getBlockPos(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8F, 0.6F);
+        player.sendSystemMessage(Component.translatable("mnemolith.echo.home.housed",
+                stored.customName().orElse(Component.translatable("entity.mnemolith.echo.named", stored.ownerName()))), true);
+        return true;
+    }
+
+    /** Wakes the first housed echo onto {@code at} (O3). */
+    public static boolean wake(ServerPlayer player, EchoHomeBlockEntity home, BlockPos at) {
+        var taken = home.takeFirst();
+        if (taken.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.home.empty"), true);
+            return false;
+        }
+        StoredEcho stored = taken.get();
+        if (!stored.owner().equals(player.getUUID())) {
+            home.offer(stored);
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.not_yours", stored.ownerName()), true);
+            return false;
+        }
+        if (EchoRegistry.get(player.level().getServer()).count(player.getUUID()) >= EchoProgress.echoLimit(player)) {
+            home.offer(stored);
+            player.sendSystemMessage(Component.translatable("mnemolith.echo.activate_limit", EchoProgress.echoLimit(player)), true);
+            return false;
+        }
+        ServerLevel level = player.level();
+        EchoEntity echo = ModEntities.ECHO.get().create(level, EntitySpawnReason.MOB_SUMMONED);
+        if (echo == null) {
+            home.offer(stored);
+            return false;
+        }
+        echo.setUUID(stored.echo());
+        echo.setOwner(player);
+        com.mnemolith.recall.UseMemory.stamp(echo, player);
+        echo.applyBonusHealth(stored.bonusHealth());
+        echo.setHealth(Math.min(stored.health(), echo.getMaxHealth()));
+        echo.setGeneration(EchoRegistry.get(level.getServer()).put(player.getUUID(), echo.getUUID()));
+        echo.job().setLesson(stored.lesson());
+        echo.job().setFarmLesson(stored.farm());
+        echo.job().setLumberLesson(stored.lumber());
+        echo.job().setCareLesson(stored.care());
+        echo.setRole(stored.role());
+        stored.graft().ifPresent(echo::setGraft);
+        if (stored.scarred()) {
+            echo.setScarred(true);
+        }
+        stored.customName().ifPresent(echo::setCustomName);
+        for (SlotStack slot : stored.inventory()) {
+            if (slot.slot() >= 0 && slot.slot() < echo.inventory().getContainerSize()) {
+                echo.inventory().setItem(slot.slot(), slot.stack().copy());
+            }
+        }
+        echo.setPos(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D);
+        level.addFreshEntity(echo);
+        level.playSound(null, at, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 0.9F, 1.2F);
+        MemoryFx.mob(level, com.mnemolith.particle.ModParticles.COMPOSE_SUCCESS.get(), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10);
+        player.sendSystemMessage(Component.translatable("mnemolith.echo.home.woken", echo.getDisplayName()), true);
+        return true;
     }
 }

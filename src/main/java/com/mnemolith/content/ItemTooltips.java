@@ -45,6 +45,10 @@ public final class ItemTooltips {
                     builder.accept(Component.translatable("block.mnemolith.selective_mute_stone.allowed", Component.translatable(allowed.translationKey()))
                             .withStyle(net.minecraft.ChatFormatting.AQUA));
                 }
+            } else if (stack.getItem() == ModItems.ECHO_HOME.get()) {
+                builder.accept(Component.translatable("block.mnemolith.echo_home.hint"));
+            } else if (stack.getItem() == ModItems.PRESSURE_LAMP.get()) {
+                builder.accept(Component.translatable("block.mnemolith.pressure_lamp.hint"));
             } else if (stack.getItem() == ModItems.MEMORY_COMPASS.get()) {
                 builder.accept(Component.translatable("item.mnemolith.memory_compass.hint"));
             } else if (stack.getItem() == ModItems.ECHO_ARMOR_TRIM_SMITHING_TEMPLATE.get()) {

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "mnemolith:block/archival_stratum_slab"
+    },
+    "type=double": {
+      "model": "mnemolith:block/archival_stratum_bricks"
+    },
+    "type=top": {
+      "model": "mnemolith:block/archival_stratum_slab_top"
+    }
+  }
+}

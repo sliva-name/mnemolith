@@ -1,0 +1,12 @@
+{
+  "wants": {
+    "count": 8,
+    "id": "minecraft:emerald"
+  },
+  "gives": {
+    "id": "mnemolith:field_guide"
+  },
+  "max_uses": 4,
+  "xp": 10,
+  "reputation_discount": 0.2
+}

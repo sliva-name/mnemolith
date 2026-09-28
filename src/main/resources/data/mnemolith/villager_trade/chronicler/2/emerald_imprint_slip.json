@@ -1,0 +1,12 @@
+{
+  "wants": {
+    "count": 4,
+    "id": "minecraft:emerald"
+  },
+  "gives": {
+    "id": "mnemolith:imprint_slip"
+  },
+  "max_uses": 12,
+  "xp": 5,
+  "reputation_discount": 0.05
+}

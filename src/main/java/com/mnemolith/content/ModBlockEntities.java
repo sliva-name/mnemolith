@@ -28,6 +28,10 @@ public final class ModBlockEntities {
             "player_memorial",
             () -> new BlockEntityType<>(com.mnemolith.content.block.PlayerMemorialBlockEntity::new, ModBlocks.PLAYER_MEMORIAL.get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.EchoHomeBlockEntity>> ECHO_HOME = BLOCK_ENTITIES.register(
+            "echo_home",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.EchoHomeBlockEntity::new, ModBlocks.ECHO_HOME.get()));
+
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {

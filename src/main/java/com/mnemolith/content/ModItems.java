@@ -110,6 +110,17 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVE_VAULT = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVE_VAULT, properties -> properties.stacksTo(1));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> PRESSURE_SENSOR = ITEMS.registerSimpleBlockItem(ModBlocks.PRESSURE_SENSOR);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> PLAYER_MEMORIAL = ITEMS.registerSimpleBlockItem(ModBlocks.PLAYER_MEMORIAL);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ECHO_HOME = ITEMS.registerSimpleBlockItem(ModBlocks.ECHO_HOME);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM_BRICKS = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM_BRICKS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM_STAIRS = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM_STAIRS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM_SLAB = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM_SLAB);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVAL_STRATUM_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVAL_STRATUM_WALL);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_BRICKS = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_BRICKS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_STAIRS = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_STAIRS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_SLAB = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_SLAB);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_WALL);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> SCAR_GLASS_PANE = ITEMS.registerSimpleBlockItem(ModBlocks.SCAR_GLASS_PANE);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> PRESSURE_LAMP = ITEMS.registerSimpleBlockItem(ModBlocks.PRESSURE_LAMP);
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "mnemolith:block/mute_stone_slab"
+    },
+    "type=double": {
+      "model": "mnemolith:block/mute_stone_bricks"
+    },
+    "type=top": {
+      "model": "mnemolith:block/mute_stone_slab_top"
+    }
+  }
+}

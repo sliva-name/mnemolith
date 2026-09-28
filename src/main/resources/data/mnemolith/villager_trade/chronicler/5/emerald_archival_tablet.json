@@ -1,0 +1,12 @@
+{
+  "wants": {
+    "count": 12,
+    "id": "minecraft:emerald"
+  },
+  "gives": {
+    "id": "mnemolith:archival_tablet"
+  },
+  "max_uses": 4,
+  "xp": 20,
+  "reputation_discount": 0.15
+}

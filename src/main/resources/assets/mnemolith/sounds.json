@@ -1,125 +1,323 @@
 {
   "imprint_write": {
     "subtitle": "subtitles.mnemolith.imprint_write",
-    "sounds": [{ "name": "mnemolith:imprint_write", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:imprint_write",
+        "stream": false
+      }
+    ]
   },
   "extract": {
     "subtitle": "subtitles.mnemolith.extract",
-    "sounds": [{ "name": "mnemolith:extract", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:extract",
+        "stream": false
+      }
+    ]
   },
   "compose_success": {
     "subtitle": "subtitles.mnemolith.compose_success",
-    "sounds": [{ "name": "mnemolith:compose_success", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:compose_success",
+        "stream": false
+      }
+    ]
   },
   "compose_fail": {
     "subtitle": "subtitles.mnemolith.compose_fail",
-    "sounds": [{ "name": "mnemolith:compose_fail", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:compose_fail",
+        "stream": false
+      }
+    ]
   },
   "lens_focus": {
     "subtitle": "subtitles.mnemolith.lens_focus",
-    "sounds": [{ "name": "mnemolith:lens_focus", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:lens_focus",
+        "stream": false
+      }
+    ]
   },
   "pressure_warn": {
     "subtitle": "subtitles.mnemolith.pressure_warn",
-    "sounds": [{ "name": "mnemolith:pressure_warn", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:pressure_warn",
+        "stream": false
+      }
+    ]
   },
   "mute_break": {
     "subtitle": "subtitles.mnemolith.mute_break",
-    "sounds": [{ "name": "mnemolith:mute_break", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:mute_break",
+        "stream": false
+      }
+    ]
   },
   "mute_place": {
     "subtitle": "subtitles.mnemolith.mute_place",
-    "sounds": [{ "name": "mnemolith:mute_place", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false
+      }
+    ]
   },
   "stratum_break": {
     "subtitle": "subtitles.mnemolith.stratum_break",
-    "sounds": [{ "name": "mnemolith:stratum_break", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:stratum_break",
+        "stream": false
+      }
+    ]
   },
   "stratum_place": {
     "subtitle": "subtitles.mnemolith.stratum_place",
-    "sounds": [{ "name": "mnemolith:stratum_place", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:stratum_place",
+        "stream": false
+      }
+    ]
   },
   "strider_ambient": {
     "subtitle": "subtitles.mnemolith.strider_ambient",
-    "sounds": [{ "name": "mnemolith:strider_ambient", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_ambient",
+        "stream": false
+      }
+    ]
   },
   "strider_hurt": {
     "subtitle": "subtitles.mnemolith.strider_hurt",
-    "sounds": [{ "name": "mnemolith:strider_hurt", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_hurt",
+        "stream": false
+      }
+    ]
   },
   "strider_death": {
     "subtitle": "subtitles.mnemolith.strider_death",
-    "sounds": [{ "name": "mnemolith:strider_death", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_death",
+        "stream": false
+      }
+    ]
   },
   "strider_charge": {
     "subtitle": "subtitles.mnemolith.strider_charge",
-    "sounds": [{ "name": "mnemolith:strider_charge", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_charge",
+        "stream": false
+      }
+    ]
   },
   "archivist_ambient": {
     "subtitle": "subtitles.mnemolith.archivist_ambient",
-    "sounds": [{ "name": "mnemolith:archivist_ambient", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_ambient",
+        "stream": false
+      }
+    ]
   },
   "archivist_hurt": {
     "subtitle": "subtitles.mnemolith.archivist_hurt",
-    "sounds": [{ "name": "mnemolith:archivist_hurt", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_hurt",
+        "stream": false
+      }
+    ]
   },
   "archivist_death": {
     "subtitle": "subtitles.mnemolith.archivist_death",
-    "sounds": [{ "name": "mnemolith:archivist_death", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_death",
+        "stream": false
+      }
+    ]
   },
   "archivist_steal": {
     "subtitle": "subtitles.mnemolith.archivist_steal",
-    "sounds": [{ "name": "mnemolith:archivist_steal", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_steal",
+        "stream": false
+      }
+    ]
   },
   "replicant_ambient": {
     "subtitle": "subtitles.mnemolith.replicant_ambient",
-    "sounds": [{ "name": "mnemolith:replicant_ambient", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_ambient",
+        "stream": false
+      }
+    ]
   },
   "replicant_hurt": {
     "subtitle": "subtitles.mnemolith.replicant_hurt",
-    "sounds": [{ "name": "mnemolith:replicant_hurt", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_hurt",
+        "stream": false
+      }
+    ]
   },
   "replicant_death": {
     "subtitle": "subtitles.mnemolith.replicant_death",
-    "sounds": [{ "name": "mnemolith:replicant_death", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_death",
+        "stream": false
+      }
+    ]
   },
   "replicant_telegraph": {
     "subtitle": "subtitles.mnemolith.replicant_telegraph",
-    "sounds": [{ "name": "mnemolith:replicant_telegraph", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_telegraph",
+        "stream": false
+      }
+    ]
   },
   "replicant_blind": {
     "subtitle": "subtitles.mnemolith.replicant_blind",
-    "sounds": [{ "name": "mnemolith:replicant_blind", "stream": false }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_blind",
+        "stream": false
+      }
+    ]
   },
   "mite_ambient": {
     "subtitle": "subtitles.mnemolith.mite_ambient",
-    "sounds": [{ "name": "mnemolith:strider_ambient", "stream": false, "pitch": 1.7 }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_ambient",
+        "stream": false,
+        "pitch": 1.7
+      }
+    ]
   },
   "mite_hurt": {
     "subtitle": "subtitles.mnemolith.mite_hurt",
-    "sounds": [{ "name": "mnemolith:strider_hurt", "stream": false, "pitch": 1.6 }]
+    "sounds": [
+      {
+        "name": "mnemolith:strider_hurt",
+        "stream": false,
+        "pitch": 1.6
+      }
+    ]
   },
   "witness_ambient": {
     "subtitle": "subtitles.mnemolith.witness_ambient",
-    "sounds": [{ "name": "mnemolith:archivist_ambient", "stream": false, "pitch": 0.7 }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_ambient",
+        "stream": false,
+        "pitch": 0.7
+      }
+    ]
   },
   "witness_hurt": {
     "subtitle": "subtitles.mnemolith.witness_hurt",
-    "sounds": [{ "name": "mnemolith:archivist_hurt", "stream": false, "pitch": 0.6 }]
+    "sounds": [
+      {
+        "name": "mnemolith:archivist_hurt",
+        "stream": false,
+        "pitch": 0.6
+      }
+    ]
   },
   "stalker_ambient": {
     "subtitle": "subtitles.mnemolith.stalker_ambient",
-    "sounds": [{ "name": "mnemolith:replicant_ambient", "stream": false, "pitch": 0.55 }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_ambient",
+        "stream": false,
+        "pitch": 0.55
+      }
+    ]
   },
   "stalker_hurt": {
     "subtitle": "subtitles.mnemolith.stalker_hurt",
-    "sounds": [{ "name": "mnemolith:replicant_hurt", "stream": false, "pitch": 0.6 }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_hurt",
+        "stream": false,
+        "pitch": 0.6
+      }
+    ]
   },
   "stalker_death": {
     "subtitle": "subtitles.mnemolith.stalker_death",
-    "sounds": [{ "name": "mnemolith:replicant_death", "stream": false, "pitch": 0.5 }]
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_death",
+        "stream": false,
+        "pitch": 0.5
+      }
+    ]
   },
   "chair_voice": {
-    "sounds": [{ "name": "mnemolith:chair_voice", "stream": true }]
+    "sounds": [
+      {
+        "name": "mnemolith:chair_voice",
+        "stream": true
+      }
+    ]
+  },
+  "echo_step": {
+    "subtitle": "subtitles.mnemolith.echo_step",
+    "sounds": [
+      {
+        "name": "mnemolith:echo_step",
+        "stream": false
+      }
+    ]
+  },
+  "echo_hurt": {
+    "subtitle": "subtitles.mnemolith.echo_hurt",
+    "sounds": [
+      {
+        "name": "mnemolith:echo_hurt",
+        "stream": false
+      }
+    ]
+  },
+  "echo_death": {
+    "subtitle": "subtitles.mnemolith.echo_death",
+    "sounds": [
+      {
+        "name": "mnemolith:echo_death",
+        "stream": false
+      }
+    ]
+  },
+  "echo_possess": {
+    "subtitle": "subtitles.mnemolith.echo_possess",
+    "sounds": [
+      {
+        "name": "mnemolith:echo_possess",
+        "stream": false
+      }
+    ]
   }
 }

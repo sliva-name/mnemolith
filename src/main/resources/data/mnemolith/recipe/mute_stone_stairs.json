@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": "mnemolith:mute_stone_bricks"
+  },
+  "result": {
+    "id": "mnemolith:mute_stone_stairs",
+    "count": 4
+  }
+}
