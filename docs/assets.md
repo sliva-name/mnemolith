@@ -14,7 +14,7 @@ One style, one density (32x = 2 texels per model unit).
 | `textures/block/<model>_particle.png` | 32×32 | Break-particle sprites (dominant material of each model; the vault variants share one) |
 | `textures/block/scar_glass.png` | 32×32 | Translucent cracked violet glass, `cube_all` |
 | `models/block/*.json`, `models/item/*_in_hand.json` | — | Generated element models with vanilla display transforms |
-| `textures/entity/*.png` | 128×128 | Mob skins on the 64-unit layouts, including the ledger mite, kin witness and fracture stalker. `pleading_chair.png` is the separate 16×16 easter egg and is not regenerated here |
+| `textures/entity/*.png` | 128×128 | Mob skins on the 64-unit layouts, including the ledger mite, kin witness and fracture stalker. `pleading_chair.png` is the separate baked easter-egg scan and is not regenerated here |
 | `textures/entity/equipment/**/*.png` | 128×64 | Worn armor. Vanilla's 64×32 layout at two texels per unit |
 | `textures/particle/*.png` | 32×32 | Ten white sprites with a soft halo (tinted in code) |
 | `textures/gui/panel.png`, `slot.png`, `tags.png` | 64×64, 36×36, 288×32 | Nine-slice panel, slot, nine tag icons |

@@ -165,7 +165,7 @@ resonator, stratum, mute stone, vault and scar heart are multi-element models; t
 footprint. The field guide is 30 pages, including the living-memory pages `noticed`, `traces`, `offer`, and
 `rewrite`, redrawn in the same language. The reference plate includes scar glass and the scar heart. Armor, weapons
 and the three role mobs are the same pipeline (`mnart/armory.py`). The pleading
-chair stays the 16×16 easter egg. Regenerate with `python tools/art/build.py`.
+chair stays the baked easter-egg scan. Regenerate with `python tools/art/build.py`.
 
 ### 7. Gametest harness
 

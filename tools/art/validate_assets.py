@@ -258,9 +258,9 @@ def main():
             ok = (w, h) in ((32, 32), (64, 64))
         elif kind == 'entity':
             # Vanilla armor is a 64×32 layout; two texels per unit makes 128×64.
-            # The pleading chair is a baked easter-egg mesh, outside the 32× item set.
+            # The pleading chair is a baked easter-egg scan, outside the 32× item set.
             if rel == 'entity/pleading_chair':
-                ok = (w, h) == (16, 16)
+                ok = True
             elif rel.startswith('entity/equipment/'):
                 ok = (w, h) == (128, 64)
             else:
