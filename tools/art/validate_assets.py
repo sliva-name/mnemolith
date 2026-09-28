@@ -153,8 +153,8 @@ def item_models(node, out):
             item_models(v, out)
 
 
-def java_ids(cls):
-    src = open(os.path.join(JAVA, 'com', 'mnemolith', 'content', cls)).read()
+def java_ids(rel):
+    src = open(os.path.join(JAVA, rel)).read()
     return set(re.findall(r'"([a-z0-9_]+)"', src)) - {MOD}
 
 
@@ -209,12 +209,23 @@ def main():
         counts['particles'] = counts.get('particles', 0) + 1
 
     # registry coverage
-    for i in sorted(java_ids('ModItems.java')):
-        if not os.path.exists(os.path.join(base, 'items', i + '.json')):
-            err('registered item %s has no items/%s.json' % (i, i))
-    for b in sorted(java_ids('ModBlocks.java')):
+    for rel in ('com/mnemolith/content/ModItems.java', 'com/mnemolith/armory/ArmoryItems.java'):
+        for i in sorted(java_ids(rel)):
+            if not os.path.exists(os.path.join(base, 'items', i + '.json')):
+                err('registered item %s has no items/%s.json' % (i, i))
+    for b in sorted(java_ids('com/mnemolith/content/ModBlocks.java')):
         if not os.path.exists(os.path.join(base, 'blockstates', b + '.json')):
             err('registered block %s has no blockstate' % b)
+
+    # Worn armor: equipment/*.json names a texture the client resolves under entity/equipment/<layer>/.
+    for f in sorted(glob.glob(os.path.join(base, 'equipment', '*.json'))):
+        for layer, entries in json.load(open(f)).get('layers', {}).items():
+            for entry in entries:
+                ns, name = split(entry['texture'])
+                rel = 'entity/equipment/%s/%s' % (layer, name)
+                r.used_textures.add('%s:%s' % (ns, rel))
+                if not r.exists('%s:%s' % (ns, rel), 'textures', '.png'):
+                    err('equipment %s: missing %s' % (os.path.basename(f), rel))
 
     # texture paths hard-coded in Java, and the guide pages
     java_src = ''.join(open(p).read() for p in glob.glob(os.path.join(JAVA, '**', '*.java'), recursive=True))
@@ -246,7 +257,14 @@ def main():
         elif kind == 'block':
             ok = (w, h) in ((32, 32), (64, 64))
         elif kind == 'entity':
-            ok = (w, h) == (128, 128)
+            # Vanilla armor is a 64×32 layout; two texels per unit makes 128×64.
+            # The pleading chair is a baked easter-egg mesh, outside the 32× item set.
+            if rel == 'entity/pleading_chair':
+                ok = (w, h) == (16, 16)
+            elif rel.startswith('entity/equipment/'):
+                ok = (w, h) == (128, 64)
+            else:
+                ok = (w, h) == (128, 128)
         if not ok:
             err('texture %s is %sx%s, breaks the resolution rule' % (rel, w, h))
         if '%s:%s' % (MOD, rel) not in r.used_textures:

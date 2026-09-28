@@ -8,13 +8,14 @@ One style, one density (32x = 2 texels per model unit).
 
 | Files | Size | Content |
 | --- | --- | --- |
-| `textures/item/*.png` (20 sprites) | 32×32 | Every item, including the three spawn eggs |
-| `textures/item/chronicle_lens_model.png`, `extraction_needle_model.png` | 64×64 | Sheets for `models/item/*_in_hand.json` (multi-element hand models; `items/*.json` select them outside GUI/ground/frame/shelf) |
+| `textures/item/*.png` (48 sprites) | 32×32 | Every item: the memory-loop set, four armor sets, five weapons, four craft materials, and the spawn eggs |
+| `textures/item/*_model.png` (7 sheets) | 64×64 | In-hand models for the lens, the needle, and the five weapons. `items/*.json` keeps the flat sprite for GUI, ground, frame and shelf |
 | `textures/block/<model>.png` | 64×64 | One sheet per element model: `archival_stratum`, `mute_stone`, `composition_reel`, `resonator_trap`, `archive_vault`, `archive_vault_on`, `scar_heart` (UV = texel / 4) |
 | `textures/block/<model>_particle.png` | 32×32 | Break-particle sprites (dominant material of each model; the vault variants share one) |
 | `textures/block/scar_glass.png` | 32×32 | Translucent cracked violet glass, `cube_all` |
 | `models/block/*.json`, `models/item/*_in_hand.json` | — | Generated element models with vanilla display transforms |
-| `textures/entity/*.png` | 128×128 | `archivist`, `echo_strider`, `moment_replicant`, `residue`, `scar`, `echo_silhouette` on the unchanged 64-unit layouts |
+| `textures/entity/*.png` | 128×128 | Mob skins on the 64-unit layouts, including the ledger mite, kin witness and fracture stalker. `pleading_chair.png` is the separate 16×16 easter egg and is not regenerated here |
+| `textures/entity/equipment/**/*.png` | 128×64 | Worn armor. Vanilla's 64×32 layout at two texels per unit |
 | `textures/particle/*.png` | 32×32 | Ten white sprites with a soft halo (tinted in code) |
 | `textures/gui/panel.png`, `slot.png`, `tags.png` | 64×64, 36×36, 288×32 | Nine-slice panel, slot, nine tag icons |
 | `textures/gui/guide/*.png` | 512×256 | 26 field-guide pages |

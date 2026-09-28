@@ -354,7 +354,7 @@ With the lens put away, the three client toggles at their defaults, and `gamepla
 
 ## Art pass (client)
 
-Offline, `python tools/art/validate_assets.py --vanilla <extracted client assets>` must report 0 errors and `python tools/art/build.py --check` 0 differences. The rest needs a physical client.
+Offline, `python tools/art/validate_assets.py --vanilla <extracted client assets>` must report 0 errors and `python tools/art/build.py --check` 0 differences (PNG equality is the pixels). The rest needs a physical client.
 
 - [ ] Client log after resource load: no `Missing texture`, `Unable to load model`, `Unable to resolve texture` or `missing model` line for `mnemolith:`.
 - [ ] Creative tab at GUI scale 2 and 3: every item and block icon reads as its object; no magenta-black tile; the lens and needle show the flat sprite in the inventory, as a dropped item, in an item frame and on a shelf.

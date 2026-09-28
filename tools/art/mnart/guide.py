@@ -774,10 +774,12 @@ def p_reference():
         y = 58 + (k // cols) * 56
         p.center(s, x, y, shadow=False)
         p.sprite(n, x, y, 1, shadow=False)
-    for k, n in enumerate(('mute_stone', 'composition_reel', 'resonator_trap', 'archive_vault', 'archival_stratum')):
-        d = Diorama(70, 70, 34)
+    plates = ('mute_stone', 'composition_reel', 'resonator_trap', 'archive_vault', 'archival_stratum',
+              'scar_glass', 'scar_heart')
+    for k, n in enumerate(plates):
+        d = Diorama(56, 56, 28)
         d.add(block_quads('mnemolith:block/' + n, -0.5, 0, -0.5))
-        p.center(d.render(0, 0.5, 0), 70 + k * 92, 214)
+        p.center(d.render(0, 0.45, 0), 40 + k * 68, 214)
     return p.image()
 
 
