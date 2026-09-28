@@ -207,7 +207,7 @@ The chair is written when that chunk is first generated. A village you already e
 
 This work is based on "Стул Алексея Навального" (https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66) by Chaalen (https://sketchfab.com/Chaalen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 
-The model is baked down to a voxel shell so Minecraft can draw it. The voice is a user-provided meme recording, converted to ogg.
+The scan is simplified into an entity mesh so Minecraft can draw it. The voice is a user-provided meme recording, converted to ogg.
 
 ## Art
 
