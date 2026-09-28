@@ -46,6 +46,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.ARCHIVAL_STRATUM_SLAB.get());
                 output.accept(ModItems.ARCHIVAL_STRATUM_WALL.get());
                 output.accept(ModItems.ARCHIVAL_TABLET.get());
+                output.accept(ModItems.ARCHIVE_SCHEMATIC.get());
                 output.accept(ModItems.RESONATOR_TRAP.get());
                 output.accept(ModItems.ARCHIVIST_BAIT.get());
                 output.accept(ModItems.CATALOG_FRAGMENT.get());

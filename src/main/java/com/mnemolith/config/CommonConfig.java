@@ -66,6 +66,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue MUTE_POCKET_MIN_Y;
     public static final ModConfigSpec.IntValue MUTE_POCKET_MAX_Y;
     public static final ModConfigSpec.BooleanValue OBSERVATORY_ENABLED;
+    public static final ModConfigSpec.BooleanValue FLOODED_ARCHIVE_ENABLED;
+    public static final ModConfigSpec.BooleanValue HUSH_CHAPEL_ENABLED;
+    public static final ModConfigSpec.BooleanValue MEMORY_FIELD_ENABLED;
+    public static final ModConfigSpec.BooleanValue ASHEN_ARCHIVE_ENABLED;
+    public static final ModConfigSpec.BooleanValue MUTE_LIBRARY_ENABLED;
     public static final ModConfigSpec.BooleanValue ARCHIVIST_OBSERVATORY_BIAS;
     public static final ModConfigSpec.BooleanValue STRIDER_PATH_BIAS;
     public static final ModConfigSpec.BooleanValue ECHOES_ENABLED;
@@ -211,7 +216,7 @@ public final class CommonConfig {
         builder.pop();
 
         SpecValues.section(builder, "worldGen", "Structure placement defaults. Changing these takes effect the next time a world loads.");
-        STRUCTURES_ENABLED = SpecValues.boolRestart(builder, "structuresEnabled", "Whether the chronicle observatory may generate. Veins and mute pockets have their own toggles.", true);
+        STRUCTURES_ENABLED = SpecValues.boolRestart(builder, "structuresEnabled", "Master switch for mnemolith structures (observatory, flooded archive, hush chapel, memory field, ashen archive, mute library). Veins and mute pockets have their own toggles.", true);
         STRUCTURE_SPACING = SpecValues.integerRestart(builder, "structureSpacing", "Documented spacing, in chunks, of the chronicle observatory. The structure set json uses 32 and a separation of 12. Editing this number does not move structures.", 32, 8, 256);
         ARCHIVAL_VEINS_ENABLED = SpecValues.bool(builder, "archivalVeinsEnabled", "Whether archival veins may generate. The biome modifier uses #minecraft:is_overworld. The Y range keeps them underground.", true);
         ARCHIVAL_VEIN_CHANCE = SpecValues.integer(builder, "archivalVeinChance", "Chance, out of 100, that a chunk attempts an archival vein.", 8, 0, 100);
@@ -225,6 +230,11 @@ public final class CommonConfig {
         MUTE_POCKET_MIN_Y = SpecValues.integer(builder, "mutePocketMinY", "Lowest Y of a mute pocket.", -32, -64, 320);
         MUTE_POCKET_MAX_Y = SpecValues.integer(builder, "mutePocketMaxY", "Highest Y of a mute pocket.", 48, -64, 320);
         OBSERVATORY_ENABLED = SpecValues.boolRestart(builder, "observatoryEnabled", "Whether chronicle observatories may generate. Also requires structuresEnabled.", true);
+        FLOODED_ARCHIVE_ENABLED = SpecValues.boolRestart(builder, "floodedArchiveEnabled", "Whether flooded archives may generate underground in the Overworld. Also requires structuresEnabled.", true);
+        HUSH_CHAPEL_ENABLED = SpecValues.boolRestart(builder, "hushChapelEnabled", "Whether hush chapels may generate in the Overworld. Also requires structuresEnabled.", true);
+        MEMORY_FIELD_ENABLED = SpecValues.boolRestart(builder, "memoryFieldEnabled", "Whether memory fields may generate in the Overworld. Also requires structuresEnabled.", true);
+        ASHEN_ARCHIVE_ENABLED = SpecValues.boolRestart(builder, "ashenArchiveEnabled", "Whether ashen archives may generate in the Nether. Also requires structuresEnabled.", true);
+        MUTE_LIBRARY_ENABLED = SpecValues.boolRestart(builder, "muteLibraryEnabled", "Whether mute libraries may generate in the End. Also requires structuresEnabled.", true);
         ARCHIVIST_OBSERVATORY_BIAS = SpecValues.bool(builder, "archivistObservatoryBias", "Whether an archivist's natural pressure gate is lower in and near an observatory chunk.", true);
         STRIDER_PATH_BIAS = SpecValues.bool(builder, "striderPathBias", "Whether an echo strider's natural pressure gate is lower in a chunk that already holds a path imprint.", true);
         builder.pop();

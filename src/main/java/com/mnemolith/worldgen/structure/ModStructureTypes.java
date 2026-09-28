@@ -15,6 +15,26 @@ public final class ModStructureTypes {
             "chronicle_observatory",
             () -> () -> ObservatoryStructure.CODEC);
 
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> FLOODED_ARCHIVE = STRUCTURE_TYPES.register(
+            "flooded_archive",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.FLOODED_ARCHIVE));
+
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> HUSH_CHAPEL = STRUCTURE_TYPES.register(
+            "hush_chapel",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.HUSH_CHAPEL));
+
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> MEMORY_FIELD = STRUCTURE_TYPES.register(
+            "memory_field",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.MEMORY_FIELD));
+
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> ASHEN_ARCHIVE = STRUCTURE_TYPES.register(
+            "ashen_archive",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.ASHEN_ARCHIVE));
+
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> MUTE_LIBRARY = STRUCTURE_TYPES.register(
+            "mute_library",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.MUTE_LIBRARY));
+
     private ModStructureTypes() {}
 
     public static void register(IEventBus modEventBus) {

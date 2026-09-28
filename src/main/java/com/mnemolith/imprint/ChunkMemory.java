@@ -26,8 +26,7 @@ public final class ChunkMemory {
             Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
-            Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory),
-            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded),
+            Landmarks.FIELD.forGetter(ChunkMemory::landmarks),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
             ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
             Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad),
@@ -49,6 +48,10 @@ public final class ChunkMemory {
     private boolean fractured;
     private boolean archival;
     private boolean observatory;
+    /** Quiet shelter: pressure cools faster while a player stands here. Optional in the codec. */
+    private boolean hushChapel;
+    /** Pre-loud plaza where storms can gather safely to watch. Optional in the codec. */
+    private boolean memoryField;
     /** An observatory chunk seeds its one old residue only once (residual echoes). Optional in the codec. */
     private boolean residueSeeded;
     private long lastWriteGameTime;
@@ -62,7 +65,7 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, Landmarks landmarks, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -74,14 +77,21 @@ public final class ChunkMemory {
         memory.instability = instability;
         memory.resonators.addAll(resonators);
         memory.strata.addAll(strata);
-        memory.observatory = observatory;
-        memory.residueSeeded = residueSeeded;
+        Landmarks marks = landmarks == null ? Landmarks.NONE : landmarks;
+        memory.observatory = marks.observatory();
+        memory.hushChapel = marks.hushChapel();
+        memory.memoryField = marks.memoryField();
+        memory.residueSeeded = marks.residueSeeded();
         memory.wards.addAll(wards);
         memory.scar = scar.orElse(null);
         memory.vaultLoad = Math.max(0, vaultLoad);
         memory.voidState = voidState == null ? VoidPressure.NONE : voidState;
         memory.refreshCooling();
         return memory;
+    }
+
+    public Landmarks landmarks() {
+        return new Landmarks(this.observatory, this.hushChapel, this.memoryField, this.residueSeeded);
     }
 
     public boolean isEmpty() {
@@ -97,6 +107,8 @@ public final class ChunkMemory {
                 && !this.fractured
                 && !this.archival
                 && !this.observatory
+                && !this.hushChapel
+                && !this.memoryField
                 && this.instability == 0;
     }
 
@@ -415,6 +427,22 @@ public final class ChunkMemory {
 
     public void setObservatory(boolean observatory) {
         this.observatory = observatory;
+    }
+
+    public boolean hushChapel() {
+        return this.hushChapel;
+    }
+
+    public void setHushChapel(boolean hushChapel) {
+        this.hushChapel = hushChapel;
+    }
+
+    public boolean memoryField() {
+        return this.memoryField;
+    }
+
+    public void setMemoryField(boolean memoryField) {
+        this.memoryField = memoryField;
     }
 
     public boolean residueSeeded() {

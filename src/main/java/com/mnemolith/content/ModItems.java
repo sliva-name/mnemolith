@@ -72,6 +72,7 @@ public final class ModItems {
     public static final DeferredItem<Item> ARCHIVIST_HUSK = ITEMS.registerItem("archivist_husk", Item::new, stackTo(64));
     public static final DeferredItem<Item> UNSTABLE_SLIP = ITEMS.registerItem("unstable_slip", Item::new, stackTo(16));
     public static final DeferredItem<Item> ARCHIVAL_TABLET = ITEMS.registerItem("archival_tablet", Item::new, stackTo(16));
+    public static final DeferredItem<Item> ARCHIVE_SCHEMATIC = ITEMS.registerItem("archive_schematic", Item::new, stackTo(16));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SELECTIVE_MUTE_STONE = ITEMS.registerSimpleBlockItem(ModBlocks.SELECTIVE_MUTE_STONE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> COMPOSITION_REEL = ITEMS.registerSimpleBlockItem(ModBlocks.COMPOSITION_REEL);

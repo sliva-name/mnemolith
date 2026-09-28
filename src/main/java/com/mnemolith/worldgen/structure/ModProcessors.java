@@ -19,6 +19,12 @@ public final class ModProcessors {
     public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<PleadingChairProcessor>> PLEADING_CHAIR = PROCESSORS.register(
             "pleading_chair",
             () -> PleadingChairProcessor.CODEC);
+    public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<HushChapelProcessor>> HUSH_CHAPEL = PROCESSORS.register(
+            "hush_chapel",
+            () -> HushChapelProcessor.CODEC);
+    public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<MemoryFieldProcessor>> MEMORY_FIELD = PROCESSORS.register(
+            "memory_field",
+            () -> MemoryFieldProcessor.CODEC);
 
     private ModProcessors() {}
 

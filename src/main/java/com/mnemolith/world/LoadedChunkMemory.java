@@ -335,6 +335,26 @@ public final class LoadedChunkMemory {
         return anyLoaded(level, pos, radius, ChunkMemory::observatory);
     }
 
+    public static boolean markHushChapel(ChunkAccess chunk) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.hushChapel()) {
+            return false;
+        }
+        memory.setHushChapel(true);
+        chunk.markUnsaved();
+        return true;
+    }
+
+    public static boolean markMemoryField(ChunkAccess chunk) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.memoryField()) {
+            return false;
+        }
+        memory.setMemoryField(true);
+        chunk.markUnsaved();
+        return true;
+    }
+
     public static ChunkState stateOf(ChunkMemory memory, boolean muted) {
         // The fractured flag stays set after the score falls, so a second rise does not call another replicant.
         // The lens state follows the live band, or a calmed chunk would hide mute and archival forever.
