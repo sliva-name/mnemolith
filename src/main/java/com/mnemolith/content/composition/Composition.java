@@ -1,7 +1,9 @@
 package com.mnemolith.content.composition;
 
+import com.mnemolith.event.ComposeFinishedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,14 +38,8 @@ import net.minecraft.world.item.ItemStack;
 public final class Composition {
     private Composition() {}
 
-    public static Optional<CompositionFormula> match(List<ImprintTag> tags) {
-        List<ImprintTag> sorted = tags.stream().sorted(Comparator.comparingInt(Enum::ordinal)).toList();
-        for (CompositionFormula formula : CompositionFormula.values()) {
-            if (formula.tags().equals(sorted)) {
-                return Optional.of(formula);
-            }
-        }
-        return Optional.empty();
+    public static Optional<CompositionRecipe> match(List<ImprintTag> tags) {
+        return CompositionRecipes.match(tags);
     }
 
     public static ComposeResult compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container) {
@@ -51,7 +47,7 @@ public final class Composition {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable("mnemolith.message.compose_disabled"));
             }
-            return finish(ComposeResult.DISABLED, -1);
+            return finish(level, pos, player, ComposeResult.DISABLED, -1);
         }
         List<Integer> slots = new ArrayList<>();
         List<ImprintTag> tags = new ArrayList<>();
@@ -71,14 +67,14 @@ public final class Composition {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable("mnemolith.message.compose_empty"));
             }
-            return finish(ComposeResult.EMPTY, -1);
+            return finish(level, pos, player, ComposeResult.EMPTY, -1);
         }
         if (player != null) {
             for (ImprintTag tag : tags) {
                 DiscoveryNotes.noteTag(player, tag);
             }
         }
-        Optional<CompositionFormula> formula = match(tags);
+        Optional<CompositionRecipe> formula = match(tags);
         if (formula.isEmpty()) {
             return fail(level, pos, player, container, tags);
         }
@@ -87,7 +83,7 @@ public final class Composition {
                 : Residues.shard(formula.get().product(), CompositionFormula.SHARD_STRENGTH, pos, level.getGameTime());
         if (player != null && !InventorySpace.fits(player.getInventory(), reward)) {
             InventorySpace.refuse(player);
-            return finish(ComposeResult.FULL, -1);
+            return finish(level, pos, player, ComposeResult.FULL, -1);
         }
         for (int slot : slots) {
             container.removeItem(slot, 1);
@@ -96,10 +92,10 @@ public final class Composition {
         level.playSound(null, pos, ModSounds.COMPOSE_SUCCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         MemoryFx.composeSuccess(level, pos);
         if (player != null) {
-            DiscoveryNotes.noteFormula(player, formula.get().ordinal());
+            DiscoveryNotes.noteFormula(player, CompositionRecipes.indexOf(formula.get()));
             player.sendSystemMessage(Component.translatable("mnemolith.message.composed", Component.translatable(formula.get().translationKey())));
         }
-        return finish(ComposeResult.SUCCESS, formula.get().ordinal());
+        return finish(level, pos, player, ComposeResult.SUCCESS, CompositionRecipes.indexOf(formula.get()));
     }
 
     private static ComposeResult fail(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container, List<ImprintTag> tags) {
@@ -127,11 +123,12 @@ public final class Composition {
             }
             player.sendSystemMessage(Component.translatable("mnemolith.message.compose_fail"));
         }
-        return finish(ComposeResult.FAIL, -1);
+        return finish(level, pos, player, ComposeResult.FAIL, -1);
     }
 
-    private static ComposeResult finish(int status, int formulaOrdinal) {
+    private static ComposeResult finish(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, int status, int formulaOrdinal) {
         Mnemolith.LOGGER.info("Mnemolith compose status={} formula={}", status, formulaOrdinal);
+        NeoForge.EVENT_BUS.post(new ComposeFinishedEvent(level, pos, player, status, formulaOrdinal));
         return new ComposeResult(status, formulaOrdinal);
     }
 

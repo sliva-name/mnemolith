@@ -1,5 +1,8 @@
 package com.mnemolith.echo.storm;
 
+import com.mnemolith.event.StormStartedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -186,6 +189,7 @@ public final class Storms {
         tell(level, storm, "mnemolith.storm.gathering", true);
         updateBar(level, storm);
         Mnemolith.LOGGER.info("Mnemolith storm gathering id={} chunk {} {} cause={}", storm.id(), chunk.x(), chunk.z(), cause);
+        NeoForge.EVENT_BUS.post(new StormStartedEvent(level, chunk, cause, storm));
         return storm;
     }
 

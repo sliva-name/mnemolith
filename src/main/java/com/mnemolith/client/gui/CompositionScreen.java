@@ -1,7 +1,10 @@
 package com.mnemolith.client.gui;
 
+import java.util.List;
+
 import com.mnemolith.content.composition.ComposeResult;
-import com.mnemolith.content.composition.CompositionFormula;
+import com.mnemolith.content.composition.CompositionRecipe;
+import com.mnemolith.content.composition.CompositionRecipes;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ImprintConstants;
@@ -74,33 +77,42 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
     private void drawSilhouettes(GuiGraphicsExtractor graphics) {
         int mask = this.menu.discoveredFormulas();
         boolean hints = this.menu.discoveryHints();
-        int known = Integer.bitCount(mask & ((1 << Discovery.FORMULA_COUNT) - 1));
+        List<CompositionRecipe> recipes = CompositionRecipes.all();
+        int known = Integer.bitCount(mask & ((1 << Math.min(Discovery.FORMULA_COUNT, recipes.size())) - 1));
         if (!hints && known == 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, 100, GuiArt.BONE);
             return;
         }
         int x = 8;
-        for (CompositionFormula formula : CompositionFormula.values()) {
-            boolean learned = (mask & (1 << formula.ordinal())) != 0;
-            if (learned) {
-                int iconX = x;
-                for (ImprintTag tag : formula.tags()) {
-                    GuiArt.tag(graphics, tag, iconX, 100);
-                    iconX += 16;
-                }
-            } else if (hints) {
-                graphics.fill(x, 100, x + 34, 114, GuiArt.CHIP);
-                GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_unknown"), x + 13, 103, GuiArt.BONE);
+        int row = 100;
+        for (int i = 0; i < recipes.size() && i < Discovery.FORMULA_COUNT; i++) {
+            if (x > this.imageWidth - 40) {
+                x = 8;
+                row += 18;
             }
-            x += 42;
+            x = drawFormulaChip(graphics, mask, hints, x, row, i, recipes.get(i).tags());
         }
     }
 
-    private Component formulaName(int ordinal) {
-        CompositionFormula[] formulas = CompositionFormula.values();
-        if (ordinal < 0 || ordinal >= formulas.length) {
-            return Component.translatable("mnemolith.gui.compose_unknown");
+    private int drawFormulaChip(GuiGraphicsExtractor graphics, int mask, boolean hints, int x, int row, int index, List<ImprintTag> tags) {
+        boolean learned = (mask & (1 << index)) != 0;
+        int width = Math.max(34, tags.size() * 16);
+        if (learned) {
+            int iconX = x;
+            for (ImprintTag tag : tags) {
+                GuiArt.tag(graphics, tag, iconX, row);
+                iconX += 16;
+            }
+        } else if (hints) {
+            graphics.fill(x, row, x + width, row + 14, GuiArt.CHIP);
+            GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_unknown"), x + 13, row + 3, GuiArt.BONE);
         }
-        return Component.translatable(formulas[ordinal].translationKey());
+        return x + width + 8;
+    }
+
+    private Component formulaName(int ordinal) {
+        return CompositionRecipes.byIndex(ordinal)
+                .map(recipe -> Component.translatable(recipe.translationKey()))
+                .orElseGet(() -> Component.translatable("mnemolith.gui.compose_unknown"));
     }
 }

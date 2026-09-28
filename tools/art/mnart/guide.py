@@ -1,8 +1,9 @@
-"""Field guide illustrations: 30 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
+"""Field guide illustrations: 33 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
 Every page is an ink-paper plate with a brass-cornered frame, one small in-world diorama rendered from the real
 block models and entity layouts (render3d), the real item sprites at 2x, and a few diagram marks. No text: the book
 prints its words from the lang file."""
 import math
+from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -13,7 +14,8 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
-         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'world', 'players', 'reference')
+         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'armory', 'beasts', 'roles',
+         'world', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -876,6 +878,44 @@ def p_reference():
         d.add(block_quads('mnemolith:block/' + n, -0.5, 0, -0.5))
         p.center(d.render(0, 0.45, 0), 40 + k * 68, 214)
     return p.image()
+
+
+
+def _item_tex(name):
+    path = Path(__file__).resolve().parents[3] / 'src/main/resources/assets/mnemolith/textures/item' / (name + '.png')
+    return Image.open(path).convert('RGBA')
+
+
+def p_armory():
+    p = Page('armory')
+    names = ('hush_helmet', 'grave_chestplate', 'echo_leggings', 'scar_boots',
+             'recall_blade', 'hush_spear', 'grave_maul', 'chorus_sling', 'scar_brand')
+    for i, n in enumerate(names):
+        x = 70 + (i % 5) * 80
+        y = 70 + (i // 5) * 90
+        p.sprite(n, x, y, 2, src=_item_tex(n))
+    return p.image()
+
+
+def p_beasts():
+    p = Page('beasts')
+    # Egg icons stand in for the three quieter beasts when entity dioramas are unavailable here.
+    for i, n in enumerate(('ledger_mite_spawn_egg', 'kin_witness_spawn_egg', 'fracture_stalker_spawn_egg')):
+        p.sprite(n, 110 + i * 120, 120, 3, src=_item_tex(n))
+    return p.image()
+
+
+def p_roles():
+    p = Page('roles')
+    d = Diorama(360, 200, 28)
+    d.ground(4, 3, 2)
+    d.add(mob_quads('wanderer', -0.8, 0, 0.2, 200), tint=ECHO_TINT)
+    d.add(mob_quads('wanderer', 1.0, 0, -0.3, 240), tint=ECHO_TINT)
+    p.center(d.render(0, 0.12, 0), 220, 130)
+    p.sprite('echo_slip', 420, 70, 2)
+    p.sprite('recall_blade', 430, 150, 2, src=_item_tex('recall_blade'))
+    return p.image()
+
 
 
 BUILDERS = {n: globals()['p_' + n] for n in PAGES}

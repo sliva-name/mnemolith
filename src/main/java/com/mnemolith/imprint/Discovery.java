@@ -10,10 +10,10 @@ import net.minecraft.network.codec.StreamCodec;
 
 /**
  * Tags and formulas one player has learned. Stored on the player, not on the chunk.
- * Bits use {@link ImprintTag} and composition-formula ordinals. Do not reorder those enums.
+ * Bits use {@link ImprintTag} ordinals and composition-formula indices from {@code CompositionRecipes}. The first four indices stay the original drum formulas.
  */
 public final class Discovery {
-    public static final int FORMULA_COUNT = 4;
+    public static final int FORMULA_COUNT = 16;
 
     public static final MapCodec<Discovery> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.optionalFieldOf("tags", 0).forGetter(Discovery::tags),

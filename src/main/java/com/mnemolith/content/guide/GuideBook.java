@@ -9,14 +9,14 @@ import net.minecraft.resources.Identifier;
  * The screen that draws these pages is client-only.
  * Dedicated QA expects {@link #pageCount()} to be {@link #PAGE_COUNT} (stage 3 added the echo page; memory grafts
  * added the recording and graft pages; residual echoes added the residue page; the recollection storm added the storm and Scar pages;
- * the echo relay and archive vault added the relay and vault pages; living memory added noticed, traces, offer, and rewrite).
+ * the echo relay and archive vault added the relay and vault pages; living memory added noticed, traces, offer, and rewrite; expansion tails added armory, beasts, and roles).
  */
 public final class GuideBook {
     public static final String ITEM_ID = "field_guide";
     public static final int ART_WIDTH = 256;
     public static final int ART_HEIGHT = 128;
     /** Pages QA expects. */
-    public static final int PAGE_COUNT = 30;
+    public static final int PAGE_COUNT = 33;
 
     private static final String[] PAGES = {
             "welcome",
@@ -46,6 +46,9 @@ public final class GuideBook {
             "traces",
             "offer",
             "rewrite",
+            "armory",
+            "beasts",
+            "roles",
             "world",
             "players",
             "reference"

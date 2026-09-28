@@ -165,6 +165,17 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue INTERVENE_RANGE;
     public static final ModConfigSpec.BooleanValue INTERVENE_ONCE;
     public static final ModConfigSpec.IntValue INTERVENE_INSTABILITY;
+    public static final ModConfigSpec.DoubleValue GRAVE_DAMAGE_MULT;
+    public static final ModConfigSpec.DoubleValue GRAVE_SPEED_PENALTY;
+    public static final ModConfigSpec.DoubleValue HUSH_STEP_BONUS;
+    public static final ModConfigSpec.IntValue RECALL_BLADE_COOLDOWN;
+    public static final ModConfigSpec.IntValue SCAR_BRAND_COOLDOWN;
+    public static final ModConfigSpec.IntValue STALKER_SPAWN_WEIGHT;
+    public static final ModConfigSpec.IntValue STALKER_MIN_PRESSURE;
+    public static final ModConfigSpec.BooleanValue SLEEP_CONSOLIDATION;
+    public static final ModConfigSpec.IntValue SLEEP_COOL_AMOUNT;
+    public static final ModConfigSpec.IntValue SLEEP_FADE_PASSES;
+    public static final ModConfigSpec.BooleanValue SLEEP_NIGHTMARE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -368,7 +379,28 @@ public final class CommonConfig {
         INTERVENE_INSTABILITY = builder.comment("Instability added to the chunk when a tag changes. 0 adds none. The new tag is still scored.").translation("mnemolith.configuration.interveneInstability").defineInRange("instability", 6, 0, 40);
         builder.pop();
 
+        SpecValues.section(builder, "armory", "Armor set bonuses and weapon cooldowns.");
+        GRAVE_DAMAGE_MULT = SpecValues.decimal(builder, "graveDamageMult", "Damage multiplier against monsters while wearing a full grave set.", 0.8D, 0.1D, 1.0D);
+        GRAVE_SPEED_PENALTY = SpecValues.decimal(builder, "graveSpeedPenalty", "Movement speed multiplier added (usually negative) for a full grave set.", -0.08D, -0.5D, 0.0D);
+        HUSH_STEP_BONUS = SpecValues.decimal(builder, "hushStepBonus", "Movement speed multiplier added while sneaking in a full hush set.", 0.12D, 0.0D, 0.5D);
+        RECALL_BLADE_COOLDOWN = SpecValues.integer(builder, "recallBladeCooldown", "Ticks the recall blade rests after a second strike.", 30, 5, 200);
+        SCAR_BRAND_COOLDOWN = SpecValues.integer(builder, "scarBrandCooldown", "Ticks the scar brand rests after a spend.", 40, 5, 200);
+        builder.pop();
+
+        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, and fracture stalkers. Eggs and /mnemolith spawn ignore these.");
+        STALKER_SPAWN_WEIGHT = SpecValues.integer(builder, "stalkerSpawnWeight", "Chance, out of 100, that a natural fracture stalker spawn attempt is kept. 0 disables natural spawns.", 10, 0, 100);
+        STALKER_MIN_PRESSURE = SpecValues.integer(builder, "stalkerMinPressure", "Minimum cached pressure before a fracture stalker can spawn naturally.", 50, 0, 10_000);
+        builder.pop();
+
+        SpecValues.section(builder, "sleep", "After a full sleep the house cools. An overloaded chunk can dream a nightmare.");
+        SLEEP_CONSOLIDATION = SpecValues.bool(builder, "consolidation", "Whether waking from a full sleep cools quiet memory in the bed chunk.", true);
+        SLEEP_COOL_AMOUNT = SpecValues.integer(builder, "coolAmount", "Instability removed from the bed chunk after sleep.", 8, 0, 40);
+        SLEEP_FADE_PASSES = SpecValues.integer(builder, "fadePasses", "How many quiet imprints may fade after one sleep.", 2, 0, 8);
+        SLEEP_NIGHTMARE = SpecValues.bool(builder, "nightmare", "Whether waking in an overloaded or fractured chunk blinds the player and may spawn a replicant.", true);
+        builder.pop();
+
         SPEC = builder.build();
+
     }
 
     private CommonConfig() {}

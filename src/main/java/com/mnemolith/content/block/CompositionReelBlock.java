@@ -8,6 +8,7 @@ import com.mnemolith.world.LoadedChunkMemory;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -49,5 +50,25 @@ public class CompositionReelBlock extends BaseEntityBlock {
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        if (level.getBlockEntity(pos) instanceof CompositionReelBlockEntity reel) {
+            int filled = 0;
+            for (int i = 0; i < reel.getContainerSize(); i++) {
+                if (!reel.getItem(i).isEmpty()) {
+                    filled++;
+                }
+            }
+            int slots = Math.max(1, reel.getContainerSize());
+            return Math.min(15, (filled * 15) / slots);
+        }
+        return 0;
     }
 }

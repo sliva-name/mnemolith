@@ -45,7 +45,7 @@ public final class ImprintConstants {
 
     public static final int COMPOSE_BUTTON_ID = 0;
     /** One slot per tag. Every formula is a pair, so the reel does not offer a third hole. */
-    public static final int COMPOSITION_SLOTS = 2;
+    public static final int COMPOSITION_SLOTS = 3;
 
     private ImprintConstants() {}
 }

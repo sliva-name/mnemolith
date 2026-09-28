@@ -1,6 +1,9 @@
 package com.mnemolith.client.gui;
 
-import com.mnemolith.content.composition.CompositionFormula;
+import java.util.List;
+
+import com.mnemolith.content.composition.CompositionRecipe;
+import com.mnemolith.content.composition.CompositionRecipes;
 import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ModAttachments;
@@ -99,10 +102,12 @@ public class CatalogScreen extends Screen {
         int written = 0;
         if (this.formulas != 0 || shown != 0 || this.tags != 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_formulas"), left + 10, formulaY, GuiArt.BONE);
-            for (CompositionFormula formula : CompositionFormula.values()) {
-                if ((this.formulas & (1 << formula.ordinal())) == 0) {
+            List<CompositionRecipe> recipes = CompositionRecipes.all();
+            for (int i = 0; i < recipes.size() && i < Discovery.FORMULA_COUNT; i++) {
+                if ((this.formulas & (1 << i)) == 0) {
                     continue;
                 }
+                CompositionRecipe formula = recipes.get(i);
                 int y = formulaY + 14 + written * 16;
                 if (y > top + height - 48) {
                     break;
@@ -112,7 +117,8 @@ public class CatalogScreen extends Screen {
                     GuiArt.tag(graphics, tag, x, y);
                     x += 16;
                 }
-                GuiArt.label(graphics, this.font, FORMULA_LABELS[formula.ordinal()], x + 4, y + 4, GuiArt.BONE);
+                Component label = i < FORMULA_LABELS.length ? FORMULA_LABELS[i] : Component.translatable(formula.translationKey());
+                GuiArt.label(graphics, this.font, label, x + 4, y + 4, GuiArt.BONE);
                 written++;
             }
             if (written == 0 && (this.tags != 0 || this.formulas != 0)) {
@@ -214,10 +220,10 @@ public class CatalogScreen extends Screen {
     }
 
     private static Component[] formulaLabels() {
-        CompositionFormula[] formulas = CompositionFormula.values();
-        Component[] out = new Component[formulas.length];
-        for (CompositionFormula formula : formulas) {
-            out[formula.ordinal()] = Component.translatable(formula.translationKey());
+        List<CompositionRecipe> recipes = CompositionRecipes.all();
+        Component[] out = new Component[Math.max(recipes.size(), 1)];
+        for (int i = 0; i < recipes.size(); i++) {
+            out[i] = Component.translatable(recipes.get(i).translationKey());
         }
         return out;
     }

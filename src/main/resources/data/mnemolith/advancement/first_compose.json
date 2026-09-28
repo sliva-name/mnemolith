@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:first_slip",
+  "display": {
+    "icon": {
+      "id": "mnemolith:residual_shard"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.first_compose.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.first_compose.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:residual_shard"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ]
+}

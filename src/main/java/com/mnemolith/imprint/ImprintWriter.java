@@ -23,6 +23,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import com.mnemolith.audio.ModSounds;
+import com.mnemolith.event.ImprintWrittenEvent;
+
+import net.neoforged.neoforge.common.NeoForge;
 
 /** Writes, extracts, and spikes chunk memory. Callers are world events, items, and the smoke command. */
 public final class ImprintWriter {
@@ -80,6 +83,7 @@ public final class ImprintWriter {
         }
         level.playSound(null, pos, ModSounds.IMPRINT_WRITE.get(), SoundSource.BLOCKS, 0.6F, 1.2F);
         MemoryFx.write(level, pos);
+        NeoForge.EVENT_BUS.post(new ImprintWrittenEvent(level, pos, tags, player, throttled));
         return true;
     }
 

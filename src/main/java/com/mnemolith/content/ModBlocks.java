@@ -8,6 +8,7 @@ import com.mnemolith.content.block.ArchivalStratumBlock;
 import com.mnemolith.content.block.CompositionReelBlock;
 import com.mnemolith.content.block.MuteStoneBlock;
 import com.mnemolith.content.block.ReplicatedMomentBlock;
+import com.mnemolith.content.block.PressureSensorBlock;
 import com.mnemolith.content.block.ResonatorTrapBlock;
 
 import net.minecraft.world.level.block.SoundType;
@@ -58,8 +59,20 @@ public final class ModBlocks {
             "archive_vault",
             com.mnemolith.content.block.ArchiveVaultBlock::new,
             vaultProperties());
+    public static final DeferredBlock<PressureSensorBlock> PRESSURE_SENSOR = BLOCKS.registerBlock(
+            "pressure_sensor",
+            PressureSensorBlock::new,
+            sensorProperties());
 
     private ModBlocks() {}
+
+    private static UnaryOperator<BlockBehaviour.Properties> sensorProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_CYAN)
+                .strength(1.5F, 6.0F)
+                .sound(SoundType.COPPER)
+                .isRedstoneConductor((state, level, pos) -> false);
+    }
 
     private static UnaryOperator<BlockBehaviour.Properties> vaultProperties() {
         return properties -> properties

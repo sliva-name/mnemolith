@@ -71,6 +71,10 @@ public final class ItemTooltips {
                 if (hint != null) {
                     builder.accept(Component.translatable(hint).withStyle(net.minecraft.ChatFormatting.GRAY));
                 }
+                if (stack.getItem() == com.mnemolith.armory.ArmoryItems.RECALL_BLADE.get() && player != null && player.level() != null) {
+                    builder.accept(com.mnemolith.armory.RecallBladeItem.tagLine(player.level(), player)
+                            .copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
             }
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.ECHO_RECORDING, (stack, context, display, player, flag, builder) -> {

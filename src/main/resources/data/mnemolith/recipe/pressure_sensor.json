@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "Q": "minecraft:quartz",
+    "R": "minecraft:redstone",
+    "A": "mnemolith:archival_tablet"
+  },
+  "pattern": [
+    " Q ",
+    "RAR",
+    " Q "
+  ],
+  "result": {
+    "id": "mnemolith:pressure_sensor"
+  }
+}

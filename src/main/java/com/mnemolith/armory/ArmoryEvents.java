@@ -1,6 +1,7 @@
 package com.mnemolith.armory;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.config.CommonConfig;
 import com.mnemolith.entity.MemoryMob;
 import com.mnemolith.entity.mob.FractureStalker;
 import com.mnemolith.imprint.ChunkMemory;
@@ -55,7 +56,7 @@ public final class ArmoryEvents {
             return;
         }
         if (event.getSource().getEntity() instanceof Monster) {
-            event.setAmount(event.getAmount() * 0.8F);
+            event.setAmount(event.getAmount() * CommonConfig.GRAVE_DAMAGE_MULT.get().floatValue());
         }
     }
 
@@ -67,8 +68,8 @@ public final class ArmoryEvents {
         boolean grave = Armory.full(player, ArmorySet.GRAVE);
         boolean hush = Armory.full(player, ArmorySet.HUSH) && player.isShiftKeyDown();
         boolean scar = Armory.full(player, ArmorySet.SCAR) && Armory.inFracture(player);
-        toggle(player.getAttribute(Attributes.MOVEMENT_SPEED), GRAVE_WEIGHT, grave, -0.08D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        toggle(player.getAttribute(Attributes.MOVEMENT_SPEED), HUSH_STEP, hush, 0.12D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        toggle(player.getAttribute(Attributes.MOVEMENT_SPEED), GRAVE_WEIGHT, grave, CommonConfig.GRAVE_SPEED_PENALTY.get(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        toggle(player.getAttribute(Attributes.MOVEMENT_SPEED), HUSH_STEP, hush, CommonConfig.HUSH_STEP_BONUS.get(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         toggle(player.getAttribute(Attributes.ATTACK_DAMAGE), SCAR_EDGE, scar, 2.0D, AttributeModifier.Operation.ADD_VALUE);
         if (scar && player.tickCount % 200 == 0 && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
             LevelChunk chunk = level.getChunkAt(player.blockPosition());

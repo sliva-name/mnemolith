@@ -1,5 +1,8 @@
 package com.mnemolith.echo;
 
+import com.mnemolith.event.EchoActivatedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -90,6 +93,7 @@ public final class EchoLife {
         }
         stack.shrink(1);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.activated", recording.seconds()), true);
+        NeoForge.EVENT_BUS.post(new EchoActivatedEvent(player, echo, recording));
         return SpawnResult.SPAWNED;
     }
 

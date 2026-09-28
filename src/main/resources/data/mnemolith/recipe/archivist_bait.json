@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "mnemolith:imprint_slip",
+    "I": "minecraft:ink_sac",
+    "B": "minecraft:bone"
+  },
+  "pattern": [
+    " I ",
+    "BSB",
+    " I "
+  ],
+  "result": {
+    "id": "mnemolith:archivist_bait",
+    "count": 2
+  }
+}
