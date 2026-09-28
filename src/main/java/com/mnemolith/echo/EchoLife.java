@@ -87,7 +87,9 @@ public final class EchoLife {
             return check;
         }
         EchoEntity echo = spawn(player.level(), player, recording, stack.getOrDefault(ModDataComponents.ECHO_LESSON.get(), EchoLesson.NONE),
-                stack.getOrDefault(ModDataComponents.ECHO_FARM.get(), FarmLesson.NONE));
+                stack.getOrDefault(ModDataComponents.ECHO_FARM.get(), FarmLesson.NONE),
+                stack.getOrDefault(ModDataComponents.ECHO_LUMBER.get(), LumberLesson.NONE),
+                stack.getOrDefault(ModDataComponents.ECHO_CARE.get(), CareLesson.NONE));
         if (echo == null) {
             return SpawnResult.EMPTY;
         }
@@ -104,11 +106,17 @@ public final class EchoLife {
 
     /** As {@link #spawn(ServerLevel, ServerPlayer, EchoRecording)}, and the echo also learns {@code lesson} for jobs. */
     public static @Nullable EchoEntity spawn(ServerLevel level, ServerPlayer owner, EchoRecording recording, EchoLesson lesson) {
-        return spawn(level, owner, recording, lesson, FarmLesson.NONE);
+        return spawn(level, owner, recording, lesson, FarmLesson.NONE, LumberLesson.NONE, CareLesson.NONE);
     }
 
     /** As above, with a stage 3 farming lesson too. */
     public static @Nullable EchoEntity spawn(ServerLevel level, ServerPlayer owner, EchoRecording recording, EchoLesson lesson, FarmLesson farm) {
+        return spawn(level, owner, recording, lesson, farm, LumberLesson.NONE, CareLesson.NONE);
+    }
+
+    /** As above, with O1 lumber and care lessons. */
+    public static @Nullable EchoEntity spawn(ServerLevel level, ServerPlayer owner, EchoRecording recording, EchoLesson lesson, FarmLesson farm,
+            LumberLesson lumber, CareLesson care) {
         EchoEntity echo = ModEntities.ECHO.get().create(level, EntitySpawnReason.MOB_SUMMONED);
         if (echo == null) {
             return null;
@@ -120,6 +128,8 @@ public final class EchoLife {
         echo.setGeneration(EchoRegistry.get(level.getServer()).put(owner.getUUID(), echo.getUUID()));
         echo.job().setLesson(lesson);
         echo.job().setFarmLesson(farm);
+        echo.job().setLumberLesson(lumber);
+        echo.job().setCareLesson(care);
         echo.startReplay(recording);
         level.addFreshEntity(echo);
         level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.9F, 0.7F);
@@ -140,6 +150,8 @@ public final class EchoLife {
             return false;
         }
         echo.job().setFarmLesson(stack.getOrDefault(ModDataComponents.ECHO_FARM.get(), FarmLesson.NONE));
+        echo.job().setLumberLesson(stack.getOrDefault(ModDataComponents.ECHO_LUMBER.get(), LumberLesson.NONE));
+        echo.job().setCareLesson(stack.getOrDefault(ModDataComponents.ECHO_CARE.get(), CareLesson.NONE));
         echo.teachLesson(stack.getOrDefault(ModDataComponents.ECHO_LESSON.get(), EchoLesson.NONE));
         echo.startReplay(recording);
         stack.shrink(1);

@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
-/** Lens orders: stay, follow the owner, or walk back to the work point and resume. */
+/** Lens orders: stay, follow the owner, walk back to the work point, or loop the recorded routine. */
 final class JobOrders {
     private final EchoJob job;
     EchoJob.Order order = EchoJob.Order.NONE;
@@ -51,6 +51,19 @@ final class JobOrders {
             return false;
         }
         this.order = order;
+        if (order == EchoJob.Order.REPEAT) {
+            var recording = echo.recording();
+            if (recording == null || recording.length() == 0) {
+                this.order = EchoJob.Order.NONE;
+                this.job.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+                this.job.dirty = true;
+                return false;
+            }
+            this.job.setStatus(JobStatus.of(JobStatus.Kind.ROUTINE));
+            this.job.dirty = true;
+            echo.startReplay(recording);
+            return true;
+        }
         this.job.setStatus(JobStatus.of(switch (order) {
             case STAY -> JobStatus.Kind.STAY;
             case FOLLOW -> JobStatus.Kind.FOLLOW;
@@ -70,6 +83,7 @@ final class JobOrders {
             }
             case FOLLOW -> this.tickFollow(level, echo);
             case RETURN -> this.tickReturn(level, echo);
+            case REPEAT -> this.tickRepeat(level, echo);
             default -> this.order = EchoJob.Order.NONE;
         }
     }
@@ -166,5 +180,20 @@ final class JobOrders {
             this.job.setStatus(JobStatus.of(JobStatus.Kind.AT_POINT));
         }
         Mnemolith.LOGGER.info("Mnemolith echo back at its point owner={} mode={} at {}", echo.ownerName(), this.job.mode.getSerializedName(), echo.blockPosition().toShortString());
+    }
+
+    /** O2: when a looped replay finishes, start it again from the first frame. */
+    private void tickRepeat(ServerLevel level, EchoEntity echo) {
+        if (echo.isReplaying()) {
+            return;
+        }
+        var recording = echo.recording();
+        if (recording == null || recording.length() == 0) {
+            this.order = EchoJob.Order.NONE;
+            this.job.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return;
+        }
+        this.job.setStatus(JobStatus.of(JobStatus.Kind.ROUTINE));
+        echo.startReplay(recording);
     }
 }

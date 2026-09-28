@@ -109,17 +109,27 @@ public final class ItemTooltips {
             // The client only receives the lesson summary; the frames stay on the server.
             com.mnemolith.echo.EchoLesson lesson = stack.get(ModDataComponents.ECHO_LESSON.get());
             com.mnemolith.echo.FarmLesson farm = stack.get(ModDataComponents.ECHO_FARM.get());
+            com.mnemolith.echo.LumberLesson lumber = stack.get(ModDataComponents.ECHO_LUMBER.get());
+            com.mnemolith.echo.CareLesson care = stack.get(ModDataComponents.ECHO_CARE.get());
             boolean farming = farm != null && farm.teaches();
+            boolean lumbering = lumber != null && lumber.teaches();
+            boolean caring = care != null && care.teaches();
             if (lesson != null) {
                 builder.accept(Component.translatable("item.mnemolith.echo_recording.summary", lesson.seconds(), lesson.breaks(), lesson.places(), lesson.uses()));
                 boolean onlyReplay = !lesson.teachesMining() && !lesson.teachesBuilding();
-                if (!(onlyReplay && farming)) {
+                if (!(onlyReplay && (farming || lumbering || caring))) {
                     for (Component line : lesson.describe()) {
                         builder.accept(line.copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                     }
                 }
                 if (farming) {
                     builder.accept(Component.translatable("mnemolith.lesson.farming", farm.cropNames()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+                if (lumbering) {
+                    builder.accept(Component.translatable("mnemolith.lesson.lumber", lumber.logNames()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+                if (caring) {
+                    builder.accept(Component.translatable("mnemolith.lesson.care", care.describe()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                 }
             } else if (recording.length() > 0) {
                 builder.accept(Component.translatable(

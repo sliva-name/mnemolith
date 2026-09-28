@@ -67,6 +67,9 @@ public class EchoEntity extends MemoryAvatar {
     public static final int LESSON_BUILDING = 2;
     /** Stage 3: the echo knows farming; {@link #DATA_FARM} names the crops. */
     public static final int LESSON_FARMING = 4;
+    /** O1: lumberjack / animal care. */
+    public static final int LESSON_LUMBER = 8;
+    public static final int LESSON_CARE = 16;
     private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
     /** Memory graft (temper id in bits 0-3, charges in bits 4-17, capacity in bits 18-31); 0 without a graft. */
@@ -523,8 +526,19 @@ public class EchoEntity extends MemoryAvatar {
         this.entityData.set(DATA_STRAIN, (byte) this.job.strain().ordinal());
         EchoLesson lesson = this.job.lesson();
         boolean farming = this.job.farmLesson().teaches();
-        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0) | (farming ? LESSON_FARMING : 0)));
-        this.entityData.set(DATA_FARM, farming ? this.job.farmLesson().cropNames() : Component.empty());
+        boolean lumbering = this.job.lumberLesson().teaches();
+        boolean caring = this.job.careLesson().teaches();
+        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)
+                | (farming ? LESSON_FARMING : 0) | (lumbering ? LESSON_LUMBER : 0) | (caring ? LESSON_CARE : 0)));
+        Component side = Component.empty();
+        if (farming) {
+            side = this.job.farmLesson().cropNames();
+        } else if (lumbering) {
+            side = this.job.lumberLesson().logNames();
+        } else if (caring) {
+            side = this.job.careLesson().describe();
+        }
+        this.entityData.set(DATA_FARM, side);
     }
 
     /** Synced job mode (client and server). */

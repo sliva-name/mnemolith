@@ -81,7 +81,7 @@ public final class EchoHands {
     }
 
     /**
-     * Empty-handed right-click, the same call a recorded use makes. Main and off hand are emptied for the call and the
+     * Empty-handed right-click for recorded lever/door uses (item-bearing uses go through {@link #use}). Main and off hand are emptied for the call and the
      * same stack objects are put back, so a nested break does not lose its tool and sneak does not suppress the block.
      * When the block has a horizontal facing, the fake player looks that way: a fence gate only retargets its facing
      * when the player faces the opposite direction, and this use should open or close without spinning the gate.
@@ -506,7 +506,34 @@ public final class EchoHands {
             return Outcome.SKIPPED_CHANGED;
         }
         hand.setShiftKeyDown(false);
-        InteractionResult result = hand.gameMode.useItemOn(hand, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, action.hit());
+        // O2: replay use-with-item (hoe, bucket, flint & steel, bone meal, shears) when the recording stored the item.
+        ItemStack held = ItemStack.EMPTY;
+        int echoSlot = -1;
+        if (action.item().isPresent() && action.item().get() != net.minecraft.world.item.Items.AIR) {
+            net.minecraft.world.item.Item want = action.item().get();
+            echoSlot = echo.inventory().getItem(echo.selectedSlot()).is(want) ? echo.selectedSlot() : echo.inventory().find(want);
+            if (echoSlot < 0) {
+                return Outcome.SKIPPED_NO_ITEM;
+            }
+            held = echo.inventory().getItem(echoSlot);
+        }
+        InteractionResult result;
+        if (held.isEmpty()) {
+            result = hand.gameMode.useItemOn(hand, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, action.hit());
+        } else {
+            int handSlot = 0;
+            ItemStack displaced = hand.getInventory().getItem(handSlot);
+            hand.getInventory().setSelectedSlot(handSlot);
+            hand.getInventory().setItem(handSlot, held);
+            echo.inventory().setItem(echoSlot, ItemStack.EMPTY);
+            try {
+                result = hand.gameMode.useItemOn(hand, level, held, InteractionHand.MAIN_HAND, action.hit());
+            } finally {
+                ItemStack after = hand.getInventory().getItem(handSlot);
+                hand.getInventory().setItem(handSlot, displaced);
+                echo.inventory().setItem(echoSlot, after);
+            }
+        }
         echo.swing(InteractionHand.MAIN_HAND);
         return result.consumesAction() ? Outcome.DONE : Outcome.REFUSED;
     }

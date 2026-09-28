@@ -35,7 +35,10 @@ import net.neoforged.neoforge.event.entity.player.TradeWithVillagerEvent;
 
 /**
  * E3 imprint sources wired to vanilla: lightning, portals, sculk noise, boss victories, villager trade.
- * Sleep consolidation stays in {@link SleepEvents}; this only writes imprint tags.
+ * W5: mute stone (and selective mute) also cancels GameEvents that carry a vibration frequency, so sculk
+ * sensors and shriekers stay quiet in muted chunks. Ancient City quiet seeds are W1; Warden/dragon/wither
+ * boss tags are written here via {@link #onBossDeath}.
+ * Sleep consolidation stays in {@link SleepEvents}.
  */
 @EventBusSubscriber(modid = Mnemolith.MOD_ID)
 public final class ExpansionImprintEvents {
@@ -95,9 +98,31 @@ public final class ExpansionImprintEvents {
         ImprintWriter.write(from, player.blockPosition(), tags, player.getUUID(), false);
     }
 
+    /**
+     * W5: in a muted chunk, cancel any GameEvent that has a vibration frequency (sculk sensors / shriekers listen
+     * to those). Selective mute counts as muted via {@link com.mnemolith.world.LoadedChunkMemory#isMuted}.
+     * Runs at HIGH so imprint writes below still see a cancelled event and skip.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGH)
+    public static void onMuteVibrations(VanillaGameEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        var holder = event.getVanillaEvent();
+        var frequency = holder.getData(net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps.VIBRATION_FREQUENCIES);
+        boolean sculkVoice = holder.is(GameEvent.SHRIEK) || holder.is(GameEvent.SCULK_SENSOR_TENDRILS_CLICKING);
+        if (frequency == null && !sculkVoice) {
+            return;
+        }
+        BlockPos pos = BlockPos.containing(event.getEventPosition());
+        if (com.mnemolith.world.LoadedChunkMemory.isMuted(level, pos)) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public static void onSculk(VanillaGameEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
         if (!CommonConfig.WRITE_SCULK.get()) {

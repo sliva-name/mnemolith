@@ -57,7 +57,13 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
         RETURNING(false),
         AT_POINT(false),
         NO_POINT(true),
-        LOST_OWNER(true);
+        LOST_OWNER(true),
+        // O1 / O2
+        LUMBER(false),
+        LUMBER_WAIT(false),
+        CARE(false),
+        CARE_WAIT(false),
+        ROUTINE(false);
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         private final boolean stop;
@@ -132,6 +138,11 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             case FOLLOW -> Component.translatable("mnemolith.job.follow");
             case RETURNING -> Component.translatable("mnemolith.job.returning");
             case AT_POINT -> Component.translatable("mnemolith.job.at_point");
+            case LUMBER -> Component.translatable("mnemolith.job.lumber", blockName(this.detail), this.a);
+            case LUMBER_WAIT -> Component.translatable("mnemolith.job.lumber_wait", blockName(this.detail), this.a);
+            case CARE -> Component.translatable("mnemolith.job.care", this.a);
+            case CARE_WAIT -> Component.translatable("mnemolith.job.care_wait", this.a);
+            case ROUTINE -> Component.translatable("mnemolith.job.routine");
             default -> stop(Component.translatable("mnemolith.job.reason." + this.kind.getSerializedName()));
         };
     }

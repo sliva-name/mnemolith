@@ -10,7 +10,9 @@ import org.jspecify.annotations.Nullable;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.echo.EchoLesson;
+import com.mnemolith.echo.CareLesson;
 import com.mnemolith.echo.FarmLesson;
+import com.mnemolith.echo.LumberLesson;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -44,7 +46,11 @@ public final class EchoJob {
         MINE,
         BUILD,
         /** Stage 3: harvest mature taught crops, replant, deposit. */
-        FARM;
+        FARM,
+        /** O1: chop taught logs and replant saplings. */
+        LUMBER,
+        /** O1: shear, milk, breed nearby animals. */
+        CARE;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -85,14 +91,19 @@ public final class EchoJob {
     }
 
     /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
-    public record Stage3(List<Misfire> misfired, int workActions, FarmLesson farm, int harvested, Order order) {
-        public static final Stage3 EMPTY = new Stage3(List.of(), 0, FarmLesson.NONE, 0, Order.NONE);
+    public record Stage3(List<Misfire> misfired, int workActions, FarmLesson farm, int harvested, Order order,
+            LumberLesson lumber, int chopped, CareLesson care, int tended) {
+        public static final Stage3 EMPTY = new Stage3(List.of(), 0, FarmLesson.NONE, 0, Order.NONE, LumberLesson.NONE, 0, CareLesson.NONE, 0);
         public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
                 Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions),
                 FarmLesson.CODEC.optionalFieldOf("farm", FarmLesson.NONE).forGetter(Stage3::farm),
                 Codec.INT.optionalFieldOf("harvested", 0).forGetter(Stage3::harvested),
-                Order.CODEC.optionalFieldOf("order", Order.NONE).forGetter(Stage3::order))
+                Order.CODEC.optionalFieldOf("order", Order.NONE).forGetter(Stage3::order),
+                LumberLesson.CODEC.optionalFieldOf("lumber", LumberLesson.NONE).forGetter(Stage3::lumber),
+                Codec.INT.optionalFieldOf("chopped", 0).forGetter(Stage3::chopped),
+                CareLesson.CODEC.optionalFieldOf("care", CareLesson.NONE).forGetter(Stage3::care),
+                Codec.INT.optionalFieldOf("tended", 0).forGetter(Stage3::tended))
                 .apply(instance, Stage3::new));
     }
 
@@ -101,7 +112,9 @@ public final class EchoJob {
         NONE("none"),
         STAY("stay"),
         FOLLOW("follow"),
-        RETURN("return");
+        RETURN("return"),
+        /** O2: loop the recorded sequence (levers, item uses, patrol path). */
+        REPEAT("repeat");
 
         public static final Codec<Order> CODEC = StringRepresentable.fromEnum(Order::values);
         private final String name;
@@ -136,6 +149,8 @@ public final class EchoJob {
     final MineController mine = new MineController(this);
     final BuildController build = new BuildController(this);
     final FarmController farm = new FarmController(this);
+    final LumberController lumber = new LumberController(this);
+    final CareController care = new CareController(this);
     final JobMotion motion = new JobMotion(this);
     final JobChest chests = new JobChest(this);
     final JobOrders orders = new JobOrders(this);
@@ -265,7 +280,7 @@ public final class EchoJob {
 
     /** MINE, BUILD or FARM, also while a lens order pauses it. */
     public boolean hasWorkMode() {
-        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM;
+        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM || this.mode == Mode.LUMBER || this.mode == Mode.CARE;
     }
 
     public Order order() {
@@ -282,8 +297,34 @@ public final class EchoJob {
         this.dirty = true;
     }
 
+    public LumberLesson lumberLesson() {
+        return this.lumber.taught;
+    }
+
+    public void setLumberLesson(LumberLesson lumber) {
+        this.lumber.taught = lumber;
+        this.dirty = true;
+    }
+
+    public CareLesson careLesson() {
+        return this.care.taught;
+    }
+
+    public void setCareLesson(CareLesson care) {
+        this.care.taught = care;
+        this.dirty = true;
+    }
+
     public int harvested() {
         return this.farm.harvested;
+    }
+
+    public int chopped() {
+        return this.lumber.chopped;
+    }
+
+    public int tended() {
+        return this.care.tended;
     }
 
     /** Memory band of the chunk the echo works in (updated once a second while it works). */
@@ -351,7 +392,10 @@ public final class EchoJob {
     /** Replay of the recording started (stage 1 behaviour); the job waits until it ends. */
     public void beginReplay() {
         this.alarm.alarmed = false;
-        this.orders.order = Order.NONE;
+        // O2: a REPEAT order must survive startReplay so the loop can continue.
+        if (this.orders.order != Order.REPEAT) {
+            this.orders.order = Order.NONE;
+        }
         this.mimic.mimicTicks = 0;
         this.mimic.undoPos = null;
         this.notice = null;
@@ -431,6 +475,42 @@ public final class EchoJob {
         return true;
     }
 
+    /** O1: chop taught logs and replant saplings. */
+    public boolean startLumbering(EchoEntity echo) {
+        this.clearInterruptions(echo);
+        this.release(echo);
+        if (!this.lumber.taught.teaches()) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return false;
+        }
+        this.mode = Mode.LUMBER;
+        this.workAnchor = echo.blockPosition();
+        this.lumber.chopped = 0;
+        this.restartPhase();
+        this.setStatus(new JobStatus(JobStatus.Kind.LUMBER, this.lumber.logKey(), 0, 0));
+        this.dirty = true;
+        return true;
+    }
+
+    /** O1: shear / milk / breed nearby animals. */
+    public boolean startCaring(EchoEntity echo) {
+        this.clearInterruptions(echo);
+        this.release(echo);
+        if (!this.care.taught.teaches()) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return false;
+        }
+        this.mode = Mode.CARE;
+        this.workAnchor = echo.blockPosition();
+        this.care.tended = 0;
+        this.restartPhase();
+        this.setStatus(new JobStatus(JobStatus.Kind.CARE, "", 0, 0));
+        this.dirty = true;
+        return true;
+    }
+
     /** World positions and states the build places (rotated, bottom-up). Empty when no blueprint is placed. */
     public List<EchoLesson.Entry> plan(LevelAccessor level) {
         if (this.buildAnchor == null || this.lesson.blueprint().isEmpty()) {
@@ -444,6 +524,8 @@ public final class EchoJob {
         this.mine.resetSearch();
         this.build.resetSearch();
         this.farm.resetSearch();
+        this.lumber.resetSearch();
+        this.care.resetSearch();
     }
 
     /** Stops moving and clears a crack overlay. */
@@ -484,7 +566,7 @@ public final class EchoJob {
         for (Map.Entry<Long, BlockState> entry : this.strain.misfired.entrySet()) {
             list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
         }
-        return new Stage3(list, this.strain.workActions, this.farm.taught, this.farm.harvested, this.orders.order);
+        return new Stage3(list, this.strain.workActions, this.farm.taught, this.farm.harvested, this.orders.order, this.lumber.taught, this.lumber.chopped, this.care.taught, this.care.tended);
     }
 
     public void load(Saved saved) {
@@ -509,6 +591,10 @@ public final class EchoJob {
         this.farm.taught = saved.stage3().farm();
         this.farm.harvested = saved.stage3().harvested();
         this.orders.order = saved.stage3().order();
+        this.lumber.taught = saved.stage3().lumber();
+        this.lumber.chopped = saved.stage3().chopped();
+        this.care.taught = saved.stage3().care();
+        this.care.tended = saved.stage3().tended();
         this.restartPhase();
         this.dirty = true;
     }
@@ -567,10 +653,15 @@ public final class EchoJob {
             case MINE -> this.mine.tick(level, echo);
             case BUILD -> this.build.tick(level, echo);
             case FARM -> this.farm.tick(level, echo);
+            case LUMBER -> this.lumber.tick(level, echo);
+            case CARE -> this.care.tick(level, echo);
             case REPLAY -> {
                 if (!echo.isReplaying()) {
-                    this.mode = Mode.IDLE;
-                    this.setStatus(JobStatus.IDLE);
+                    // O2: REPEAT order keeps looping via JobOrders; otherwise the replay ends idle.
+                    if (this.orders.order != Order.REPEAT) {
+                        this.mode = Mode.IDLE;
+                        this.setStatus(JobStatus.IDLE);
+                    }
                 }
             }
             default -> {
@@ -603,6 +694,8 @@ public final class EchoJob {
             case MINE -> new JobStatus(JobStatus.Kind.MINING, this.lesson.mining().isEmpty() ? "" : JobTexts.key(this.lesson.mining().get(0).block()), this.mined, 0);
             case BUILD -> JobStatus.of(JobStatus.Kind.BUILDING, this.build.builtCount, this.lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
             case FARM -> new JobStatus(JobStatus.Kind.FARMING, this.farm.cropKey(), this.farm.harvested, 0);
+            case LUMBER -> new JobStatus(JobStatus.Kind.LUMBER, this.lumber.logKey(), this.lumber.chopped, 0);
+            case CARE -> new JobStatus(JobStatus.Kind.CARE, "", this.care.tended, 0);
             default -> JobStatus.IDLE;
         };
     }

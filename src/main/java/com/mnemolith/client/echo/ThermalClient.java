@@ -46,6 +46,7 @@ public final class ThermalClient {
     public static final KeyMapping CMD_STAY = new KeyMapping("key.mnemolith.cmd_stay", GLFW.GLFW_KEY_Z, CATEGORY);
     public static final KeyMapping CMD_FOLLOW = new KeyMapping("key.mnemolith.cmd_follow", GLFW.GLFW_KEY_R, CATEGORY);
     public static final KeyMapping CMD_RETURN = new KeyMapping("key.mnemolith.cmd_return", GLFW.GLFW_KEY_B, CATEGORY);
+    public static final KeyMapping CMD_REPEAT = new KeyMapping("key.mnemolith.cmd_repeat", GLFW.GLFW_KEY_G, CATEGORY);
 
     private static boolean chainMissingLogged;
 
@@ -57,6 +58,7 @@ public final class ThermalClient {
         event.register(CMD_STAY);
         event.register(CMD_FOLLOW);
         event.register(CMD_RETURN);
+        event.register(CMD_REPEAT);
     }
 
     public static void onClientTick(ClientTickEvent.Pre event) {
@@ -85,6 +87,7 @@ public final class ThermalClient {
         order = consume(CMD_STAY, EchoJob.Order.STAY, order);
         order = consume(CMD_FOLLOW, EchoJob.Order.FOLLOW, order);
         order = consume(CMD_RETURN, EchoJob.Order.RETURN, order);
+        order = consume(CMD_REPEAT, EchoJob.Order.REPEAT, order);
         if (active && order != EchoJob.Order.NONE && EchoView.targetId() >= 0) {
             ClientPacketDistributor.sendToServer(new EchoCommandPayload(EchoView.targetId(), order));
         }

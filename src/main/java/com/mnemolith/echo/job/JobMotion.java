@@ -218,6 +218,10 @@ final class JobMotion {
             this.job.build.buildTarget = null;
         } else if (this.job.mode == EchoJob.Mode.FARM) {
             this.job.farm.farmTarget = null;
+        } else if (this.job.mode == EchoJob.Mode.LUMBER) {
+            this.job.lumber.target = null;
+        } else if (this.job.mode == EchoJob.Mode.CARE) {
+            this.job.care.target = null;
         }
     }
 
@@ -231,6 +235,14 @@ final class JobMotion {
         }
         if (this.job.mode == EchoJob.Mode.FARM) {
             this.job.farm.act(level, echo);
+            return;
+        }
+        if (this.job.mode == EchoJob.Mode.LUMBER) {
+            this.job.lumber.act(level, echo);
+            return;
+        }
+        if (this.job.mode == EchoJob.Mode.CARE) {
+            this.job.care.act(level, echo);
             return;
         }
         if (this.job.mode == EchoJob.Mode.MINE) {
