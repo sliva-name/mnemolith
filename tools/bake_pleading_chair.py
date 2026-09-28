@@ -1,41 +1,48 @@
 #!/usr/bin/env python3
-"""Bake Chaalen's CC-BY chair GLB into a compact entity mesh.
+"""Turn Chaalen's CC-BY chair GLB into the entity mesh Minecraft can draw.
 
-Minecraft cannot load GLB. This reads chair.glb (glTF binary), voxelizes the
-photogrammetry shell, greedy-meshes the surface, and writes:
+Sketchfab's USDZ, glTF, and resized GLB downloads are the same scan. Minecraft
+loads none of them. This reads the GLB already in the repo, keeps its shape and
+texture, and writes a smaller triangle list plus a PNG:
 
   assets/mnemolith/models/entity/pleading_chair.mesh
   assets/mnemolith/textures/entity/pleading_chair.png
 
 Mesh space: feet at y=0, XZ centered, open side (the way a sitter looks) toward -Z.
-Vertex colors multiply the flat plastic texture (255 = the texture color).
+UVs use Minecraft's top-left origin. Vertex colors are not stored; the texture is the color.
 
-Usage: python3 tools/bake_pleading_chair.py /path/to/chair.glb
+Usage: python tools/bake_pleading_chair.py [chair.glb] [texture.jpeg]
 """
 
+import json
 import struct
 import sys
+import tempfile
 from pathlib import Path
 
+import fast_simplification
 import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_GLB = ROOT / "src/main/resources/assets/mnemolith/source/model.glb"
+DEFAULT_TEX = ROOT / "src/main/resources/assets/mnemolith/textures/gltf_embedded_0.jpeg"
 MESH_OUT = ROOT / "src/main/resources/assets/mnemolith/models/entity/pleading_chair.mesh"
 TEX_OUT = ROOT / "src/main/resources/assets/mnemolith/textures/entity/pleading_chair.png"
 
 # Chair back about 1.15 blocks, so a player sits at a normal seat height.
 TARGET_HEIGHT = 1.15
-VOXEL_Y = 52
-# Bright plastic from the texture's upper range. Vertex colors darken toward the photo.
-PLASTIC = np.array([82, 198, 112], dtype=np.float32)
+# Asked-for size. The reducer stops higher when further collapses would chew the shell.
+TARGET_TRIS = 20000
+PREVIEW = Path(tempfile.gettempdir()) / "mnemolith-chair-preview"
 
 
 def load_glb(path: Path):
     data = path.read_bytes()
+    if data[:4] != b"glTF":
+        raise SystemExit(f"not a glb: {path}")
     off = 12
     length, _ = struct.unpack_from("<II", data, off)
-    import json
     js = json.loads(data[off + 8 : off + 8 + length])
     off += 8 + length
     length, _ = struct.unpack_from("<II", data, off)
@@ -43,306 +50,188 @@ def load_glb(path: Path):
     return js, blob
 
 
-def read_vec(js, blob, acc_idx, dim):
-    acc = js["accessors"][acc_idx]
+def read_accessor(js, blob, index):
+    acc = js["accessors"][index]
     bv = js["bufferViews"][acc["bufferView"]]
-    start = bv.get("byteOffset", 0)
-    raw = blob[start : start + bv["byteLength"]]
-    stride = bv.get("byteStride", dim * 4)
-    offset = acc.get("byteOffset", 0)
+    start = bv.get("byteOffset", 0) + acc.get("byteOffset", 0)
     count = acc["count"]
-    if stride == dim * 4:
-        return np.frombuffer(raw, np.float32, count * dim, offset).reshape(count, dim).copy()
-    out = np.empty((count, dim), np.float32)
+    comp = acc["componentType"]
+    dims = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[acc["type"]]
+    dtype = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}[comp]
+    width = np.dtype(dtype).itemsize * dims
+    stride = bv.get("byteStride", width)
+    raw = blob[start : start + bv["byteLength"] - acc.get("byteOffset", 0)]
+    if stride == width:
+        return np.frombuffer(raw, dtype, count * dims).reshape(count, dims).copy()
+    out = np.empty((count, dims), dtype)
     for i in range(count):
-        out[i] = np.frombuffer(raw, np.float32, dim, offset + i * stride)
+        out[i] = np.frombuffer(raw, dtype, dims, i * stride)
     return out
 
 
+def face_normals(points, tris):
+    a = points[tris[:, 0]]
+    b = points[tris[:, 1]]
+    c = points[tris[:, 2]]
+    n = np.cross(b - a, c - a)
+    length = np.linalg.norm(n, axis=1)
+    length[length < 1e-12] = 1.0
+    return n / length[:, None]
+
+
+def smooth_normals(points, tris):
+    n = face_normals(points, tris)
+    acc = np.zeros_like(points)
+    for k in range(3):
+        np.add.at(acc, tris[:, k], n)
+    length = np.linalg.norm(acc, axis=1)
+    length[length < 1e-12] = 1.0
+    return acc / length[:, None]
+
+
+def orient(points):
+    """Feet on y=0, height TARGET_HEIGHT, back toward +Z so the open side faces -Z."""
+    mn = points.min(0)
+    mx = points.max(0)
+    scale = TARGET_HEIGHT / float(mx[1] - mn[1])
+    points = (points - mn) * scale
+    center = points.mean(0)
+    high = points[points[:, 1] > TARGET_HEIGHT * 0.72]
+    if len(high) < 30:
+        high = points[points[:, 1] > TARGET_HEIGHT * 0.55]
+    back = high.mean(0) - center
+    angle = np.arctan2(back[0], back[2])
+    cos, sin = np.cos(angle), np.sin(angle)
+    x = points[:, 0] * cos + points[:, 2] * sin
+    z = -points[:, 0] * sin + points[:, 2] * cos
+    points = np.column_stack((x, points[:, 1], z))
+    points[:, 0] -= (points[:, 0].min() + points[:, 0].max()) * 0.5
+    points[:, 2] -= (points[:, 2].min() + points[:, 2].max()) * 0.5
+    return points
+
+
+def seat_height(points, tris, normals):
+    up = normals[:, 1] > 0.65
+    mid = (points[tris].mean(1)[:, 1] > 0.28) & (points[tris].mean(1)[:, 1] < 0.72)
+    ys = points[tris].mean(1)[up & mid, 1]
+    if len(ys) == 0:
+        return 0.48
+    return float(np.median(ys))
+
+
+def preview(points, tris, uvs, texture, path, axis_u, axis_v, flip_u):
+    size = 520
+    img = np.zeros((size, size, 3), np.uint8) + 28
+    zbuf = np.full((size, size), 1e9, np.float32)
+    depth = ({0, 1, 2} - {axis_u, axis_v}).pop()
+    umin, umax = points[:, axis_u].min(), points[:, axis_u].max()
+    vmin, vmax = points[:, axis_v].min(), points[:, axis_v].max()
+    span = max(umax - umin, vmax - vmin, 1e-4)
+    s = (size - 28) / span
+    th, tw = texture.shape[:2]
+
+    def pix(p):
+        u = (p[axis_u] - umin) * s + 14
+        if flip_u:
+            u = size - u
+        v = size - 14 - (p[axis_v] - vmin) * s
+        return u, v
+
+    for tri in tris:
+        poly = [pix(points[i]) for i in tri]
+        d = float(points[tri, depth].mean())
+        xs = [p[0] for p in poly]
+        ys = [p[1] for p in poly]
+        minx, maxx = int(max(0, min(xs))), int(min(size - 1, max(xs) + 1))
+        miny, maxy = int(max(0, min(ys))), int(min(size - 1, max(ys) + 1))
+        (x1, y1), (x2, y2), (x3, y3) = poly
+        den = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+        if abs(den) < 1e-6:
+            continue
+        uv = uvs[tri]
+        for y in range(miny, maxy + 1):
+            for x in range(minx, maxx + 1):
+                px, py = x + 0.5, y + 0.5
+                a = ((y2 - y3) * (px - x3) + (x3 - x2) * (py - y3)) / den
+                b = ((y3 - y1) * (px - x3) + (x1 - x3) * (py - y3)) / den
+                c = 1.0 - a - b
+                if a >= -0.001 and b >= -0.001 and c >= -0.001 and d < zbuf[y, x]:
+                    zbuf[y, x] = d
+                    uu = a * uv[0, 0] + b * uv[1, 0] + c * uv[2, 0]
+                    vv = a * uv[0, 1] + b * uv[1, 1] + c * uv[2, 1]
+                    tx = int(np.clip(uu, 0, 1) * (tw - 1))
+                    ty = int(np.clip(vv, 0, 1) * (th - 1))
+                    img[y, x] = texture[ty, tx]
+    Image.fromarray(img).save(path)
+
+
 def main():
-    glb = Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/chair-assets/chair.glb")
-    js, blob = load_glb(glb)
-    prims = [(0, 2), (4, 6), (8, 10), (12, 14)]
-    pos = np.concatenate([read_vec(js, blob, p, 3) for p, _ in prims])
-    uv = np.concatenate([read_vec(js, blob, u, 2) for _, u in prims])
+    glb_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_GLB
+    tex_path = Path(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_TEX
+    js, blob = load_glb(glb_path)
+    prim = js["meshes"][0]["primitives"][0]
+    attrs = prim["attributes"]
+    pos = read_accessor(js, blob, attrs["POSITION"]).astype(np.float64)
+    uv = read_accessor(js, blob, attrs["TEXCOORD_0"]).astype(np.float64)
+    idx = read_accessor(js, blob, prim["indices"]).reshape(-1).astype(np.int32)
+    if len(idx) % 3:
+        raise SystemExit("index buffer is not triangles")
+    tris = idx.reshape(-1, 3)
+    print(f"source verts {len(pos)} tris {len(tris)}")
 
-    # Parent rotations cancel; mesh Y is already up. Front of the seat is +Z.
-    mn = pos.min(0)
-    mx = pos.max(0)
-    size = mx - mn
-    scale = TARGET_HEIGHT / float(size[1])
-    cell = float(size[1]) / VOXEL_Y
-    dims = np.maximum(1, np.ceil(size / cell).astype(np.int32)) + 1
-    nx, ny, nz = (int(dims[0]), int(dims[1]), int(dims[2]))
-    print(f"grid {nx}x{ny}x{nz} cell {cell:.4f} scale {scale:.4f}")
+    # glTF v=0 is the bottom of the image. Minecraft's v=0 is the top.
+    uv[:, 1] = 1.0 - uv[:, 1]
 
-    bv = js["bufferViews"][3]
-    tex = np.asarray(Image.open(__import__("io").BytesIO(blob[bv["byteOffset"] : bv["byteOffset"] + bv["byteLength"]])).convert("RGB"))
-    th, tw = tex.shape[:2]
-    uu = np.clip((uv[:, 0] * (tw - 1)).astype(np.int32), 0, tw - 1)
-    vv = np.clip(((1.0 - uv[:, 1]) * (th - 1)).astype(np.int32), 0, th - 1)
-    cols = tex[vv, uu].astype(np.float32)
+    dec_points, dec_tris, collapses = fast_simplification.simplify(
+        pos, tris, target_count=TARGET_TRIS, agg=2.0, return_collapses=True
+    )
+    dec_points, dec_tris, mapping = fast_simplification.replay_simplification(pos, tris, collapses)
+    dec_points = np.asarray(dec_points, np.float64)
+    dec_tris = np.asarray(dec_tris, np.int32)
+    print(f"simplified verts {len(dec_points)} tris {len(dec_tris)}")
 
-    occ = np.zeros((nx, ny, nz), np.uint8)
-    col_sum = np.zeros((nx, ny, nz, 3), np.float32)
-    col_n = np.zeros((nx, ny, nz), np.float32)
-    ip = np.clip(((pos - mn) / cell).astype(np.int32), 0, [nx - 1, ny - 1, nz - 1])
-    # Scatter-add colors. A python loop over 200k is fine.
-    for i in range(len(ip)):
-        x, y, z = int(ip[i, 0]), int(ip[i, 1]), int(ip[i, 2])
-        occ[x, y, z] = 1
-        col_sum[x, y, z] += cols[i]
-        col_n[x, y, z] += 1.0
+    best = np.full(len(dec_points), np.inf)
+    out_uv = np.zeros((len(dec_points), 2), np.float64)
+    for old, new in enumerate(mapping):
+        if new < 0:
+            continue
+        delta = pos[old] - dec_points[new]
+        dist = float(delta @ delta)
+        if dist < best[new]:
+            best[new] = dist
+            out_uv[new] = uv[old]
 
-    # Drop specks, then close 1-voxel cracks in the shell.
-    neigh = np.zeros_like(occ, np.uint8)
-    for axis, shift in ((0, 1), (0, -1), (1, 1), (1, -1), (2, 1), (2, -1)):
-        neigh += np.roll(occ, shift, axis)
-    occ[neigh < 2] = 0
-    dil = occ.copy()
-    for axis, shift in ((0, 1), (0, -1), (1, 1), (1, -1), (2, 1), (2, -1)):
-        dil = np.maximum(dil, np.roll(occ, shift, axis))
-    # Erode back so the chair does not grow a block, but keep voxels that filled a crack
-    # (original empty cells that became surrounded).
-    er = dil.copy()
-    for axis, shift in ((0, 1), (0, -1), (1, 1), (1, -1), (2, 1), (2, -1)):
-        er = np.minimum(er, np.roll(dil, shift, axis))
-    filled = (er == 1) & (occ == 0)
-    occ = np.where(filled, np.uint8(1), occ)
-    # Colors for filled cells: copy from a neighbor average later via the plastic fallback.
-    print("occupied", int(occ.sum()))
+    dec_points = orient(dec_points)
+    normals = smooth_normals(dec_points, dec_tris)
+    seat = seat_height(dec_points, dec_tris, face_normals(dec_points, dec_tris))
+    print(f"bounds min {dec_points.min(0)} max {dec_points.max(0)} seat {seat:.4f}")
 
-    avg = np.zeros((nx, ny, nz, 3), np.float32)
-    mask = col_n > 0
-    avg[mask] = col_sum[mask] / col_n[mask, None]
-    avg[~mask] = PLASTIC
-
-    # Vertex color is a multiplier on PLASTIC: 255 keeps the texture, lower darkens.
-    ratio = np.clip(avg / PLASTIC, 0.45, 1.0)
-    vcol = np.clip(ratio * 255.0, 0, 255).astype(np.uint8)
-
-    quads = []  # (axis, sign, x, y, z, w, h, r, g, b) in voxel coords, face on the +side of the cell
-
-    def greedy(mask2, colors):
-        """mask2 bool[h, w], colors uint8[h, w, 3]. Returns list of (y, x, h, w, rgb)."""
-        h, w = mask2.shape
-        used = np.zeros_like(mask2, np.bool_)
-        rects = []
-        for y in range(h):
-            x = 0
-            while x < w:
-                if not mask2[y, x] or used[y, x]:
-                    x += 1
-                    continue
-                color = colors[y, x]
-                x2 = x + 1
-                while x2 < w and mask2[y, x2] and not used[y, x2] and np.all(colors[y, x2] == color):
-                    x2 += 1
-                y2 = y + 1
-                while y2 < h and np.all(mask2[y2, x:x2]) and not np.any(used[y2, x:x2]) and np.all(colors[y2, x:x2] == color):
-                    y2 += 1
-                used[y:y2, x:x2] = True
-                rects.append((y, x, y2 - y, x2 - x, color))
-                x = x2
-        return rects
-
-    # Faces: for each axis, a face exists where occ differs from the neighbor.
-    # Store quads in block space after conversion.
-    faces = 0
-    for axis in range(3):
-        for sign, delta in ((1, 1), (-1, -1)):
-            # Compare occ with neighbor along axis.
-            src = occ
-            if delta == 1:
-                a = src
-                b = np.zeros_like(src)
-                sl = [slice(None)] * 3
-                sl[axis] = slice(0, -1)
-                b[tuple(sl)] = src[tuple([slice(None) if i != axis else slice(1, None) for i in range(3)])]
-                exposed = (a == 1) & (b == 0)
-            else:
-                a = src
-                b = np.zeros_like(src)
-                sl_src = [slice(None) if i != axis else slice(1, None) for i in range(3)]
-                sl_dst = [slice(None) if i != axis else slice(0, -1) for i in range(3)]
-                b[tuple(sl_dst)] = src[tuple(sl_src)]
-                # For sign -1 the exposed face of cell i is when cell i is solid and i-1 is empty.
-                # Rebuild simply:
-                exposed = np.zeros_like(src, np.bool_)
-                # cell is solid, previous along axis is empty
-                idx = [slice(None)] * 3
-                idx[axis] = slice(1, None)
-                prev = [slice(None)] * 3
-                prev[axis] = slice(0, -1)
-                exposed[tuple(idx)] = (src[tuple(idx)] == 1) & (src[tuple(prev)] == 0)
-                if axis == 0:
-                    exposed[0, :, :] = src[0, :, :] == 1
-                elif axis == 1:
-                    exposed[:, 0, :] = src[:, 0, :] == 1
-                else:
-                    exposed[:, :, 0] = src[:, :, 0] == 1
-
-            if delta == 1:
-                exposed = (src == 1) & (b == 0)
-                # outer positive boundary
-                if axis == 0:
-                    exposed[-1, :, :] = src[-1, :, :] == 1
-                elif axis == 1:
-                    exposed[:, -1, :] = src[:, -1, :] == 1
-                else:
-                    exposed[:, :, -1] = src[:, :, -1] == 1
-
-            # Greedy per slice perpendicular to axis.
-            for i in range(src.shape[axis]):
-                if axis == 0:
-                    slc = exposed[i, :, :]
-                    cols_sl = vcol[i, :, :]
-                elif axis == 1:
-                    slc = exposed[:, i, :]
-                    cols_sl = vcol[:, i, :]
-                else:
-                    slc = exposed[:, :, i]
-                    cols_sl = vcol[:, :, i]
-                if not np.any(slc):
-                    continue
-                for y0, x0, h, w, color in greedy(slc, cols_sl):
-                    faces += 1
-                    quads.append((axis, sign, i, y0, x0, h, w, int(color[0]), int(color[1]), int(color[2])))
-
-    print("quads", faces)
-
-    # Convert quads to triangles in block space.
-    # Voxel (x,y,z) occupies [x,x+1) * cell, then * scale, Y from 0, XZ centered.
-    # After that, flip Z around 0 so the open front (+Z in the scan) faces -Z.
-    center_x = (float(size[0]) * 0.5) * scale
-    center_z = (float(size[2]) * 0.5) * scale
-
-    def corner(vx, vy, vz):
-        x = vx * cell * scale - center_x
-        y = vy * cell * scale
-        z = vz * cell * scale - center_z
-        z = -z
-        return x, y, z
-
-    # axis slice index i, in-plane (y0, x0) map to the other two axes.
-    # For axis 0 (X): plane axes are Y (rows) and Z (cols) from greedy(slc) where slc = exposed[i,:,:] so row=Y col=Z.
-    # For axis 1 (Y): slc = exposed[:, i, :] row=X col=Z
-    # For axis 2 (Z): slc = exposed[:, :, i] row=X col=Y
-    tris = []
-    seat_samples = []
-    for axis, sign, i, r0, c0, rh, rw, cr, cg, cb in quads:
-        if axis == 0:
-            x0 = i + (1 if sign > 0 else 0)
-            y0, z0 = r0, c0
-            y1, z1 = r0 + rh, c0 + rw
-            corners = [(x0, y0, z0), (x0, y0, z1), (x0, y1, z1), (x0, y1, z0)]
-            normal = (-1.0 if sign < 0 else 1.0, 0.0, 0.0)
-        elif axis == 1:
-            y0 = i + (1 if sign > 0 else 0)
-            x0, z0 = r0, c0
-            x1, z1 = r0 + rh, c0 + rw
-            corners = [(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)]
-            normal = (0.0, -1.0 if sign < 0 else 1.0, 0.0)
-        else:
-            z0 = i + (1 if sign > 0 else 0)
-            x0, y0 = r0, c0
-            x1, y1 = r0 + rh, c0 + rw
-            corners = [(x0, y0, z0), (x0, y1, z0), (x1, y1, z0), (x1, y0, z0)]
-            normal = (0.0, 0.0, -1.0 if sign < 0 else 1.0)
-        # Flip Z mirrors the normal's Z and the winding.
-        pts = [corner(*p) for p in corners]
-        nx, ny_, nz = normal
-        nz = -nz
-        # Winding: original corners are CCW when looking along +normal before the Z flip.
-        # Z flip reverses winding, so swap.
-        order = (0, 2, 1, 0, 3, 2) if True else (0, 1, 2, 0, 2, 3)
-        # After Z negation, use the swapped winding so normals still point outward.
-        for a, b, c in ((0, 2, 1), (0, 3, 2)):
-            tris.append((pts[a], pts[b], pts[c], (cr, cg, cb), (nx, ny_, nz)))
-        if axis == 1 and sign > 0:
-            cy = (i + 1) * cell * scale
-            if 0.35 < cy < 0.7:
-                seat_samples.append(cy)
-
-    seat = float(np.median(seat_samples)) if seat_samples else 0.48
-    print(f"tris {len(tris)} seat {seat:.3f}")
-
-    # Bounds check
-    allp = np.array([p for t in tris for p in t[:3]])
-    print("bounds min", allp.min(0), "max", allp.max(0))
+    # Non-indexed, the same layout the renderer walks every frame.
+    flat = dec_tris.reshape(-1)
+    verts = dec_points[flat]
+    uvs = out_uv[flat]
+    norms = normals[flat]
 
     MESH_OUT.parent.mkdir(parents=True, exist_ok=True)
     with MESH_OUT.open("wb") as f:
-        f.write(b"PCH1")
-        f.write(struct.pack("<fI", seat, len(tris) * 3))
-        for (a, b, c, col, nrm) in tris:
-            for p in (a, b, c):
-                f.write(struct.pack("<fffBBBB", p[0], p[1], p[2], col[0], col[1], col[2], 255))
-                f.write(struct.pack("<fff", nrm[0], nrm[1], nrm[2]))
+        f.write(b"PCH2")
+        f.write(struct.pack("<fI", seat, len(verts)))
+        for i in range(len(verts)):
+            p, t, n = verts[i], uvs[i], norms[i]
+            f.write(struct.pack("<fffff", p[0], p[1], p[2], t[0], t[1]))
+            f.write(struct.pack("<fff", n[0], n[1], n[2]))
     print("wrote", MESH_OUT, MESH_OUT.stat().st_size)
 
-    Image.new("RGB", (16, 16), tuple(int(v) for v in PLASTIC)).save(TEX_OUT)
-    print("wrote", TEX_OUT)
+    image = Image.open(tex_path).convert("RGB")
+    image.save(TEX_OUT, optimize=True)
+    print("wrote", TEX_OUT, TEX_OUT.stat().st_size, image.size)
 
-    # Orthographic previews for a visual check.
-    preview(tris, "/tmp/chair-baked-front.png", axis_u=0, axis_v=1, flip_u=False)
-    preview(tris, "/tmp/chair-baked-side.png", axis_u=2, axis_v=1, flip_u=True)
-    preview(tris, "/tmp/chair-baked-top.png", axis_u=0, axis_v=2, flip_u=False)
+    texture = np.asarray(image)
+    PREVIEW.mkdir(parents=True, exist_ok=True)
+    preview(dec_points, dec_tris, out_uv, texture, PREVIEW / "front.png", 0, 1, False)
+    preview(dec_points, dec_tris, out_uv, texture, PREVIEW / "side.png", 2, 1, True)
+    preview(dec_points, dec_tris, out_uv, texture, PREVIEW / "top.png", 0, 2, False)
     print("seat_y", f"{seat:.4f}")
-
-
-def preview(tris, path, axis_u, axis_v, flip_u):
-    size = 420
-    img = np.zeros((size, size, 3), np.uint8) + 24
-    zbuf = np.full((size, size), 1e9, np.float32)
-    depth_axis = ({0, 1, 2} - {axis_u, axis_v}).pop()
-    pts = []
-    for a, b, c, col, nrm in tris:
-        pts.extend((a, b, c))
-    arr = np.array(pts)
-    umin, umax = arr[:, axis_u].min(), arr[:, axis_u].max()
-    vmin, vmax = arr[:, axis_v].min(), arr[:, axis_v].max()
-    span = max(umax - umin, vmax - vmin, 1e-4)
-    s = (size - 24) / span
-
-    def pix(p):
-        u = (p[axis_u] - umin) * s + 12
-        if flip_u:
-            u = size - u
-        v = size - 12 - (p[axis_v] - vmin) * s
-        return u, v
-
-    for a, b, c, col, nrm in tris:
-        poly = [pix(a), pix(b), pix(c)]
-        d = (a[depth_axis] + b[depth_axis] + c[depth_axis]) / 3.0
-        # Front views look along +depth from the smaller side (painter uses zbuf min).
-        xs = [p[0] for p in poly]
-        ys = [p[1] for p in poly]
-        minx, maxx = int(max(0, min(xs))), int(min(size - 1, max(xs)))
-        miny, maxy = int(max(0, min(ys))), int(min(size - 1, max(ys)))
-        if maxx - minx > 80 or maxy - miny > 80:
-            continue
-        for y in range(miny, maxy + 1):
-            for x in range(minx, maxx + 1):
-                if _inside(x + 0.5, y + 0.5, poly) and d < zbuf[y, x]:
-                    zbuf[y, x] = d
-                    shade = 0.55 + 0.45 * abs(nrm[axis_v])
-                    img[y, x] = np.clip(np.array(col) * shade * (PLASTIC / 255.0), 0, 255)
-
-    Image.fromarray(img).save(path)
-    print("preview", path)
-
-
-def _inside(x, y, poly):
-    # barycentric of triangle
-    (x1, y1), (x2, y2), (x3, y3) = poly
-    den = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-    if abs(den) < 1e-6:
-        return False
-    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / den
-    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / den
-    c = 1 - a - b
-    return a >= 0 and b >= 0 and c >= 0
 
 
 if __name__ == "__main__":

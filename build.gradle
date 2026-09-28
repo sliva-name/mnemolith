@@ -24,6 +24,9 @@ sourceSets.main.resources {
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
     exclude("src/generated/**/.cache") // datagen cache files
+    // Chair scan used only to bake the entity mesh. The game draws the baked mesh and PNG.
+    exclude("assets/mnemolith/source/**")
+    exclude("assets/mnemolith/textures/gltf_embedded_0.jpeg")
 }
 
 repositories {

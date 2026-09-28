@@ -18,7 +18,7 @@ One style, one density (32x = 2 texels per model unit).
 | `textures/entity/equipment/**/*.png` | 128×64 | Worn armor. Vanilla's 64×32 layout at two texels per unit |
 | `textures/particle/*.png` | 32×32 | Ten white sprites with a soft halo (tinted in code) |
 | `textures/gui/panel.png`, `slot.png`, `tags.png` | 64×64, 36×36, 288×32 | Nine-slice panel, slot, nine tag icons |
-| `textures/gui/guide/*.png` | 512×256 | 26 field-guide pages |
+| `textures/gui/guide/*.png` | 512×256 | 30 field-guide pages |
 | `textures/misc/pressure_vignette.png` | unchanged | Full-screen gradient, no texel detail |
 | `models/block/replicated_moment.json` | — | `cube_all` on vanilla `light_blue_stained_glass`, unchanged |
 

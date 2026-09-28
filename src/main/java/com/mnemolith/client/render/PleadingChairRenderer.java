@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
@@ -79,20 +80,26 @@ public class PleadingChairRenderer extends EntityRenderer<PleadingChair, Pleadin
         poseStack.mulPose(Axis.XP.rotation(-lean * state.forward - nod));
         poseStack.mulPose(Axis.ZP.rotation(-lean * state.side));
         int light = state.lightCoords;
+        int white = ARGB.white(1.0F);
+        // Entity pipelines draw quads: indices (0, 1, 2) and (2, 3, 0). Repeating the third
+        // corner makes the second triangle degenerate, so each source triangle stays a triangle.
         collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(ChairMesh.TEXTURE), (pose, buffer) -> {
-            for (int i = 0; i < mesh.vertices; i++) {
-                int p = i * 3;
-                this.point.set(mesh.position[p], mesh.position[p + 1], mesh.position[p + 2]);
-                pose.pose().transformPosition(this.point);
-                this.normal.set(mesh.normal[p], mesh.normal[p + 1], mesh.normal[p + 2]);
-                pose.transformNormal(this.normal, this.normal);
-                buffer.addVertex(
-                        this.point.x, this.point.y, this.point.z,
-                        mesh.color[i],
-                        0.5F, 0.5F,
-                        OverlayTexture.NO_OVERLAY,
-                        light,
-                        this.normal.x, this.normal.y, this.normal.z);
+            for (int triangle = 0; triangle < mesh.vertices; triangle += 3) {
+                for (int corner = 0; corner < 4; corner++) {
+                    int i = triangle + (corner == 3 ? 2 : corner);
+                    int p = i * 3;
+                    this.point.set(mesh.position[p], mesh.position[p + 1], mesh.position[p + 2]);
+                    pose.pose().transformPosition(this.point);
+                    this.normal.set(mesh.normal[p], mesh.normal[p + 1], mesh.normal[p + 2]);
+                    pose.transformNormal(this.normal, this.normal);
+                    buffer.addVertex(
+                            this.point.x, this.point.y, this.point.z,
+                            white,
+                            mesh.uv[i * 2], mesh.uv[i * 2 + 1],
+                            OverlayTexture.NO_OVERLAY,
+                            light,
+                            this.normal.x, this.normal.y, this.normal.z);
+                }
             }
         });
         poseStack.popPose();
