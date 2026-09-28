@@ -87,7 +87,7 @@ Two more lines record the observatory: `Mnemolith qa observatory chest=true` (th
 | 9 | Mobs: spawn plus one action | `strider` summons an echo strider and `beginCharge` sets the telegraph pose. `archivist` summons an archivist, `snatch` empties the container, and the pose is flee. `replicant` summons a moment replicant and `beginTelegraph` sets the telegraph pose |
 | 10 | Phase 11 multiplayer invariants | `/mnemolith mpsmoke`, not this command. The line is `sameBand=true discoveryIsolated=true steal=true reel=true muteBlocks=true replicants=true guarded=true` |
 | — | Catalog fragment can be crafted | `recipe`. The recipe manager has `mnemolith:catalog_fragment`, and the loaded JSON result id is that item. The shaped pattern is paper, amethyst shard, ink sac, stacked |
-| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (26) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
+| — | Field guide is registered | `guide`. The recipe manager has `mnemolith:field_guide` (book over an amethyst shard). The observatory loot JSON names it at weight 2. The page table has `GuideBook.PAGE_COUNT` (30) ids, each with a title key and a `textures/gui/guide/<id>.png` path. Language files and those diagrams are client assets, so this dedicated check does not open the screen |
 
 ## Echo QA
 
@@ -171,7 +171,7 @@ farming ticks=128 harvested=10 planted=20/20 chestWheat=10 echoSeeds=17 chestSee
 
 | Flag | What is proved |
 | --- | --- |
-| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has `GuideBook.PAGE_COUNT` (24 since the storm pages) pages |
+| `upgrades` | Chorus raises the echo limit 1→2→3 and a third is refused; long take raises recording frames 500→900 and a third is refused; sturdy adds 2×10 health and a third is refused. All three recipes exist and the field guide has `GuideBook.PAGE_COUNT` (30) pages |
 | `farmLesson` | A recording with 2 hoe tills, 2 plantings and 2 mature harvests gives a farm lesson (wheat) and no mining lesson or blueprint |
 | `replicantMimic` | A replicant mimicking a build takes back at most 3 placed blocks, one item each back into the echo; the echo rebuilds, the result is exact (wrong=0), with no extra items and no ground drops |
 | `workPressure` | 60 work actions in one chunk write 3 BUILD imprints and add pressure (+10 with the defaults) |
@@ -363,7 +363,7 @@ Offline, `python tools/art/validate_assets.py --vanilla <extracted client assets
 - [ ] Known, not fixed here: the non-full models (mute stone, reel, trap, stratum) keep full occlusion, so a neighbour's hidden face can show as a gap at their base.
 - [ ] Archivist, echo strider, moment replicant, residue (with the lens and without), the Scar, an echo and a grafted echo: textures sit on the right boxes at 128×128, no seams or stretched faces.
 - [ ] Particles (extract, compose ok/fail, mute haze, strider trail, graft motes): shapes are crisp and still tinted.
-- [ ] Field guide, all 26 pages in EN and RU: pictures fill the art box, no blur (nearest filtering), no stretched aspect.
+- [ ] Field guide, all 30 pages in EN and RU, including the living-memory pages: pictures fill the art box, no blur (nearest filtering), no stretched aspect.
 
 ## GUI contrast
 

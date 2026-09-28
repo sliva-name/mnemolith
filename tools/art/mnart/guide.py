@@ -1,4 +1,4 @@
-"""Field guide illustrations: 26 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
+"""Field guide illustrations: 30 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
 Every page is an ink-paper plate with a brass-cornered frame, one small in-world diorama rendered from the real
 block models and entity layouts (render3d), the real item sprites at 2x, and a few diagram marks. No text: the book
 prints its words from the lang file."""
@@ -13,10 +13,11 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
-         'scar', 'relay', 'vault', 'world', 'players', 'reference')
+         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'world', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
+PALE = (197, 212, 240)                    # distorted silhouette and a lie's washed residue, 0xC5D4F0
 ACCENT = c('verdigris', 4)
 LINE = c('bone', 4)
 
@@ -730,6 +731,100 @@ def p_vault():
     p.sprite('extraction_needle', 330, 196, 2)
     p.sprite('imprint_slip', 420, 196, 2)
     p.arrow((360, 196), (392, 196))
+    return p.image()
+
+
+def p_noticed():
+    """Stage 1: an old gesture comes back. The replicant plays it; a pale flash walks the trail behind."""
+    p = Page('noticed')
+    d = Diorama(340, 210, 28)
+    d.ground(6, 3, 1)
+    d.add(mob_quads('wanderer', 1.5, 0, 0.15, 225))
+    d.add(mob_quads('moment_replicant', -0.15, 0, 0.05, 225))
+    d.add(mob_quads('wanderer', -1.9, 0, 0.35, 210), light='entity', tint=(*PALE, 150))
+    p.center(d.render(0, 0.05, 0), 175, 128)
+    for k in range(6):
+        x, y = 48 + k * 28, 208 - (k % 2) * 7
+        p.d.ellipse([x, y, x + 10, y + 6], fill=(*PALE, 210), outline=(*OUTLINE, 255))
+    p.spark(118, 58, 26, PALE, 8)
+    # Four gestures, top to bottom: a strike, a block set down, a hand on a door, a fall.
+    for k, y in enumerate((48, 96, 144, 192)):
+        p.plate(404, y, 474, y + 36)
+    p.spark(439, 66, 12, c('ember', 4), 6)
+    p.d.rectangle([427, 104, 451, 124], fill=(*c('wood', 4), 255), outline=(*OUTLINE, 255))
+    p.d.rectangle([423, 152, 433, 172], fill=(*c('leather', 4), 255), outline=(*OUTLINE, 255))
+    p.d.rectangle([445, 152, 455, 172], fill=(*c('wood', 5), 255), outline=(*OUTLINE, 255))
+    p.arrow((439, 200), (439, 220), width=2, head=6)
+    return p.image()
+
+
+def p_traces():
+    """Stage 2: a raised lens names a place; footsteps linger; the catalog keeps only what was read."""
+    p = Page('traces')
+    d = Diorama(220, 190, 30)
+    d.ground(4, 3, 1)
+    for i, j in ((1, 1), (2, 1), (2, 0)):
+        d.add(overlay(i - 2, j - 1.5, 0, PALE, 150), light='flat')
+    d.add(mob_quads('wanderer', 0.3, 0, 0.4, 200))
+    p.center(d.render(0, -0.05, 0), 130, 145)
+    p.sprite('chronicle_lens', 130, 42, 2)
+    p.arrow((130, 64), (130, 88), dotted=True, width=2, head=6)
+    p.plate(250, 36, 478, 78)
+    for k, rgb in enumerate((c('ember', 4), c('bone', 3), c('brass', 4))):
+        x = 266 + k * 70
+        p.d.rectangle([x, 50, x + 52, 64], fill=(*rgb, 255), outline=(*OUTLINE, 255))
+    p.sprite('catalog_fragment', 292, 155, 2)
+    p.plate(350, 100, 478, 214, 'navy')
+    for k in range(4):
+        y = 118 + k * 22
+        p.d.rectangle([364, y, 430, y + 8], fill=(*c('bone', 4), 255))
+        p.check(456, y + 4, 6)
+    return p.image()
+
+
+def p_offer():
+    """Stage 3: one residue offers itself. A silhouette walks true, or aside to a replicant and a pale lie."""
+    p = Page('offer')
+    d = Diorama(300, 180, 26)
+    d.ground(6, 3, 1)
+    d.add(mob_quads('residue', 1.5, 0.35, -0.3, 210), light='entity', tint=(*TEMPER['death'], 255))
+    d.add(mob_quads('residue', -1.7, 0.35, 0.55, 160), light='entity', tint=(*PALE, 255))
+    d.add(mob_quads('moment_replicant', -1.9, 0, 1.05, 150, 0.85))
+    d.add(echo_quads(0.1, 0.55, 250), light='entity', tint=ECHO_TINT)
+    d.add(mob_quads('wanderer', 0.7, 0, -0.85, 245), light='entity', tint=(*PALE, 145))
+    p.center(d.render(0, 0.15, 0), 168, 108)
+    p.arrow((230, 52), (300, 36), rgb=TEMPER['death'], width=2, head=6)
+    p.arrow((110, 52), (48, 36), rgb=PALE, width=2, head=6, dotted=True)
+    # Four ways the offer closes: mute, needle, vault, walk away.
+    d = Diorama(70, 70, 48)
+    d.add(block_quads('mnemolith:block/mute_stone', -0.5, 0, -0.5))
+    p.center(d.render(0, 0.45, 0), 390, 70)
+    p.sprite('extraction_needle', 460, 70, 2)
+    d = Diorama(70, 70, 40)
+    d.add(block_quads('mnemolith:block/archive_vault', -0.5, 0, -0.5))
+    p.center(d.render(0, 0.4, 0), 390, 175)
+    p.arrow((430, 175), (478, 175), dotted=True, width=2, head=6)
+    return p.image()
+
+
+def p_rewrite():
+    """Stage 4: a scar fragment changes an imprint's tag. A pale lie is marked as something that cannot be kept."""
+    p = Page('rewrite')
+    d = Diorama(230, 200, 32)
+    d.ground(3, 3, 1, bands=lambda i, j: BAND['fracture'] if i == 1 and j == 1 else None)
+    d.add(mob_quads('residue', 0.15, 0.35, 0.1, 200), light='entity', tint=(*TEMPER['silence'], 255))
+    p.center(d.render(0, 0.1, 0), 175, 140)
+    p.sprite('scar_fragment', 70, 78, 3)
+    p.arrow((108, 90), (145, 115), width=2, head=6)
+    p.spark(175, 70, 28, c('amethyst', 5), 8)
+    p.tag('death', 430, 52)
+    p.arrow((430, 74), (430, 104), width=2, head=6)
+    p.tag('silence', 430, 132)
+    p.bar(360, 188, 470, 202, [(0.55, TEMPER['death']), (0.45, BAND['fracture'])], 0.72)
+    d = Diorama(80, 80, 36)
+    d.add(mob_quads('residue', 0, 0.2, 0, 180, 1.2), light='entity', tint=(*PALE, 255))
+    p.center(d.render(0, 0.3, 0), 70, 190)
+    p.cross(70, 190, 16)
     return p.image()
 
 

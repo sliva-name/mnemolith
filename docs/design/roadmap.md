@@ -4,7 +4,7 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated with the echo relay and archive vault)
+## 0. Status (updated with living memory on main)
 
 | System | Status | Where |
 | --- | --- | --- |
@@ -13,10 +13,10 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Gametest harness | Implemented on `feature/gametests`, stacked on residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `com.mnemolith.gametest`, `runGameTestServer` in CI, 7 suites + 8 live residue tests, [qa-checklist.md](../qa-checklist.md#automated-game-tests-ci) |
 | Recollection storm and the Scar | Implemented on `feature/recollection-storm`, stacked on the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.storm`, `ScarEntity`, `scar_fragment`, `scar_glass`, `scar_heart`, `stormqa` 19/19, 3 live storm tests, [echo-design.md](../echo-design.md) §14 |
 | Echo relay, archive vault | Implemented on `feature/relay-vault`, stacked on the storm (#25), the harness (#24), residual echoes (#23) and grafts (#22) (draft PR, retargets as they merge) | `echo.relay`, `vault`, `relay_thread`, `archive_vault`, `relayqa` 19/19, 3 live relay/vault tests, [echo-design.md](../echo-design.md) §15 |
-| Living memory, stage 1 | Done on main (PR #33) | [living-memory.md](living-memory.md), `recall` config, `/mnemolith recallqa` |
-| Living memory, stage 2 | Done on main (PR #34) | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
-| Living memory, stage 3 | Done on this branch (draft PR #35): an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
-| Living memory, stage 4 | Playable on the same branch: a scar fragment rewrites an imprint's tag, and a lie leaves a pale residue that cannot be kept | [living-memory.md](living-memory.md), `intervene` config, `/mnemolith interveneqa` |
+| Living memory, stage 1 | Done on main (PR #33). Field guide page `noticed` | [living-memory.md](living-memory.md), `recall` config, `/mnemolith recallqa` |
+| Living memory, stage 2 | Done on main (PR #34). Field guide page `traces` | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
+| Living memory, stage 3 | Done on main (PR #35): an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave. Field guide page `offer` | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
+| Living memory, stage 4 | Done on main (PR #35): a scar fragment rewrites an imprint's tag, and a lie leaves a pale residue that cannot be kept. Field guide page `rewrite` | [living-memory.md](living-memory.md), `intervene` config, `/mnemolith interveneqa` |
 | 32x art pass | Next, its own run | — |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -66,8 +66,7 @@ shadow it. Three crafted slips raise the echo limit, recording length and body h
    explained in the book. The quick sheet lists only 7 of 11 recipes.
 7. **Visual consistency.** Items and blocks are 16x16 while the lens is 32x32; guide art is flat diagrams; every echo
    looks identical. There is no visual language for "what kind of memory is this".
-8. **Technical.** No automated tests (only in-game QA commands); the gametest run crashes without a registered test;
-   the README still describes "Phase 12" and stage 1 echoes.
+8. **Technical.** No automated tests (only in-game QA commands); the gametest run crashes without a registered test.
 
 ## 3. Candidate systems (ranked)
 
@@ -179,8 +178,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
    All QA suites now run in CI as game tests, plus live residue tests with real players.
 4. Recollection storm and the Scar (done, stacked PR on #24).
 5. Echo relay and archive vault (done, stacked PR on #25).
-6. The 32x art pass as its own run, next: the item list is now stable enough that nothing is drawn twice.
-7. Living memory, stage 1 («Мир меня заметил»), done on main (PR #33). The field guide does not explain it.
-8. Living memory, stage 2 («Я могу это исследовать»), done on main (PR #34). The field guide does not explain it.
-9. Living memory, stage 3 («Я могу использовать память»), done on this branch (draft PR #35). The plan is in [living-memory.md](living-memory.md). The field guide does not explain it.
-10. Living memory, stage 4 («Я могу вмешиваться»), playable on the same branch. A scar fragment rewrites one imprint. The field guide does not explain it.
+6. Living memory, stages 1–4 («Мир меня заметил» through «Я могу вмешиваться»), done on main (PRs #33, #34, and #35). The field guide explains each stage: `noticed`, `traces`, `offer`, `rewrite`. The plan is in [living-memory.md](living-memory.md).
+7. The 32x art pass as its own run, next: the item list is stable enough that nothing is drawn twice.

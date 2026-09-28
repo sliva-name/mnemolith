@@ -37,7 +37,7 @@ Python 3.10+, Pillow and numpy. Every asset seeds its random source from its own
 | `mnart/entities.py` | Entity skins (128×128) and the preview-only wanderer skin |
 | `mnart/entity_models.py` | Part trees transcribed from the Java `LayerDefinition`s, for offline renders only; keep in sync by hand |
 | `mnart/particles.py`, `mnart/gui.py` | Particle sprites; panel, slot and tag icons |
-| `mnart/guide.py` | The 26 field-guide pages |
+| `mnart/guide.py` | The 30 field-guide pages |
 | `mnart/render3d.py` | Small software renderer for JSON models and entity boxes (guide dioramas and previews) |
 | `build.py`, `validate_assets.py`, `preview.py` | Entry points |
 
@@ -183,7 +183,7 @@ Sprites in `textures/particle/` are 32×32 white shapes with a soft alpha halo: 
 
 ## Field guide
 
-26 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
+30 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
 
 ## Validation
 
