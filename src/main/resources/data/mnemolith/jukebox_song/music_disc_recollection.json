@@ -1,0 +1,8 @@
+{
+  "comparator_output": 11,
+  "description": {
+    "translate": "jukebox_song.mnemolith.music_disc_recollection"
+  },
+  "length_in_seconds": 16.0,
+  "sound_event": "mnemolith:music_disc_recollection"
+}

@@ -1,0 +1,10 @@
+Pleading Chair (village easter egg)
+===================================
+
+This work is based on "Стул Алексея Навального"
+https://sketchfab.com/3d-models/09a4efbb81324e809900aa793cb84c66
+by Chaalen (https://sketchfab.com/Chaalen)
+licensed under CC-BY-4.0
+http://creativecommons.org/licenses/by/4.0/
+
+Attribution is shipped inside the mod jar (this file) as well as the README.

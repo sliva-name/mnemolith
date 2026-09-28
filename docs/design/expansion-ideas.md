@@ -44,7 +44,7 @@
 | Рецепты, вероятно, не открываются в книге рецептов | Нет `advancement` и вызовов `awardRecipes`. Вывод по коду, в игре стоит проверить. | T1 |
 | Чужие звуки у трёх зверей | `sounds.json`: `mite_*`, `witness_*`, `stalker_*` ссылаются на звуки страйдера, архивариуса, репликанта. | Z1 |
 | Заглушки в конфиге | `imprintNodeWeight` не используется, `worldGen.structureSpacing` только описывает датапак. | убрать или реализовать |
-| Документы расходятся с кодом | Версия сети: код `5`, `multiplayer.md` — `2`, `NEOFORGE_COMPLIANCE.md` — `3`. `architecture.md` пишет про три слота барабана, в коде `COMPOSITION_SLOTS = 2`. | Z3 |
+| Документы расходились с кодом | Версия сети и слоты барабана — закрыто в Z3 (`registrar("5")`, docs sync; `COMPOSITION_SLOTS = 3`). | Z3 |
 | Метаданные jar и атрибуция | `credits`, `logoFile`, `updateJSONURL` закомментированы, атрибуция CC-BY для стула есть только в README. | Z3 |
 
 ## Порядок, который я бы выбрал
@@ -116,9 +116,9 @@
 
 Звук, совместимость, инфраструктура:
 
-- [ ] **Z1** Свои голоса и музыка (M, средняя)
-- [ ] **Z2** JEI/EMI и Jade (M, средняя)
-- [ ] **Z3** Datagen, релиз и метаданные (M, средняя)
+- [x] **Z1** Свои голоса и музыка (M, средняя)
+- [x] **Z2** JEI/EMI и Jade (M, средняя)
+- [x] **Z3** Datagen, релиз и метаданные (M, средняя)
 - [x] **Z4** События для аддонов (S, средняя)
 
 ---
@@ -434,6 +434,8 @@
 
 Клещ, свидетель и сталкер живут на чужих звуках, а Шрам, буря, реле, хранилище и отголосок — на ванильных. Дать им голоса и ситуативную музыку (сбор бури, бой со Шрамом), затем диск.
 
+**Сделано (29 сен 2026):** отдельные ogg + ModSounds; storm/Scar music; music_disc_recollection.
+
 - **Основание:** `sounds.json`: `mite_*`, `witness_*`, `stalker_*` указывают на файлы страйдера, архивариуса, репликанта. `asset-pipeline.md`: «Out of this pass».
 - **Куда подключать:** `ModSounds`, генератор звуков в `tools/art`, менеджер музыки клиента.
 
@@ -442,6 +444,8 @@
 **Размер:** M · **Отдача:** средняя
 
 Формулы барабана и улучшения отголоска нигде не видны, кроме справочника. Плагин JEI/EMI (формулы, крафты), подсказки Jade/WTHIT (давление чанка, содержимое хранилища, нрав и сила осадка). Опционально слот Curios для линзы.
+
+**Сделано (29 сен 2026):** JEI 30.38.0.230 (common+neoforge API, localRuntime) с категорией формул и info для echo upgrades; WTHIT neo-20.0.0 (Jade на 26.2 ещё нет) — pressure/vault/residue; Curios пропущен. CatalogScreen остаётся in-mod fallback.
 
 - **Основание:** совместимости с другими модами нет; зависимости только от NeoForge и Minecraft.
 - **Куда подключать:** `build.gradle` (`compileOnly` и `localRuntime`), лучше после E1.
@@ -453,6 +457,8 @@
 Рецепты, достижения, добыча, теги и языковые файлы пишутся руками (два lang-файла по ~157 КБ, 929 строк каждый). Что сделать:
 
 - включить datagen (конфигурация `data` уже есть);
+
+**Сделано (29 сен 2026):** GatherDataEvent hook; mods.toml updateJSONURL/logoFile/credits; META-INF/CHAIR_ATTRIBUTION.txt; de_de + uk_ua partial; network docs → protocol `5`.
 - выпуск на Modrinth и CurseForge по тегу;
 - `updateJSONURL`, `logoFile` и `credits`;
 - положить атрибуцию CC-BY для стула в jar, а не только в README;
@@ -460,7 +466,7 @@
 
 Отдельно, по желанию: текстура (4,5 МБ) и модель (4,2 МБ) стула — самые тяжёлые ресурсы в jar. Арт-конвейер их намеренно не трогает (`asset-pipeline.md`), так что сжатие — отдельная задача.
 
-- **Основание:** `NEOFORGE_COMPLIANCE.md`: «Datagen: Not used». `credits`, `logoFile`, `updateJSONURL` закомментированы. Версия сети: код `5`, `multiplayer.md` — `2`, `NEOFORGE_COMPLIANCE.md` — `3`. `architecture.md` пишет три слота барабана, в коде два.
+- **Основание (до Z3):** datagen не был подключён; credits/logo/updateJSONURL закомментированы; docs с устаревшей версией сети.
 - **Куда подключать:** `build.gradle`, `src/main/templates/META-INF/neoforge.mods.toml`, `.github/workflows`.
 
 #### Z4. События для аддонов
@@ -524,7 +530,7 @@ rg -n "extends Event" src/main/java                                # тольк�
 
 # 10. Версия сети и слоты барабана (Z3, E1)
 rg -n "registrar\(" src/main/java/com/mnemolith/network/ModNetwork.java             # "5"
-rg -n "COMPOSITION_SLOTS =" src/main/java/com/mnemolith/imprint/ImprintConstants.java   # 2
+rg -n "COMPOSITION_SLOTS =" src/main/java/com/mnemolith/imprint/ImprintConstants.java   # 3
 
 # 11. Имена отголосков и атрибуция стула (O4, Z3)
 rg -n "setCustomName" src/main/java/com/mnemolith/entity/echo      # нет совпадений

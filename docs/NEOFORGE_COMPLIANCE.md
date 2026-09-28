@@ -27,14 +27,14 @@ There is no datagen Java, no mixin config, and no access transformer. Worldgen, 
 | Bootstrap | OK. `@Mod` common entry, `@Mod(dist = CLIENT)` and `@Mod(dist = DEDICATED_SERVER)` splits. Client types stay behind `MnemolithClient`. |
 | Registries | OK. `DeferredRegister` / `DeferredRegister.Entities` / `DeferredRegister.Items` / `DeferredRegister.DataComponents` on the mod bus. |
 | Events | One HIGH misuse fixed (goals re-added on every join). Other listeners are on the game bus for game events, and they honor `isCanceled()` where they skip work. |
-| Networking | OK. Play-phase payloads, version `"3"`, client handlers on `RegisterClientPayloadHandlersEvent`, server checks ownership and range. |
+| Networking | OK. Play-phase payloads, version `"5"`, client handlers on `RegisterClientPayloadHandlersEvent`, server checks ownership and range. |
 | Persistence | OK. Data attachments and data components. Chunk edits call `markUnsaved()` after in-place mutation. |
 | Client | OK. Renderers, particles, keys, GUI layers, and screens register from the physical-client entry. |
 | Entities | One HIGH side bug fixed (mite and witness item use). Attributes, spawn placements, and synched data match the current entity APIs. |
 | Worldgen | OK. Feature and structure types registered in code; placement, biome modifiers, and templates are datapack JSON. |
 | Config | OK. `ModConfigSpec` for common, server, and client. Server type is the one NeoForge syncs. |
 | Commands | OK. `RegisterCommandsEvent`. Operator checks use `Commands.LEVEL_GAMEMASTERS.check(source.permissions())`. |
-| Datagen | Not used. The `data` run config in `build.gradle` is unused MDK scaffolding. |
+| Datagen | GatherDataEvent.Client provider hook (Z3). Hand-written JSON remains under src/main/resources. |
 | Side safety | Client classes are confined to `com.mnemolith.client` and `MnemolithClient`, except the interaction bug fixed below. |
 | Game tests | OK. Gated on `GameTestHooks.isGametestEnabled()`. Namespace `mnemolith` is set on the game-test run. |
 | Fake players | OK. Echo edits, doorway toggles, blueprint property fix-ups, and replicant ghosts go through `FakePlayerFactory` and the survival game mode so break, place, and use events fire. A ghost place does not write an owner imprint. |
@@ -96,14 +96,14 @@ Checked against the Minecraft `26.2` patched sources and NeoForge `26.2.0.88` so
 
 | Severity | Where | What the code did | What the docs say | Status |
 | --- | --- | --- | --- | --- |
-| LOW | `build.gradle` `data` run | MDK datagen run is configured. There is no `GatherDataEvent` provider. | [Datagen](https://docs.neoforged.net/docs/datagen/) is optional. Hand-written JSON under `src/main/resources/data` is valid. | Left. |
+| LOW | `build.gradle` `data` run | MDK datagen run is configured. `GatherDataEvent.Client` now registers a BlockTagsProvider stub (Z3). | [Datagen](https://docs.neoforged.net/docs/datagen/) is optional. Hand-written JSON under `src/main/resources/data` remains authoritative. | Hooked. |
 | UNCERTAIN | `EchoEvents.onDeathFirst` | Cancels `LivingDeathEvent` at `HIGHEST` while a player is possessing an echo, then sets health to 1. | The event is cancelable. Highest priority runs before totems and most other mods. | Left intentional. Documented in the method. Pack makers who also cancel death should know this listener runs first. |
 
 ## Verified OK
 
 - **Dist split.** `Mnemolith` is the common `@Mod`. `MnemolithClient` is `@Mod(dist = Dist.CLIENT)` and is the only place that touches `net.minecraft.client` outside `com.mnemolith.client`. `MnemolithServer` is `@Mod(dist = Dist.DEDICATED_SERVER)`. Matches [Sides](https://docs.neoforged.net/docs/concepts/sides/).
 - **Mod bus vs game bus.** Registry, attributes (`EntityAttributeCreationEvent`), spawn placements (`RegisterSpawnPlacementsEvent`), payloads (`RegisterPayloadHandlersEvent`), and game tests (`RegisterGameTestsEvent`) are `addListener` on the mod bus from the constructor. Gameplay listeners use `@EventBusSubscriber(modid = "mnemolith")`, which is the game bus unless the event is an `IModBusEvent`. `FMLClientSetupEvent` on `MnemolithClient` is an `IModBusEvent`, so it is routed to the mod bus. [Events](https://docs.neoforged.net/docs/concepts/events/).
-- **Payloads.** `event.registrar("3")` then `playToServer` (handler on the server) and `playToClient` (codec only). Client handlers register on `RegisterClientPayloadHandlersEvent` and call `enqueueWork`. Default handler thread is the main thread. Sending uses `PacketDistributor` and `ClientPacketDistributor`. Matches [Registering Payloads](https://docs.neoforged.net/docs/networking/payload/). `EchoJobPayload.Action.INVALID` stays last so an unknown ordinal cannot decode as `STOP`. `EchoJob.setRadius` clamps to `ECHO_MINE_MAX_RADIUS` before the value is stored. Snapshot lists are capped with `ByteBufCodecs.list(LENS_CHUNK_LIMIT)`.
+- **Payloads.** `event.registrar("5")` then `playToServer` (handler on the server) and `playToClient` (codec only). Client handlers register on `RegisterClientPayloadHandlersEvent` and call `enqueueWork`. Default handler thread is the main thread. Sending uses `PacketDistributor` and `ClientPacketDistributor`. Matches [Registering Payloads](https://docs.neoforged.net/docs/networking/payload/). `EchoJobPayload.Action.INVALID` stays last so an unknown ordinal cannot decode as `STOP`. `EchoJob.setRadius` clamps to `ECHO_MINE_MAX_RADIUS` before the value is stored. Snapshot lists are capped with `ByteBufCodecs.list(LENS_CHUNK_LIMIT)`.
 - **Attachments.** `DeferredRegister` on `NeoForgeRegistries.ATTACHMENT_TYPES`. Chunk memory serializes when non-empty and is not synced. Discovery, echo progress, and possession use `copyOnDeath`. Discovery and echo progress sync only when `holder == player`. In-place chunk edits call `markUnsaved()`; discovery mutations call `syncData`. Matches [Data Attachments](https://docs.neoforged.net/docs/datastorage/attachments/). No Forge `Capability` or `LazyOptional`.
 - **Data components.** `persistent` plus `networkSynchronized` for imprint casts, recordings, lessons, farm lessons, relay links, and vault contents. Item-stack data is not stored as an attachment.
 - **Entities.** Every living type that needs attributes is passed to `EntityAttributeCreationEvent`, including echoes, shells, residues, and the Scar. `memory_bolt` is a projectile and correctly has none. Spawn placements use `RegisterSpawnPlacementsEvent.Operation.REPLACE` with `SpawnPlacementTypes.ON_GROUND`. Synched data uses `SynchedEntityData.defineId` and `defineSynchedData`. Save uses `ValueInput` / `ValueOutput`.

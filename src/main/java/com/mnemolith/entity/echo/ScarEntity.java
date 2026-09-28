@@ -6,6 +6,7 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.ModSounds;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.echo.graft.EchoGrafts;
 import com.mnemolith.echo.graft.Temper;
@@ -22,7 +23,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -259,9 +259,9 @@ public final class ScarEntity extends Mob {
             if (this.recallTicks == RECALL_TICKS - TELEGRAPH_TICKS) {
                 this.entityData.set(DATA_CASTING, true);
                 if (this.isMirror()) {
-                    level.playSound(null, this.blockPosition(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.HOSTILE, 0.25F, 1.8F);
+                    level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 0.45F, 1.6F);
                 } else {
-                    level.playSound(null, this.blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 1.5F, 0.7F);
+                    level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 1.4F, 0.75F);
                 }
             }
             if (this.recallTicks >= RECALL_TICKS) {
@@ -470,13 +470,29 @@ public final class ScarEntity extends Mob {
         return list;
     }
 
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getAmbientSound() {
+        return ModSounds.SCAR_AMBIENT.get();
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getHurtSound(DamageSource source) {
+        return ModSounds.SCAR_HURT.get();
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getDeathSound() {
+        return ModSounds.SCAR_DEATH.get();
+    }
+
     @Override
     public void die(DamageSource source) {
         super.die(source);
         if (this.level() instanceof ServerLevel level) {
             Mnemolith.LOGGER.info("Mnemolith {} defeated merged={} at {} by {}", this.isMirror() ? "silence mirror" : "scar", this.merged, this.blockPosition().toShortString(),
                     source.getEntity() == null ? "?" : source.getEntity().getName().getString());
-            level.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.HOSTILE, 2.0F, 0.5F);
+            level.playSound(null, this.blockPosition(), ModSounds.SCAR_DEATH.get(), SoundSource.HOSTILE, 2.0F, 0.85F);
         }
     }
 

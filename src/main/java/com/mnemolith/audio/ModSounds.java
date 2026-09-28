@@ -52,6 +52,29 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_HURT = register("echo_hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_DEATH = register("echo_death");
     public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_POSSESS = register("echo_possess");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_WAKE = register("echo_wake");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCAR_AMBIENT = register("scar_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCAR_HURT = register("scar_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCAR_DEATH = register("scar_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCAR_CAST = register("scar_cast");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> STORM_GATHER = register("storm_gather");
+    public static final DeferredHolder<SoundEvent, SoundEvent> STORM_WAVE = register("storm_wave");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> RELAY_TIE = register("relay_tie");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RELAY_UNTIE = register("relay_untie");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RELAY_HOP = register("relay_hop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RELAY_BREAK = register("relay_break");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> VAULT_CHIME = register("vault_chime");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VAULT_DRAW = register("vault_draw");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VAULT_RUPTURE = register("vault_rupture");
+
+    /** Situational / jukebox music (streamed). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_STORM_GATHERING = register("music_storm_gathering");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_SCAR_FIGHT = register("music_scar_fight");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_DISC_RECOLLECTION = register("music_disc_recollection");
 
     private ModSounds() {}
 

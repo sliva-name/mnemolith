@@ -9,6 +9,7 @@ public final class ClientAudio {
     private ClientAudio() {}
 
     public static void init() {
+        SituationalMusic.init();
         Mnemolith.LOGGER.debug("Mnemolith client audio hooks ready ({})", Minecraft.class.getSimpleName());
     }
 }

@@ -1,5 +1,7 @@
 package com.mnemolith.echo;
 
+import com.mnemolith.audio.ModSounds;
+
 import com.mnemolith.event.EchoActivatedEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -22,7 +24,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
@@ -133,7 +134,7 @@ public final class EchoLife {
         echo.job().setCareLesson(care);
         echo.startReplay(recording);
         level.addFreshEntity(echo);
-        level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.9F, 0.7F);
+        level.playSound(null, echo.blockPosition(), ModSounds.ECHO_WAKE.get(), SoundSource.PLAYERS, 0.9F, 0.7F);
         MemoryFx.mob(level, com.mnemolith.particle.ModParticles.COMPOSE_SUCCESS.get(), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 12);
         Mnemolith.LOGGER.info("Mnemolith echo spawned owner={} frames={} actions={} at {}", owner.getGameProfile().name(), recording.length(), recording.actions().size(), echo.blockPosition().toShortString());
         return echo;
@@ -188,7 +189,7 @@ public final class EchoLife {
         }
         EchoRegistry.get(player.level().getServer()).remove(player.getUUID(), echo.getUUID());
         echo.discardSilently();
-        player.level().playSound(null, home.getBlockPos(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8F, 0.6F);
+        player.level().playSound(null, home.getBlockPos(), ModSounds.ECHO_POSSESS.get(), SoundSource.BLOCKS, 0.8F, 0.6F);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.home.housed",
                 stored.customName().orElse(Component.translatable("entity.mnemolith.echo.named", stored.ownerName()))), true);
         return true;
@@ -241,7 +242,7 @@ public final class EchoLife {
         }
         echo.setPos(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D);
         level.addFreshEntity(echo);
-        level.playSound(null, at, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 0.9F, 1.2F);
+        level.playSound(null, at, ModSounds.ECHO_WAKE.get(), SoundSource.BLOCKS, 0.9F, 1.2F);
         MemoryFx.mob(level, com.mnemolith.particle.ModParticles.COMPOSE_SUCCESS.get(), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.home.woken", echo.getDisplayName()), true);
         return true;

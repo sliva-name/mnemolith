@@ -1,0 +1,7 @@
+{
+  "mnemolith:wthit": {
+    "initializer": "com.mnemolith.compat.wthit.MnemolithWthitPlugin",
+    "side": "*",
+    "required": ["wthit"]
+  }
+}

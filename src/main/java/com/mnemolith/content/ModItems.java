@@ -36,6 +36,11 @@ public final class ModItems {
             Registries.TRIM_MATERIAL,
             Identifier.parse("mnemolith:residual"));
 
+    /** Jukebox song for the recollection music disc (Z1). */
+    public static final ResourceKey<net.minecraft.world.item.JukeboxSong> RECOLLECTION_SONG = ResourceKey.create(
+            Registries.JUKEBOX_SONG,
+            Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "music_disc_recollection"));
+
     public static final DeferredItem<ChronicleLensItem> CHRONICLE_LENS = ITEMS.registerItem(
             "chronicle_lens",
             ChronicleLensItem::new,
@@ -122,6 +127,11 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_WALL);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SCAR_GLASS_PANE = ITEMS.registerSimpleBlockItem(ModBlocks.SCAR_GLASS_PANE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> PRESSURE_LAMP = ITEMS.registerSimpleBlockItem(ModBlocks.PRESSURE_LAMP);
+    /** Optional music disc — storm/Scar motif placeholders (Z1). */
+    public static final DeferredItem<Item> MUSIC_DISC_RECOLLECTION = ITEMS.registerItem(
+            "music_disc_recollection",
+            Item::new,
+            properties -> properties.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(RECOLLECTION_SONG));
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

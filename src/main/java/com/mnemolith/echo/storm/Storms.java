@@ -36,7 +36,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
@@ -185,7 +184,8 @@ public final class Storms {
         RecollectionStorm storm = new RecollectionStorm(data.takeId(), level.dimension(), chunk, cause);
         data.add(storm);
         BlockPos middle = surface(level, storm);
-        level.playSound(null, middle, ModSounds.PRESSURE_WARN.get(), SoundSource.HOSTILE, 3.0F, 0.5F);
+        level.playSound(null, middle, ModSounds.STORM_GATHER.get(), SoundSource.HOSTILE, 3.0F, 0.7F);
+        level.playSound(null, middle, ModSounds.MUSIC_STORM_GATHERING.get(), SoundSource.MUSIC, 1.0F, 1.0F);
         tell(level, storm, "mnemolith.storm.gathering", true);
         updateBar(level, storm);
         Mnemolith.LOGGER.info("Mnemolith storm gathering id={} chunk {} {} cause={}", storm.id(), chunk.x(), chunk.z(), cause);
@@ -251,7 +251,7 @@ public final class Storms {
             if (storm.ticks() >= GATHER_TICKS) {
                 storm.setPhase(RecollectionStorm.Phase.RAGING);
                 tell(level, storm, "mnemolith.storm.raging", true);
-                level.playSound(null, surface(level, storm), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.HOSTILE, 3.0F, 0.4F);
+                level.playSound(null, surface(level, storm), ModSounds.STORM_WAVE.get(), SoundSource.HOSTILE, 3.0F, 0.6F);
                 Mnemolith.LOGGER.info("Mnemolith storm raging id={}", storm.id());
                 wave(level, data, storm);
             }
@@ -314,7 +314,7 @@ public final class Storms {
         }
         living = living(level, storm);
         lastWave = new Wave(condensed, acted, held, starved, fed, hushed, choked, living.size());
-        level.playSound(null, middle, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.HOSTILE, 2.5F, 0.5F + 0.05F * storm.wavesLeft());
+        level.playSound(null, middle, ModSounds.STORM_WAVE.get(), SoundSource.HOSTILE, 2.5F, 0.55F + 0.05F * storm.wavesLeft());
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), middle.getX() + 0.5D, middle.getY() + 2.0D, middle.getZ() + 0.5D, 30, 6.0D, 2.0D, 6.0D, 0.02D);
         Mnemolith.LOGGER.info("Mnemolith storm wave id={} left={} condensed={} acted={} held={} starved={} fed={} hushed={} choked={} standing={}",
                 storm.id(), storm.wavesLeft(), condensed, acted, held, starved, fed, hushed, choked, living.size());
@@ -456,7 +456,7 @@ public final class Storms {
                 }
             }
         }
-        level.playSound(null, heart, SoundEvents.WARDEN_EMERGE, SoundSource.HOSTILE, 3.0F, 0.7F);
+        level.playSound(null, heart, ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 3.0F, 0.55F);
         tell(level, storm, scar != null ? "mnemolith.storm.scar" : "mnemolith.storm.scar_site", false);
         Mnemolith.LOGGER.info("Mnemolith storm merged id={} into the Scar merged={} tempers={} at {} boss={}", storm.id(), living.size(), describe(mask),
                 heart.toShortString(), scar != null);
