@@ -20,6 +20,7 @@
     "mnemolith:selective_mute_stone",
     "mnemolith:composition_reel",
     "mnemolith:pressure_sensor",
-    "mnemolith:resonator_trap"
+    "mnemolith:resonator_trap",
+    "mnemolith:archive_shrine"
   ]
 }

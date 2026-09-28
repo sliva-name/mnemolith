@@ -93,6 +93,13 @@ public final class ModEntities {
             MobCategory.MISC,
             builder -> builder.sized(1.2F, 3.2F).eyeHeight(2.6F).clientTrackingRange(10).noLootTable().fireImmune());
 
+    /** Archive Guardian: deterministic shrine boss at an archive shrine (B4). Never storm dice. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.ScarEntity>> ARCHIVE_GUARDIAN = ENTITY_TYPES.registerEntityType(
+            "archive_guardian",
+            com.mnemolith.entity.echo.ScarEntity::new,
+            MobCategory.MISC,
+            builder -> builder.sized(1.2F, 3.2F).eyeHeight(2.6F).clientTrackingRange(10).noLootTable().fireImmune());
+
     private ModEntities() {}
 
     public static void register(IEventBus modEventBus) {

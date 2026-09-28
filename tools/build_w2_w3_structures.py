@@ -148,6 +148,8 @@ def flooded_archive() -> None:
     # dry ledge with vault + chest
     b.fill(3, 1, 3, 5, 1, 5, deep)
     b.set(4, 2, 4, vault)
+    shrine = b.state('mnemolith:archive_shrine', {'challenged': 'false', 'claimed': 'false'})
+    b.set(4, 2, 5, shrine)
     b.set(5, 2, 4, chest, chest_nbt('mnemolith:chests/flooded_archive'))
     # doorway carved
     b.set(10, 2, 5, air)
@@ -162,7 +164,6 @@ def hush_chapel() -> None:
     air = b.air
     chest = b.state('minecraft:chest', {'facing': 'north', 'type': 'single', 'waterlogged': 'false'})
     lantern = b.state('minecraft:soul_lantern', {'hanging': 'true', 'waterlogged': 'false'})
-    carpet = b.state('minecraft:light_gray_carpet')
     b.box(0, 0, 0, 8, 5, 8, mute_brick, air)
     # mute lining
     for x in range(1, 8):
@@ -180,8 +181,9 @@ def hush_chapel() -> None:
     b.set(4, 2, 0, air)
     b.set(4, 1, 1, air)
     b.set(4, 2, 1, air)
-    # interior
-    b.set(4, 1, 4, carpet)
+    # interior — archive shrine at the altar (B4 guardian challenge)
+    shrine = b.state('mnemolith:archive_shrine', {'challenged': 'false', 'claimed': 'false'})
+    b.set(4, 1, 4, shrine)
     b.set(4, 4, 4, lantern)
     b.set(4, 1, 6, chest, chest_nbt('mnemolith:chests/hush_chapel'))
     b.write('hush_chapel.nbt')
@@ -238,7 +240,9 @@ def ashen_archive() -> None:
     for y in range(1, 5):
         b.set(1, y, 5, stratum)
         b.set(9, y, 5, stratum)
-    b.set(5, 1, 5, lantern)
+    shrine = b.state('mnemolith:archive_shrine', {'challenged': 'false', 'claimed': 'false'})
+    b.set(5, 1, 5, shrine)
+    b.set(5, 2, 5, lantern)
     b.set(3, 1, 5, chest, chest_nbt('mnemolith:chests/ashen_archive'))
     # entrance
     b.set(0, 1, 5, air)

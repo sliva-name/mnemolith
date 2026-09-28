@@ -6,4 +6,8 @@ public class ScarRenderState extends ResidueRenderState {
     public boolean casting;
     /** Silence Mirror: inverted cold palette. */
     public boolean mirror;
+    /** Archive Guardian: archival teal palette. */
+    public boolean guardian;
+    /** Vault seal active (guardian shield). */
+    public boolean vaultSealed;
 }

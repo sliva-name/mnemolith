@@ -63,6 +63,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RELAY_THREAD.get());
                 output.accept(ModItems.MUSIC_DISC_RECOLLECTION.get());
                 output.accept(ModItems.ARCHIVE_VAULT.get());
+                output.accept(ModItems.ARCHIVE_SHRINE.get());
                 output.accept(ModItems.ECHO_STRIDER_SPAWN_EGG.get());
                 output.accept(ModItems.ARCHIVIST_SPAWN_EGG.get());
                 output.accept(ModItems.MOMENT_REPLICANT_SPAWN_EGG.get());

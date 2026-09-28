@@ -43,6 +43,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.MEMORY_BOLT.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
         event.registerEntityRenderer(ModEntities.SCAR.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.SILENCE_MIRROR.get(), ScarRenderer::new);
+        event.registerEntityRenderer(ModEntities.ARCHIVE_GUARDIAN.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.PLEADING_CHAIR.get(), PleadingChairRenderer::new);
         registerAvatar(event, ModEntities.ECHO.get(), true);
         registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);

@@ -152,6 +152,7 @@ public final class MobSpawns {
             case "fracture_stalker" -> summon(ModEntities.FRACTURE_STALKER.get(), level, pos);
             case "pleading_chair" -> com.mnemolith.entity.PleadingChair.summon(level, pos);
             case "silence_mirror" -> summonSilenceMirror(level, pos);
+            case "archive_guardian" -> com.mnemolith.echo.storm.ArchiveShrines.summon(level, pos);
             default -> null;
         };
     }

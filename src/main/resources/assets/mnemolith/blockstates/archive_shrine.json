@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "challenged=false,claimed=false": {
+      "model": "mnemolith:block/archive_shrine"
+    },
+    "challenged=true,claimed=false": {
+      "model": "mnemolith:block/archive_shrine_challenged"
+    },
+    "challenged=false,claimed=true": {
+      "model": "mnemolith:block/archive_shrine_claimed"
+    },
+    "challenged=true,claimed=true": {
+      "model": "mnemolith:block/archive_shrine_claimed"
+    }
+  }
+}

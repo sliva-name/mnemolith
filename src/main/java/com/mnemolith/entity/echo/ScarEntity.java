@@ -47,6 +47,9 @@ import net.minecraft.world.phys.Vec3;
  * The Silence Mirror ({@code mnemolith:silence_mirror}) is the same body born from void pressure (P3): palette inverted,
  * hush-only recalls, quieter telegraphs — too quiet rather than too loud.
  * <p>
+ * The Archive Guardian ({@code mnemolith:archive_guardian}) is the deterministic shrine boss (B4): archival teal palette,
+ * hush/deep/grave recalls, a vault-seal phase that briefly seals damage even while pinned, and unique shrine rewards.
+ * <p>
  * Recall (every 3 s, telegraphed for 1 s): each player within 10 blocks is struck by the current memory (the residue
  * lash), and the memory is acted out once (fire and blasts respect mobGriefing; a hushed echo nearby swallows the
  * act-out). A grave-set echo within 16 blocks draws the whole recall onto itself instead, paying one graft charge. A
@@ -67,6 +70,10 @@ public final class ScarEntity extends Mob {
     public static final double LEASH = 20.0D;
     public static final double BAR_RANGE = 32.0D;
     public static final int WRITE_TICKS = 200;
+    /** Archive Guardian: vault seal duration (ticks). */
+    public static final int VAULT_SEAL_TICKS = 40;
+    /** Archive Guardian: ticks between vault seal attempts. */
+    public static final int VAULT_CYCLE_TICKS = 160;
 
     private static final EntityDataAccessor<Integer> DATA_MASK = SynchedEntityData.defineId(ScarEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_PINNED = SynchedEntityData.defineId(ScarEntity.class, EntityDataSerializers.BOOLEAN);
@@ -82,6 +89,8 @@ public final class ScarEntity extends Mob {
     private int pinTicks;
     private int unreadableTicks;
     private int writeTicks;
+    private int vaultSealTicks;
+    private int vaultCycleTicks;
     private @Nullable Vec3 driftTarget;
     /** Last recall's memory and how it landed ("players", "decoy", "none"); the QA reads it. */
     private @Nullable ImprintTag lastRecall;
@@ -97,12 +106,27 @@ public final class ScarEntity extends Mob {
             this.bossEvent.setName(Component.translatable("entity.mnemolith.silence_mirror"));
             this.bossEvent.setColor(BossEvent.BossBarColor.WHITE);
             this.entityData.set(DATA_MASK, 1 << Temper.HUSHED.id());
+        } else if (this.isGuardian()) {
+            this.bossEvent.setName(Component.translatable("entity.mnemolith.archive_guardian"));
+            this.bossEvent.setColor(BossEvent.BossBarColor.BLUE);
+            this.entityData.set(DATA_MASK, (1 << Temper.HUSHED.id()) | (1 << Temper.DEEP.id()) | (1 << Temper.GRAVE.id()));
+            this.xpReward = 80;
         }
     }
 
     /** True when this is the Silence Mirror entity type (void-pressure twin of the Scar). */
     public boolean isMirror() {
         return this.getType() == com.mnemolith.entity.ModEntities.SILENCE_MIRROR.get();
+    }
+
+    /** True when this is the Archive Guardian (shrine boss, B4). */
+    public boolean isGuardian() {
+        return this.getType() == com.mnemolith.entity.ModEntities.ARCHIVE_GUARDIAN.get();
+    }
+
+    /** Vault seal: while active the guardian shrugs damage even if pinned (archival shield phase). */
+    public boolean isVaultSealed() {
+        return this.isGuardian() && this.vaultSealTicks > 0;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -123,6 +147,8 @@ public final class ScarEntity extends Mob {
     public void setup(int mask, int merged, BlockPos home) {
         if (this.isMirror()) {
             mask = 1 << Temper.HUSHED.id();
+        } else if (this.isGuardian() && mask == 0) {
+            mask = (1 << Temper.HUSHED.id()) | (1 << Temper.DEEP.id()) | (1 << Temper.GRAVE.id());
         }
         this.entityData.set(DATA_MASK, mask == 0 ? 1 << Temper.GRAVE.id() : mask);
         this.merged = Math.max(1, merged);
@@ -132,6 +158,10 @@ public final class ScarEntity extends Mob {
         if (this.isMirror()) {
             this.bossEvent.setName(Component.translatable("entity.mnemolith.silence_mirror"));
             this.bossEvent.setColor(BossEvent.BossBarColor.WHITE);
+        } else if (this.isGuardian()) {
+            this.bossEvent.setName(Component.translatable("entity.mnemolith.archive_guardian"));
+            this.bossEvent.setColor(BossEvent.BossBarColor.BLUE);
+            this.xpReward = 80;
         }
     }
 
@@ -162,7 +192,7 @@ public final class ScarEntity extends Mob {
             }
         }
         if (list.isEmpty()) {
-            list.add(this.isMirror() ? Temper.HUSHED : Temper.GRAVE);
+            list.add(this.isMirror() || this.isGuardian() ? Temper.HUSHED : Temper.GRAVE);
         }
         return list;
     }
@@ -252,14 +282,30 @@ public final class ScarEntity extends Mob {
         if (this.unreadableTicks > 0) {
             this.unreadableTicks--;
         }
+        if (this.vaultSealTicks > 0) {
+            this.vaultSealTicks--;
+        }
+        if (this.isGuardian() && !this.isPinned() && this.getHealth() > this.getMaxHealth() * 0.35F) {
+            if (++this.vaultCycleTicks >= VAULT_CYCLE_TICKS) {
+                this.vaultCycleTicks = 0;
+                this.vaultSealTicks = VAULT_SEAL_TICKS;
+                level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 0.9F, 1.35F);
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANT,
+                        this.getX(), this.getY() + 1.2D, this.getZ(), 24, 0.5D, 0.8D, 0.5D, 0.02D);
+            }
+        }
         this.sense(level, players);
         boolean muted = this.muted(level);
         if (!this.isPinned()) {
-            this.recallTicks += muted && this.tickCount % 2 == 0 ? 0 : 1;
-            if (this.recallTicks == RECALL_TICKS - TELEGRAPH_TICKS) {
+            // Guardian recalls a little faster (archive pressure).
+            int telegraph = RECALL_TICKS - TELEGRAPH_TICKS;
+            this.recallTicks += muted && this.tickCount % 2 == 0 ? 0 : (this.isGuardian() && this.tickCount % 3 == 0 ? 2 : 1);
+            if (!this.isCasting() && this.recallTicks >= telegraph) {
                 this.entityData.set(DATA_CASTING, true);
                 if (this.isMirror()) {
                     level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 0.45F, 1.6F);
+                } else if (this.isGuardian()) {
+                    level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 1.1F, 1.15F);
                 } else {
                     level.playSound(null, this.blockPosition(), ModSounds.SCAR_CAST.get(), SoundSource.HOSTILE, 1.4F, 0.75F);
                 }
@@ -314,7 +360,9 @@ public final class ScarEntity extends Mob {
             this.pin(PIN_TICKS);
             level.playSound(null, this.blockPosition(), com.mnemolith.audio.ModSounds.LENS_FOCUS.get(), SoundSource.PLAYERS, 1.2F, 0.5F);
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 1.5D, this.getZ(), 40, 0.6D, 1.0D, 0.6D, 0.05D);
-            reader.sendOverlayMessage(Component.translatable(this.isMirror() ? "mnemolith.silence_mirror.read" : "mnemolith.scar.read", PIN_TICKS / 20));
+            String readKey = this.isMirror() ? "mnemolith.silence_mirror.read"
+                    : this.isGuardian() ? "mnemolith.archive_guardian.read" : "mnemolith.scar.read";
+            reader.sendOverlayMessage(Component.translatable(readKey, PIN_TICKS / 20));
             Mnemolith.LOGGER.info("Mnemolith scar read by {}", reader.getGameProfile().name());
         } else {
             this.entityData.set(DATA_READ, progress);
@@ -440,26 +488,39 @@ public final class ScarEntity extends Mob {
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
         }
+        if (this.isVaultSealed()) {
+            return true;
+        }
         return !this.isPinned() || super.isInvulnerableTo(level, source);
     }
 
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        for (net.minecraft.world.item.ItemStack stack : drops(level, this.merged, this.tempers(), this.home(), this.isMirror())) {
+        for (net.minecraft.world.item.ItemStack stack : drops(level, this.merged, this.tempers(), this.home(), this.isMirror(), this.isGuardian())) {
             this.spawnAtLocation(level, stack);
         }
     }
 
     /** One scar fragment (two if five or more residues merged) and a strength-4 residual shard per merged temper. */
     public static List<net.minecraft.world.item.ItemStack> drops(ServerLevel level, int merged, List<Temper> tempers, BlockPos home) {
-        return drops(level, merged, tempers, home, false);
+        return drops(level, merged, tempers, home, false, false);
     }
 
     public static List<net.minecraft.world.item.ItemStack> drops(ServerLevel level, int merged, List<Temper> tempers, BlockPos home, boolean mirror) {
+        return drops(level, merged, tempers, home, mirror, false);
+    }
+
+    public static List<net.minecraft.world.item.ItemStack> drops(ServerLevel level, int merged, List<Temper> tempers, BlockPos home, boolean mirror, boolean guardian) {
         List<net.minecraft.world.item.ItemStack> list = new ArrayList<>();
         list.add(new net.minecraft.world.item.ItemStack(ModItems.SCAR_FRAGMENT.get(), merged >= 5 ? 2 : 1));
-        if (mirror) {
+        if (guardian) {
+            list.add(Residues.shard(ImprintTag.SILENCE, 4, home, level.getGameTime()));
+            list.add(Residues.shard(ImprintTag.SCULK, 4, home, level.getGameTime()));
+            list.add(new net.minecraft.world.item.ItemStack(ModItems.ARCHIVE_SCHEMATIC.get()));
+            list.add(new net.minecraft.world.item.ItemStack(ModItems.CATALOG_FRAGMENT.get(), 2));
+            list.add(new net.minecraft.world.item.ItemStack(com.mnemolith.armory.ArmoryItems.HUSH_FIBER.get(), 3));
+        } else if (mirror) {
             list.add(Residues.shard(ImprintTag.SILENCE, 4, home, level.getGameTime()));
             list.add(new net.minecraft.world.item.ItemStack(com.mnemolith.armory.ArmoryItems.HUSH_FIBER.get(), 2 + level.getRandom().nextInt(2)));
         } else {
@@ -490,9 +551,13 @@ public final class ScarEntity extends Mob {
     public void die(DamageSource source) {
         super.die(source);
         if (this.level() instanceof ServerLevel level) {
-            Mnemolith.LOGGER.info("Mnemolith {} defeated merged={} at {} by {}", this.isMirror() ? "silence mirror" : "scar", this.merged, this.blockPosition().toShortString(),
+            String kind = this.isGuardian() ? "archive guardian" : this.isMirror() ? "silence mirror" : "scar";
+            Mnemolith.LOGGER.info("Mnemolith {} defeated merged={} at {} by {}", kind, this.merged, this.blockPosition().toShortString(),
                     source.getEntity() == null ? "?" : source.getEntity().getName().getString());
-            level.playSound(null, this.blockPosition(), ModSounds.SCAR_DEATH.get(), SoundSource.HOSTILE, 2.0F, 0.85F);
+            level.playSound(null, this.blockPosition(), ModSounds.SCAR_DEATH.get(), SoundSource.HOSTILE, 2.0F, this.isGuardian() ? 1.05F : 0.85F);
+            if (this.isGuardian()) {
+                com.mnemolith.echo.storm.ArchiveShrines.onGuardianDefeated(level, this, source.getEntity());
+            }
         }
     }
 
@@ -526,7 +591,7 @@ public final class ScarEntity extends Mob {
 
     @Override
     public boolean isCurrentlyGlowing() {
-        return this.isPinned() || super.isCurrentlyGlowing();
+        return this.isPinned() || this.isVaultSealed() || super.isCurrentlyGlowing();
     }
 
     @Override
@@ -544,6 +609,10 @@ public final class ScarEntity extends Mob {
         output.store("scar_home", BlockPos.CODEC, this.home());
         output.putInt("scar_recall", this.recallIndex);
         output.putInt("scar_pin", this.pinTicks);
+        if (this.isGuardian()) {
+            output.putInt("vault_seal", this.vaultSealTicks);
+            output.putInt("vault_cycle", this.vaultCycleTicks);
+        }
     }
 
     @Override
@@ -556,9 +625,17 @@ public final class ScarEntity extends Mob {
         this.recallIndex = input.getIntOr("scar_recall", 0);
         this.pinTicks = Math.max(0, input.getIntOr("scar_pin", 0));
         this.entityData.set(DATA_PINNED, this.pinTicks > 0);
+        this.vaultSealTicks = Math.max(0, input.getIntOr("vault_seal", 0));
+        this.vaultCycleTicks = Math.max(0, input.getIntOr("vault_cycle", 0));
         this.applyHealth();
         if (this.hasCustomName()) {
             this.bossEvent.setName(this.getDisplayName());
+        } else if (this.isGuardian()) {
+            this.bossEvent.setName(Component.translatable("entity.mnemolith.archive_guardian"));
+            this.bossEvent.setColor(BossEvent.BossBarColor.BLUE);
+        } else if (this.isMirror()) {
+            this.bossEvent.setName(Component.translatable("entity.mnemolith.silence_mirror"));
+            this.bossEvent.setColor(BossEvent.BossBarColor.WHITE);
         }
     }
 }

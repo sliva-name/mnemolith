@@ -201,6 +201,10 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue SILENCE_COST_BLEACH_RECORDINGS;
     public static final ModConfigSpec.IntValue SILENCE_COST_BLEACH_FRAMES;
     public static final ModConfigSpec.BooleanValue MEMORIAL_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVE_GUARDIAN_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVE_GUARDIAN_ONCE_PER_WORLD;
+    public static final ModConfigSpec.IntValue ARCHIVE_GUARDIAN_ARENA_RADIUS;
+    public static final ModConfigSpec.IntValue ARCHIVE_GUARDIAN_COOLDOWN_TICKS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -452,6 +456,13 @@ public final class CommonConfig {
 
         SpecValues.section(builder, "memorial", "Player memorial on death (P4). Off by default so tombstone mods stay alone.");
         MEMORIAL_ENABLED = SpecValues.bool(builder, "enabled", "Whether a player death places a memorial block that keeps items and a death imprint. Default off.", false);
+        builder.pop();
+
+        SpecValues.section(builder, "archiveGuardian", "Archive Guardian shrine boss (B4). Deterministic challenge at an archive shrine — never stormAttemptChance.");
+        ARCHIVE_GUARDIAN_ENABLED = SpecValues.bool(builder, "enabled", "Whether archive shrines can be challenged to spawn the Archive Guardian.", true);
+        ARCHIVE_GUARDIAN_ONCE_PER_WORLD = SpecValues.bool(builder, "oncePerWorld", "Whether defeating the guardian once locks every shrine in the world.", true);
+        ARCHIVE_GUARDIAN_ARENA_RADIUS = SpecValues.integer(builder, "arenaRadius", "Radius of the temporary scar-glass arena ring around the shrine.", 7, 4, 16);
+        ARCHIVE_GUARDIAN_COOLDOWN_TICKS = SpecValues.integer(builder, "cooldownTicks", "Ticks after a challenge before another shrine can be challenged (0 = no cooldown). Ignored for /mnemolith spawn.", 0, 0, 240_000);
         builder.pop();
 
         SPEC = builder.build();

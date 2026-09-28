@@ -55,6 +55,8 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.echo_armor_trim_smithing_template.hint"));
             } else if (stack.getItem() == ModItems.ARCHIVAL_TABLET.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
+            } else if (stack.getItem() == ModItems.ARCHIVE_SHRINE.get()) {
+                builder.accept(Component.translatable("block.mnemolith.archive_shrine.hint"));
             } else if (stack.getItem() == ModItems.ARCHIVE_SCHEMATIC.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archive_schematic.hint"));
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {

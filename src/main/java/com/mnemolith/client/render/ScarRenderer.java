@@ -62,8 +62,10 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
         state.read = entity.readProgress() / (float) ScarEntity.READ_TICKS;
         state.strength = entity.merged();
         state.mirror = entity.isMirror();
+        state.guardian = entity.isGuardian();
+        state.vaultSealed = entity.isVaultSealed();
         int blended = blend(state.tempers, (entity.tickCount + partialTick) / 40.0F);
-        state.rgb = state.mirror ? invert(blended) : blended;
+        state.rgb = state.mirror ? invert(blended) : state.guardian ? archival(blended) : blended;
         state.lightCoords = Math.max(state.lightCoords, 0xC000C0);
     }
 
@@ -75,6 +77,17 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
         int nr = Math.min(255, 255 - r + 40);
         int ng = Math.min(255, g + 30);
         int nb = Math.min(255, 255 - b + 80);
+        return nr << 16 | ng << 8 | nb;
+    }
+
+    /** Archival teal wash for the Archive Guardian. */
+    private static int archival(int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        int nr = Math.min(255, (int) (r * 0.35F + 30));
+        int ng = Math.min(255, (int) (g * 0.85F + 50));
+        int nb = Math.min(255, (int) (b * 0.55F + 120));
         return nr << 16 | ng << 8 | nb;
     }
 
@@ -105,7 +118,7 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
 
     @Override
     protected int getModelTint(ScarRenderState state) {
-        int alpha = state.pinned ? 0xF0 : state.casting ? 0xE0 : 0xB8;
+        int alpha = state.vaultSealed ? 0xF8 : state.pinned ? 0xF0 : state.casting ? 0xE0 : 0xB8;
         return alpha << 24 | state.rgb;
     }
 
@@ -119,7 +132,9 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
         super.submit(state, poseStack, collector, camera);
         if (EchoView.thermal()) {
             Minecraft minecraft = Minecraft.getInstance();
-            Component line = Component.translatable(state.mirror ? "mnemolith.silence_mirror.label" : "mnemolith.scar.label", state.strength);
+            String labelKey = state.guardian ? "mnemolith.archive_guardian.label"
+                    : state.mirror ? "mnemolith.silence_mirror.label" : "mnemolith.scar.label";
+            Component line = Component.translatable(labelKey, state.strength);
             Component status = state.pinned ? Component.translatable("mnemolith.residue.label_read")
                     : Component.translatable("mnemolith.residue.label_reading", Math.round(state.read * 100.0F));
             float distance = (float) Math.sqrt(state.distanceToCameraSq);

@@ -22,5 +22,6 @@ public final class ModEntityAttributes {
         event.put(ModEntities.RESIDUE.get(), com.mnemolith.entity.echo.ResidueEntity.createAttributes().build());
         event.put(ModEntities.SCAR.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());
         event.put(ModEntities.SILENCE_MIRROR.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());
+        event.put(ModEntities.ARCHIVE_GUARDIAN.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());
     }
 }

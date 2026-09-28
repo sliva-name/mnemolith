@@ -35,6 +35,7 @@ repositories {
         url = 'https://maven.blamejared.com/'
         content {
             includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config' // JEI transitive mezz_config
         }
     }
     maven {

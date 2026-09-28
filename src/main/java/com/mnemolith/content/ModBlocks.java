@@ -68,6 +68,12 @@ public final class ModBlocks {
             com.mnemolith.content.block.ScarHeartBlock::new,
             scarHeartProperties());
 
+    /** Archive shrine: challenge the Archive Guardian (B4). Placeable; also in hush chapel / archive structures. */
+    public static final DeferredBlock<com.mnemolith.content.block.ArchiveShrineBlock> ARCHIVE_SHRINE = BLOCKS.registerBlock(
+            "archive_shrine",
+            com.mnemolith.content.block.ArchiveShrineBlock::new,
+            archiveShrineProperties());
+
     /** Banks imprints drawn from nearby chunks; what it holds bleeds pressure into its own chunk. */
     public static final DeferredBlock<com.mnemolith.content.block.ArchiveVaultBlock> ARCHIVE_VAULT = BLOCKS.registerBlock(
             "archive_vault",
@@ -256,5 +262,18 @@ public final class ModBlocks {
                 .sound(SoundType.GLASS)
                 .noOcclusion()
                 .lightLevel(PressureLampBlock::lightFor);
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> archiveShrineProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_CYAN)
+                .strength(4.0F, 1200.0F)
+                .sound(SoundType.AMETHYST)
+                .lightLevel(state -> state.getValue(com.mnemolith.content.block.ArchiveShrineBlock.CLAIMED) ? 12
+                        : state.getValue(com.mnemolith.content.block.ArchiveShrineBlock.CHALLENGED) ? 8 : 6)
+                .noOcclusion()
+                .requiresCorrectToolForDrops()
+                .pushReaction(PushReaction.BLOCK)
+                .isValidSpawn((state, level, pos, type) -> false);
     }
 }
