@@ -24,6 +24,10 @@ public final class ModBlockEntities {
             "selective_mute_stone",
             () -> new BlockEntityType<>(com.mnemolith.content.block.SelectiveMuteStoneBlockEntity::new, ModBlocks.SELECTIVE_MUTE_STONE.get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.PlayerMemorialBlockEntity>> PLAYER_MEMORIAL = BLOCK_ENTITIES.register(
+            "player_memorial",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.PlayerMemorialBlockEntity::new, ModBlocks.PLAYER_MEMORIAL.get()));
+
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {

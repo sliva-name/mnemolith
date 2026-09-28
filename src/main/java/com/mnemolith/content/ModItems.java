@@ -109,6 +109,7 @@ public final class ModItems {
     /** Archive vault: keeps its imprints on the item when broken, so one stack is one vault. */
     public static final DeferredItem<net.minecraft.world.item.BlockItem> ARCHIVE_VAULT = ITEMS.registerSimpleBlockItem(ModBlocks.ARCHIVE_VAULT, properties -> properties.stacksTo(1));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> PRESSURE_SENSOR = ITEMS.registerSimpleBlockItem(ModBlocks.PRESSURE_SENSOR);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> PLAYER_MEMORIAL = ITEMS.registerSimpleBlockItem(ModBlocks.PLAYER_MEMORIAL);
     public static final DeferredItem<SpawnEggItem> ECHO_STRIDER_SPAWN_EGG = ITEMS.registerItem(
             "echo_strider_spawn_egg",
             SpawnEggItem::new,

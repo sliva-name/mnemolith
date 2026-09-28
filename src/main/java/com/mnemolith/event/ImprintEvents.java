@@ -202,6 +202,7 @@ public final class ImprintEvents {
             return;
         }
         coolPressure(level, player);
+        com.mnemolith.pressure.SilenceCost.onPlayerPulse(level, player);
         com.mnemolith.echo.residue.Residues.pulse(level, player);
         com.mnemolith.echo.storm.Storms.onPlayerTick(level, player);
         com.mnemolith.vault.ArchiveVaults.carryTick(level, player);

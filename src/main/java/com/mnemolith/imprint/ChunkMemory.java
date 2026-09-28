@@ -31,7 +31,8 @@ public final class ChunkMemory {
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
             ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
             Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad),
-            Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy)
+            Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy),
+            VoidPressure.CODEC.optionalFieldOf("void", VoidPressure.NONE).forGetter(ChunkMemory::voidState)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
@@ -56,10 +57,12 @@ public final class ChunkMemory {
     private long lastCoolGameTime;
     /** Set when instability or a build, redstone, or path imprint can still cool. Not saved. */
     private boolean coolDirty;
+    /** Quiet pressure while mute stones hold this chunk (P3). Optional in the codec. */
+    private VoidPressure voidState = VoidPressure.NONE;
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
@@ -76,6 +79,7 @@ public final class ChunkMemory {
         memory.wards.addAll(wards);
         memory.scar = scar.orElse(null);
         memory.vaultLoad = Math.max(0, vaultLoad);
+        memory.voidState = voidState == null ? VoidPressure.NONE : voidState;
         memory.refreshCooling();
         return memory;
     }
@@ -89,6 +93,7 @@ public final class ChunkMemory {
                 && this.wards.isEmpty()
                 && this.scar == null
                 && this.vaultLoad == 0
+                && this.voidState.isEmpty()
                 && !this.fractured
                 && !this.archival
                 && !this.observatory
@@ -484,6 +489,34 @@ public final class ChunkMemory {
         this.imprints.set(index, next);
         this.refreshCooling();
         return true;
+    }
+
+    public VoidPressure voidState() {
+        return this.voidState;
+    }
+
+    public int voidPressure() {
+        return this.voidState.pressure();
+    }
+
+    public void setVoidPressure(int voidPressure) {
+        this.voidState = this.voidState.withPressure(voidPressure);
+    }
+
+    public boolean voidWarned() {
+        return this.voidState.warned();
+    }
+
+    public void setVoidWarned(boolean voidWarned) {
+        this.voidState = this.voidState.withWarned(voidWarned);
+    }
+
+    public long voidCooldownUntil() {
+        return this.voidState.cooldownUntil();
+    }
+
+    public void setVoidCooldownUntil(long voidCooldownUntil) {
+        this.voidState = this.voidState.withCooldownUntil(voidCooldownUntil);
     }
 
     public List<ImprintTag> tags() {

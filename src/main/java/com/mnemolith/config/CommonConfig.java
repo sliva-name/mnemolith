@@ -184,6 +184,19 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue STRUCTURE_MEMORY_SEEDS;
     public static final ModConfigSpec SPEC;
 
+
+    public static final ModConfigSpec.BooleanValue SILENCE_COST_ENABLED;
+    public static final ModConfigSpec.IntValue SILENCE_COST_PULSE_TICKS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_PER_PULSE;
+    public static final ModConfigSpec.IntValue SILENCE_COST_DENSITY_BONUS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_WARN_AT;
+    public static final ModConfigSpec.IntValue SILENCE_COST_SPAWN_AT;
+    public static final ModConfigSpec.IntValue SILENCE_COST_COOLDOWN_TICKS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_DECAY;
+    public static final ModConfigSpec.BooleanValue SILENCE_COST_BLEACH_RECORDINGS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_BLEACH_FRAMES;
+    public static final ModConfigSpec.BooleanValue MEMORIAL_ENABLED;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
@@ -412,6 +425,23 @@ public final class CommonConfig {
 
         SpecValues.section(builder, "worldMemory", "Quiet imprints seeded into vanilla structures on first visit.");
         STRUCTURE_MEMORY_SEEDS = SpecValues.bool(builder, "structureSeeds", "Whether structure chunks gain a few weak ancient imprints when first loaded empty.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "silenceCost", "Cost of silence (P3). Mute stones that stay too long or too dense accumulate void pressure and can birth a Silence Mirror.");
+        SILENCE_COST_ENABLED = SpecValues.bool(builder, "enabled", "Whether muted chunks accumulate void pressure and can spawn a Silence Mirror.", true);
+        SILENCE_COST_PULSE_TICKS = SpecValues.integer(builder, "pulseTicks", "Ticks between void-pressure pulses while a player stands in a muted chunk. 0 disables pulses.", 100, 0, 20_000);
+        SILENCE_COST_PER_PULSE = SpecValues.integer(builder, "perPulse", "Void pressure added each pulse while the chunk has a mute stone.", 1, 0, 20);
+        SILENCE_COST_DENSITY_BONUS = SpecValues.integer(builder, "densityBonus", "Extra void pressure per neighboring muted chunk and per extra mute stone in this chunk.", 1, 0, 10);
+        SILENCE_COST_WARN_AT = SpecValues.integer(builder, "warnAt", "Void pressure that plays a one-time warning and starts bleaching recordings.", 40, 1, 500);
+        SILENCE_COST_SPAWN_AT = SpecValues.integer(builder, "spawnAt", "Void pressure that spawns the Silence Mirror (Scar twin) and starts the cooldown.", 80, 1, 1000);
+        SILENCE_COST_COOLDOWN_TICKS = SpecValues.integer(builder, "cooldownTicks", "Ticks after a mirror spawn before this chunk can accumulate void pressure again.", 12000, 200, 240_000);
+        SILENCE_COST_DECAY = SpecValues.integer(builder, "decay", "Void pressure removed each pulse while the player stands in an unmuted chunk. 0 disables decay.", 1, 0, 20);
+        SILENCE_COST_BLEACH_RECORDINGS = SpecValues.bool(builder, "bleachRecordings", "Whether high void pressure shortens echo recordings in the player's inventory.", true);
+        SILENCE_COST_BLEACH_FRAMES = SpecValues.integer(builder, "bleachFrames", "Frames trimmed from each echo recording per pulse while void is at or above warnAt.", 20, 1, 200);
+        builder.pop();
+
+        SpecValues.section(builder, "memorial", "Player memorial on death (P4). Off by default so tombstone mods stay alone.");
+        MEMORIAL_ENABLED = SpecValues.bool(builder, "enabled", "Whether a player death places a memorial block that keeps items and a death imprint. Default off.", false);
         builder.pop();
 
         SPEC = builder.build();

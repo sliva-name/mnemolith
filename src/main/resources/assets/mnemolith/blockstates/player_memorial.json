@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mnemolith:block/player_memorial"
+    }
+  }
+}

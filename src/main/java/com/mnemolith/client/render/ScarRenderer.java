@@ -61,8 +61,21 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
         state.casting = entity.isCasting();
         state.read = entity.readProgress() / (float) ScarEntity.READ_TICKS;
         state.strength = entity.merged();
-        state.rgb = blend(state.tempers, (entity.tickCount + partialTick) / 40.0F);
+        state.mirror = entity.isMirror();
+        int blended = blend(state.tempers, (entity.tickCount + partialTick) / 40.0F);
+        state.rgb = state.mirror ? invert(blended) : blended;
         state.lightCoords = Math.max(state.lightCoords, 0xC000C0);
+    }
+
+    /** Cold mirror of a temper colour: swap red/blue and lift brightness. */
+    private static int invert(int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        int nr = Math.min(255, 255 - r + 40);
+        int ng = Math.min(255, g + 30);
+        int nb = Math.min(255, 255 - b + 80);
+        return nr << 16 | ng << 8 | nb;
     }
 
     /** Slides through the merged colours, one every two seconds. */
@@ -106,7 +119,7 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
         super.submit(state, poseStack, collector, camera);
         if (EchoView.thermal()) {
             Minecraft minecraft = Minecraft.getInstance();
-            Component line = Component.translatable("mnemolith.scar.label", state.strength);
+            Component line = Component.translatable(state.mirror ? "mnemolith.silence_mirror.label" : "mnemolith.scar.label", state.strength);
             Component status = state.pinned ? Component.translatable("mnemolith.residue.label_read")
                     : Component.translatable("mnemolith.residue.label_reading", Math.round(state.read * 100.0F));
             float distance = (float) Math.sqrt(state.distanceToCameraSq);

@@ -53,9 +53,15 @@ public class ExtractionNeedleItem extends Item {
         Imprint last = null;
         for (int i = 0; i < pulls; i++) {
             com.mnemolith.content.InventorySpace.clearRefused();
-            Optional<Imprint> result = level.getBlockEntity(context.getClickedPos()) instanceof com.mnemolith.content.block.ArchiveVaultBlockEntity vault
-                    ? com.mnemolith.vault.ArchiveVaults.extract(level, context.getClickedPos(), vault, player)
-                    : ImprintWriter.extract(level, context.getClickedPos(), player);
+            Optional<Imprint> result;
+            var be = level.getBlockEntity(context.getClickedPos());
+            if (be instanceof com.mnemolith.content.block.ArchiveVaultBlockEntity vault) {
+                result = com.mnemolith.vault.ArchiveVaults.extract(level, context.getClickedPos(), vault, player);
+            } else if (be instanceof com.mnemolith.content.block.PlayerMemorialBlockEntity memorial) {
+                result = extractMemorial(level, context.getClickedPos(), memorial, player);
+            } else {
+                result = ImprintWriter.extract(level, context.getClickedPos(), player);
+            }
             if (result.isEmpty()) {
                 if (extracted == 0 && !com.mnemolith.content.InventorySpace.consumeRefused()) {
                     player.sendSystemMessage(Component.translatable("mnemolith.message.extract_empty"));
@@ -92,5 +98,26 @@ public class ExtractionNeedleItem extends Item {
             }
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private static Optional<Imprint> extractMemorial(
+            ServerLevel level,
+            net.minecraft.core.BlockPos pos,
+            com.mnemolith.content.block.PlayerMemorialBlockEntity memorial,
+            ServerPlayer player) {
+        Optional<Imprint> peek = memorial.deathImprint();
+        if (peek.isEmpty()) {
+            return Optional.empty();
+        }
+        if (!com.mnemolith.content.InventorySpace.fits(player.getInventory(), com.mnemolith.data.ImprintSlips.of(peek.get()))) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return Optional.empty();
+        }
+        Optional<Imprint> taken = memorial.takeDeathImprint();
+        if (taken.isEmpty()) {
+            return Optional.empty();
+        }
+        ImprintWriter.giveSlip(level, pos, player, taken.get());
+        return taken;
     }
 }

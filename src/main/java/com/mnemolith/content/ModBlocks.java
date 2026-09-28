@@ -69,6 +69,12 @@ public final class ModBlocks {
             PressureSensorBlock::new,
             sensorProperties());
 
+    /** Chest-like memorial left on player death when memorial.enabled is on (P4). */
+    public static final DeferredBlock<com.mnemolith.content.block.PlayerMemorialBlock> PLAYER_MEMORIAL = BLOCKS.registerBlock(
+            "player_memorial",
+            com.mnemolith.content.block.PlayerMemorialBlock::new,
+            memorialProperties());
+
     private ModBlocks() {}
 
     private static UnaryOperator<BlockBehaviour.Properties> sensorProperties() {
@@ -150,5 +156,13 @@ public final class ModBlocks {
                 .lightLevel(state -> 7)
                 .noOcclusion()
                 .requiresCorrectToolForDrops();
+    }
+
+    private static UnaryOperator<BlockBehaviour.Properties> memorialProperties() {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_PURPLE)
+                .strength(2.0F, 6.0F)
+                .sound(SoundType.STONE)
+                .noOcclusion();
     }
 }

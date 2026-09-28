@@ -1017,5 +1017,18 @@
   "mnemolith.cardinal.s": "south",
   "mnemolith.cardinal.sw": "southwest",
   "mnemolith.cardinal.w": "west",
-  "mnemolith.cardinal.nw": "northwest"
+  "mnemolith.cardinal.nw": "northwest",
+  "entity.mnemolith.silence_mirror": "Silence Mirror",
+  "mnemolith.silence_mirror.label": "Silence Mirror · %s",
+  "mnemolith.silence_mirror.read": "The silence is pinned for %s seconds.",
+  "mnemolith.silence.warn": "The mute grows hollow. Something listens from the quiet.",
+  "mnemolith.silence.mirror": "The quiet breaks. A Silence Mirror rises.",
+  "mnemolith.silence.mirror_site": "The quiet breaks, but nothing stands in the calm.",
+  "mnemolith.silence.bleach": "Your echo recordings bleach in the void.",
+  "block.mnemolith.player_memorial": "Player Memorial",
+  "block.mnemolith.player_memorial.hint": "Placed on death when memorial.enabled is on. Holds items and a death imprint; lens names it, needle extracts the imprint. Default off so tombstone mods stay alone.",
+  "container.mnemolith.player_memorial": "Memorial",
+  "container.mnemolith.player_memorial.named": "%s's Memorial",
+  "mnemolith.configuration.silenceCost": "Silence cost",
+  "mnemolith.configuration.memorial": "Player memorial"
 }

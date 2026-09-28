@@ -33,6 +33,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.MUTE_STONE.get());
                 output.accept(ModItems.SELECTIVE_MUTE_STONE.get());
                 output.accept(ModItems.PRESSURE_SENSOR.get());
+                output.accept(ModItems.PLAYER_MEMORIAL.get());
                 output.accept(ModItems.ARCHIVAL_STRATUM.get());
                 output.accept(ModItems.ARCHIVAL_TABLET.get());
                 output.accept(ModItems.RESONATOR_TRAP.get());

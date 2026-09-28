@@ -1017,5 +1017,18 @@
   "mnemolith.cardinal.s": "юг",
   "mnemolith.cardinal.sw": "юго-запад",
   "mnemolith.cardinal.w": "запад",
-  "mnemolith.cardinal.nw": "северо-запад"
+  "mnemolith.cardinal.nw": "северо-запад",
+  "entity.mnemolith.silence_mirror": "Зеркало тишины",
+  "mnemolith.silence_mirror.label": "Зеркало тишины · %s",
+  "mnemolith.silence_mirror.read": "Тишина пригвождена на %s с.",
+  "mnemolith.silence.warn": "Глушь пустеет. Из тишины кто-то слушает.",
+  "mnemolith.silence.mirror": "Тишина рвётся. Восходит Зеркало тишины.",
+  "mnemolith.silence.mirror_site": "Тишина рвётся, но в покое никто не встаёт.",
+  "mnemolith.silence.bleach": "Записи отголосков выцветают в пустоте.",
+  "block.mnemolith.player_memorial": "Мемориал игрока",
+  "block.mnemolith.player_memorial.hint": "Ставится при смерти, если memorial.enabled включён. Хранит вещи и метку смерти: линза читает, игла забирает. По умолчанию выкл., чтобы не спорить с модами надгробий.",
+  "container.mnemolith.player_memorial": "Мемориал",
+  "container.mnemolith.player_memorial.named": "Мемориал: %s",
+  "mnemolith.configuration.silenceCost": "Цена тишины",
+  "mnemolith.configuration.memorial": "Мемориал игрока"
 }

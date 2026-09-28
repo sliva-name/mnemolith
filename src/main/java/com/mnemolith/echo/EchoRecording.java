@@ -184,6 +184,23 @@ public record EchoRecording(UUID owner, String ownerName, ResourceKey<Level> dim
         }
     }
 
+    /**
+     * Bleaches the newest frames off the end (void pressure fade). Actions past the new length are dropped.
+     * Returns this recording unchanged when {@code framesToDrop} is not positive or there is nothing to cut.
+     */
+    public EchoRecording bleached(int framesToDrop) {
+        if (framesToDrop <= 0 || this.length() <= 0) {
+            return this;
+        }
+        int keep = Math.max(0, this.length() - framesToDrop);
+        if (keep == this.length()) {
+            return this;
+        }
+        byte[] nextFrames = Arrays.copyOf(this.frames, keep * FRAME_BYTES);
+        List<EchoAction> nextActions = this.actions.stream().filter(action -> action.tick() < keep).toList();
+        return new EchoRecording(this.owner, this.ownerName, this.dimension, this.origin, nextFrames, nextActions);
+    }
+
     public int seconds() {
         return (this.length() + 19) / 20;
     }
