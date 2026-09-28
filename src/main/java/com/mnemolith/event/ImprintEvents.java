@@ -188,6 +188,7 @@ public final class ImprintEvents {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
         }
+        com.mnemolith.worldgen.StructureMemorySeeds.trySeed(level, chunk);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory != null) {
             boolean faded = memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());

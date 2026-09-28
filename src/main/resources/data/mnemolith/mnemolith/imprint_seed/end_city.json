@@ -1,0 +1,10 @@
+{
+  "structures": [
+    "minecraft:end_city"
+  ],
+  "tags": [
+    "explosion"
+  ],
+  "intensity": 1,
+  "count": 1
+}

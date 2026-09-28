@@ -1,0 +1,12 @@
+{
+  "structures": [
+    "minecraft:mineshaft",
+    "minecraft:mineshaft_mesa"
+  ],
+  "tags": [
+    "path",
+    "build"
+  ],
+  "intensity": 1,
+  "count": 1
+}

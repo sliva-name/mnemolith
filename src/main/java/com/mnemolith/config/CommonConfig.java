@@ -176,6 +176,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue SLEEP_COOL_AMOUNT;
     public static final ModConfigSpec.IntValue SLEEP_FADE_PASSES;
     public static final ModConfigSpec.BooleanValue SLEEP_NIGHTMARE;
+    public static final ModConfigSpec.BooleanValue STRUCTURE_MEMORY_SEEDS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -397,6 +398,10 @@ public final class CommonConfig {
         SLEEP_COOL_AMOUNT = SpecValues.integer(builder, "coolAmount", "Instability removed from the bed chunk after sleep.", 8, 0, 40);
         SLEEP_FADE_PASSES = SpecValues.integer(builder, "fadePasses", "How many quiet imprints may fade after one sleep.", 2, 0, 8);
         SLEEP_NIGHTMARE = SpecValues.bool(builder, "nightmare", "Whether waking in an overloaded or fractured chunk blinds the player and may spawn a replicant.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "worldMemory", "Quiet imprints seeded into vanilla structures on first visit.");
+        STRUCTURE_MEMORY_SEEDS = SpecValues.bool(builder, "structureSeeds", "Whether structure chunks gain a few weak ancient imprints when first loaded empty.", true);
         builder.pop();
 
         SPEC = builder.build();
