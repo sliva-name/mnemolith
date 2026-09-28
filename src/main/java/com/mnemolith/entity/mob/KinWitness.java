@@ -1,12 +1,20 @@
 package com.mnemolith.entity.mob;
 
+import java.util.Optional;
+
 import com.mnemolith.armory.Armory;
 import com.mnemolith.armory.ArmoryItems;
 import com.mnemolith.armory.ArmorySet;
+import com.mnemolith.content.InventorySpace;
+import com.mnemolith.content.MemoryNavigation;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.network.RecallGhostPayload;
+import com.mnemolith.recall.Gesture;
+import com.mnemolith.recall.LivingMemory;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -25,12 +33,17 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Stands its ground until struck, or until it trusts the player. Hush fiber builds trust.
- * At three fibers, paper is answered with one archival tablet a day.
+ * At three fibers, paper is answered with one archival tablet a day, plus a testimony:
+ * either a retelling of an old player gesture, or a bearing toward the nearest residue / observatory.
  */
 public class KinWitness extends PathfinderMob {
+    /** Gestures older than one minute (and still within the recall window) may be retold. */
+    private static final long RETELL_MIN_AGE = 1200L;
+
     private int trust;
     private long nextGift;
     private int angryTicks;
@@ -120,7 +133,7 @@ public class KinWitness extends PathfinderMob {
                 stack.shrink(1);
             }
             this.trust++;
-            if (player instanceof net.minecraft.server.level.ServerPlayer server) {
+            if (player instanceof ServerPlayer server) {
                 server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_trust", this.trust), true);
             }
             return InteractionResult.SUCCESS_SERVER;
@@ -128,17 +141,17 @@ public class KinWitness extends PathfinderMob {
         if (stack.is(Items.PAPER) && this.trust >= 3 && this.level() instanceof ServerLevel serverLevel) {
             long now = serverLevel.getGameTime();
             if (now < this.nextGift) {
-                if (player instanceof net.minecraft.server.level.ServerPlayer server) {
+                if (player instanceof ServerPlayer server) {
                     server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_wait"), true);
                 }
                 return InteractionResult.FAIL;
             }
-            if (!(player instanceof net.minecraft.server.level.ServerPlayer server)) {
+            if (!(player instanceof ServerPlayer server)) {
                 return InteractionResult.PASS;
             }
             ItemStack tablet = new ItemStack(ModItems.ARCHIVAL_TABLET.get());
-            if (!com.mnemolith.content.InventorySpace.fitsAfterUse(server, hand, stack, tablet)) {
-                com.mnemolith.content.InventorySpace.refuse(server);
+            if (!InventorySpace.fitsAfterUse(server, hand, stack, tablet)) {
+                InventorySpace.refuse(server);
                 return InteractionResult.FAIL;
             }
             if (!player.getAbilities().instabuild) {
@@ -147,9 +160,54 @@ public class KinWitness extends PathfinderMob {
             this.nextGift = now + 24000L;
             server.getInventory().add(tablet);
             server.sendSystemMessage(Component.translatable("mnemolith.armory.witness_gift"), true);
+            testify(server, serverLevel);
             return InteractionResult.SUCCESS_SERVER;
         }
         return super.mobInteract(player, hand);
+    }
+
+    /**
+     * Once per daily gift: prefer retelling an old gesture from living memory; otherwise point at the
+     * nearest residue or observatory (fracture only as a last resort via the shared navigator).
+     */
+    private void testify(ServerPlayer player, ServerLevel level) {
+        if (LivingMemory.enabled()) {
+            long now = level.getGameTime();
+            long maxAge = com.mnemolith.config.CommonConfig.RECALL_MAX_AGE.get();
+            Optional<Gesture> old = LivingMemory.log(player).qualifying(now, RETELL_MIN_AGE, maxAge);
+            if (old.isPresent()) {
+                Gesture gesture = old.get();
+                PacketDistributor.sendToPlayer(player, new RecallGhostPayload(
+                        gesture.pos(),
+                        gesture.yaw(),
+                        gesture.pitch(),
+                        gesture.kind().ordinal(),
+                        gesture.distorted(),
+                        gesture.trail()));
+                player.sendSystemMessage(Component.translatable(
+                        "mnemolith.armory.witness_retell",
+                        Component.translatable("mnemolith.gesture." + gesture.kind().getSerializedName())), true);
+                return;
+            }
+        }
+        // Prefer residue or observatory for the spoken bearing; fall back to any navigator target.
+        MemoryNavigation.Target target = MemoryNavigation.nearestResidue(level, this.blockPosition());
+        if (target == null) {
+            target = MemoryNavigation.nearestObservatory(level, this.blockPosition());
+        }
+        if (target == null) {
+            target = MemoryNavigation.nearest(level, this.blockPosition());
+        }
+        if (target == null) {
+            player.sendSystemMessage(Component.translatable("mnemolith.armory.witness_testify_none"), true);
+            return;
+        }
+        float bearing = MemoryNavigation.bearingDegrees(this.blockPosition(), target.pos());
+        String cardinal = MemoryNavigation.cardinalKey(bearing);
+        this.getLookControl().setLookAt(target.pos().getX() + 0.5D, target.pos().getY() + 1.0D, target.pos().getZ() + 0.5D);
+        player.sendSystemMessage(Component.translatable(
+                "mnemolith.armory.witness_point." + target.kind().name().toLowerCase(),
+                Component.translatable("mnemolith.cardinal." + cardinal)), true);
     }
 
     @Override

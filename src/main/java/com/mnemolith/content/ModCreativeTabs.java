@@ -43,6 +43,8 @@ public final class ModCreativeTabs {
                 for (com.mnemolith.echo.graft.Temper temper : com.mnemolith.echo.graft.Temper.values()) {
                     output.accept(com.mnemolith.echo.residue.Residues.shard(temper.tag(), 4, net.minecraft.core.BlockPos.ZERO, 0L));
                 }
+                output.accept(ModItems.MEMORY_COMPASS.get());
+                output.accept(ModItems.ECHO_ARMOR_TRIM_SMITHING_TEMPLATE.get());
                 output.accept(ModItems.SCAR_FRAGMENT.get());
                 output.accept(ModItems.SCAR_GLASS.get());
                 output.accept(ModItems.RELAY_THREAD.get());

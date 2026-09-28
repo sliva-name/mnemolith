@@ -9,6 +9,7 @@ import com.mnemolith.content.item.EchoRecordingItem;
 import com.mnemolith.content.item.EchoSlipItem;
 import com.mnemolith.content.item.ExtractionNeedleItem;
 import com.mnemolith.content.item.ImprintSealItem;
+import com.mnemolith.content.item.MemoryCompassItem;
 import com.mnemolith.content.item.FieldGuideItem;
 import com.mnemolith.content.item.ImprintSlipItem;
 import com.mnemolith.content.item.ScarFragmentItem;
@@ -16,13 +17,24 @@ import com.mnemolith.entity.ModEntities;
 import com.mnemolith.imprint.ImprintConstants;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Mnemolith.MOD_ID);
+
+    /** Datapack trim material applied by residual shards (G2). */
+    public static final ResourceKey<TrimMaterial> RESIDUAL_TRIM_MATERIAL = ResourceKey.create(
+            Registries.TRIM_MATERIAL,
+            Identifier.parse("mnemolith:residual"));
 
     public static final DeferredItem<ChronicleLensItem> CHRONICLE_LENS = ITEMS.registerItem(
             "chronicle_lens",
@@ -77,7 +89,17 @@ public final class ModItems {
     public static final DeferredItem<com.mnemolith.content.item.EchoUpgradeItem> ECHO_STURDY_SLIP = ITEMS.registerItem(
             "echo_sturdy_slip", properties -> new com.mnemolith.content.item.EchoUpgradeItem(com.mnemolith.echo.EchoProgress.Kind.STURDY, properties), stackTo(16));
     public static final DeferredItem<com.mnemolith.content.item.ResidualShardItem> RESIDUAL_SHARD = ITEMS.registerItem(
-            "residual_shard", com.mnemolith.content.item.ResidualShardItem::new, properties -> properties.stacksTo(1));
+            "residual_shard", com.mnemolith.content.item.ResidualShardItem::new, properties -> properties.stacksTo(1).trimMaterial(RESIDUAL_TRIM_MATERIAL));
+    /** Points at the nearest residue, fracture, or observatory. Crafted from a residual shard and a compass. */
+    public static final DeferredItem<MemoryCompassItem> MEMORY_COMPASS = ITEMS.registerItem(
+            "memory_compass",
+            MemoryCompassItem::new,
+            properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    /** Smithing template for the echo armor trim pattern (G2). */
+    public static final DeferredItem<SmithingTemplateItem> ECHO_ARMOR_TRIM_SMITHING_TEMPLATE = ITEMS.registerItem(
+            "echo_armor_trim_smithing_template",
+            SmithingTemplateItem::createArmorTrimTemplate,
+            properties -> properties.stacksTo(64).rarity(Rarity.UNCOMMON));
     /** The Scar's drop. Right-click your echo to scar-set it, or a block to rewrite the loudest imprint there. */
     public static final DeferredItem<ScarFragmentItem> SCAR_FRAGMENT = ITEMS.registerItem(
             "scar_fragment", ScarFragmentItem::new, properties -> properties.stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC));

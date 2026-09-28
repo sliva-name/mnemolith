@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_tablet": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:archival_tablet"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "mnemolith:echo_armor_trim_smithing_template_craft"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_tablet",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mnemolith:echo_armor_trim_smithing_template_craft",
+      "mnemolith:echo_armor_trim_smithing_template",
+      "mnemolith:echo_armor_trim_smithing_template_smithing_trim"
+    ]
+  }
+}

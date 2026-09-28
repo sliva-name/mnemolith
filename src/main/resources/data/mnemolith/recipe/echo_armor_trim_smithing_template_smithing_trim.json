@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:smithing_trim",
+  "addition": "#minecraft:trim_materials",
+  "base": "#minecraft:trimmable_armor",
+  "pattern": "mnemolith:echo",
+  "template": "mnemolith:echo_armor_trim_smithing_template"
+}

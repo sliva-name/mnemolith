@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "mnemolith:residual_shard",
+    "minecraft:compass"
+  ],
+  "result": {
+    "id": "mnemolith:memory_compass"
+  }
+}
