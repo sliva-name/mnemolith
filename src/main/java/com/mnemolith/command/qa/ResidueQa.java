@@ -422,7 +422,12 @@ public final class ResidueQa {
             if (seededMemory != null) {
                 var encoded = ChunkMemory.CODEC.codec().encodeStart(JsonOps.INSTANCE, seededMemory).getOrThrow();
                 ChunkMemory decoded = ChunkMemory.CODEC.codec().parse(JsonOps.INSTANCE, encoded).getOrThrow();
+                // Landmarks.FIELD writes both nested landmarks.residue_seeded and a legacy top-level key.
+                // Old saves lacked the field entirely; strip both so decode falls back to unseeded.
                 encoded.getAsJsonObject().remove("residue_seeded");
+                if (encoded.getAsJsonObject().has("landmarks") && encoded.getAsJsonObject().get("landmarks").isJsonObject()) {
+                    encoded.getAsJsonObject().getAsJsonObject("landmarks").remove("residue_seeded");
+                }
                 ChunkMemory legacy = ChunkMemory.CODEC.codec().parse(JsonOps.INSTANCE, encoded).getOrThrow();
                 codecOk = decoded.residueSeeded() && decoded.observatory() && !legacy.residueSeeded() && legacy.observatory();
                 notes.add("persistence codec seeded=" + decoded.residueSeeded() + " legacy=" + legacy.residueSeeded());

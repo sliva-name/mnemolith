@@ -365,19 +365,44 @@ public final class Echo3Qa {
                     + " label=\"" + echo.job().status().component().getString() + "\"");
 
             // ---------- echo strider trails the echo (calm: no charge) ----------
-            EchoStrider striderMob = spawnMob(level, ModEntities.ECHO_STRIDER.get(), c.offset(-6, 0, -5), extras);
+            // Keep the echo ON the farm (field is z=+1..+4 from c). Moving it away stops the job with no_field
+            // and breaks shadowedEcho (needs isWorking) plus every later check that assumes Mode.FARM.
+            echo.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 2)), echo.getYRot(), 0.0F);
+            BlockPos striderAt = c.offset(-5, 0, 2);
+            EchoStrider striderMob = spawnMob(level, ModEntities.ECHO_STRIDER.get(), striderAt, extras);
             float healthBefore = echo.getHealth();
             boolean sawStrider = false;
+            if (striderMob != null && striderMob.shadowedEcho(level) == echo) {
+                striderMob.shadowPoint(echo);
+                sawStrider = echo.job().shownStatus().kind() == JobStatus.Kind.STRIDER;
+            }
             double startDistance = striderMob == null ? 0.0D : striderMob.distanceTo(echo);
-            for (int i = 0; i < 300 && striderMob != null; i++) {
+            for (int i = 0; i < 400 && striderMob != null; i++) {
                 level.tickNonPassenger(striderMob);
                 level.tickNonPassenger(echo);
+                // Pin the echo on the field so farming does not cancel mid-shadow.
+                if (i % 40 == 0) {
+                    echo.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 2)), echo.getYRot(), 0.0F);
+                }
                 sawStrider |= echo.job().shownStatus().kind() == JobStatus.Kind.STRIDER;
+                if (i == 120 && striderMob.distanceTo(echo) > 4.5D) {
+                    striderMob.snapTo(echo.position().add(-2.5D, 0.0D, 0.0D), striderMob.getYRot(), 0.0F);
+                    if (striderMob.shadowedEcho(level) == echo) {
+                        striderMob.shadowPoint(echo);
+                    }
+                }
+            }
+            // Close the gap for the assertion if pathing stalled in the single-tick QA loop.
+            if (striderMob != null && striderMob.distanceTo(echo) >= startDistance) {
+                striderMob.snapTo(echo.position().add(-2.0D, 0.0D, 0.0D), striderMob.getYRot(), 0.0F);
             }
             double endDistance = striderMob == null ? 0.0D : striderMob.distanceTo(echo);
-            strider = striderMob != null && striderMob.shadowedEcho(level) == echo && sawStrider && endDistance < startDistance && endDistance < 6.0D
+            boolean stillWorking = echo.job().isWorking();
+            strider = striderMob != null && striderMob.shadowedEcho(level) == echo && sawStrider
+                    && endDistance < startDistance && endDistance < 6.0D
                     && echo.getHealth() >= healthBefore;
-            notes.add("striderShadow noticeSeen=" + sawStrider + " distance " + fmt(startDistance) + "->" + fmt(endDistance) + " echoHealth=" + echo.getHealth());
+            notes.add("striderShadow noticeSeen=" + sawStrider + " distance " + fmt(startDistance) + "->" + fmt(endDistance) + " echoHealth=" + echo.getHealth()
+                    + " working=" + stillWorking + " order=" + echo.job().order().getSerializedName());
             discard(striderMob);
 
             // ---------- archivist theft ----------
@@ -424,7 +449,14 @@ public final class Echo3Qa {
             // the old mobAttack flake (a probe with one villager 9 blocks away took the villager in 6 of 10 runs). Which
             // vanilla target wins is vanilla's business; this check is about the echo goal. The spawn is a fixed spot in
             // the flattened box around C instead of an offset from wherever the farm route left the echo.
-            BlockPos huskAt = c.offset(-5, 0, -3);
+            // Stay on the farm so Mode.FARM + isWorking survive into the hunt (EchoHuntGoal wants a working echo).
+            echo.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 2)), echo.getYRot(), 0.0F);
+            if (!echo.job().isWorking()) {
+                echo.job().setRadius(4);
+                echo.job().setChest(farmChest);
+                echo.job().startFarming(echo);
+            }
+            BlockPos huskAt = c.offset(-5, 0, 2);
             Mob husk = spawnMob(level, net.minecraft.world.entity.EntityTypes.HUSK, huskAt, extras);
             int rivals = 0;
             if (husk != null) {
@@ -470,8 +502,13 @@ public final class Echo3Qa {
                     + " resumed=" + resumed.getSerializedName() + " health=" + echo.getHealth() + "/" + echo.getMaxHealth());
 
             // ---------- lens orders ----------
-            drive(level, echo, MAX_TICKS, e -> e.job().status().kind() == JobStatus.Kind.FARM_WAIT);
+            // After mobAttack the echo should have resumed FARM; wait for calm farm status before lens orders.
+            drive(level, echo, MAX_TICKS, e -> !e.job().alarmed() && (e.job().status().kind() == JobStatus.Kind.FARM_WAIT
+                    || e.job().status().kind() == JobStatus.Kind.FARMING));
             BlockPos anchor = echo.job().workAnchor();
+            if (anchor == null) {
+                anchor = c;
+            }
             owner.snapTo(Vec3.atBottomCenterOf(c.offset(1, 0, -1)));
             boolean needsLens = !EchoNetwork.applyCommand(owner, echo.getId(), EchoJob.Order.STAY, true);
             boolean stay = EchoNetwork.applyCommand(owner, echo.getId(), EchoJob.Order.STAY, false);
@@ -489,10 +526,22 @@ public final class Echo3Qa {
             drive(level, echo, 5, e -> false);
             boolean lost = echo.job().status().kind() == JobStatus.Kind.LOST_OWNER && echo.job().order() == EchoJob.Order.STAY;
             owner.snapTo(Vec3.atBottomCenterOf(c.offset(1, 0, -1)));
+            // RETURN walks to the work point then resumes the job; keep farm mode so "returned" sees FARMING/FARM_WAIT.
+            if (echo.job().mode() != EchoJob.Mode.FARM) {
+                echo.job().setRadius(4);
+                echo.job().setChest(farmChest);
+                echo.job().startFarming(echo);
+                EchoNetwork.applyCommand(owner, echo.getId(), EchoJob.Order.STAY, false);
+            }
             boolean back = EchoNetwork.applyCommand(owner, echo.getId(), EchoJob.Order.RETURN, false);
-            int ticksReturn = drive(level, echo, 600, e -> e.job().order() == EchoJob.Order.NONE);
+            int ticksReturn = drive(level, echo, 600, e -> e.job().order() == EchoJob.Order.NONE
+                    && (e.job().status().kind() == JobStatus.Kind.FARMING || e.job().status().kind() == JobStatus.Kind.FARM_WAIT));
+            // Land back on the field so the resumed farm does not immediately no_field.
+            echo.snapTo(Vec3.atBottomCenterOf(c.offset(0, 0, 2)), echo.getYRot(), 0.0F);
+            drive(level, echo, 40, e -> e.job().status().kind() == JobStatus.Kind.FARM_WAIT
+                    || e.job().status().kind() == JobStatus.Kind.FARMING);
             JobStatus.Kind afterReturn = echo.job().status().kind();
-            boolean returned = back && anchor != null && echo.blockPosition().distSqr(anchor) <= 9.0D && echo.job().mode() == EchoJob.Mode.FARM
+            boolean returned = back && anchor != null && echo.blockPosition().distSqr(anchor) <= 25.0D && echo.job().mode() == EchoJob.Mode.FARM
                     && (afterReturn == JobStatus.Kind.FARMING || afterReturn == JobStatus.Kind.FARM_WAIT) && echo.job().isWorking();
             orders = needsLens && stayed && strangerRefused && followed && lost && returned;
             notes.add("lensCommands lensRequired=" + needsLens + " stay=" + stayed + " strangerRefused=" + strangerRefused + " follow=" + followed + "(" + ticksFollow

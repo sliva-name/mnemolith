@@ -102,6 +102,8 @@ public final class ScarEntity extends Mob {
         this.noPhysics = true;
         this.setPersistenceRequired();
         this.xpReward = 50;
+        this.bossEvent.setVisible(true);
+        this.bossEvent.setPlayBossMusic(false);
         if (this.isMirror()) {
             this.bossEvent.setName(Component.translatable("entity.mnemolith.silence_mirror"));
             this.bossEvent.setColor(BossEvent.BossBarColor.WHITE);
@@ -155,6 +157,9 @@ public final class ScarEntity extends Mob {
         this.home = home.immutable();
         this.applyHealth();
         this.setHealth(this.getMaxHealth());
+        float max = this.getMaxHealth();
+        this.bossEvent.setProgress(max <= 0.0F ? 0.0F : 1.0F);
+        this.bossEvent.setVisible(true);
         if (this.isMirror()) {
             this.bossEvent.setName(Component.translatable("entity.mnemolith.silence_mirror"));
             this.bossEvent.setColor(BossEvent.BossBarColor.WHITE);
@@ -411,7 +416,8 @@ public final class ScarEntity extends Mob {
     }
 
     private void updateBar(ServerLevel level, Iterable<? extends ServerPlayer> players) {
-        this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
+        float maxHealth = this.getMaxHealth();
+        this.bossEvent.setProgress(maxHealth <= 0.0F ? 0.0F : Mth.clamp(this.getHealth() / maxHealth, 0.0F, 1.0F));
         for (ServerPlayer player : players) {
             boolean near = player.level() == level && player.distanceToSqr(this) <= BAR_RANGE * BAR_RANGE;
             if (near && !this.bossEvent.getPlayers().contains(player)) {
