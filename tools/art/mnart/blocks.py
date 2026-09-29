@@ -430,6 +430,78 @@ def scar_heart():
     return m.build()
 
 
+
+
+# ------------------------------------------------------------------ echo home pedestal (O3)
+
+def echo_home():
+    """Pedestal with shared materials only (fits the 64×64 sheet)."""
+    m = Model('echo_home')
+    stone = F('navy', wear=0.3)
+    top = F('navy', kind='top', wear=0.2)
+    brass = F('brass', wear=0.3)
+    m.box((0, 0, 0), (16, 2, 16), stone, up=top, down=F('navy', shift=-1))
+    m.box((3, 2, 3), (13, 10, 13), stone, up=top, down=None)
+    m.box((2, 10, 2), (14, 12, 14), brass, up=F('brass', kind='top'), down=None)
+    m.box((7, 12, 7), (9, 13, 9), F('amethyst'), down=None)
+    return m.build()
+
+
+
+# ------------------------------------------------------------------ pressure lamp (G3)
+
+def pressure_lamp_side(w, h, rng):
+    cv = mat('glass', w, h, rng, wear=0.2, bevel=1)
+    cv.shade_px(m_ellipse(w, h, w/2, h/2, 5, 6), 0.35, toward=RAMPS['echo'][4])
+    for y in (2, h-3):
+        cv.fill(m_rect(w, h, 1, y, w-2, y), RAMPS['brass'][3])
+    return cv
+
+
+def pressure_lamp_top(w, h, rng):
+    cv = mat('brass', w, h, rng, face='top', wear=0.3)
+    cv.fill(m_ellipse(w, h, w/2, h/2, 4, 4), RAMPS['echo'][5])
+    return cv
+
+
+def pressure_lamp():
+    m = Model('pressure_lamp')
+    glass = P(pressure_lamp_side, 'glass')
+    m.box((5, 0, 5), (11, 2, 11), F('brass', wear=0.4), up=F('brass', kind='top'), down=F('deep', shift=-1))
+    m.box((4, 2, 4), (12, 12, 12), glass, up=P(pressure_lamp_top, 'cap'), down=None)
+    m.box((6, 12, 6), (10, 14, 10), F('brass', wear=0.2), down=None)
+    return m.build()
+
+
+def archival_stratum_bricks_tex():
+    rng = core.rng_for('archival_stratum_bricks')
+    w = h = 32
+    cv = mat('navy', w, h, rng, wear=0.4, bevel=0)
+    for y in range(0, h, 8):
+        cv.shade_px(m_rect(w, h, 0, y+7, w-1, y+7), 0.4)
+        off = 4 if (y // 8) % 2 else 0
+        for x in range(off, w, 8):
+            cv.shade_px(m_rect(w, h, x, y, x, min(h-1, y+6)), 0.35)
+            if 0 <= x-1 < w:
+                cv.px(x-1, y+3, RAMPS['verdigris'][3])
+    for _ in range(12):
+        cv.px(rng.randrange(w), rng.randrange(h), RAMPS['bone'][4])
+    return cv.image()
+
+
+def mute_stone_bricks_tex():
+    rng = core.rng_for('mute_stone_bricks')
+    w = h = 32
+    cv = mat('mute', w, h, rng, wear=0.35, bevel=0)
+    for y in range(0, h, 8):
+        cv.shade_px(m_rect(w, h, 0, y+7, w-1, y+7), 0.45)
+        off = 4 if (y // 8) % 2 else 0
+        for x in range(off, w, 8):
+            cv.shade_px(m_rect(w, h, x, y, x, min(h-1, y+6)), 0.4)
+    for _ in range(8):
+        cv.px(rng.randrange(w), rng.randrange(h), RAMPS['amethyst'][2])
+    return cv.image()
+
 # name -> builder returning (sheet image, model json); texture file = model name
 MODELS = {
     'archival_stratum': archival_stratum,
@@ -439,8 +511,14 @@ MODELS = {
     'archive_vault': lambda: archive_vault(False),
     'archive_vault_on': lambda: archive_vault(True),
     'scar_heart': scar_heart,
+    'echo_home': echo_home,
+    'pressure_lamp': pressure_lamp,
 }
-CUBE_TEXTURES = {'scar_glass': scar_glass_tex}
+CUBE_TEXTURES = {
+    'scar_glass': scar_glass_tex,
+    'archival_stratum_bricks': archival_stratum_bricks_tex,
+    'mute_stone_bricks': mute_stone_bricks_tex,
+}
 
 # Break/sprint particles sample random corners of the particle sprite, so a packed sheet (with empty gaps) would
 # give invisible or mismatched specks. Each model gets a small tiling sprite of its dominant material instead.
@@ -449,6 +527,8 @@ PARTICLE = {
     'composition_reel': ('composition_reel', 'wood'), 'resonator_trap': ('resonator_trap', 'mute'),
     'archive_vault': ('archive_vault', 'deep'), 'archive_vault_on': ('archive_vault', 'deep'),
     'scar_heart': ('scar_heart', 'scar'),
+    'echo_home': ('echo_home', 'navy'),
+    'pressure_lamp': ('pressure_lamp', 'glass'),
 }
 
 

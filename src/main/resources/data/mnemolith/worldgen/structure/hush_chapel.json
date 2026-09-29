@@ -1,0 +1,7 @@
+{
+  "type": "mnemolith:hush_chapel",
+  "biomes": "#mnemolith:has_hush_chapel",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

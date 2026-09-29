@@ -31,6 +31,9 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_KINDLED = register("graft_kindled");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_PLUNGING = register("graft_plunging");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_VOLATILE = register("graft_volatile");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_CHARGED = register("graft_charged");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_WANDERING = register("graft_wandering");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAFT_DEEP = register("graft_deep");
 
     private ModParticles() {}
 

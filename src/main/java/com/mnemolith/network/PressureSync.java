@@ -68,7 +68,7 @@ public final class PressureSync {
         if (stamp != null && stamp.tooSoon(level.dimension(), origin.x(), origin.z(), lens, ambient, level.getGameTime(), MIN_REWALK_TICKS)) {
             return;
         }
-        List<ChunkPressure> chunks = PressureCollector.collect(level, player.blockPosition());
+        List<ChunkPressure> chunks = PressureCollector.collect(level, player.blockPosition(), player);
         if (lens) {
             VeinShimmer.send(level, player, origin);
         }

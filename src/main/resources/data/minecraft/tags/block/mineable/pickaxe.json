@@ -3,6 +3,24 @@
     "mnemolith:archival_stratum",
     "mnemolith:scar_glass",
     "mnemolith:scar_heart",
-    "mnemolith:archive_vault"
+    "mnemolith:archive_vault",
+    "mnemolith:player_memorial",
+    "mnemolith:echo_home",
+    "mnemolith:pressure_lamp",
+    "mnemolith:archival_stratum_bricks",
+    "mnemolith:archival_stratum_stairs",
+    "mnemolith:archival_stratum_slab",
+    "mnemolith:archival_stratum_wall",
+    "mnemolith:mute_stone_bricks",
+    "mnemolith:mute_stone_stairs",
+    "mnemolith:mute_stone_slab",
+    "mnemolith:mute_stone_wall",
+    "mnemolith:scar_glass_pane",
+    "mnemolith:mute_stone",
+    "mnemolith:selective_mute_stone",
+    "mnemolith:composition_reel",
+    "mnemolith:pressure_sensor",
+    "mnemolith:resonator_trap",
+    "mnemolith:archive_shrine"
   ]
 }

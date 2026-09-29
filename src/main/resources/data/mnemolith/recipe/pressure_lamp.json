@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " G ",
+    " A ",
+    " R "
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "A": "minecraft:amethyst_shard",
+    "R": "mnemolith:pressure_sensor"
+  },
+  "result": {
+    "id": "mnemolith:pressure_lamp",
+    "count": 1
+  }
+}

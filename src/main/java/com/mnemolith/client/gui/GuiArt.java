@@ -93,7 +93,8 @@ public final class GuiArt {
     }
 
     public static void tag(GuiGraphicsExtractor graphics, ImprintTag imprintTag, int x, int y) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TAGS, x, y, imprintTag.ordinal() * 16.0F, 0.0F, 16, 16, 144, 16);
+        int atlas = ImprintTag.values().length * 16;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TAGS, x, y, imprintTag.ordinal() * 16.0F, 0.0F, 16, 16, atlas, 16);
     }
 
     private static void blit(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int u, int v, int srcWidth, int srcHeight) {

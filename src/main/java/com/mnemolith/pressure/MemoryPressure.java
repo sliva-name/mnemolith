@@ -1,5 +1,8 @@
 package com.mnemolith.pressure;
 
+import com.mnemolith.event.PressureChangedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -186,6 +189,16 @@ public final class MemoryPressure {
         }
         if (scoreMoved) {
             PressureSync.markDirty();
+            if (chunk.getLevel() instanceof ServerLevel server) {
+                NeoForge.EVENT_BUS.post(new PressureChangedEvent(
+                        server,
+                        chunk.getPos(),
+                        previous,
+                        next,
+                        previousBand,
+                        nextBand,
+                        nextBand == PressureBand.FRACTURE && !wasFractured));
+            }
         }
         return nextBand;
     }

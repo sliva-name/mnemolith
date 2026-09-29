@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "mnemolith:block/archival_stratum_bricks",
+    "top": "mnemolith:block/archival_stratum_bricks",
+    "side": "mnemolith:block/archival_stratum_bricks"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond",
+    "T": "mnemolith:archival_tablet",
+    "R": "mnemolith:residual_shard"
+  },
+  "pattern": [
+    "DTD",
+    "DRD",
+    "DDD"
+  ],
+  "result": {
+    "id": "mnemolith:echo_armor_trim_smithing_template"
+  }
+}

@@ -1,5 +1,7 @@
 package com.mnemolith.vault;
 
+import com.mnemolith.audio.ModSounds;
+
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModItems;
@@ -33,7 +35,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -186,7 +187,7 @@ public final class ArchiveVaults {
                 }
                 LevelChunk chunk = level.getChunk(cx + dx, cz + dz);
                 ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-                if (memory == null || memory.hasMuteStone()) {
+                if (memory == null || memory.hasAnyMute()) {
                     continue;
                 }
                 for (int i = 0; i < memory.imprintCount(); i++) {
@@ -208,7 +209,7 @@ public final class ArchiveVaults {
         BlockPos from = best.origin();
         level.sendParticles(ModParticles.IMPRINT_EXTRACT.get(), from.getX() + 0.5D, from.getY() + 0.8D, from.getZ() + 0.5D, 6, 0.2D, 0.3D, 0.2D, 0.02D);
         level.sendParticles(ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 6, 0.25D, 0.1D, 0.25D, 0.01D);
-        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.6F, 0.7F);
+        level.playSound(null, pos, ModSounds.VAULT_CHIME.get(), SoundSource.BLOCKS, 0.6F, 0.7F);
         refreshLoad(level, pos);
         Mnemolith.LOGGER.info("Mnemolith vault drew tag={} intensity={} from {} into {} held={}", best.tag().getSerializedName(), best.intensity(),
                 from.toShortString(), pos.toShortString(), vault.count());
@@ -219,7 +220,7 @@ public final class ArchiveVaults {
         boolean drawing = !state.getValue(ArchiveVaultBlock.DRAWING);
         level.setBlock(pos, state.setValue(ArchiveVaultBlock.DRAWING, drawing), 3);
         vault.resetTimer();
-        level.playSound(null, pos, drawing ? SoundEvents.AMETHYST_BLOCK_RESONATE : SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.BLOCKS, 0.8F, drawing ? 0.9F : 1.3F);
+        level.playSound(null, pos, drawing ? ModSounds.VAULT_DRAW.get() : ModSounds.VAULT_CHIME.get(), SoundSource.BLOCKS, 0.8F, drawing ? 0.9F : 1.3F);
         player.sendSystemMessage(status(level, pos, vault, drawing), true);
     }
 
@@ -291,7 +292,7 @@ public final class ArchiveVaults {
         }
         refreshLoad(level, pos);
         if (written + handed > 0) {
-            level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.0F, 0.6F);
+            level.playSound(null, pos, ModSounds.VAULT_RUPTURE.get(), SoundSource.BLOCKS, 1.0F, 0.6F);
             level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.2D, pos.getZ() + 0.5D, 16, 0.6D, 0.4D, 0.6D, 0.03D);
         }
         if (player != null) {
@@ -367,7 +368,7 @@ public final class ArchiveVaults {
                 break;
             }
         }
-        level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.2F, 0.4F);
+        level.playSound(null, pos, ModSounds.VAULT_RUPTURE.get(), SoundSource.BLOCKS, 1.2F, 0.4F);
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 20, 0.7D, 0.5D, 0.7D, 0.04D);
         Mnemolith.LOGGER.info("Mnemolith vault spill why={} taken={} written={} dropped={} left={} at {}", why, taken, written, dropped, vault.count(), pos.toShortString());
         refreshLoad(level, pos);
@@ -430,7 +431,7 @@ public final class ArchiveVaults {
         vault.add(imprint);
         refreshLoad(level, pos);
         level.sendParticles(ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 6, 0.25D, 0.1D, 0.25D, 0.01D);
-        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.6F, 0.7F);
+        level.playSound(null, pos, ModSounds.VAULT_CHIME.get(), SoundSource.BLOCKS, 0.6F, 0.7F);
         Mnemolith.LOGGER.info("Mnemolith vault kept tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
         return true;
     }

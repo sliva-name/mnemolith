@@ -20,6 +20,18 @@ public final class ModBlockEntities {
             "archive_vault",
             () -> new BlockEntityType<>(com.mnemolith.content.block.ArchiveVaultBlockEntity::new, ModBlocks.ARCHIVE_VAULT.get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.SelectiveMuteStoneBlockEntity>> SELECTIVE_MUTE_STONE = BLOCK_ENTITIES.register(
+            "selective_mute_stone",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.SelectiveMuteStoneBlockEntity::new, ModBlocks.SELECTIVE_MUTE_STONE.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.PlayerMemorialBlockEntity>> PLAYER_MEMORIAL = BLOCK_ENTITIES.register(
+            "player_memorial",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.PlayerMemorialBlockEntity::new, ModBlocks.PLAYER_MEMORIAL.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.mnemolith.content.block.EchoHomeBlockEntity>> ECHO_HOME = BLOCK_ENTITIES.register(
+            "echo_home",
+            () -> new BlockEntityType<>(com.mnemolith.content.block.EchoHomeBlockEntity::new, ModBlocks.ECHO_HOME.get()));
+
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {

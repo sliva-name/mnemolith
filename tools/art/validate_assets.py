@@ -24,7 +24,15 @@ ASSETS = os.path.join(REPO, 'src', 'main', 'resources', 'assets')
 JAVA = os.path.join(REPO, 'src', 'main', 'java')
 MOD = 'mnemolith'
 KNOWN_VANILLA = {
-    'models': {'block/block', 'block/cube', 'block/cube_all', 'item/generated', 'item/handheld', 'item/template_spawn_egg'},
+    'models': {
+        'block/block', 'block/cube', 'block/cube_all',
+        'block/stairs', 'block/inner_stairs', 'block/outer_stairs',
+        'block/slab', 'block/slab_top',
+        'block/wall_inventory', 'block/template_wall_post', 'block/template_wall_side', 'block/template_wall_side_tall',
+        'block/template_glass_pane_post', 'block/template_glass_pane_side', 'block/template_glass_pane_side_alt',
+        'block/template_glass_pane_noside', 'block/template_glass_pane_noside_alt',
+        'item/generated', 'item/handheld', 'item/template_spawn_egg',
+    },
     'textures': {'block/light_blue_stained_glass'},
 }
 ALLOWED_ANGLES = {-45.0, -22.5, 0.0, 22.5, 45.0}

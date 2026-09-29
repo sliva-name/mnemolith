@@ -147,9 +147,22 @@ public final class MobSpawns {
             case "echo_strider" -> summon(ModEntities.ECHO_STRIDER.get(), level, pos);
             case "archivist" -> summon(ModEntities.ARCHIVIST.get(), level, pos);
             case "moment_replicant" -> summon(ModEntities.MOMENT_REPLICANT.get(), level, pos);
+            case "ledger_mite" -> summon(ModEntities.LEDGER_MITE.get(), level, pos);
+            case "kin_witness" -> summon(ModEntities.KIN_WITNESS.get(), level, pos);
+            case "fracture_stalker" -> summon(ModEntities.FRACTURE_STALKER.get(), level, pos);
             case "pleading_chair" -> com.mnemolith.entity.PleadingChair.summon(level, pos);
+            case "silence_mirror" -> summonSilenceMirror(level, pos);
+            case "archive_guardian" -> com.mnemolith.echo.storm.ArchiveShrines.summon(level, pos);
             default -> null;
         };
+    }
+
+    private static Entity summonSilenceMirror(ServerLevel level, BlockPos pos) {
+        var mirror = summon(ModEntities.SILENCE_MIRROR.get(), level, pos);
+        if (mirror instanceof com.mnemolith.entity.echo.ScarEntity scar) {
+            scar.setup(1 << com.mnemolith.echo.graft.Temper.HUSHED.id(), 3, pos);
+        }
+        return mirror;
     }
 
     public static EchoStrider summonStrider(ServerLevel level, BlockPos pos) {

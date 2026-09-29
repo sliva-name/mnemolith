@@ -1,0 +1,11 @@
+{
+  "structures": [
+    "minecraft:fortress",
+    "minecraft:bastion_remnant"
+  ],
+  "tags": [
+    "fire"
+  ],
+  "intensity": 1,
+  "count": 1
+}

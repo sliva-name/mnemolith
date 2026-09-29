@@ -23,6 +23,9 @@ public record EchoJobPayload(int entityId, Action action, BlockPos pos, int valu
         CLEAR_BLUEPRINT,
         /** Stage 3: appended so the ordinals above stay. */
         MODE_FARM,
+        /** O1: lumberjack and animal care. Appended before INVALID. */
+        MODE_LUMBER,
+        MODE_CARE,
         /**
          * Must stay last. An id this build does not know decodes as this and is rejected, so a bad packet cannot be
          * read as {@link #STOP}. Add further actions above this constant so their ordinals stay stable.

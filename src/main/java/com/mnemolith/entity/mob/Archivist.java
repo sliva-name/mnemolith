@@ -121,6 +121,21 @@ public class Archivist extends MemoryMob {
         return this.echoLoot;
     }
 
+    /** Empties stolen inventory for a ledger mite reclaim. Prefer the echo loot, then the carried slip. */
+    public ItemStack reclaimStolen() {
+        if (!this.echoLoot.isEmpty()) {
+            ItemStack out = this.echoLoot;
+            this.echoLoot = ItemStack.EMPTY;
+            return out;
+        }
+        if (!this.carried.isEmpty()) {
+            ItemStack out = this.carried;
+            this.carried = ItemStack.EMPTY;
+            return out;
+        }
+        return ItemStack.EMPTY;
+    }
+
     /** A stack an archivist may take from an echo: never tools, weapons, armor or anything with durability. */
     public static boolean stealableFromEcho(ItemStack stack) {
         return !stack.isEmpty() && !stack.isDamageableItem() && !stack.has(net.minecraft.core.component.DataComponents.TOOL)

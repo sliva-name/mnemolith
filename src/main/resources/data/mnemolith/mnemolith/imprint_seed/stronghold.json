@@ -1,0 +1,11 @@
+{
+  "structures": [
+    "minecraft:stronghold"
+  ],
+  "tags": [
+    "silence",
+    "build"
+  ],
+  "intensity": 1,
+  "count": 1
+}

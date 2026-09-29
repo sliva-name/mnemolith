@@ -26,15 +26,17 @@ public final class ChunkMemory {
             Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
-            Codec.BOOL.optionalFieldOf("observatory", false).forGetter(ChunkMemory::observatory),
-            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(ChunkMemory::residueSeeded),
+            Landmarks.FIELD.forGetter(ChunkMemory::landmarks),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("wards", List.of()).forGetter(ChunkMemory::wardsCopy),
             ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
-            Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad)
+            Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad),
+            Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy),
+            VoidPressure.CODEC.optionalFieldOf("void", VoidPressure.NONE).forGetter(ChunkMemory::voidState)
     ).apply(instance, ChunkMemory::fromCodec));
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
+    private final List<SelectiveMuteMark> selectiveMutes = new ArrayList<>();
     private final List<BlockPos> resonators = new ArrayList<>();
     private final List<BlockPos> strata = new ArrayList<>();
     /** Scar glass in this chunk: a recollection storm cannot gather within one chunk of it. Optional in the codec. */
@@ -46,6 +48,10 @@ public final class ChunkMemory {
     private boolean fractured;
     private boolean archival;
     private boolean observatory;
+    /** Quiet shelter: pressure cools faster while a player stands here. Optional in the codec. */
+    private boolean hushChapel;
+    /** Pre-loud plaza where storms can gather safely to watch. Optional in the codec. */
+    private boolean memoryField;
     /** An observatory chunk seeds its one old residue only once (residual echoes). Optional in the codec. */
     private boolean residueSeeded;
     private long lastWriteGameTime;
@@ -54,13 +60,16 @@ public final class ChunkMemory {
     private long lastCoolGameTime;
     /** Set when instability or a build, redstone, or path imprint can still cool. Not saved. */
     private boolean coolDirty;
+    /** Quiet pressure while mute stones hold this chunk (P3). Optional in the codec. */
+    private VoidPressure voidState = VoidPressure.NONE;
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, boolean observatory, boolean residueSeeded, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, Landmarks landmarks, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
+        memory.selectiveMutes.addAll(selectiveMutes);
         memory.fractured = fractured;
         memory.archival = archival;
         memory.lastWriteGameTime = lastWriteGameTime;
@@ -68,26 +77,38 @@ public final class ChunkMemory {
         memory.instability = instability;
         memory.resonators.addAll(resonators);
         memory.strata.addAll(strata);
-        memory.observatory = observatory;
-        memory.residueSeeded = residueSeeded;
+        Landmarks marks = landmarks == null ? Landmarks.NONE : landmarks;
+        memory.observatory = marks.observatory();
+        memory.hushChapel = marks.hushChapel();
+        memory.memoryField = marks.memoryField();
+        memory.residueSeeded = marks.residueSeeded();
         memory.wards.addAll(wards);
         memory.scar = scar.orElse(null);
         memory.vaultLoad = Math.max(0, vaultLoad);
+        memory.voidState = voidState == null ? VoidPressure.NONE : voidState;
         memory.refreshCooling();
         return memory;
+    }
+
+    public Landmarks landmarks() {
+        return new Landmarks(this.observatory, this.hushChapel, this.memoryField, this.residueSeeded);
     }
 
     public boolean isEmpty() {
         return this.imprints.isEmpty()
                 && this.muteStones.isEmpty()
+                && this.selectiveMutes.isEmpty()
                 && this.resonators.isEmpty()
                 && this.strata.isEmpty()
                 && this.wards.isEmpty()
                 && this.scar == null
                 && this.vaultLoad == 0
+                && this.voidState.isEmpty()
                 && !this.fractured
                 && !this.archival
                 && !this.observatory
+                && !this.hushChapel
+                && !this.memoryField
                 && this.instability == 0;
     }
 
@@ -109,6 +130,11 @@ public final class ChunkMemory {
 
     public boolean hasMuteStone() {
         return !this.muteStones.isEmpty();
+    }
+
+    /** Full mute stone or selective mute present. */
+    public boolean hasAnyMute() {
+        return hasMuteStone() || hasSelectiveMute();
     }
 
     public boolean fractured() {
@@ -180,8 +206,8 @@ public final class ChunkMemory {
     }
 
     /**
-     * Drops the oldest build, redstone, or path imprint that has aged past {@code fadeTicks}.
-     * Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.
+     * Drops the oldest build, redstone, path, or trade imprint that has aged past {@code fadeTicks}.
+     * Deaths, explosions, falls, fire, silence, player, lightning, portal, sculk, and boss imprints stay until extracted.
      */
     public boolean fadeQuiet(long now, int fadeTicks) {
         if (fadeTicks <= 0 || this.imprints.isEmpty()) {
@@ -216,7 +242,7 @@ public final class ChunkMemory {
     }
 
     private static boolean isQuiet(ImprintTag tag) {
-        return tag == ImprintTag.BUILD || tag == ImprintTag.REDSTONE || tag == ImprintTag.PATH;
+        return tag == ImprintTag.BUILD || tag == ImprintTag.REDSTONE || tag == ImprintTag.PATH || tag == ImprintTag.TRADE;
     }
 
     public boolean acceptsThrottledWrite(long gameTime, int debounceTicks) {
@@ -316,6 +342,45 @@ public final class ChunkMemory {
         return this.muteStones.remove(pos);
     }
 
+    public List<SelectiveMuteMark> selectiveMutesCopy() {
+        return List.copyOf(this.selectiveMutes);
+    }
+
+    public boolean hasSelectiveMute() {
+        return !this.selectiveMutes.isEmpty();
+    }
+
+    public int selectiveMuteCount() {
+        return this.selectiveMutes.size();
+    }
+
+    /** True when this chunk's selective mutes allow {@code tag} (at least one mark matches). */
+    public boolean selectiveAllows(ImprintTag tag) {
+        for (SelectiveMuteMark mark : this.selectiveMutes) {
+            if (mark.allowed() == tag) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addSelectiveMute(BlockPos pos, ImprintTag allowed) {
+        if (markListFull(this.selectiveMutes.size())) {
+            return false;
+        }
+        for (int i = 0; i < this.selectiveMutes.size(); i++) {
+            if (this.selectiveMutes.get(i).pos().equals(pos)) {
+                this.selectiveMutes.set(i, new SelectiveMuteMark(pos, allowed));
+                return true;
+            }
+        }
+        return this.selectiveMutes.add(new SelectiveMuteMark(pos, allowed));
+    }
+
+    public boolean removeSelectiveMute(BlockPos pos) {
+        return this.selectiveMutes.removeIf(mark -> mark.pos().equals(pos));
+    }
+
     public List<BlockPos> resonatorsCopy() {
         return List.copyOf(this.resonators);
     }
@@ -362,6 +427,22 @@ public final class ChunkMemory {
 
     public void setObservatory(boolean observatory) {
         this.observatory = observatory;
+    }
+
+    public boolean hushChapel() {
+        return this.hushChapel;
+    }
+
+    public void setHushChapel(boolean hushChapel) {
+        this.hushChapel = hushChapel;
+    }
+
+    public boolean memoryField() {
+        return this.memoryField;
+    }
+
+    public void setMemoryField(boolean memoryField) {
+        this.memoryField = memoryField;
     }
 
     public boolean residueSeeded() {
@@ -436,6 +517,34 @@ public final class ChunkMemory {
         this.imprints.set(index, next);
         this.refreshCooling();
         return true;
+    }
+
+    public VoidPressure voidState() {
+        return this.voidState;
+    }
+
+    public int voidPressure() {
+        return this.voidState.pressure();
+    }
+
+    public void setVoidPressure(int voidPressure) {
+        this.voidState = this.voidState.withPressure(voidPressure);
+    }
+
+    public boolean voidWarned() {
+        return this.voidState.warned();
+    }
+
+    public void setVoidWarned(boolean voidWarned) {
+        this.voidState = this.voidState.withWarned(voidWarned);
+    }
+
+    public long voidCooldownUntil() {
+        return this.voidState.cooldownUntil();
+    }
+
+    public void setVoidCooldownUntil(long voidCooldownUntil) {
+        this.voidState = this.voidState.withCooldownUntil(voidCooldownUntil);
     }
 
     public List<ImprintTag> tags() {

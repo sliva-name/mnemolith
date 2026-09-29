@@ -1,0 +1,34 @@
+{
+  "anvil_cost": 6,
+  "description": {
+    "translate": "enchantment.mnemolith.hush"
+  },
+  "effects": {
+    "minecraft:attributes": [
+      {
+        "amount": {
+          "type": "minecraft:linear",
+          "base": 0.12,
+          "per_level_above_first": 0.12
+        },
+        "attribute": "minecraft:sneaking_speed",
+        "id": "mnemolith:enchantment.hush",
+        "operation": "add_value"
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 60,
+    "per_level_above_first": 20
+  },
+  "max_level": 3,
+  "min_cost": {
+    "base": 18,
+    "per_level_above_first": 12
+  },
+  "slots": [
+    "legs"
+  ],
+  "supported_items": "#minecraft:enchantable/leg_armor",
+  "weight": 2
+}

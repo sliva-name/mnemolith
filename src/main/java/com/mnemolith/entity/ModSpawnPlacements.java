@@ -46,7 +46,7 @@ public final class ModSpawnPlacements {
                 ModEntities.FRACTURE_STALKER.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowNatural(level, pos, random, true, 10, 50),
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowNatural(level, pos, random, true, com.mnemolith.config.CommonConfig.STALKER_SPAWN_WEIGHT.get(), com.mnemolith.config.CommonConfig.STALKER_MIN_PRESSURE.get()),
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

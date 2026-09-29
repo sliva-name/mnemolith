@@ -18,7 +18,7 @@ Mnemolith on a dedicated server is server-authoritative. Clients send a lens req
 | Archive vault | One block entity; whoever clicks uses it (like a chest). Drawing, rupture and feeding run on its server tick; the contents never go to clients except the count in the item tooltip (an item component). Carrying leaks on the carrier's own tick. No new payload, protocol version unchanged |
 | Archivist steal | One slip. An open container is taken before the player's inventory, so both players viewing that container see the same removal |
 
-Payloads are registered as version `2` in `ModNetwork` (2 added the snapshot scope):
+Payloads are registered as version `5` in `ModNetwork` (2 added the snapshot scope; later bumps cover graft/storm/relay/vault and follow-on payloads):
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |

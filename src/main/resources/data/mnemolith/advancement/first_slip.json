@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:root",
+  "display": {
+    "icon": {
+      "id": "mnemolith:imprint_slip"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.first_slip.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.first_slip.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:imprint_slip"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ]
+}

@@ -1,5 +1,7 @@
 package com.mnemolith.echo.relay;
 
+import com.mnemolith.audio.ModSounds;
+
 import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.data.ModDataComponents;
@@ -28,7 +30,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -95,7 +96,7 @@ public final class EchoRelays {
             }
             unlink(level, echo);
             thread.remove(ModDataComponents.RELAY_FIRST.get());
-            level.playSound(null, echo.blockPosition(), SoundEvents.LEAD_UNTIED, SoundSource.PLAYERS, 0.8F, 0.8F);
+            level.playSound(null, echo.blockPosition(), ModSounds.RELAY_UNTIE.get(), SoundSource.PLAYERS, 0.8F, 0.8F);
             player.sendSystemMessage(Component.translatable("mnemolith.relay.cut"), true);
             return true;
         }
@@ -103,7 +104,7 @@ public final class EchoRelays {
         EchoEntity first = firstId == null ? null : level.getEntity(firstId) instanceof EchoEntity e && e.isAlive() && e.isOwnedBy(player) ? e : null;
         if (first == null || first == echo) {
             thread.set(ModDataComponents.RELAY_FIRST.get(), echo.getUUID());
-            level.playSound(null, echo.blockPosition(), SoundEvents.LEAD_TIED, SoundSource.PLAYERS, 0.8F, 1.2F);
+            level.playSound(null, echo.blockPosition(), ModSounds.RELAY_TIE.get(), SoundSource.PLAYERS, 0.8F, 1.2F);
             player.sendSystemMessage(Component.translatable("mnemolith.relay.first"), true);
             return true;
         }
@@ -126,7 +127,7 @@ public final class EchoRelays {
         UUID id = UUID.randomUUID();
         a.setRelay(id);
         b.setRelay(id);
-        level.playSound(null, b.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.6F);
+        level.playSound(null, b.blockPosition(), ModSounds.RELAY_HOP.get(), SoundSource.PLAYERS, 1.0F, 1.6F);
         thread(level, a.position(), b.position(), false);
         Mnemolith.LOGGER.info("Mnemolith relay linked owner={} a={} b={}", a.ownerName(), a.getUUID(), b.getUUID());
         return id;
@@ -249,7 +250,7 @@ public final class EchoRelays {
         BlockPos pos = partner.blockPosition();
         ImprintWriter.write(level, pos, List.of(ImprintTag.DEATH), owner, false);
         partner.hurtServer(level, level.damageSources().magic(), SHOCK_DAMAGE);
-        level.playSound(null, pos, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 0.5F);
+        level.playSound(null, pos, ModSounds.RELAY_BREAK.get(), SoundSource.NEUTRAL, 1.0F, 0.5F);
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), partner.getX(), partner.getY() + 1.0D, partner.getZ(), 12, 0.3D, 0.6D, 0.3D, 0.02D);
         if (level.getServer().getPlayerList().getPlayer(owner) instanceof ServerPlayer player) {
             player.sendOverlayMessage(Component.translatable("mnemolith.relay.shock"));

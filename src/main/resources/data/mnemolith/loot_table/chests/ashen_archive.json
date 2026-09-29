@@ -1,0 +1,136 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archive_schematic",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:residual_shard",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "fire",
+                  "intensity": 4,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 74001,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archivist_bait",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 2.0,
+        "max": 4.0
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:imprint_slip",
+          "weight": 4,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "fire",
+                  "intensity": 2,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 74002,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:imprint_slip",
+          "weight": 3,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "explosion",
+                  "intensity": 2,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 74003,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:residual_shard",
+          "weight": 2,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "explosion",
+                  "intensity": 3,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 74004,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archival_stratum",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:catalog_fragment",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archive_schematic",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

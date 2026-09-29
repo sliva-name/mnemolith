@@ -1,6 +1,7 @@
 package com.mnemolith.content.item;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.ModSounds;
 import com.mnemolith.echo.EchoProgress;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.imprint.ModAttachments;
@@ -10,7 +11,6 @@ import com.mnemolith.particle.ModParticles;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -62,7 +62,7 @@ public class EchoUpgradeItem extends Item {
         EchoProgress next = progress.with(kind, current + 1);
         player.setData(ModAttachments.ECHO_PROGRESS.get(), next);
         ServerLevel level = player.level();
-        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.4F);
+        level.playSound(null, player.blockPosition(), ModSounds.ECHO_WAKE.get(), SoundSource.PLAYERS, 1.0F, 1.4F);
         MemoryFx.mob(level, ModParticles.COMPOSE_SUCCESS.get(), player.getX(), player.getY() + 1.0D, player.getZ(), 14);
         Component detail = switch (kind) {
             case CHORUS -> Component.translatable("mnemolith.upgrade.chorus.done", EchoProgress.echoLimit(player));

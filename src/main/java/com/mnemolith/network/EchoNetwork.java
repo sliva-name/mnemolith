@@ -171,6 +171,18 @@ public final class EchoNetwork {
                     return false;
                 }
             }
+            case MODE_LUMBER -> {
+                echo.stopReplayIfRunning();
+                if (!job.startLumbering(echo)) {
+                    return false;
+                }
+            }
+            case MODE_CARE -> {
+                echo.stopReplayIfRunning();
+                if (!job.startCaring(echo)) {
+                    return false;
+                }
+            }
             case INVALID -> {
                 return false;
             }

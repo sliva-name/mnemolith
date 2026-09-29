@@ -1,9 +1,15 @@
 package com.mnemolith.entity.mob;
 
+import com.mnemolith.audio.ModSounds;
+import com.mnemolith.content.ModItems;
+import com.mnemolith.data.ImprintSlips;
+import com.mnemolith.pressure.MemoryPressure;
+import com.mnemolith.pressure.PressureBand;
 import com.mnemolith.world.LoadedChunkMemory;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -21,20 +27,24 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 
 /**
- * A small archive mite. Paper tames it. While the owner sneaks it walks toward the nearest archival stratum
- * in the loaded chunks around it.
+ * A small archive mite. Paper tames it. While the owner sneaks it walks toward the nearest archival stratum.
+ * When the chunk saturates it chirps as a canary; it also gathers fallen slips and recovers what an archivist stole.
  */
 public class LedgerMite extends TamableAnimal {
     private BlockPos stratum;
     private int stratumCooldown;
+    private int alarmCooldown;
+    private int gatherCooldown;
 
     public LedgerMite(EntityType<? extends LedgerMite> type, Level level) {
         super(type, level);
@@ -62,12 +72,12 @@ public class LedgerMite extends TamableAnimal {
 
     @Override
     protected net.minecraft.sounds.SoundEvent getAmbientSound() {
-        return com.mnemolith.audio.ModSounds.MITE_AMBIENT.get();
+        return ModSounds.MITE_AMBIENT.get();
     }
 
     @Override
     protected net.minecraft.sounds.SoundEvent getHurtSound(net.minecraft.world.damagesource.DamageSource source) {
-        return com.mnemolith.audio.ModSounds.MITE_HURT.get();
+        return ModSounds.MITE_HURT.get();
     }
 
     @Override
@@ -79,7 +89,6 @@ public class LedgerMite extends TamableAnimal {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (this.isFood(stack) && !this.isTame()) {
-            // The logical client only predicts the swing. Taming rolls and the stack live on the server.
             if (this.level().isClientSide()) {
                 return InteractionResult.SUCCESS;
             }
@@ -109,7 +118,12 @@ public class LedgerMite extends TamableAnimal {
     @Override
     public void aiStep() {
         super.aiStep();
-        if (!(this.level() instanceof ServerLevel level) || !this.isTame() || this.stratumCooldown-- > 0) {
+        if (!(this.level() instanceof ServerLevel level) || !this.isTame()) {
+            return;
+        }
+        this.tickAlarm(level);
+        this.tickGather(level);
+        if (this.stratumCooldown-- > 0) {
             return;
         }
         if (!(this.getOwner() instanceof Player owner) || !owner.isShiftKeyDown() || owner.distanceToSqr(this) > 32.0D * 32.0D) {
@@ -121,6 +135,57 @@ public class LedgerMite extends TamableAnimal {
         }
         if (this.stratum != null) {
             this.getNavigation().moveTo(this.stratum.getX() + 0.5D, this.stratum.getY(), this.stratum.getZ() + 0.5D, 1.15D);
+        }
+    }
+
+    private void tickAlarm(ServerLevel level) {
+        if (this.alarmCooldown-- > 0) {
+            return;
+        }
+        this.alarmCooldown = 40;
+        var memory = LoadedChunkMemory.existing(level.getChunkAt(this.blockPosition()));
+        if (memory == null) {
+            return;
+        }
+        PressureBand band = MemoryPressure.band(memory.cachedPressure());
+        if (band.ordinal() < PressureBand.SATURATED.ordinal()) {
+            return;
+        }
+        level.playSound(null, this.blockPosition(), ModSounds.PRESSURE_WARN.get(), SoundSource.NEUTRAL, 0.55F, 1.6F);
+        this.setDeltaMovement(this.getDeltaMovement().add(0.0D, 0.25D, 0.0D));
+        this.hurtMarked = true;
+        if (this.getOwner() instanceof net.minecraft.server.level.ServerPlayer owner && owner.distanceToSqr(this) < 24.0D * 24.0D) {
+            owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.mite.alarm"), true);
+        }
+    }
+
+    private void tickGather(ServerLevel level) {
+        if (this.gatherCooldown-- > 0 || !(this.getOwner() instanceof Player owner)) {
+            return;
+        }
+        this.gatherCooldown = 15;
+        AABB box = this.getBoundingBox().inflate(2.5D);
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, box)) {
+            ItemStack stack = item.getItem();
+            if (!ImprintSlips.isSlip(stack) && stack.getItem() != ModItems.RESIDUAL_SHARD.get()) {
+                continue;
+            }
+            if (owner.getInventory().add(stack)) {
+                item.discard();
+                level.playSound(null, this.blockPosition(), ModSounds.MITE_AMBIENT.get(), SoundSource.NEUTRAL, 0.4F, 1.8F);
+                return;
+            }
+        }
+        for (Archivist archivist : level.getEntitiesOfClass(Archivist.class, box.inflate(1.5D))) {
+            ItemStack recovered = archivist.reclaimStolen();
+            if (recovered.isEmpty()) {
+                continue;
+            }
+            if (!owner.getInventory().add(recovered) && !recovered.isEmpty()) {
+                owner.drop(recovered, false);
+            }
+            level.playSound(null, this.blockPosition(), ModSounds.EXTRACT.get(), SoundSource.NEUTRAL, 0.5F, 1.5F);
+            return;
         }
     }
 

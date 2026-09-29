@@ -1,0 +1,11 @@
+{
+  "structures": [
+    "mnemolith:memory_field"
+  ],
+  "tags": [
+    "death",
+    "explosion"
+  ],
+  "intensity": 2,
+  "count": 1
+}

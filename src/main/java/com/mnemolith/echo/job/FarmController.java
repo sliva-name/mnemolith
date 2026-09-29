@@ -24,7 +24,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -123,16 +122,13 @@ final class FarmController {
                 continue;
             }
             BlockState state = level.getBlockState(cursor);
-            if (state.getBlock() instanceof CropBlock) {
+            Block block = state.getBlock();
+            if (this.taught.knows(block) && FarmLesson.isMature(state) && this.harvestableHere(level, cursor, block)) {
                 this.fieldSize++;
-                if (this.taught.knows(state.getBlock()) && FarmLesson.isMature(state)) {
-                    this.rememberFarmTask(level, cursor.immutable(), true);
-                }
-            } else if (state.is(Blocks.FARMLAND)) {
+                this.rememberFarmTask(level, cursor.immutable(), true);
+            } else if (state.isAir() && this.canBePlantSpot(level.getBlockState(cursor.below()))) {
                 this.fieldSize++;
-                if (level.getBlockState(cursor.above()).isAir()) {
-                    this.rememberFarmTask(level, cursor.above().immutable(), false);
-                }
+                this.rememberFarmTask(level, cursor.immutable(), false);
             }
         }
         return this.farmScanIndex >= total;
@@ -164,10 +160,15 @@ final class FarmController {
             return false;
         }
         BlockState state = level.getBlockState(pos);
-        if (FarmLesson.isMature(state)) {
-            return this.taught.knows(state.getBlock());
+        if (FarmLesson.isMature(state) && this.taught.knows(state.getBlock())) {
+            return this.harvestableHere(level, pos, state.getBlock());
         }
-        return state.isAir() && level.getBlockState(pos.below()).is(Blocks.FARMLAND) && this.seedToPlant(echo, null) != null;
+        if (!state.isAir()) {
+            return false;
+        }
+        BlockState ground = level.getBlockState(pos.below());
+        Block crop = this.seedToPlant(echo, null);
+        return crop != null && FarmLesson.canPlantOn(crop, ground);
     }
 
     /** The crop to plant: {@code preferred} when the echo carries its seed, else the first taught crop it has seeds for. */
@@ -251,7 +252,7 @@ final class FarmController {
         }
         this.farmTarget = best;
         BlockState state = level.getBlockState(best);
-        String crop = state.getBlock() instanceof CropBlock ? JobTexts.key(state.getBlock()) : this.cropKey();
+        String crop = FarmLesson.isTeachable(state.getBlock()) && !state.isAir() ? JobTexts.key(FarmLesson.normalize(state.getBlock())) : this.cropKey();
         this.job.setStatus(new JobStatus(JobStatus.Kind.FARMING, crop, this.harvested, 0));
         BlockPos goalPos = best;
         this.job.motion.startPath(level, echo, new EchoNav.Goal() {
@@ -289,6 +290,11 @@ final class FarmController {
                 return;
             }
             Block crop = state.getBlock();
+            if (FarmLesson.harvestAboveOnly(crop) && !level.getBlockState(pos.below()).is(crop)) {
+                // Root cane/bamboo — leave it; look for growth above next scan.
+                this.farmRefused.add(pos.asLong());
+                return;
+            }
             EchoHands.JobBreak result = EchoHands.breakForJob(level, echo, pos, -1);
             if (result.outcome() != EchoHands.Outcome.DONE) {
                 this.farmRefused.add(pos.asLong());
@@ -297,13 +303,17 @@ final class FarmController {
             this.harvested++;
             this.job.motion.unreachableInRow = 0;
             this.job.strain.onWorkAction(level, echo, pos);
-            this.plant(level, echo, pos, crop);
+            if (!FarmLesson.harvestAboveOnly(crop) && crop != Blocks.MELON && crop != Blocks.PUMPKIN) {
+                this.plant(level, echo, pos, crop);
+            } else if (crop == Blocks.MELON || crop == Blocks.PUMPKIN) {
+                // Fruit does not occupy farmland; stems stay. Nothing to replant at the fruit cell.
+            }
             this.job.setStatus(new JobStatus(JobStatus.Kind.FARMING, JobTexts.key(crop), this.harvested, 0));
             this.job.motion.placeCooldown = JobLimits.PLACE_INTERVAL;
             this.job.mimic.afterBreak();
             return;
         }
-        if (state.isAir() && level.getBlockState(pos.below()).is(Blocks.FARMLAND)) {
+        if (state.isAir() && this.canBePlantSpot(level.getBlockState(pos.below()))) {
             if (!this.plant(level, echo, pos, null)) {
                 this.farmRefused.add(pos.asLong());
             }
@@ -326,11 +336,32 @@ final class FarmController {
                 }
             }
         }
-        boolean planted = EchoHands.placeForJob(level, echo, pos, crop.defaultBlockState()) == EchoHands.Outcome.DONE;
+        BlockState ground = level.getBlockState(pos.below());
+        if (!FarmLesson.canPlantOn(crop, ground)) {
+            return false;
+        }
+        boolean planted = EchoHands.placeForJob(level, echo, pos, FarmLesson.plantState(crop)) == EchoHands.Outcome.DONE;
         if (planted) {
             this.job.motion.unreachableInRow = 0;
             this.job.strain.onWorkAction(level, echo, pos);
         }
         return planted;
+    }
+
+    private boolean canBePlantSpot(BlockState ground) {
+        for (Block crop : this.taught.crops()) {
+            if (FarmLesson.canPlantOn(crop, ground)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Sugar cane / bamboo: only harvest cells that sit on more of the same (keep the root). */
+    private boolean harvestableHere(ServerLevel level, BlockPos pos, Block block) {
+        if (FarmLesson.harvestAboveOnly(block)) {
+            return level.getBlockState(pos.below()).is(block);
+        }
+        return true;
     }
 }

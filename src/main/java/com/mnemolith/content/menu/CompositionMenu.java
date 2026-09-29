@@ -44,7 +44,7 @@ public class CompositionMenu extends AbstractContainerMenu {
         }
         checkContainerSize(container, ImprintConstants.COMPOSITION_SLOTS);
         for (int slot = 0; slot < ImprintConstants.COMPOSITION_SLOTS; slot++) {
-            this.addSlot(new SlipSlot(container, slot, 71 + slot * 18, 30));
+            this.addSlot(new SlipSlot(container, slot, 62 + slot * 18, 30));
         }
         this.addStandardInventorySlots(inventory, 8, 148);
         this.addDataSlots(this.data);

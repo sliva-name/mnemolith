@@ -16,16 +16,20 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 /**
- * Stage 3 farming lesson, recognised from a recording: tilling with a hoe, planting crops and harvesting mature ones.
- * Kept apart from {@link EchoLesson} (whose codecs stay as they are) in its own item component and job field.
- * {@code crops} are the crop blocks it learned, most used first.
+ * Farming lesson from a recording: tilling, planting and harvesting. Crops include the classic four plus melon,
+ * pumpkin, sugar cane, bamboo and nether wart (O1). Kept apart from {@link EchoLesson} so its codecs stay as they are.
  */
 public record FarmLesson(List<Block> crops, int tilled, int planted, int harvested) {
-    public static final int MAX_CROPS = 4;
+    public static final int MAX_CROPS = 8;
     public static final FarmLesson NONE = new FarmLesson(List.of(), 0, 0, 0);
     public static final Codec<FarmLesson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BuiltInRegistries.BLOCK.byNameCodec().listOf().optionalFieldOf("crops", List.of()).forGetter(FarmLesson::crops),
@@ -43,11 +47,35 @@ public record FarmLesson(List<Block> crops, int tilled, int planted, int harvest
     public FarmLesson {
         List<Block> kept = new ArrayList<>();
         for (Block block : crops) {
-            if (block instanceof CropBlock && !kept.contains(block) && kept.size() < MAX_CROPS) {
-                kept.add(block);
+            Block normalized = normalize(block);
+            if (normalized != null && !kept.contains(normalized) && kept.size() < MAX_CROPS) {
+                kept.add(normalized);
             }
         }
         crops = List.copyOf(kept);
+    }
+
+    /** Maps stem blocks to their fruit for the saved lesson list. */
+    public static Block normalize(Block block) {
+        if (block instanceof CropBlock || block instanceof NetherWartBlock || block instanceof SugarCaneBlock
+                || block == Blocks.BAMBOO || block == Blocks.MELON || block == Blocks.PUMPKIN) {
+            return block;
+        }
+        if (block == Blocks.MELON_STEM || block == Blocks.ATTACHED_MELON_STEM) {
+            return Blocks.MELON;
+        }
+        if (block == Blocks.PUMPKIN_STEM || block == Blocks.ATTACHED_PUMPKIN_STEM) {
+            return Blocks.PUMPKIN;
+        }
+        if (block instanceof StemBlock) {
+            // Unknown stem: keep as-is only when we recognise fruit elsewhere.
+            return null;
+        }
+        return null;
+    }
+
+    public static boolean isTeachable(Block block) {
+        return normalize(block) != null;
     }
 
     /** At least two farming actions and a known crop. */
@@ -56,17 +84,95 @@ public record FarmLesson(List<Block> crops, int tilled, int planted, int harvest
     }
 
     public boolean knows(Block block) {
-        return this.crops.contains(block);
+        Block normalized = normalize(block);
+        return normalized != null && this.crops.contains(normalized);
     }
 
-    /** The item that plants {@code crop} (seeds, carrot, potato). */
+    /** The item that plants {@code crop}. */
     public static Item seedFor(Block crop) {
+        if (crop == Blocks.WHEAT) {
+            return Items.WHEAT_SEEDS;
+        }
+        if (crop == Blocks.CARROTS) {
+            return Items.CARROT;
+        }
+        if (crop == Blocks.POTATOES) {
+            return Items.POTATO;
+        }
+        if (crop == Blocks.BEETROOTS) {
+            return Items.BEETROOT_SEEDS;
+        }
+        if (crop == Blocks.MELON) {
+            return Items.MELON_SEEDS;
+        }
+        if (crop == Blocks.PUMPKIN) {
+            return Items.PUMPKIN_SEEDS;
+        }
+        if (crop == Blocks.NETHER_WART) {
+            return Items.NETHER_WART;
+        }
+        if (crop == Blocks.SUGAR_CANE) {
+            return Items.SUGAR_CANE;
+        }
+        if (crop == Blocks.BAMBOO) {
+            return Items.BAMBOO;
+        }
         Item item = EchoLesson.itemFor(crop.defaultBlockState());
         return item == null ? Items.AIR : item;
     }
 
     public static boolean isMature(BlockState state) {
-        return state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state);
+        Block block = state.getBlock();
+        if (block instanceof CropBlock crop) {
+            return crop.isMaxAge(state);
+        }
+        if (block instanceof NetherWartBlock) {
+            return state.hasProperty(BlockStateProperties.AGE_3) && state.getValue(BlockStateProperties.AGE_3) >= 3;
+        }
+        if (block == Blocks.MELON || block == Blocks.PUMPKIN) {
+            return true;
+        }
+        if (block instanceof SugarCaneBlock || block == Blocks.BAMBOO) {
+            // Harvestable when it is not the root (something of the same kind sits below).
+            return true;
+        }
+        return false;
+    }
+
+    /** True when this harvest should leave the bottom block (sugar cane / bamboo). */
+    public static boolean harvestAboveOnly(Block block) {
+        return block instanceof SugarCaneBlock || block == Blocks.BAMBOO;
+    }
+
+    /** Ground the seed needs under the planting cell. */
+    public static boolean canPlantOn(Block crop, BlockState ground) {
+        if (crop == Blocks.NETHER_WART) {
+            return ground.is(Blocks.SOUL_SAND);
+        }
+        if (crop == Blocks.SUGAR_CANE) {
+            return ground.is(Blocks.DIRT) || ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.SAND)
+                    || ground.is(Blocks.RED_SAND) || ground.is(Blocks.MUD) || ground.is(Blocks.SUGAR_CANE);
+        }
+        if (crop == Blocks.BAMBOO) {
+            return ground.is(Blocks.DIRT) || ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.SAND)
+                    || ground.is(Blocks.PODZOL) || ground.is(Blocks.GRAVEL) || ground.is(Blocks.BAMBOO)
+                    || ground.is(Blocks.MOSS_BLOCK);
+        }
+        if (crop == Blocks.MELON || crop == Blocks.PUMPKIN) {
+            return ground.is(Blocks.FARMLAND);
+        }
+        return ground.is(Blocks.FARMLAND);
+    }
+
+    /** Block state to place when planting {@code crop} (stems for melon/pumpkin). */
+    public static BlockState plantState(Block crop) {
+        if (crop == Blocks.MELON) {
+            return Blocks.MELON_STEM.defaultBlockState();
+        }
+        if (crop == Blocks.PUMPKIN) {
+            return Blocks.PUMPKIN_STEM.defaultBlockState();
+        }
+        return crop.defaultBlockState();
     }
 
     /**
@@ -74,17 +180,23 @@ public record FarmLesson(List<Block> crops, int tilled, int planted, int harvest
      * else the block name.
      */
     public static Component cropName(Block crop) {
-        if (crop == net.minecraft.world.level.block.Blocks.WHEAT) {
+        if (crop == Blocks.WHEAT) {
             return new net.minecraft.world.item.ItemStack(Items.WHEAT).getHoverName();
         }
-        if (crop == net.minecraft.world.level.block.Blocks.CARROTS) {
+        if (crop == Blocks.CARROTS) {
             return new net.minecraft.world.item.ItemStack(Items.CARROT).getHoverName();
         }
-        if (crop == net.minecraft.world.level.block.Blocks.POTATOES) {
+        if (crop == Blocks.POTATOES) {
             return new net.minecraft.world.item.ItemStack(Items.POTATO).getHoverName();
         }
-        if (crop == net.minecraft.world.level.block.Blocks.BEETROOTS) {
+        if (crop == Blocks.BEETROOTS) {
             return new net.minecraft.world.item.ItemStack(Items.BEETROOT).getHoverName();
+        }
+        if (crop == Blocks.MELON) {
+            return new net.minecraft.world.item.ItemStack(Items.MELON).getHoverName();
+        }
+        if (crop == Blocks.PUMPKIN) {
+            return new net.minecraft.world.item.ItemStack(Items.PUMPKIN).getHoverName();
         }
         return crop.getName();
     }

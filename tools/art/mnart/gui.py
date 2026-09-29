@@ -1,5 +1,5 @@
 """GUI chrome at twice the old density (the blits normalise by the old sizes, so no code changes):
-panel 64x64 (nine-slice of the old 32), slot 36x36, tag icons 288x32 (nine 32x32 cells in ImprintTag order)."""
+panel 64x64 (nine-slice of the old 32), slot 36x36, tag icons Nx32 (32x32 cells in ImprintTag order)."""
 import numpy as np
 
 from . import core
@@ -66,14 +66,30 @@ def _glyph(name):
         return m
     if name == 'path':
         return m_rect(S, S, 5, 14, 13, 18) | m_rect(S, S, 18, 14, 26, 18)
+    if name == 'lightning':
+        return m_poly(S, S, [(18, 4), (10, 15), (15, 15), (12, 28), (22, 12), (16, 12)])
+    if name == 'portal':
+        return m_ring(S, S, 16, 16, 10, 6) | m_ellipse(S, S, 16, 16, 3.0, 3.0)
+    if name == 'sculk':
+        m = np.zeros((S, S), bool)
+        for x, y, r in ((11, 11, 2.4), (21, 10, 2.0), (16, 18, 3.0), (10, 21, 2.2), (22, 22, 2.5)):
+            m |= m_ellipse(S, S, x, y, r, r)
+        return m
+    if name == 'boss':
+        return m_poly(S, S, [(6, 20), (6, 12), (11, 16), (16, 6), (21, 16), (26, 12), (26, 20)])
+    if name == 'trade':
+        return m_rect(S, S, 6, 10, 14, 18) | m_rect(S, S, 18, 14, 26, 22) | m_line(S, S, (14, 14), (18, 18), 2)
     raise KeyError(name)
 
 
-TAG_ORDER = ('fire', 'fall', 'death', 'build', 'explosion', 'silence', 'player', 'redstone', 'path')   # ImprintTag order
+TAG_ORDER = (
+    'fire', 'fall', 'death', 'build', 'explosion', 'silence', 'player', 'redstone', 'path',
+    'lightning', 'portal', 'sculk', 'boss', 'trade',
+)   # ImprintTag order — append only
 
 
 def tags():
-    img = Canvas(32 * 9, 32).image()
+    img = Canvas(32 * len(TAG_ORDER), 32).image()
     for i, name in enumerate(TAG_ORDER):
         rng = core.rng_for('tag_' + name)
         cv = surface('indigo', 32, 32, rng, wear=0.2)

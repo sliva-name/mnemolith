@@ -20,6 +20,9 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.FIELD_GUIDE.get());
                 output.accept(ModItems.CHRONICLE_LENS.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
+                output.accept(ModItems.REINFORCED_NEEDLE.get());
+                output.accept(ModItems.TWIN_NEEDLE.get());
+                output.accept(ModItems.IMPRINT_SEAL.get());
                 output.accept(ModItems.IMPRINT_SLIP.get());
                 output.accept(ModItems.ECHO_SLIP.get());
                 output.accept(ModItems.ECHO_RECORDING.get());
@@ -28,8 +31,22 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.ECHO_STURDY_SLIP.get());
                 output.accept(ModItems.COMPOSITION_REEL.get());
                 output.accept(ModItems.MUTE_STONE.get());
+                output.accept(ModItems.MUTE_STONE_BRICKS.get());
+                output.accept(ModItems.MUTE_STONE_STAIRS.get());
+                output.accept(ModItems.MUTE_STONE_SLAB.get());
+                output.accept(ModItems.MUTE_STONE_WALL.get());
+                output.accept(ModItems.SELECTIVE_MUTE_STONE.get());
+                output.accept(ModItems.PRESSURE_SENSOR.get());
+                output.accept(ModItems.PLAYER_MEMORIAL.get());
+                output.accept(ModItems.ECHO_HOME.get());
+                output.accept(ModItems.PRESSURE_LAMP.get());
                 output.accept(ModItems.ARCHIVAL_STRATUM.get());
+                output.accept(ModItems.ARCHIVAL_STRATUM_BRICKS.get());
+                output.accept(ModItems.ARCHIVAL_STRATUM_STAIRS.get());
+                output.accept(ModItems.ARCHIVAL_STRATUM_SLAB.get());
+                output.accept(ModItems.ARCHIVAL_STRATUM_WALL.get());
                 output.accept(ModItems.ARCHIVAL_TABLET.get());
+                output.accept(ModItems.ARCHIVE_SCHEMATIC.get());
                 output.accept(ModItems.RESONATOR_TRAP.get());
                 output.accept(ModItems.ARCHIVIST_BAIT.get());
                 output.accept(ModItems.CATALOG_FRAGMENT.get());
@@ -38,10 +55,15 @@ public final class ModCreativeTabs {
                 for (com.mnemolith.echo.graft.Temper temper : com.mnemolith.echo.graft.Temper.values()) {
                     output.accept(com.mnemolith.echo.residue.Residues.shard(temper.tag(), 4, net.minecraft.core.BlockPos.ZERO, 0L));
                 }
+                output.accept(ModItems.MEMORY_COMPASS.get());
+                output.accept(ModItems.ECHO_ARMOR_TRIM_SMITHING_TEMPLATE.get());
                 output.accept(ModItems.SCAR_FRAGMENT.get());
                 output.accept(ModItems.SCAR_GLASS.get());
+                output.accept(ModItems.SCAR_GLASS_PANE.get());
                 output.accept(ModItems.RELAY_THREAD.get());
+                output.accept(ModItems.MUSIC_DISC_RECOLLECTION.get());
                 output.accept(ModItems.ARCHIVE_VAULT.get());
+                output.accept(ModItems.ARCHIVE_SHRINE.get());
                 output.accept(ModItems.ECHO_STRIDER_SPAWN_EGG.get());
                 output.accept(ModItems.ARCHIVIST_SPAWN_EGG.get());
                 output.accept(ModItems.MOMENT_REPLICANT_SPAWN_EGG.get());

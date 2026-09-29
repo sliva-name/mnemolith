@@ -1,0 +1,19 @@
+{
+  "type": "mnemolith:flooded_archive",
+  "biomes": "#mnemolith:has_flooded_archive",
+  "spawn_overrides": {
+    "monster": {
+      "bounding_box": "piece",
+      "spawns": [
+        {
+          "type": "mnemolith:ledger_mite",
+          "weight": 8,
+          "minCount": 1,
+          "maxCount": 3
+        }
+      ]
+    }
+  },
+  "step": "underground_structures",
+  "terrain_adaptation": "bury"
+}

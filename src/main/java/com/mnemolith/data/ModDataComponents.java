@@ -1,6 +1,7 @@
 package com.mnemolith.data;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.imprint.ImprintTag;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -31,6 +32,16 @@ public final class ModDataComponents {
             "echo_farm",
             builder -> builder.persistent(com.mnemolith.echo.FarmLesson.CODEC).networkSynchronized(com.mnemolith.echo.FarmLesson.STREAM_CODEC));
 
+    /** O1: lumberjack lesson (logs + saplings). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.LumberLesson>> ECHO_LUMBER = DATA_COMPONENTS.registerComponentType(
+            "echo_lumber",
+            builder -> builder.persistent(com.mnemolith.echo.LumberLesson.CODEC).networkSynchronized(com.mnemolith.echo.LumberLesson.STREAM_CODEC));
+
+    /** O1: animal care lesson (shear / milk / breed). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.CareLesson>> ECHO_CARE = DATA_COMPONENTS.registerComponentType(
+            "echo_care",
+            builder -> builder.persistent(com.mnemolith.echo.CareLesson.CODEC).networkSynchronized(com.mnemolith.echo.CareLesson.STREAM_CODEC));
+
     /** Echo relay: the first echo a relay thread was used on, until the second end is tied. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<java.util.UUID>> RELAY_FIRST = DATA_COMPONENTS.registerComponentType(
             "relay_first",
@@ -40,6 +51,14 @@ public final class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.vault.VaultContents>> VAULT_CONTENTS = DATA_COMPONENTS.registerComponentType(
             "vault_contents",
             builder -> builder.persistent(com.mnemolith.vault.VaultContents.CODEC).networkSynchronized(com.mnemolith.vault.VaultContents.STREAM_CODEC));
+
+    /**
+     * Lens filter or selective-mute allowance: only chunks / writes matching this imprint tag pass.
+     * Absence means unfiltered lens or an unbound selective mute (blocks every write).
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ImprintTag>> FILTER_TAG = DATA_COMPONENTS.registerComponentType(
+            "filter_tag",
+            builder -> builder.persistent(ImprintTag.CODEC).networkSynchronized(ImprintTag.STREAM_CODEC));
 
     private ModDataComponents() {}
 

@@ -19,6 +19,7 @@ import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.world.LoadedChunkMemory;
+import com.mnemolith.worldgen.WorldgenTuning;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -188,6 +189,7 @@ public final class ImprintEvents {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
         }
+        com.mnemolith.worldgen.StructureMemorySeeds.trySeed(level, chunk);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory != null) {
             boolean faded = memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());
@@ -201,6 +203,7 @@ public final class ImprintEvents {
             return;
         }
         coolPressure(level, player);
+        com.mnemolith.pressure.SilenceCost.onPlayerPulse(level, player);
         com.mnemolith.echo.residue.Residues.pulse(level, player);
         com.mnemolith.echo.storm.Storms.onPlayerTick(level, player);
         com.mnemolith.vault.ArchiveVaults.carryTick(level, player);
@@ -277,8 +280,16 @@ public final class ImprintEvents {
         if (memory == null || !memory.wantsCooling() || !memory.markCoolPulse(level.getGameTime())) {
             return;
         }
-        boolean changed = memory.coolInstability(CommonConfig.INSTABILITY_DECAY.get()) > 0;
-        if (memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get())) {
+        int cool = CommonConfig.INSTABILITY_DECAY.get();
+        if (memory.hushChapel()) {
+            cool += WorldgenTuning.HUSH_CHAPEL_COOL_BONUS;
+        }
+        boolean changed = memory.coolInstability(cool) > 0;
+        int fadeTicks = CommonConfig.QUIET_FADE_TICKS.get();
+        if (memory.hushChapel() && fadeTicks > 0) {
+            fadeTicks = Math.max(200, fadeTicks / 3);
+        }
+        if (memory.fadeQuiet(level.getGameTime(), fadeTicks)) {
             changed = true;
         }
         memory.refreshCooling();
@@ -295,7 +306,7 @@ public final class ImprintEvents {
     }
 
     private static void writeBuild(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        if (!CommonConfig.WRITE_BUILD.get() || state.getBlock() == ModBlocks.MUTE_STONE.get()) {
+        if (!CommonConfig.WRITE_BUILD.get() || state.getBlock() == ModBlocks.MUTE_STONE.get() || state.getBlock() == ModBlocks.SELECTIVE_MUTE_STONE.get()) {
             return;
         }
         if (!ImprintWriter.acceptsThrottled(level, pos)) {

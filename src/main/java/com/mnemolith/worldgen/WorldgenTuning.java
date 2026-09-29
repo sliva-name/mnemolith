@@ -2,7 +2,7 @@ package com.mnemolith.worldgen;
 
 import com.mnemolith.config.CommonConfig;
 
-/** Distances and config reads for veins, mute pockets, and the observatory. */
+/** Distances and config reads for veins, mute pockets, and structures. */
 public final class WorldgenTuning {
     /** Chebyshev chunks around an observatory where an archivist's pressure gate is lower. */
     public static final int OBSERVATORY_CHUNK_RADIUS = 2;
@@ -12,6 +12,8 @@ public final class WorldgenTuning {
     /** Vein marks hinted to the lens holder in one snapshot. */
     public static final int LENS_VEIN_HINTS = 8;
     public static final int POCKET_HALF = 2;
+    /** Extra instability cool amount while standing in a hush chapel. */
+    public static final int HUSH_CHAPEL_COOL_BONUS = 3;
 
     private WorldgenTuning() {}
 
@@ -51,8 +53,32 @@ public final class WorldgenTuning {
         return CommonConfig.MUTE_POCKET_MAX_Y.get();
     }
 
+    public static boolean structuresMaster() {
+        return CommonConfig.STRUCTURES_ENABLED.get();
+    }
+
     public static boolean observatoryEnabled() {
-        return CommonConfig.STRUCTURES_ENABLED.get() && CommonConfig.OBSERVATORY_ENABLED.get();
+        return structuresMaster() && CommonConfig.OBSERVATORY_ENABLED.get();
+    }
+
+    public static boolean floodedArchiveEnabled() {
+        return structuresMaster() && CommonConfig.FLOODED_ARCHIVE_ENABLED.get();
+    }
+
+    public static boolean hushChapelEnabled() {
+        return structuresMaster() && CommonConfig.HUSH_CHAPEL_ENABLED.get();
+    }
+
+    public static boolean memoryFieldEnabled() {
+        return structuresMaster() && CommonConfig.MEMORY_FIELD_ENABLED.get();
+    }
+
+    public static boolean ashenArchiveEnabled() {
+        return structuresMaster() && CommonConfig.ASHEN_ARCHIVE_ENABLED.get();
+    }
+
+    public static boolean muteLibraryEnabled() {
+        return structuresMaster() && CommonConfig.MUTE_LIBRARY_ENABLED.get();
     }
 
     public static boolean archivistObservatoryBias() {

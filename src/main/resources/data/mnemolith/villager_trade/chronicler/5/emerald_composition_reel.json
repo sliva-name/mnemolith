@@ -1,0 +1,12 @@
+{
+  "wants": {
+    "count": 24,
+    "id": "minecraft:emerald"
+  },
+  "gives": {
+    "id": "mnemolith:composition_reel"
+  },
+  "max_uses": 2,
+  "xp": 30,
+  "reputation_discount": 0.2
+}

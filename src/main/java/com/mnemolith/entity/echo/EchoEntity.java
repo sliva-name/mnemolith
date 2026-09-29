@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.ModSounds;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.content.menu.EchoMenu;
@@ -29,11 +30,13 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -43,6 +46,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -67,6 +71,9 @@ public class EchoEntity extends MemoryAvatar {
     public static final int LESSON_BUILDING = 2;
     /** Stage 3: the echo knows farming; {@link #DATA_FARM} names the crops. */
     public static final int LESSON_FARMING = 4;
+    /** O1: lumberjack / animal care. */
+    public static final int LESSON_LUMBER = 8;
+    public static final int LESSON_CARE = 16;
     private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
     /** Memory graft (temper id in bits 0-3, charges in bits 4-17, capacity in bits 18-31); 0 without a graft. */
@@ -104,6 +111,10 @@ public class EchoEntity extends MemoryAvatar {
 
     public com.mnemolith.echo.EchoRole role() {
         return this.role;
+    }
+
+    public void setRole(com.mnemolith.echo.EchoRole role) {
+        this.role = role == null ? com.mnemolith.echo.EchoRole.NONE : role;
     }
 
     public int bearing() {
@@ -341,6 +352,7 @@ public class EchoEntity extends MemoryAvatar {
             }
             if (!this.isReplaying() && this.isAlive()) {
                 com.mnemolith.echo.EchoRoles.tick(level, this);
+                this.maybeRememberGesture(level);
             }
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
@@ -523,8 +535,19 @@ public class EchoEntity extends MemoryAvatar {
         this.entityData.set(DATA_STRAIN, (byte) this.job.strain().ordinal());
         EchoLesson lesson = this.job.lesson();
         boolean farming = this.job.farmLesson().teaches();
-        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0) | (farming ? LESSON_FARMING : 0)));
-        this.entityData.set(DATA_FARM, farming ? this.job.farmLesson().cropNames() : Component.empty());
+        boolean lumbering = this.job.lumberLesson().teaches();
+        boolean caring = this.job.careLesson().teaches();
+        this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)
+                | (farming ? LESSON_FARMING : 0) | (lumbering ? LESSON_LUMBER : 0) | (caring ? LESSON_CARE : 0)));
+        Component side = Component.empty();
+        if (farming) {
+            side = this.job.farmLesson().cropNames();
+        } else if (lumbering) {
+            side = this.job.lumberLesson().logNames();
+        } else if (caring) {
+            side = this.job.careLesson().describe();
+        }
+        this.entityData.set(DATA_FARM, side);
     }
 
     /** Synced job mode (client and server). */
@@ -629,6 +652,16 @@ public class EchoEntity extends MemoryAvatar {
             return InteractionResult.FAIL;
         }
         ItemStack held = serverPlayer.getItemInHand(hand);
+        // O4: name tag (also works via Item.interactLivingEntity; kept here if that path is skipped).
+        if (!serverPlayer.isShiftKeyDown() && held.is(net.minecraft.world.item.Items.NAME_TAG)
+                && held.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME) != null) {
+            this.setCustomName(held.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME));
+            if (!serverPlayer.getAbilities().instabuild) {
+                held.shrink(1);
+            }
+            serverPlayer.sendSystemMessage(Component.translatable("mnemolith.echo.renamed", this.getDisplayName()), true);
+            return InteractionResult.SUCCESS_SERVER;
+        }
         if (!serverPlayer.isShiftKeyDown() && held.is(ModItems.ECHO_RECORDING.get())) {
             return EchoLife.teach(serverPlayer, this, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
         }
@@ -782,6 +815,45 @@ public class EchoEntity extends MemoryAvatar {
             return super.getName();
         }
         return Component.translatable("entity.mnemolith.echo.named", this.ownerName());
+    }
+
+
+
+    /** O4: occasionally retell an old owner gesture while idle and nearby. */
+    private void maybeRememberGesture(ServerLevel level) {
+        if (this.isReplaying() || this.tickCount % 200 != 37 || this.getRandom().nextFloat() > 0.08F) {
+            return;
+        }
+        ServerPlayer owner = this.onlineOwner();
+        if (owner == null || this.distanceToSqr(owner) > 64.0D) {
+            return;
+        }
+        var log = com.mnemolith.recall.LivingMemory.log(owner);
+        var gestures = log.gestures();
+        if (gestures.isEmpty()) {
+            return;
+        }
+        var gesture = gestures.get(this.getRandom().nextInt(gestures.size()));
+        owner.sendSystemMessage(Component.translatable(
+                "mnemolith.echo.remember." + gesture.kind().getSerializedName(),
+                this.getDisplayName()), true);
+    }
+
+    // ---- sounds (O4) ----
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ModSounds.ECHO_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ModSounds.ECHO_DEATH.get();
+    }
+
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState state) {
+        this.playSound(ModSounds.ECHO_STEP.get(), 0.12F, 1.0F);
     }
 
     // ---- save ----

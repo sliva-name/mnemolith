@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "band=0": {
+      "model": "mnemolith:block/pressure_lamp"
+    },
+    "band=1": {
+      "model": "mnemolith:block/pressure_lamp"
+    },
+    "band=2": {
+      "model": "mnemolith:block/pressure_lamp"
+    },
+    "band=3": {
+      "model": "mnemolith:block/pressure_lamp"
+    }
+  }
+}

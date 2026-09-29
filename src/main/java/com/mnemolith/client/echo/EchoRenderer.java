@@ -53,6 +53,7 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
 
     private static @Nullable EchoRenderer<?> echoRenderer;
     private static @Nullable EchoRenderer<?> shellRenderer;
+
     private final boolean echo;
     private final @Nullable EchoRenderer<T> slim;
 

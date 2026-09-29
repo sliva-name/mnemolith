@@ -24,16 +24,16 @@ version="${mod_version}" #mandatory
 displayName="${mod_name}" #mandatory
 
 # A URL to query for updates for this mod. See the JSON update specification https://docs.neoforged.net/docs/misc/updatechecker/
-#updateJSONURL="https://change.me.example.invalid/updates.json" #optional
+updateJSONURL="https://raw.githubusercontent.com/sliva-name/mnemolith/main/updates.json" #optional
 
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://github.com/sliva-name/mnemolith"
 
 # A file name (in the root of the mod JAR) containing a logo for display
-#logoFile="mnemolith.png" #optional
+logoFile="mnemolith.png" #optional
 
 # A text field displayed in the mod UI
-#credits="" #optional
+credits="Chair model: Chaalen (CC-BY-4.0). Sounds: procedural placeholders (Z1)." #optional
 
 # The authors of the mod, displayed in the mod UI (optional)
 authors="sliva-name"
@@ -78,5 +78,19 @@ The world writes its history into stone. Read imprints, compose memory, survive 
     type="required"
     # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[30.38,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="wthit"
+    type="optional"
+    versionRange="[1.0,)"
     ordering="NONE"
     side="BOTH"

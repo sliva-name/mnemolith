@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.audio.ModSounds;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.entity.echo.EchoEntity;
@@ -166,7 +167,7 @@ public final class EchoPossession {
         echo.discardSilently();
         teleport(player, level, x, y, z, yRot, xRot);
         sendHeldSlot(player);
-        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.5F);
+        level.playSound(null, player.blockPosition(), ModSounds.ECHO_POSSESS.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         MemoryFx.mob(level, ModParticles.IMPRINT_SHIMMER.get(), x, y + 1.0D, z, 16);
         sync(player);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.possessed"), true);

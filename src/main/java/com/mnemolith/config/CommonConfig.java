@@ -20,6 +20,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue WRITE_EXPLOSION;
     public static final ModConfigSpec.BooleanValue WRITE_FALL;
     public static final ModConfigSpec.BooleanValue WRITE_BUILD;
+    public static final ModConfigSpec.BooleanValue WRITE_LIGHTNING;
+    public static final ModConfigSpec.BooleanValue WRITE_PORTAL;
+    public static final ModConfigSpec.BooleanValue WRITE_SCULK;
+    public static final ModConfigSpec.BooleanValue WRITE_BOSS;
+    public static final ModConfigSpec.BooleanValue WRITE_TRADE;
     public static final ModConfigSpec.DoubleValue FALL_DISTANCE_MIN;
     public static final ModConfigSpec.IntValue EXTRACTION_DURABILITY_COST;
     public static final ModConfigSpec.IntValue EXTRACTION_COOLDOWN_TICKS;
@@ -61,6 +66,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue MUTE_POCKET_MIN_Y;
     public static final ModConfigSpec.IntValue MUTE_POCKET_MAX_Y;
     public static final ModConfigSpec.BooleanValue OBSERVATORY_ENABLED;
+    public static final ModConfigSpec.BooleanValue FLOODED_ARCHIVE_ENABLED;
+    public static final ModConfigSpec.BooleanValue HUSH_CHAPEL_ENABLED;
+    public static final ModConfigSpec.BooleanValue MEMORY_FIELD_ENABLED;
+    public static final ModConfigSpec.BooleanValue ASHEN_ARCHIVE_ENABLED;
+    public static final ModConfigSpec.BooleanValue MUTE_LIBRARY_ENABLED;
     public static final ModConfigSpec.BooleanValue ARCHIVIST_OBSERVATORY_BIAS;
     public static final ModConfigSpec.BooleanValue STRIDER_PATH_BIAS;
     public static final ModConfigSpec.BooleanValue ECHOES_ENABLED;
@@ -165,7 +175,36 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue INTERVENE_RANGE;
     public static final ModConfigSpec.BooleanValue INTERVENE_ONCE;
     public static final ModConfigSpec.IntValue INTERVENE_INSTABILITY;
+    public static final ModConfigSpec.DoubleValue GRAVE_DAMAGE_MULT;
+    public static final ModConfigSpec.DoubleValue GRAVE_SPEED_PENALTY;
+    public static final ModConfigSpec.DoubleValue HUSH_STEP_BONUS;
+    public static final ModConfigSpec.IntValue RECALL_BLADE_COOLDOWN;
+    public static final ModConfigSpec.IntValue SCAR_BRAND_COOLDOWN;
+    public static final ModConfigSpec.IntValue STALKER_SPAWN_WEIGHT;
+    public static final ModConfigSpec.IntValue STALKER_MIN_PRESSURE;
+    public static final ModConfigSpec.BooleanValue SLEEP_CONSOLIDATION;
+    public static final ModConfigSpec.IntValue SLEEP_COOL_AMOUNT;
+    public static final ModConfigSpec.IntValue SLEEP_FADE_PASSES;
+    public static final ModConfigSpec.BooleanValue SLEEP_NIGHTMARE;
+    public static final ModConfigSpec.BooleanValue STRUCTURE_MEMORY_SEEDS;
     public static final ModConfigSpec SPEC;
+
+
+    public static final ModConfigSpec.BooleanValue SILENCE_COST_ENABLED;
+    public static final ModConfigSpec.IntValue SILENCE_COST_PULSE_TICKS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_PER_PULSE;
+    public static final ModConfigSpec.IntValue SILENCE_COST_DENSITY_BONUS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_WARN_AT;
+    public static final ModConfigSpec.IntValue SILENCE_COST_SPAWN_AT;
+    public static final ModConfigSpec.IntValue SILENCE_COST_COOLDOWN_TICKS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_DECAY;
+    public static final ModConfigSpec.BooleanValue SILENCE_COST_BLEACH_RECORDINGS;
+    public static final ModConfigSpec.IntValue SILENCE_COST_BLEACH_FRAMES;
+    public static final ModConfigSpec.BooleanValue MEMORIAL_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVE_GUARDIAN_ENABLED;
+    public static final ModConfigSpec.BooleanValue ARCHIVE_GUARDIAN_ONCE_PER_WORLD;
+    public static final ModConfigSpec.IntValue ARCHIVE_GUARDIAN_ARENA_RADIUS;
+    public static final ModConfigSpec.IntValue ARCHIVE_GUARDIAN_COOLDOWN_TICKS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -181,7 +220,7 @@ public final class CommonConfig {
         builder.pop();
 
         SpecValues.section(builder, "worldGen", "Structure placement defaults. Changing these takes effect the next time a world loads.");
-        STRUCTURES_ENABLED = SpecValues.boolRestart(builder, "structuresEnabled", "Whether the chronicle observatory may generate. Veins and mute pockets have their own toggles.", true);
+        STRUCTURES_ENABLED = SpecValues.boolRestart(builder, "structuresEnabled", "Master switch for mnemolith structures (observatory, flooded archive, hush chapel, memory field, ashen archive, mute library). Veins and mute pockets have their own toggles.", true);
         STRUCTURE_SPACING = SpecValues.integerRestart(builder, "structureSpacing", "Documented spacing, in chunks, of the chronicle observatory. The structure set json uses 32 and a separation of 12. Editing this number does not move structures.", 32, 8, 256);
         ARCHIVAL_VEINS_ENABLED = SpecValues.bool(builder, "archivalVeinsEnabled", "Whether archival veins may generate. The biome modifier uses #minecraft:is_overworld. The Y range keeps them underground.", true);
         ARCHIVAL_VEIN_CHANCE = SpecValues.integer(builder, "archivalVeinChance", "Chance, out of 100, that a chunk attempts an archival vein.", 8, 0, 100);
@@ -195,6 +234,11 @@ public final class CommonConfig {
         MUTE_POCKET_MIN_Y = SpecValues.integer(builder, "mutePocketMinY", "Lowest Y of a mute pocket.", -32, -64, 320);
         MUTE_POCKET_MAX_Y = SpecValues.integer(builder, "mutePocketMaxY", "Highest Y of a mute pocket.", 48, -64, 320);
         OBSERVATORY_ENABLED = SpecValues.boolRestart(builder, "observatoryEnabled", "Whether chronicle observatories may generate. Also requires structuresEnabled.", true);
+        FLOODED_ARCHIVE_ENABLED = SpecValues.boolRestart(builder, "floodedArchiveEnabled", "Whether flooded archives may generate underground in the Overworld. Also requires structuresEnabled.", true);
+        HUSH_CHAPEL_ENABLED = SpecValues.boolRestart(builder, "hushChapelEnabled", "Whether hush chapels may generate in the Overworld. Also requires structuresEnabled.", true);
+        MEMORY_FIELD_ENABLED = SpecValues.boolRestart(builder, "memoryFieldEnabled", "Whether memory fields may generate in the Overworld. Also requires structuresEnabled.", true);
+        ASHEN_ARCHIVE_ENABLED = SpecValues.boolRestart(builder, "ashenArchiveEnabled", "Whether ashen archives may generate in the Nether. Also requires structuresEnabled.", true);
+        MUTE_LIBRARY_ENABLED = SpecValues.boolRestart(builder, "muteLibraryEnabled", "Whether mute libraries may generate in the End. Also requires structuresEnabled.", true);
         ARCHIVIST_OBSERVATORY_BIAS = SpecValues.bool(builder, "archivistObservatoryBias", "Whether an archivist's natural pressure gate is lower in and near an observatory chunk.", true);
         STRIDER_PATH_BIAS = SpecValues.bool(builder, "striderPathBias", "Whether an echo strider's natural pressure gate is lower in a chunk that already holds a path imprint.", true);
         builder.pop();
@@ -208,13 +252,18 @@ public final class CommonConfig {
         WRITE_EXPLOSION = SpecValues.bool(builder, "writeExplosion", "Whether an explosion writes an explosion imprint.", true);
         WRITE_FALL = SpecValues.bool(builder, "writeFall", "Whether a significant fall writes a fall imprint.", true);
         WRITE_BUILD = SpecValues.bool(builder, "writeBuild", "Whether placing or breaking a block writes a build or redstone imprint.", true);
+        WRITE_LIGHTNING = SpecValues.bool(builder, "writeLightning", "Whether a lightning strike writes a lightning imprint.", true);
+        WRITE_PORTAL = SpecValues.bool(builder, "writePortal", "Whether travelling to another dimension writes a portal imprint at the departure.", true);
+        WRITE_SCULK = SpecValues.bool(builder, "writeSculk", "Whether a sculk sensor click or shrieker shriek writes a sculk imprint.", true);
+        WRITE_BOSS = SpecValues.bool(builder, "writeBoss", "Whether killing a boss (dragon, wither, warden, elder guardian, or the Scar) writes a boss imprint.", true);
+        WRITE_TRADE = SpecValues.bool(builder, "writeTrade", "Whether trading with a villager writes a trade imprint.", true);
         FALL_DISTANCE_MIN = SpecValues.decimal(builder, "fallDistanceMin", "Minimum fall distance, in blocks, before a fall imprint is written.", 4.0D, 1.0D, 40.0D);
         EXTRACTION_DURABILITY_COST = SpecValues.integer(builder, "extractionDurabilityCost", "Durability the extraction needle loses on a successful extract.", 2, 0, 32);
         EXTRACTION_COOLDOWN_TICKS = SpecValues.integer(builder, "extractionCooldownTicks", "Ticks before the extraction needle can extract again. 0 disables the cooldown.", 20, 0, 200);
         FAILURE_PRESSURE_SPIKE = SpecValues.integer(builder, "failurePressureSpike", "Instability added to the composition reel's chunk when a formula fails. A moment replicant is asked only if the chunk is then overloaded or fractured.", 18, 0, 100);
         INSTABILITY_DECAY = SpecValues.integer(builder, "instabilityDecay", "Instability removed from a player's chunk on each decay pulse. 0 disables cooling. Loud imprints stay until extracted.", 1, 0, 20);
         INSTABILITY_DECAY_TICKS = SpecValues.integer(builder, "instabilityDecayTicks", "Ticks between instability and quiet-imprint pulses while a player is in the chunk. 0 disables the pulse.", 200, 0, 20_000);
-        QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, or path imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, and player imprints stay until extracted.", 6000, 0, 72_000);
+        QUIET_FADE_TICKS = SpecValues.integer(builder, "quietFadeTicks", "Game ticks before the oldest build, redstone, path, or trade imprint in a visited chunk can fade. One fades per pulse, and one may fade when the chunk loads. 0 disables the fade. Deaths, explosions, falls, fire, silence, player, lightning, portal, sculk, and boss imprints stay until extracted.", 6000, 0, 72_000);
         VEIN_SHIMMER_TICKS = SpecValues.integer(builder, "veinShimmerTicks", "Ticks between vein particle repeats while a held lens snapshot has not changed. 0 repeats only when the snapshot is new. A changed chunk still shimmers immediately.", 40, 0, 200);
         ALLOW_AMBIENT_PRESSURE = SpecValues.bool(builder, "allowAmbientPressure", "Whether the server may send full nearby pressure snapshots to a player who is not holding a chronicle lens. Without it such a player gets only the band-only snapshot (overloaded and fracture chunks) used for fracture feel. Vein marks stay lens-only. The client visuals.ambientWithoutLens toggle only decides whether the client asks and draws; it cannot grant the snapshot by itself.", false);
         SATURATED_THRESHOLD = SpecValues.integer(builder, "saturatedThreshold", "Pressure at which a chunk becomes saturated. Multiplied by recollectionStormThreshold and capped at pressureSoftCap.", 20, 1, 10_000);
@@ -278,8 +327,8 @@ public final class CommonConfig {
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);
         ECHO_FRACTURE_STOPS = SpecValues.bool(builder, "echoFractureStops", "Whether an echo stops working in a chunk that reached the fracture band.", true);
         ECHO_FOLLOW_LOST_DISTANCE = SpecValues.integer(builder, "echoFollowLostDistance", "Blocks between an echo told to follow and its owner after which it gives up and stays.", 48, 8, 128);
-        ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion) can be grafted into your echo to give it a temper.", true);
-        ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
+        ECHO_GRAFTS_ENABLED = SpecValues.bool(builder, "echoGraftsEnabled", "Whether an imprint slip (silence, death, fire, fall, explosion, lightning, portal, sculk) can be grafted into your echo to give it a temper.", true);
+        ECHO_GRAFT_CHARGE_SCALE = SpecValues.decimal(builder, "echoGraftChargeScale", "Multiplies the charges one grafted slip gives (hushed 12, grave 24, kindled 32, plunging 24, volatile 48, charged 28, wandering 20, deep 16). A graft holds at most two slips' worth.", 1.0D, 0.25D, 4.0D);
         ECHO_GRAFT_AURA_RADIUS = SpecValues.integer(builder, "echoGraftAuraRadius", "Radius, in blocks, in which a hushed echo quiets and a kindled echo smelts for the owner's other echoes. A hushed echo (anyone's) also swallows a residue's or the Scar's act-out within this radius, for one charge.", 8, 0, 16);
         builder.pop();
 
@@ -368,7 +417,56 @@ public final class CommonConfig {
         INTERVENE_INSTABILITY = builder.comment("Instability added to the chunk when a tag changes. 0 adds none. The new tag is still scored.").translation("mnemolith.configuration.interveneInstability").defineInRange("instability", 6, 0, 40);
         builder.pop();
 
+        SpecValues.section(builder, "armory", "Armor set bonuses and weapon cooldowns.");
+        GRAVE_DAMAGE_MULT = SpecValues.decimal(builder, "graveDamageMult", "Damage multiplier against monsters while wearing a full grave set.", 0.8D, 0.1D, 1.0D);
+        GRAVE_SPEED_PENALTY = SpecValues.decimal(builder, "graveSpeedPenalty", "Movement speed multiplier added (usually negative) for a full grave set.", -0.08D, -0.5D, 0.0D);
+        HUSH_STEP_BONUS = SpecValues.decimal(builder, "hushStepBonus", "Movement speed multiplier added while sneaking in a full hush set.", 0.12D, 0.0D, 0.5D);
+        RECALL_BLADE_COOLDOWN = SpecValues.integer(builder, "recallBladeCooldown", "Ticks the recall blade rests after a second strike.", 30, 5, 200);
+        SCAR_BRAND_COOLDOWN = SpecValues.integer(builder, "scarBrandCooldown", "Ticks the scar brand rests after a spend.", 40, 5, 200);
+        builder.pop();
+
+        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, and fracture stalkers. Eggs and /mnemolith spawn ignore these.");
+        STALKER_SPAWN_WEIGHT = SpecValues.integer(builder, "stalkerSpawnWeight", "Chance, out of 100, that a natural fracture stalker spawn attempt is kept. 0 disables natural spawns.", 10, 0, 100);
+        STALKER_MIN_PRESSURE = SpecValues.integer(builder, "stalkerMinPressure", "Minimum cached pressure before a fracture stalker can spawn naturally.", 50, 0, 10_000);
+        builder.pop();
+
+        SpecValues.section(builder, "sleep", "After a full sleep the house cools. An overloaded chunk can dream a nightmare.");
+        SLEEP_CONSOLIDATION = SpecValues.bool(builder, "consolidation", "Whether waking from a full sleep cools quiet memory in the bed chunk.", true);
+        SLEEP_COOL_AMOUNT = SpecValues.integer(builder, "coolAmount", "Instability removed from the bed chunk after sleep.", 8, 0, 40);
+        SLEEP_FADE_PASSES = SpecValues.integer(builder, "fadePasses", "How many quiet imprints may fade after one sleep.", 2, 0, 8);
+        SLEEP_NIGHTMARE = SpecValues.bool(builder, "nightmare", "Whether waking in an overloaded or fractured chunk blinds the player and may spawn a replicant.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "worldMemory", "Quiet imprints seeded into vanilla structures on first visit.");
+        STRUCTURE_MEMORY_SEEDS = SpecValues.bool(builder, "structureSeeds", "Whether structure chunks gain a few weak ancient imprints when first loaded empty.", true);
+        builder.pop();
+
+        SpecValues.section(builder, "silenceCost", "Cost of silence (P3). Mute stones that stay too long or too dense accumulate void pressure and can birth a Silence Mirror.");
+        SILENCE_COST_ENABLED = SpecValues.bool(builder, "enabled", "Whether muted chunks accumulate void pressure and can spawn a Silence Mirror.", true);
+        SILENCE_COST_PULSE_TICKS = SpecValues.integer(builder, "pulseTicks", "Ticks between void-pressure pulses while a player stands in a muted chunk. 0 disables pulses.", 100, 0, 20_000);
+        SILENCE_COST_PER_PULSE = SpecValues.integer(builder, "perPulse", "Void pressure added each pulse while the chunk has a mute stone.", 1, 0, 20);
+        SILENCE_COST_DENSITY_BONUS = SpecValues.integer(builder, "densityBonus", "Extra void pressure per neighboring muted chunk and per extra mute stone in this chunk.", 1, 0, 10);
+        SILENCE_COST_WARN_AT = SpecValues.integer(builder, "warnAt", "Void pressure that plays a one-time warning and starts bleaching recordings.", 40, 1, 500);
+        SILENCE_COST_SPAWN_AT = SpecValues.integer(builder, "spawnAt", "Void pressure that spawns the Silence Mirror (Scar twin) and starts the cooldown.", 80, 1, 1000);
+        SILENCE_COST_COOLDOWN_TICKS = SpecValues.integer(builder, "cooldownTicks", "Ticks after a mirror spawn before this chunk can accumulate void pressure again.", 12000, 200, 240_000);
+        SILENCE_COST_DECAY = SpecValues.integer(builder, "decay", "Void pressure removed each pulse while the player stands in an unmuted chunk. 0 disables decay.", 1, 0, 20);
+        SILENCE_COST_BLEACH_RECORDINGS = SpecValues.bool(builder, "bleachRecordings", "Whether high void pressure shortens echo recordings in the player's inventory.", true);
+        SILENCE_COST_BLEACH_FRAMES = SpecValues.integer(builder, "bleachFrames", "Frames trimmed from each echo recording per pulse while void is at or above warnAt.", 20, 1, 200);
+        builder.pop();
+
+        SpecValues.section(builder, "memorial", "Player memorial on death (P4). Off by default so tombstone mods stay alone.");
+        MEMORIAL_ENABLED = SpecValues.bool(builder, "enabled", "Whether a player death places a memorial block that keeps items and a death imprint. Default off.", false);
+        builder.pop();
+
+        SpecValues.section(builder, "archiveGuardian", "Archive Guardian shrine boss (B4). Deterministic challenge at an archive shrine — never stormAttemptChance.");
+        ARCHIVE_GUARDIAN_ENABLED = SpecValues.bool(builder, "enabled", "Whether archive shrines can be challenged to spawn the Archive Guardian.", true);
+        ARCHIVE_GUARDIAN_ONCE_PER_WORLD = SpecValues.bool(builder, "oncePerWorld", "Whether defeating the guardian once locks every shrine in the world.", true);
+        ARCHIVE_GUARDIAN_ARENA_RADIUS = SpecValues.integer(builder, "arenaRadius", "Radius of the temporary scar-glass arena ring around the shrine.", 7, 4, 16);
+        ARCHIVE_GUARDIAN_COOLDOWN_TICKS = SpecValues.integer(builder, "cooldownTicks", "Ticks after a challenge before another shrine can be challenged (0 = no cooldown). Ignored for /mnemolith spawn.", 0, 0, 240_000);
+        builder.pop();
+
         SPEC = builder.build();
+
     }
 
     private CommonConfig() {}

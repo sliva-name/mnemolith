@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.ModBlocks;
 import com.mnemolith.imprint.ChunkMemory;
+import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.network.PressureSync;
 import com.mnemolith.particle.MemoryFx;
@@ -72,7 +73,47 @@ public final class LoadedChunkMemory {
     }
 
     public static boolean isMuted(ServerLevel level, BlockPos pos) {
-        return anyLoaded(level, pos, CommonConfig.MUTE_RADIUS_CHUNKS.get(), ChunkMemory::hasMuteStone);
+        return anyLoaded(level, pos, CommonConfig.MUTE_RADIUS_CHUNKS.get(), ChunkMemory::hasAnyMute);
+    }
+
+    /**
+     * True when imprint writes of {@code tag} should be blocked at {@code pos}.
+     * A full mute stone blocks every tag. A selective mute blocks every tag except its allowed one
+     * (so a base can farm one imprint type while staying quiet for residues and other tags).
+     */
+    public static boolean isMutedExcept(ServerLevel level, BlockPos pos, ImprintTag tag) {
+        int radius = CommonConfig.MUTE_RADIUS_CHUNKS.get();
+        int originX = pos.getX() >> 4;
+        int originZ = pos.getZ() >> 4;
+        boolean anyFull = false;
+        boolean anySelective = false;
+        boolean tagAllowed = false;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int chunkX = originX + dx;
+                int chunkZ = originZ + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
+                if (memory == null) {
+                    continue;
+                }
+                if (memory.hasMuteStone()) {
+                    anyFull = true;
+                }
+                if (memory.hasSelectiveMute()) {
+                    anySelective = true;
+                    if (memory.selectiveAllows(tag)) {
+                        tagAllowed = true;
+                    }
+                }
+            }
+        }
+        if (anyFull) {
+            return true;
+        }
+        return anySelective && !tagAllowed;
     }
 
     public static void addMuteStone(ServerLevel level, BlockPos pos) {
@@ -104,6 +145,64 @@ public final class LoadedChunkMemory {
             }
             chunk.markUnsaved();
             PressureSync.markDirty();
+        }
+    }
+
+    public static void addSelectiveMute(ServerLevel level, BlockPos pos, ImprintTag allowed) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.addSelectiveMute(pos, allowed)) {
+            chunk.markUnsaved();
+            PressureSync.markDirty();
+            MemoryFx.mute(level, pos);
+        }
+    }
+
+    public static void removeSelectiveMute(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = existing(chunk);
+        if (memory == null) {
+            return;
+        }
+        boolean wasFull = ChunkMemory.markListFull(memory.selectiveMuteCount());
+        if (memory.removeSelectiveMute(pos)) {
+            if (wasFull) {
+                refillSelective(chunk);
+            }
+            chunk.markUnsaved();
+            PressureSync.markDirty();
+        }
+    }
+
+    private static void refillSelective(ChunkAccess chunk) {
+        // Re-scan for selective mute stones beyond the cap; tag comes from the block entity.
+        net.minecraft.world.level.block.Block block = ModBlocks.SELECTIVE_MUTE_STONE.get();
+        LevelChunkSection[] sections = chunk.getSections();
+        int baseX = chunk.getPos().getMinBlockX();
+        int baseZ = chunk.getPos().getMinBlockZ();
+        ChunkMemory memory = getOrCreate(chunk);
+        for (int index = 0; index < sections.length; index++) {
+            LevelChunkSection section = sections[index];
+            if (section.hasOnlyAir() || !section.maybeHas(state -> state.is(block))) {
+                continue;
+            }
+            int baseY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(index));
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        if (!section.getBlockState(x, y, z).is(block)) {
+                            continue;
+                        }
+                        BlockPos at = new BlockPos(baseX + x, baseY + y, baseZ + z);
+                        ImprintTag allowed = ImprintTag.SILENCE;
+                        if (chunk instanceof LevelChunk levelChunk
+                                && levelChunk.getBlockEntity(at) instanceof com.mnemolith.content.block.SelectiveMuteStoneBlockEntity be) {
+                            allowed = be.allowed().orElse(ImprintTag.SILENCE);
+                        }
+                        memory.addSelectiveMute(at, allowed);
+                    }
+                }
+            }
         }
     }
 
@@ -234,6 +333,26 @@ public final class LoadedChunkMemory {
 
     public static boolean observatoryNearby(ServerLevel level, BlockPos pos, int radius) {
         return anyLoaded(level, pos, radius, ChunkMemory::observatory);
+    }
+
+    public static boolean markHushChapel(ChunkAccess chunk) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.hushChapel()) {
+            return false;
+        }
+        memory.setHushChapel(true);
+        chunk.markUnsaved();
+        return true;
+    }
+
+    public static boolean markMemoryField(ChunkAccess chunk) {
+        ChunkMemory memory = getOrCreate(chunk);
+        if (memory.memoryField()) {
+            return false;
+        }
+        memory.setMemoryField(true);
+        chunk.markUnsaved();
+        return true;
     }
 
     public static ChunkState stateOf(ChunkMemory memory, boolean muted) {

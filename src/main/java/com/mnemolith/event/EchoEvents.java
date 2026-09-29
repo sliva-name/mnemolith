@@ -79,6 +79,26 @@ public final class EchoEvents {
         }
     }
 
+    /** O1: teach animal care from shear / milk / breed interactions during a recording. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (event.isCanceled() || !realPlayer(event.getEntity())) {
+            return;
+        }
+        ServerPlayer player = (ServerPlayer) event.getEntity();
+        if (!EchoRecorder.isRecording(player)) {
+            return;
+        }
+        var target = event.getTarget();
+        var stack = player.getItemInHand(event.getHand());
+        boolean shear = stack.is(net.minecraft.world.item.Items.SHEARS) && target instanceof net.minecraft.world.entity.Shearable;
+        boolean milk = stack.is(net.minecraft.world.item.Items.BUCKET) && target instanceof net.minecraft.world.entity.animal.cow.AbstractCow;
+        boolean breed = target instanceof net.minecraft.world.entity.animal.Animal animal && animal.isFood(stack);
+        if (shear || milk || breed) {
+            EchoRecorder.onCare(player, shear, milk, breed, breed ? stack.getItem() : null);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         // A replicant ghost also uses a fake player. It is not an echo hand, so it does not become the QA actor.

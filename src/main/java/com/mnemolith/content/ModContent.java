@@ -13,5 +13,6 @@ public final class ModContent {
         ModBlockEntities.register(modEventBus);
         ModMenus.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        com.mnemolith.content.villager.ModVillagers.register(modEventBus);
     }
 }

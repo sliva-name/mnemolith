@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_glass_pane_side",
+  "textures": {
+    "pane": "mnemolith:block/scar_glass",
+    "edge": "mnemolith:block/scar_glass"
+  }
+}

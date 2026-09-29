@@ -1,8 +1,9 @@
-"""Field guide illustrations: 30 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
+"""Field guide illustrations: 33 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
 Every page is an ink-paper plate with a brass-cornered frame, one small in-world diorama rendered from the real
 block models and entity layouts (render3d), the real item sprites at 2x, and a few diagram marks. No text: the book
 prints its words from the lang file."""
 import math
+from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -13,7 +14,8 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
-         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'world', 'players', 'reference')
+         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'armory', 'beasts', 'roles',
+         'world', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -387,23 +389,32 @@ def p_loop():
 
 def p_sources():
     p = Page('sources')
-    rows = [('path', 1), ('build', 2), ('redstone', 2), ('player', 4), ('fire', 8), ('silence', 8), ('fall', 10), ('explosion', 24), ('death', 27)]
+    # First-copy contribution ≈ weight × intensity. Two columns so fourteen tags fit the page.
+    rows = [
+        ('path', 1), ('build', 2), ('redstone', 2), ('trade', 2), ('player', 4),
+        ('portal', 10), ('sculk', 8), ('fire', 8), ('silence', 8), ('fall', 10),
+        ('lightning', 18), ('explosion', 24), ('death', 27), ('boss', 40),
+    ]
+    top, row_h, max_v = 28, 15, 40
     for k, (t, v) in enumerate(rows):
-        y = 34 + k * 22
+        col = k // 7
+        row = k % 7
+        x0 = 236 + col * 140
+        y = top + row * row_h
         i = gui.TAG_ORDER.index(t)
-        ic = tags_img().crop((i * 32, 0, i * 32 + 32, 32)).resize((20, 20), Image.NEAREST)
-        p.paste(ic, 250, y - 8, shadow=False)
-        col = c('verdigris', 4) if v <= 4 else c('ember', 4) if v <= 10 else c('red', 4)
-        p.plate(276, y - 5, 478, y + 7)
-        p.d.rectangle([278, y - 3, 278 + int(198 * v / 27), y + 5], fill=(*col, 255))
-    d = Diorama(230, 220, 28)
+        ic = tags_img().crop((i * 32, 0, i * 32 + 32, 32)).resize((14, 14), Image.NEAREST)
+        p.paste(ic, x0, y - 5, shadow=False)
+        tint = c('verdigris', 4) if v <= 4 else c('ember', 4) if v <= 18 else c('red', 4)
+        p.plate(x0 + 18, y - 3, x0 + 132, y + 7)
+        p.d.rectangle([x0 + 20, y - 1, x0 + 20 + int(110 * v / max_v), y + 5], fill=(*tint, 255))
+    d = Diorama(220, 210, 26)
     d.ground(4, 4, 2)
     d.add(mob_quads('wanderer', -0.8, 0, 0.8, 215))
     d.add(block_quads('mnemolith:block/archival_stratum', 0.2, 0, -0.8))
     d.add(cube('plank', 'plank', 1.0, 0, -1.8))
     d.add(mob_quads('archivist', 1.2, 0, 1.2, 250))
-    p.center(d.render(0, -0.3, 0), 122, 130)
-    p.spark(120, 120, 60, c('echo', 4), 12)
+    p.center(d.render(0, -0.3, 0), 118, 128)
+    p.spark(118, 118, 55, c('echo', 4), 12)
     return p.image()
 
 
@@ -876,6 +887,44 @@ def p_reference():
         d.add(block_quads('mnemolith:block/' + n, -0.5, 0, -0.5))
         p.center(d.render(0, 0.45, 0), 40 + k * 68, 214)
     return p.image()
+
+
+
+def _item_tex(name):
+    path = Path(__file__).resolve().parents[3] / 'src/main/resources/assets/mnemolith/textures/item' / (name + '.png')
+    return Image.open(path).convert('RGBA')
+
+
+def p_armory():
+    p = Page('armory')
+    names = ('hush_helmet', 'grave_chestplate', 'echo_leggings', 'scar_boots',
+             'recall_blade', 'hush_spear', 'grave_maul', 'chorus_sling', 'scar_brand')
+    for i, n in enumerate(names):
+        x = 70 + (i % 5) * 80
+        y = 70 + (i // 5) * 90
+        p.sprite(n, x, y, 2, src=_item_tex(n))
+    return p.image()
+
+
+def p_beasts():
+    p = Page('beasts')
+    # Egg icons stand in for the three quieter beasts when entity dioramas are unavailable here.
+    for i, n in enumerate(('ledger_mite_spawn_egg', 'kin_witness_spawn_egg', 'fracture_stalker_spawn_egg')):
+        p.sprite(n, 110 + i * 120, 120, 3, src=_item_tex(n))
+    return p.image()
+
+
+def p_roles():
+    p = Page('roles')
+    d = Diorama(360, 200, 28)
+    d.ground(4, 3, 2)
+    d.add(mob_quads('wanderer', -0.8, 0, 0.2, 200), tint=ECHO_TINT)
+    d.add(mob_quads('wanderer', 1.0, 0, -0.3, 240), tint=ECHO_TINT)
+    p.center(d.render(0, 0.12, 0), 220, 130)
+    p.sprite('echo_slip', 420, 70, 2)
+    p.sprite('recall_blade', 430, 150, 2, src=_item_tex('recall_blade'))
+    return p.image()
+
 
 
 BUILDERS = {n: globals()['p_' + n] for n in PAGES}

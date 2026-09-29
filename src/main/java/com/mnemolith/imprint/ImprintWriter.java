@@ -23,6 +23,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import com.mnemolith.audio.ModSounds;
+import com.mnemolith.event.ImprintWrittenEvent;
+
+import net.neoforged.neoforge.common.NeoForge;
 
 /** Writes, extracts, and spikes chunk memory. Callers are world events, items, and the smoke command. */
 public final class ImprintWriter {
@@ -35,9 +38,10 @@ public final class ImprintWriter {
 
     /** False when a muted chunk or the build/redstone pause would drop the write. Does not create memory. */
     public static boolean acceptsThrottled(ServerLevel level, BlockPos pos) {
-        if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMuted(level, pos)) {
+        if (!CommonConfig.WRITE_IMPRINTS.get()) {
             return false;
         }
+        // Mute is checked per tag in write(); a selective mute may still accept one tag.
         ChunkMemory memory = LoadedChunkMemory.existing(level.getChunkAt(pos));
         if (memory == null) {
             return true;
@@ -49,7 +53,13 @@ public final class ImprintWriter {
         if (!CommonConfig.WRITE_IMPRINTS.get() || tags.isEmpty()) {
             return false;
         }
-        if (LoadedChunkMemory.isMuted(level, pos)) {
+        List<ImprintTag> accepted = new ArrayList<>();
+        for (ImprintTag tag : tags) {
+            if (!LoadedChunkMemory.isMutedExcept(level, pos, tag)) {
+                accepted.add(tag);
+            }
+        }
+        if (accepted.isEmpty()) {
             return false;
         }
         LevelChunk chunk = level.getChunkAt(pos);
@@ -59,7 +69,7 @@ public final class ImprintWriter {
             return false;
         }
         ChunkMemory memory = existing != null ? existing : LoadedChunkMemory.getOrCreate(chunk);
-        for (ImprintTag tag : tags) {
+        for (ImprintTag tag : accepted) {
             int intensity = intensityFor(tag);
             Imprint imprint = new Imprint(tag, intensity, pos.immutable(), Optional.ofNullable(player), Imprint.contextHash(tag, pos, now), now);
             memory.addImprint(imprint, CommonConfig.MAX_IMPRINTS_PER_CHUNK.get());
@@ -68,7 +78,7 @@ public final class ImprintWriter {
             memory.markWritten(now);
         }
         PressureBand band = MemoryPressure.recompute(chunk, memory);
-        for (ImprintTag tag : tags) {
+        for (ImprintTag tag : accepted) {
             Mnemolith.LOGGER.debug(
                     "Mnemolith imprint {} at {},{},{} pressure={} band={}",
                     tag.getSerializedName(),
@@ -80,6 +90,7 @@ public final class ImprintWriter {
         }
         level.playSound(null, pos, ModSounds.IMPRINT_WRITE.get(), SoundSource.BLOCKS, 0.6F, 1.2F);
         MemoryFx.write(level, pos);
+        NeoForge.EVENT_BUS.post(new ImprintWrittenEvent(level, pos, accepted, player, throttled));
         return true;
     }
 
@@ -88,7 +99,7 @@ public final class ImprintWriter {
      * vault discharging, spilling or leaking). A muted chunk refuses it, as it refuses every write.
      */
     public static boolean restore(ServerLevel level, BlockPos pos, Imprint banked) {
-        if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMuted(level, pos)) {
+        if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMutedExcept(level, pos, banked.tag())) {
             return false;
         }
         LevelChunk chunk = level.getChunkAt(pos);
@@ -239,6 +250,11 @@ public final class ImprintWriter {
             case BUILD -> ImprintConstants.BUILD_INTENSITY;
             case REDSTONE -> ImprintConstants.REDSTONE_INTENSITY;
             case PATH -> ImprintConstants.PATH_INTENSITY;
+            case LIGHTNING -> ImprintConstants.LIGHTNING_INTENSITY;
+            case PORTAL -> ImprintConstants.PORTAL_INTENSITY;
+            case SCULK -> ImprintConstants.SCULK_INTENSITY;
+            case BOSS -> ImprintConstants.BOSS_INTENSITY;
+            case TRADE -> ImprintConstants.TRADE_INTENSITY;
         };
         return Math.max(ImprintConstants.INTENSITY_MIN, Math.min(ImprintConstants.INTENSITY_MAX, intensity));
     }

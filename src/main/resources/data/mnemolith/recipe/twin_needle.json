@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "mnemolith:reinforced_needle",
+    "mnemolith:extraction_needle"
+  ],
+  "result": {
+    "id": "mnemolith:twin_needle"
+  }
+}

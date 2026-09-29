@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:first_echo",
+  "display": {
+    "icon": {
+      "id": "mnemolith:residual_shard"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.first_residue.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.first_residue.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:scar_fragment"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ]
+}

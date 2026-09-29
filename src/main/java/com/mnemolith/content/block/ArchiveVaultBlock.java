@@ -5,6 +5,7 @@ import com.mnemolith.vault.ArchiveVaults;
 import com.mojang.serialization.MapCodec;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -91,5 +92,19 @@ public final class ArchiveVaultBlock extends BaseEntityBlock {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
         ArchiveVaults.refreshLoad(level, pos);
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        if (level.getBlockEntity(pos) instanceof ArchiveVaultBlockEntity vault) {
+            int cap = Math.max(1, com.mnemolith.config.CommonConfig.MAX_IMPRINTS_PER_CHUNK.get());
+            return Math.min(15, (vault.count() * 15) / cap);
+        }
+        return 0;
     }
 }

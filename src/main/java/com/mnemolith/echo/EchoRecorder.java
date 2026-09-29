@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -55,6 +56,12 @@ public final class EchoRecorder {
         final List<Placed> placed = new ArrayList<>();
         /** Stage 3 farming: hoe uses that turned dirt into farmland. */
         int tilled;
+        /** O1 animal care taught during this recording. */
+        boolean careShear;
+        boolean careMilk;
+        boolean careBreed;
+        net.minecraft.world.item.Item careBreedFood;
+        int careActions;
         int count;
 
         Session(ResourceKey<Level> dimension, Vec3 origin, int maxFrames) {
@@ -154,7 +161,9 @@ public final class EchoRecorder {
                     session.tilled++;
                 }
                 if (after != pending.before && !pending.before.isAir()) {
-                    add(session, EchoAction.of(pending.tick, EchoAction.Kind.USE, pending.hit, pending.hand == InteractionHand.OFF_HAND, pending.before.getBlock(), null));
+                    // O2: keep the held item so replay can till, shear vines, flint&steel, bone-meal, bucket, etc.
+                    Item used = pending.item == Items.AIR ? null : pending.item;
+                    add(session, EchoAction.of(pending.tick, EchoAction.Kind.USE, pending.hit, pending.hand == InteractionHand.OFF_HAND, pending.before.getBlock(), used));
                 }
             }
         }
@@ -225,8 +234,20 @@ public final class EchoRecorder {
             if (farm.teaches()) {
                 result.set(ModDataComponents.ECHO_FARM.get(), farm);
             }
+            LumberLesson lumber = analyzeLumber(session);
+            if (lumber.teaches()) {
+                result.set(ModDataComponents.ECHO_LUMBER.get(), lumber);
+            }
+            CareLesson care = analyzeCare(session);
+            if (care.teaches()) {
+                result.set(ModDataComponents.ECHO_CARE.get(), care);
+            }
             Mnemolith.LOGGER.info("Mnemolith echo farm lesson player={} crops={} tilled={} planted={} harvested={}", player.getGameProfile().name(),
                     farm.crops().size(), farm.tilled(), farm.planted(), farm.harvested());
+            Mnemolith.LOGGER.info("Mnemolith echo lumber lesson player={} logs={} saplings={} chopped={} planted={}", player.getGameProfile().name(),
+                    lumber.logs().size(), lumber.saplings().size(), lumber.chopped(), lumber.planted());
+            Mnemolith.LOGGER.info("Mnemolith echo care lesson player={} shear={} milk={} breed={} actions={}", player.getGameProfile().name(),
+                    care.shear(), care.milk(), care.breed(), care.actions());
             Mnemolith.LOGGER.info("Mnemolith echo lesson player={} mining={} blueprint={}", player.getGameProfile().name(),
                     lesson.mining().size(), lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
             player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_done", recording.seconds(), recording.actions().size()), true);
@@ -252,7 +273,7 @@ public final class EchoRecorder {
         int total = 0;
         for (BlockState state : session.broken) {
             if (state.hasBlockEntity() || state.getDestroySpeed(player.level(), player.blockPosition()) < 0.0F || state.isAir()
-                    || state.getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
+                    || FarmLesson.isTeachable(state.getBlock()) || LumberLesson.isLog(state)) {
                 continue;
             }
             counts.merge(state.getBlock(), 1, Integer::sum);
@@ -308,20 +329,75 @@ public final class EchoRecorder {
         int harvested = 0;
         int planted = 0;
         for (BlockState state : session.broken) {
-            if (FarmLesson.isMature(state)) {
-                crops.merge(state.getBlock(), 1, Integer::sum);
+            Block block = state.getBlock();
+            if (FarmLesson.isTeachable(block) && FarmLesson.isMature(state)) {
+                Block key = FarmLesson.normalize(block);
+                crops.merge(key, 1, Integer::sum);
                 harvested++;
             }
         }
         for (Placed placed : session.placed) {
-            if (placed.state().getBlock() instanceof net.minecraft.world.level.block.CropBlock) {
-                crops.merge(placed.state().getBlock(), 1, Integer::sum);
+            Block block = placed.state().getBlock();
+            if (FarmLesson.isTeachable(block)) {
+                Block key = FarmLesson.normalize(block);
+                crops.merge(key, 1, Integer::sum);
                 planted++;
             }
         }
         List<Block> order = new ArrayList<>(crops.keySet());
         order.sort((a, b) -> Integer.compare(crops.get(b), crops.get(a)));
         return new FarmLesson(order, session.tilled, planted, harvested);
+    }
+
+    /** O1 lumberjack: logs chopped and saplings planted. */
+    static LumberLesson analyzeLumber(Session session) {
+        Map<Block, Integer> logs = new java.util.LinkedHashMap<>();
+        Map<Block, Integer> saplings = new java.util.LinkedHashMap<>();
+        int chopped = 0;
+        int planted = 0;
+        for (BlockState state : session.broken) {
+            if (LumberLesson.isLog(state)) {
+                logs.merge(state.getBlock(), 1, Integer::sum);
+                chopped++;
+            }
+        }
+        for (Placed placed : session.placed) {
+            if (placed.state().getBlock() instanceof net.minecraft.world.level.block.SaplingBlock) {
+                saplings.merge(placed.state().getBlock(), 1, Integer::sum);
+                planted++;
+            }
+        }
+        List<Block> logOrder = new ArrayList<>(logs.keySet());
+        logOrder.sort((a, b) -> Integer.compare(logs.get(b), logs.get(a)));
+        List<Block> sapOrder = new ArrayList<>(saplings.keySet());
+        sapOrder.sort((a, b) -> Integer.compare(saplings.get(b), saplings.get(a)));
+        return new LumberLesson(logOrder, sapOrder, chopped, planted);
+    }
+
+    static CareLesson analyzeCare(Session session) {
+        return new CareLesson(session.careShear, session.careMilk, session.careBreed,
+                java.util.Optional.ofNullable(session.careBreedFood), session.careActions);
+    }
+
+    /** O1: player sheared, milked or bred during the recording. */
+    public static void onCare(ServerPlayer player, boolean shear, boolean milk, boolean breed, Item food) {
+        Session session = SESSIONS.get(player.getUUID());
+        if (session == null) {
+            return;
+        }
+        if (shear) {
+            session.careShear = true;
+        }
+        if (milk) {
+            session.careMilk = true;
+        }
+        if (breed) {
+            session.careBreed = true;
+            if (food != null && food != Items.AIR) {
+                session.careBreedFood = food;
+            }
+        }
+        session.careActions++;
     }
 
     /** Server stopped: forget unsaved sessions (players were already handed their recordings on logout). */

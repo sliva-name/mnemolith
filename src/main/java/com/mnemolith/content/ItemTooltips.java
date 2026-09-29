@@ -1,6 +1,7 @@
 package com.mnemolith.content;
 
 import com.mnemolith.data.ImprintCast;
+import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.data.ModDataComponents;
 
 import net.minecraft.network.chat.Component;
@@ -22,12 +23,42 @@ public final class ItemTooltips {
             if (stack.getItem() == ModItems.CHRONICLE_LENS.get()) {
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.hint"));
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.echo_hint"));
+                ImprintTag filter = stack.get(ModDataComponents.FILTER_TAG.get());
+                if (filter != null) {
+                    builder.accept(Component.translatable("item.mnemolith.chronicle_lens.filter", Component.translatable(filter.translationKey()))
+                            .withStyle(net.minecraft.ChatFormatting.AQUA));
+                }
             } else if (stack.getItem() == ModItems.ARCHIVIST_BAIT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archivist_bait.hint"));
             } else if (stack.getItem() == ModItems.EXTRACTION_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
+            } else if (stack.getItem() == ModItems.REINFORCED_NEEDLE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.reinforced_needle.hint"));
+            } else if (stack.getItem() == ModItems.TWIN_NEEDLE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.twin_needle.hint"));
+            } else if (stack.getItem() == ModItems.IMPRINT_SEAL.get()) {
+                builder.accept(Component.translatable("item.mnemolith.imprint_seal.hint"));
+            } else if (stack.getItem() == ModItems.SELECTIVE_MUTE_STONE.get()) {
+                builder.accept(Component.translatable("block.mnemolith.selective_mute_stone.hint"));
+                ImprintTag allowed = stack.get(ModDataComponents.FILTER_TAG.get());
+                if (allowed != null) {
+                    builder.accept(Component.translatable("block.mnemolith.selective_mute_stone.allowed", Component.translatable(allowed.translationKey()))
+                            .withStyle(net.minecraft.ChatFormatting.AQUA));
+                }
+            } else if (stack.getItem() == ModItems.ECHO_HOME.get()) {
+                builder.accept(Component.translatable("block.mnemolith.echo_home.hint"));
+            } else if (stack.getItem() == ModItems.PRESSURE_LAMP.get()) {
+                builder.accept(Component.translatable("block.mnemolith.pressure_lamp.hint"));
+            } else if (stack.getItem() == ModItems.MEMORY_COMPASS.get()) {
+                builder.accept(Component.translatable("item.mnemolith.memory_compass.hint"));
+            } else if (stack.getItem() == ModItems.ECHO_ARMOR_TRIM_SMITHING_TEMPLATE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.echo_armor_trim_smithing_template.hint"));
             } else if (stack.getItem() == ModItems.ARCHIVAL_TABLET.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archival_tablet.hint"));
+            } else if (stack.getItem() == ModItems.ARCHIVE_SHRINE.get()) {
+                builder.accept(Component.translatable("block.mnemolith.archive_shrine.hint"));
+            } else if (stack.getItem() == ModItems.ARCHIVE_SCHEMATIC.get()) {
+                builder.accept(Component.translatable("item.mnemolith.archive_schematic.hint"));
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
             } else if (stack.getItem() == ModItems.ECHO_SLIP.get()) {
@@ -71,6 +102,10 @@ public final class ItemTooltips {
                 if (hint != null) {
                     builder.accept(Component.translatable(hint).withStyle(net.minecraft.ChatFormatting.GRAY));
                 }
+                if (stack.getItem() == com.mnemolith.armory.ArmoryItems.RECALL_BLADE.get() && player != null && player.level() != null) {
+                    builder.accept(com.mnemolith.armory.RecallBladeItem.tagLine(player.level(), player)
+                            .copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
             }
         });
         event.registerComponentAppenderBeforeAll(ModDataComponents.ECHO_RECORDING, (stack, context, display, player, flag, builder) -> {
@@ -82,17 +117,27 @@ public final class ItemTooltips {
             // The client only receives the lesson summary; the frames stay on the server.
             com.mnemolith.echo.EchoLesson lesson = stack.get(ModDataComponents.ECHO_LESSON.get());
             com.mnemolith.echo.FarmLesson farm = stack.get(ModDataComponents.ECHO_FARM.get());
+            com.mnemolith.echo.LumberLesson lumber = stack.get(ModDataComponents.ECHO_LUMBER.get());
+            com.mnemolith.echo.CareLesson care = stack.get(ModDataComponents.ECHO_CARE.get());
             boolean farming = farm != null && farm.teaches();
+            boolean lumbering = lumber != null && lumber.teaches();
+            boolean caring = care != null && care.teaches();
             if (lesson != null) {
                 builder.accept(Component.translatable("item.mnemolith.echo_recording.summary", lesson.seconds(), lesson.breaks(), lesson.places(), lesson.uses()));
                 boolean onlyReplay = !lesson.teachesMining() && !lesson.teachesBuilding();
-                if (!(onlyReplay && farming)) {
+                if (!(onlyReplay && (farming || lumbering || caring))) {
                     for (Component line : lesson.describe()) {
                         builder.accept(line.copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                     }
                 }
                 if (farming) {
                     builder.accept(Component.translatable("mnemolith.lesson.farming", farm.cropNames()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+                if (lumbering) {
+                    builder.accept(Component.translatable("mnemolith.lesson.lumber", lumber.logNames()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+                if (caring) {
+                    builder.accept(Component.translatable("mnemolith.lesson.care", care.describe()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                 }
             } else if (recording.length() > 0) {
                 builder.accept(Component.translatable(

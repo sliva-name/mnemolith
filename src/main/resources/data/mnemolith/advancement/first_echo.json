@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:first_compose",
+  "display": {
+    "icon": {
+      "id": "mnemolith:echo_recording"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.first_echo.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.first_echo.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:echo_recording"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ]
+}

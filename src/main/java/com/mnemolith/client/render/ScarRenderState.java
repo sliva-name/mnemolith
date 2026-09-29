@@ -4,4 +4,10 @@ package com.mnemolith.client.render;
 public class ScarRenderState extends ResidueRenderState {
     public int[] tempers = new int[0];
     public boolean casting;
+    /** Silence Mirror: inverted cold palette. */
+    public boolean mirror;
+    /** Archive Guardian: archival teal palette. */
+    public boolean guardian;
+    /** Vault seal active (guardian shield). */
+    public boolean vaultSealed;
 }

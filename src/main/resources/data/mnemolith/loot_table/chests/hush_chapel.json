@@ -1,0 +1,100 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archive_schematic",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:mute_stone",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:hush_fiber",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 2.0,
+        "max": 4.0
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:imprint_slip",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "silence",
+                  "intensity": 2,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 72001,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:residual_shard",
+          "weight": 2,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "mnemolith:imprint_cast": {
+                  "tag": "silence",
+                  "intensity": 4,
+                  "origin": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "context_hash": 72002,
+                  "written_at": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:mute_stone",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:hush_fiber",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:field_guide",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mnemolith:archive_schematic",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

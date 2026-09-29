@@ -1,0 +1,12 @@
+{
+  "wants": {
+    "count": 6,
+    "id": "minecraft:emerald"
+  },
+  "gives": {
+    "id": "mnemolith:catalog_fragment"
+  },
+  "max_uses": 8,
+  "xp": 10,
+  "reputation_discount": 0.1
+}

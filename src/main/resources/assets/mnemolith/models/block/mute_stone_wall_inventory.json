@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "mnemolith:block/mute_stone_bricks"
+  }
+}

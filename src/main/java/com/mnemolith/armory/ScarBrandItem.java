@@ -3,6 +3,7 @@ package com.mnemolith.armory;
 import java.util.List;
 
 import com.mnemolith.audio.ModSounds;
+import com.mnemolith.config.CommonConfig;
 import com.mnemolith.imprint.ChunkMemory;
 import com.mnemolith.pressure.MemoryPressure;
 import com.mnemolith.world.LoadedChunkMemory;
@@ -68,7 +69,7 @@ public class ScarBrandItem extends Item {
             MemoryPressure.recompute(chunk, memory);
         }
         stack.hurtAndBreak(1, server, serverPlayer, item -> {});
-        player.getCooldowns().addCooldown(stack, 40);
+        player.getCooldowns().addCooldown(stack, CommonConfig.SCAR_BRAND_COOLDOWN.get());
         server.playSound(null, player.blockPosition(), ModSounds.COMPOSE_FAIL.get(), SoundSource.PLAYERS, 0.7F, 0.6F);
         serverPlayer.sendSystemMessage(Component.translatable("mnemolith.armory.brand_spent", struck), true);
         return InteractionResult.SUCCESS_SERVER;
