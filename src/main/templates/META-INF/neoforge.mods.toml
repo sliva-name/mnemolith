@@ -29,8 +29,9 @@ updateJSONURL="https://raw.githubusercontent.com/sliva-name/mnemolith/main/updat
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://github.com/sliva-name/mnemolith"
 
-# A file name (in the root of the mod JAR) containing a logo for display
-logoFile="mnemolith.png" #optional
+# Square icon for the mods screen (root of the JAR). Prefer iconFile/bannerFile over deprecated logoFile.
+iconFile="mnemolith.png" #optional
+bannerFile="mnemolith.png" #optional — same art until a wide banner exists
 
 # A text field displayed in the mod UI
 credits="Chair model: Chaalen (CC-BY-4.0). Sounds: procedural placeholders (Z1)." #optional
