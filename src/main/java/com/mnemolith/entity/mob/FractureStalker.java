@@ -108,6 +108,19 @@ public class FractureStalker extends Monster {
 
     private boolean gaveScale;
 
+    /** The elite flag is synced data; without this it resets on every chunk reload (normal skin, normal drops). */
+    @Override
+    protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("elite", this.elite());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.entityData.set(DATA_ELITE, input.getBooleanOr("elite", false));
+    }
+
     public boolean gaveScale() {
         return this.gaveScale;
     }

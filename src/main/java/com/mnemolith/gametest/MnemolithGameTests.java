@@ -102,6 +102,8 @@ public final class MnemolithGameTests {
         live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
 
         quick("pleading_chair", ChairTests::run);
+        // Elite stalker and twin memory mob flags survive a save and load.
+        quick("mob_flags_persist", PersistenceTests::run);
         // Own batch: placing a real house must not share the suites' world random.
         village("village_chair", ChairTests::villageHouse);
     }

@@ -784,6 +784,7 @@
   "entity.mnemolith.fracture_stalker": "Fracture Stalker",
   "entity.mnemolith.fracture_stalker.elite": "Scarred Stalker",
   "entity.mnemolith.memory_bolt": "Memory Bolt",
+  "entity.mnemolith.pleading_chair": "Village Chair",
   "mnemolith.armory.brand_quiet": "The brand is quiet: this chunk is not overloaded.",
   "mnemolith.armory.brand_spent": "The brand burned a line. Struck: %s.",
   "mnemolith.armory.witness_trust": "The witness remembers you: %s of 4.",
