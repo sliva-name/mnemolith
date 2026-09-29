@@ -129,6 +129,10 @@ final class FarmController {
             } else if (state.isAir() && this.canBePlantSpot(level.getBlockState(cursor.below()))) {
                 this.fieldSize++;
                 this.rememberFarmTask(level, cursor.immutable(), false);
+            } else if (this.taught.knows(block) && !state.isAir()) {
+                // Growing (immature) taught crops still count as a field so FARM_WAIT → rescan does not
+                // halt with NO_FIELD while wheat is sprouting.
+                this.fieldSize++;
             }
         }
         return this.farmScanIndex >= total;

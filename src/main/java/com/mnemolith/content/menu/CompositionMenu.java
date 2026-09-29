@@ -46,7 +46,8 @@ public class CompositionMenu extends AbstractContainerMenu {
         for (int slot = 0; slot < ImprintConstants.COMPOSITION_SLOTS; slot++) {
             this.addSlot(new SlipSlot(container, slot, 62 + slot * 18, 30));
         }
-        this.addStandardInventorySlots(inventory, 8, 148);
+        // PANEL_HEIGHT 266 → inventoryLabelY 172; slots sit 12px under the label (vanilla rhythm).
+        this.addStandardInventorySlots(inventory, 8, 184);
         this.addDataSlots(this.data);
         this.data.set(DATA_FORMULA, -1);
         this.data.set(DATA_HINTS, 1);

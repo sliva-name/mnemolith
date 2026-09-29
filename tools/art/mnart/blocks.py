@@ -473,6 +473,37 @@ def pressure_lamp():
     return m.build()
 
 
+
+# ------------------------------------------------------------------ pressure sensor (P4 redstone probe)
+
+def pressure_sensor():
+    """Cyan brass plate with a glowing pressure eye — distinct from archival stratum cubes."""
+    m = Model('pressure_sensor')
+    plate = F('brass', wear=0.35)
+    top = F('brass', kind='top', wear=0.25)
+    m.box((0, 0, 0), (16, 2, 16), plate, up=top, down=F('deep', shift=-1))
+    m.box((2, 2, 2), (14, 4, 14), F('navy', wear=0.3), up=F('navy', kind='top'), down=None)
+    # pressure lens
+    m.box((5, 4, 5), (11, 10, 11), F('echo', wear=0.2), up=F('echo', kind='top'), down=None)
+    m.box((6, 10, 6), (10, 12, 10), F('amethyst'), down=None)
+    return m.build()
+
+
+# ------------------------------------------------------------------ player memorial (P4 death chest)
+
+def player_memorial():
+    """Tomb plinth with hush stone body and a bone nameplate — not a scar_heart clone."""
+    m = Model('player_memorial')
+    base = F('mute', wear=0.35)
+    body = F('deep', wear=0.3)
+    cap = F('bone', wear=0.2)
+    m.box((1, 0, 1), (15, 2, 15), base, up=F('mute', kind='top'), down=F('mute', shift=-1))
+    m.box((3, 2, 3), (13, 12, 13), body, up=F('deep', kind='top'), down=None)
+    m.box((2, 12, 2), (14, 14, 14), cap, up=F('bone', kind='top'), down=None)
+    m.box((7, 14, 7), (9, 16, 9), F('amethyst'), down=None)
+    return m.build()
+
+
 def archival_stratum_bricks_tex():
     rng = core.rng_for('archival_stratum_bricks')
     w = h = 32
@@ -513,6 +544,8 @@ MODELS = {
     'scar_heart': scar_heart,
     'echo_home': echo_home,
     'pressure_lamp': pressure_lamp,
+    'pressure_sensor': pressure_sensor,
+    'player_memorial': player_memorial,
 }
 CUBE_TEXTURES = {
     'scar_glass': scar_glass_tex,
@@ -529,6 +562,8 @@ PARTICLE = {
     'scar_heart': ('scar_heart', 'scar'),
     'echo_home': ('echo_home', 'navy'),
     'pressure_lamp': ('pressure_lamp', 'glass'),
+    'pressure_sensor': ('pressure_sensor', 'brass'),
+    'player_memorial': ('player_memorial', 'mute'),
 }
 
 

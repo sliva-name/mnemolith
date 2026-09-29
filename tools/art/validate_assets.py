@@ -163,7 +163,31 @@ def item_models(node, out):
 
 def java_ids(rel):
     src = open(os.path.join(JAVA, rel)).read()
-    return set(re.findall(r'"([a-z0-9_]+)"', src)) - {MOD}
+    ids = set(re.findall(r'"([a-z0-9_]+)"', src)) - {MOD}
+    return ids
+
+
+def block_item_ids():
+    """IDs from ModItems.registerSimpleBlockItem(ModBlocks.CONST) — those quotes live only on the block."""
+    items_src = open(os.path.join(JAVA, 'com/mnemolith/content/ModItems.java')).read()
+    blocks_src = open(os.path.join(JAVA, 'com/mnemolith/content/ModBlocks.java')).read()
+    # CONST -> "block_id" from the DeferredBlock registration line
+    const_to_id = {}
+    for m in re.finditer(
+            r'(?:DeferredBlock<[^>]+>|static final[^=]+)\s+([A-Z0-9_]+)\s*=\s*BLOCKS\.register(?:Block|SimpleBlock)?\(\s*"([a-z0-9_]+)"',
+            blocks_src):
+        const_to_id[m.group(1)] = m.group(2)
+    # also register( "id", key -> ...) form for stairs
+    for m in re.finditer(r'([A-Z0-9_]+)\s*=\s*BLOCKS\.register\(\s*"([a-z0-9_]+)"', blocks_src):
+        const_to_id[m.group(1)] = m.group(2)
+    found = set()
+    for m in re.finditer(r'registerSimpleBlockItem\(\s*ModBlocks\.([A-Z0-9_]+)', items_src):
+        bid = const_to_id.get(m.group(1))
+        if bid:
+            found.add(bid)
+        else:
+            err('registerSimpleBlockItem ModBlocks.%s: could not resolve block id' % m.group(1))
+    return found
 
 
 def size(p):
@@ -221,6 +245,9 @@ def main():
         for i in sorted(java_ids(rel)):
             if not os.path.exists(os.path.join(base, 'items', i + '.json')):
                 err('registered item %s has no items/%s.json' % (i, i))
+    for i in sorted(block_item_ids()):
+        if not os.path.exists(os.path.join(base, 'items', i + '.json')):
+            err('block item %s (registerSimpleBlockItem) has no items/%s.json' % (i, i))
     for b in sorted(java_ids('com/mnemolith/content/ModBlocks.java')):
         if not os.path.exists(os.path.join(base, 'blockstates', b + '.json')):
             err('registered block %s has no blockstate' % b)

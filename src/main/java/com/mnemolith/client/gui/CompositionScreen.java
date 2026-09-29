@@ -20,7 +20,13 @@ import net.minecraft.world.inventory.Slot;
 
 public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> {
     private static final int PANEL_WIDTH = 176;
-    private static final int PANEL_HEIGHT = 230;
+    /**
+     * Tall enough for FORMULA_COUNT=16 unknown chips (4 cols × 4 rows starting at y=100, step 18,
+     * last row ends at y=168) without painting over the inventory title (imageHeight-94) or slots.
+     */
+    private static final int PANEL_HEIGHT = 266;
+    /** Last pixel row chips may occupy; keep a gap above {@link #inventoryLabelY}. */
+    private static final int CHIP_MAX_BOTTOM = 168;
 
     public CompositionScreen(CompositionMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, PANEL_WIDTH, PANEL_HEIGHT);
@@ -85,10 +91,15 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         }
         int x = 8;
         int row = 100;
+        // Inventory title sits at imageHeight - 94 (=172 with PANEL_HEIGHT 266). Chips must stay above it.
+        int chipFloor = Math.min(CHIP_MAX_BOTTOM, this.inventoryLabelY - 4);
         for (int i = 0; i < recipes.size() && i < Discovery.FORMULA_COUNT; i++) {
             if (x > this.imageWidth - 40) {
                 x = 8;
                 row += 18;
+            }
+            if (row + 14 > chipFloor) {
+                break;
             }
             x = drawFormulaChip(graphics, mask, hints, x, row, i, recipes.get(i).tags());
         }
