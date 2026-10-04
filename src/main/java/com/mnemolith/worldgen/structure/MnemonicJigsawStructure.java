@@ -8,16 +8,24 @@ import com.mojang.serialization.MapCodec;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.worldgen.WorldgenTuning;
 
+import com.mojang.datafixers.util.Either;
+
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 
@@ -88,7 +96,43 @@ public final class MnemonicJigsawStructure extends Structure {
         } else {
             jigsaw = new JigsawStructure(this.settings, pool.get(), 1, height, false);
         }
-        return jigsaw.findGenerationPoint(context);
+        Optional<GenerationStub> stub = jigsaw.findGenerationPoint(context);
+        if (this.kind == Kind.MUTE_LIBRARY) {
+            return stub.flatMap(found -> onEndTerrain(context, found));
+        }
+        return stub;
+    }
+
+    /** Like vanilla End cities: a mute library needs outer-island ground under its whole footprint. */
+    static final int MIN_END_GROUND_Y = 60;
+
+    /**
+     * Over the void {@code WORLD_SURFACE_WG} is the world bottom, so the library would sit at y=0 under nothing
+     * (and {@code /locate} would point there). The central {@code minecraft:the_end} biome (dragon island and the
+     * empty ring around it) is skipped as well, as vanilla End cities do, so the library never lands in the dragon fight.
+     */
+    private static Optional<GenerationStub> onEndTerrain(GenerationContext context, GenerationStub stub) {
+        BlockPos start = stub.position();
+        if (start.getY() < MIN_END_GROUND_Y) {
+            return Optional.empty();
+        }
+        Holder<Biome> biome = context.chunkGenerator().getBiomeSource().getNoiseBiome(
+                QuartPos.fromBlock(start.getX()), QuartPos.fromBlock(start.getY()), QuartPos.fromBlock(start.getZ()),
+                context.randomState().sampler());
+        if (biome.is(Biomes.THE_END)) {
+            return Optional.empty();
+        }
+        StructurePiecesBuilder pieces = stub.getPiecesBuilder();
+        if (pieces.isEmpty()) {
+            return Optional.empty();
+        }
+        BoundingBox box = pieces.getBoundingBox();
+        int lowest = getLowestY(context, box.minX(), box.minZ(), box.getXSpan() - 1, box.getZSpan() - 1);
+        if (lowest < MIN_END_GROUND_Y) {
+            return Optional.empty();
+        }
+        // Hand the already built pieces on so they are not generated twice.
+        return Optional.of(new GenerationStub(start, Either.right(pieces)));
     }
 
     @Override

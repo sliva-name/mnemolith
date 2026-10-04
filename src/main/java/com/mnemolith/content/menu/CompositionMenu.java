@@ -136,7 +136,8 @@ public class CompositionMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() == ModItems.IMPRINT_SLIP.get();
+            // Blank slips would only make Compose fail (and burn a slip), so the reel takes written ones only.
+            return Composition.composable(stack);
         }
     }
 }

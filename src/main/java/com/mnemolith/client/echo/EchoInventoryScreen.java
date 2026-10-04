@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.client.gui.GuiArt;
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.menu.EchoMenu;
 import com.mnemolith.echo.EchoLesson;
 import com.mnemolith.entity.echo.EchoEntity;
@@ -118,7 +118,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             return;
         }
         int step = this.minecraft.hasShiftDown() ? 8 : 2;
-        int max = CommonConfig.ECHO_MINE_MAX_RADIUS.get();
+        int max = ServerTuning.mineMaxRadius();
         int value = Math.max(2, Math.min(max, echo.jobRadius() + direction * step));
         ClientPacketDistributor.sendToServer(new EchoJobPayload(echo.getId(), EchoJobPayload.Action.RADIUS, BlockPos.ZERO, value));
     }

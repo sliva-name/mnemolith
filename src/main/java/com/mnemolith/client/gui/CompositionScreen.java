@@ -2,9 +2,9 @@ package com.mnemolith.client.gui;
 
 import java.util.List;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.content.composition.ComposeResult;
 import com.mnemolith.content.composition.CompositionRecipe;
-import com.mnemolith.content.composition.CompositionRecipes;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ImprintConstants;
@@ -65,7 +65,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         Component status = this.statusLine();
         int color = switch (this.menu.status()) {
             case ComposeResult.SUCCESS -> GuiArt.VERDIGRIS;
-            case ComposeResult.FAIL, ComposeResult.DISABLED, ComposeResult.FULL -> GuiArt.FAIL;
+            case ComposeResult.FAIL, ComposeResult.DISABLED, ComposeResult.FULL, ComposeResult.BLANK -> GuiArt.FAIL;
             default -> GuiArt.BONE;
         };
         GuiArt.paragraph(graphics, this.font, status, 8, 60, this.imageWidth - 16, color);
@@ -79,6 +79,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
             case ComposeResult.EMPTY -> Component.translatable("mnemolith.gui.compose_empty");
             case ComposeResult.DISABLED -> Component.translatable("mnemolith.gui.compose_disabled");
             case ComposeResult.FULL -> Component.translatable("mnemolith.message.inventory_full");
+            case ComposeResult.BLANK -> Component.translatable("mnemolith.gui.compose_blank");
             default -> Component.translatable("mnemolith.gui.compose_idle");
         };
     }
@@ -86,7 +87,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
     private void drawSilhouettes(GuiGraphicsExtractor graphics) {
         int mask = this.menu.discoveredFormulas();
         boolean hints = this.menu.discoveryHints();
-        List<CompositionRecipe> recipes = CompositionRecipes.all();
+        List<CompositionRecipe> recipes = ServerTuning.formulas();
         int known = Integer.bitCount(mask & ((1 << Math.min(Discovery.FORMULA_COUNT, recipes.size())) - 1));
         if (!hints && known == 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, CHIP_TOP, GuiArt.BONE);
@@ -125,7 +126,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
     }
 
     private Component formulaName(int ordinal) {
-        return CompositionRecipes.byIndex(ordinal)
+        return ServerTuning.formula(ordinal)
                 .map(recipe -> Component.translatable(recipe.translationKey()))
                 .orElseGet(() -> Component.translatable("mnemolith.gui.compose_unknown"));
     }

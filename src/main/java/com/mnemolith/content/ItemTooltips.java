@@ -161,6 +161,7 @@ public final class ItemTooltips {
                     return;
                 }
                 builder.accept(Component.translatable("item.mnemolith.imprint_slip.empty"));
+                builder.accept(Component.translatable("item.mnemolith.imprint_slip.empty_hint").withStyle(net.minecraft.ChatFormatting.GRAY));
                 return;
             }
             if (stack.is(ModItems.RESIDUAL_SHARD.get())) {

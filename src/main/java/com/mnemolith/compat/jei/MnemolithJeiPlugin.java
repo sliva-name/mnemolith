@@ -2,10 +2,10 @@ package com.mnemolith.compat.jei;
 
 import java.util.List;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.content.composition.CompositionRecipe;
-import com.mnemolith.content.composition.CompositionRecipes;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -35,7 +35,7 @@ public final class MnemolithJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        List<CompositionRecipe> recipes = CompositionRecipes.all();
+        List<CompositionRecipe> recipes = ServerTuning.formulas();
         registration.addRecipes(CompositionRecipeCategory.TYPE, recipes);
 
         registration.addIngredientInfo(
