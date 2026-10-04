@@ -159,7 +159,7 @@ public final class ResidueQa {
             if (fester != null) {
                 reset(level, b);
                 loud(level, b, PressureBand.OVERLOADED);
-                LoadedChunkMemory.addMuteStone(level, b.offset(-3, 0, -3));
+                QaSupport.muteStone(level, b.offset(-3, 0, -3));
                 int strength = fester.strength();
                 Residues.Fester result = Residues.fester(level, fester);
                 starved = result == Residues.Fester.STARVED && fester.strength() == strength - 1 && !hasTag(level, b, ImprintTag.DEATH);

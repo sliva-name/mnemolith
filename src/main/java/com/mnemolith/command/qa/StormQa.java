@@ -145,7 +145,7 @@ public final class StormQa {
             Storms.Gate calm = Storms.gate(level, ca);
             loud(level, a, PressureBand.FRACTURE);
             Storms.Gate open = Storms.gate(level, ca);
-            LoadedChunkMemory.addMuteStone(level, a.offset(-6, 0, -6));
+            QaSupport.muteStone(level, a.offset(-6, 0, -6));
             Storms.Gate muted = Storms.gate(level, ca);
             LoadedChunkMemory.removeMuteStone(level, a.offset(-6, 0, -6));
             BlockPos ward = a.offset(18, 0, 0);
@@ -186,7 +186,7 @@ public final class StormQa {
                     Storms.step(level, data, called);
                 }
                 boolean stillGathering = data.byId(called.id()) != null && called.phase() == RecollectionStorm.Phase.GATHERING;
-                LoadedChunkMemory.addMuteStone(level, a.offset(5, 0, 5));
+                QaSupport.muteStone(level, a.offset(5, 0, 5));
                 for (int i = 0; i < 20 && data.byId(called.id()) != null; i++) {
                     Storms.step(level, data, called);
                 }
@@ -248,7 +248,7 @@ public final class StormQa {
             }
 
             // ---------- a muted centre chokes the storm (two waves at once) and starves its residues ----------
-            LoadedChunkMemory.addMuteStone(level, b.offset(-6, 0, 6));
+            QaSupport.muteStone(level, b.offset(-6, 0, 6));
             int leftBefore = raging.wavesLeft();
             List<ResidueEntity> inCentre = new ArrayList<>();
             for (ResidueEntity residue : Storms.living(level, raging)) {
@@ -444,7 +444,7 @@ public final class StormQa {
             discard(seeded);
             ResidueEntity tooSoon = ScarSites.reseed(level, quietChunk, quietMemory);
             quietMemory.setScar(new ScarSite(mask, level.getGameTime() - ScarSites.RESEED_TICKS));
-            LoadedChunkMemory.addMuteStone(level, d.offset(-5, 0, -5));
+            QaSupport.muteStone(level, d.offset(-5, 0, -5));
             ResidueEntity mutedSeed = ScarSites.reseed(level, quietChunk, quietMemory);
             LoadedChunkMemory.removeMuteStone(level, d.offset(-5, 0, -5));
             ok[16] = seededOk && tooSoon == null && mutedSeed == null;

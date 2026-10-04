@@ -135,7 +135,7 @@ public final class InterveneQa {
 
             QaSupport.tickColumn(level, muteAt);
             ImprintWriter.write(level, muteAt, List.of(ImprintTag.DEATH), player.getUUID(), false);
-            LoadedChunkMemory.addMuteStone(level, muteAt);
+            QaSupport.muteStone(level, muteAt);
             boolean throughSilence = LoadedChunkMemory.isMuted(level, muteAt) && Intervene.rewrite(player, level, muteAt);
             Imprint muted = highest(level, muteAt);
             checks[5] = throughSilence && muted != null && muted.tag() == ImprintTag.SILENCE && muted.rewritten();

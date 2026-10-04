@@ -100,8 +100,12 @@ public final class MnemolithGameTests {
         live("relay_thread_links_then_hop", RelayLiveTests::threadLinksThenHop, 100);
         live("relay_mirror_break", RelayLiveTests::mirrorBreak, 100);
         live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
+        // Item conservation under random possess / return / hop / house / wake / kill / drop.
+        live("echo_items_are_conserved", ConservationLiveTests::chaos, 600 + ConservationLiveTests.envInt("MNEMOLITH_CHAOS_STEPS", 0));
 
         quick("pleading_chair", ChairTests::run);
+        // Fixes from the QA sweep (stale mute marks, structure seeding, echo home, archive shrine).
+        quick("regressions", RegressionTests::run);
         // Own batch: placing a real house must not share the suites' world random.
         village("village_chair", ChairTests::villageHouse);
     }

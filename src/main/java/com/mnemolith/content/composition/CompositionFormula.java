@@ -35,6 +35,6 @@ public enum CompositionFormula {
     }
 
     public String translationKey() {
-        return "mnemolith.formula." + this.name().toLowerCase();
+        return "mnemolith.formula." + this.name().toLowerCase(java.util.Locale.ROOT);
     }
 }

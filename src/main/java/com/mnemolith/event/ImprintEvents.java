@@ -192,8 +192,9 @@ public final class ImprintEvents {
         com.mnemolith.worldgen.StructureMemorySeeds.trySeed(level, chunk);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory != null) {
+            boolean pruned = LoadedChunkMemory.pruneStale(chunk, memory);
             boolean faded = memory.fadeQuiet(level.getGameTime(), CommonConfig.QUIET_FADE_TICKS.get());
-            MemoryPressure.recomputeOnLoad(chunk, memory, faded);
+            MemoryPressure.recomputeOnLoad(chunk, memory, faded || pruned);
         }
     }
 

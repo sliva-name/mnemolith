@@ -125,7 +125,9 @@ public final class ArchiveShrines {
     public static void onGuardianDefeated(ServerLevel level, ScarEntity guardian, @Nullable Entity killer) {
         BlockPos home = guardian.home();
         BlockState state = level.getBlockState(home);
-        if (state.is(ModBlocks.ARCHIVE_SHRINE.get())) {
+        // A second guardian at a shrine that is already claimed (a rechallenge after the first wandered off or unloaded)
+        // must not pay the chest out again.
+        if (state.is(ModBlocks.ARCHIVE_SHRINE.get()) && !state.getValue(com.mnemolith.content.block.ArchiveShrineBlock.CLAIMED)) {
             level.setBlock(home, state.setValue(com.mnemolith.content.block.ArchiveShrineBlock.CHALLENGED, true)
                     .setValue(com.mnemolith.content.block.ArchiveShrineBlock.CLAIMED, true), Block.UPDATE_ALL);
             placeRewardChest(level, home);

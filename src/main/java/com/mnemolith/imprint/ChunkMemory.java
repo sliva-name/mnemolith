@@ -54,6 +54,8 @@ public final class ChunkMemory {
     private boolean memoryField;
     /** An observatory chunk seeds its one old residue only once (residual echoes). Optional in the codec. */
     private boolean residueSeeded;
+    /** A structure start already seeded its old imprints here, so extracting them does not make the chunk seed again. Optional in the codec. */
+    private boolean structureSeeded;
     private long lastWriteGameTime;
     private int cachedPressure;
     private int instability;
@@ -82,6 +84,7 @@ public final class ChunkMemory {
         memory.hushChapel = marks.hushChapel();
         memory.memoryField = marks.memoryField();
         memory.residueSeeded = marks.residueSeeded();
+        memory.structureSeeded = marks.structureSeeded();
         memory.wards.addAll(wards);
         memory.scar = scar.orElse(null);
         memory.vaultLoad = Math.max(0, vaultLoad);
@@ -91,7 +94,7 @@ public final class ChunkMemory {
     }
 
     public Landmarks landmarks() {
-        return new Landmarks(this.observatory, this.hushChapel, this.memoryField, this.residueSeeded);
+        return new Landmarks(this.observatory, this.hushChapel, this.memoryField, this.residueSeeded, this.structureSeeded);
     }
 
     public boolean isEmpty() {
@@ -109,6 +112,8 @@ public final class ChunkMemory {
                 && !this.observatory
                 && !this.hushChapel
                 && !this.memoryField
+                && !this.residueSeeded
+                && !this.structureSeeded
                 && this.instability == 0;
     }
 
@@ -329,6 +334,26 @@ public final class ChunkMemory {
         return this.muteStones.size();
     }
 
+    public BlockPos muteStoneAt(int index) {
+        return this.muteStones.get(index);
+    }
+
+    public SelectiveMuteMark selectiveMuteAt(int index) {
+        return this.selectiveMutes.get(index);
+    }
+
+    public BlockPos resonatorAt(int index) {
+        return this.resonators.get(index);
+    }
+
+    public BlockPos stratumAt(int index) {
+        return this.strata.get(index);
+    }
+
+    public BlockPos wardAt(int index) {
+        return this.wards.get(index);
+    }
+
     public int resonatorCount() {
         return this.resonators.size();
     }
@@ -451,6 +476,14 @@ public final class ChunkMemory {
 
     public void setResidueSeeded(boolean residueSeeded) {
         this.residueSeeded = residueSeeded;
+    }
+
+    public boolean structureSeeded() {
+        return this.structureSeeded;
+    }
+
+    public void setStructureSeeded(boolean structureSeeded) {
+        this.structureSeeded = structureSeeded;
     }
 
     public List<BlockPos> wardsCopy() {

@@ -7,11 +7,13 @@ import java.util.Optional;
 import com.mnemolith.content.ModBlockEntities;
 import com.mnemolith.echo.EchoLife;
 import com.mnemolith.echo.EchoRole;
+import com.mnemolith.echo.SlotStack;
 import com.mnemolith.echo.StoredEcho;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,13 +55,16 @@ public class EchoHomeBlockEntity extends BlockEntity {
         return true;
     }
 
-    public Optional<StoredEcho> takeFirst() {
-        if (this.housed.isEmpty()) {
-            return Optional.empty();
+    /** The first housed echo that belongs to {@code owner}; an echo of someone else in front of it does not hide it. */
+    public Optional<StoredEcho> takeFirstOwnedBy(java.util.UUID owner) {
+        for (int i = 0; i < this.housed.size(); i++) {
+            if (this.housed.get(i).owner().equals(owner)) {
+                StoredEcho echo = this.housed.remove(i);
+                this.setChanged();
+                return Optional.of(echo);
+            }
         }
-        StoredEcho echo = this.housed.remove(0);
-        this.setChanged();
-        return Optional.of(echo);
+        return Optional.empty();
     }
 
     public void assignRole(int index, EchoRole role) {
@@ -88,13 +93,23 @@ public class EchoHomeBlockEntity extends BlockEntity {
         if (!(this.level instanceof ServerLevel level) || this.housed.isEmpty()) {
             return;
         }
-        while (!this.housed.isEmpty()) {
+        // wake() takes the first echo out (and puts it back at the end when it refuses), so track by id, not by index.
+        int budget = this.housed.size();
+        while (!this.housed.isEmpty() && budget-- > 0) {
             StoredEcho first = this.housed.get(0);
             ServerPlayer owner = level.getServer().getPlayerList().getPlayer(first.owner());
-            if (owner == null || !EchoLife.wake(owner, this, pos.above())) {
-                this.housed.remove(0);
-                this.setChanged();
+            if (owner != null && EchoLife.wake(owner, this, pos.above())) {
+                continue;
             }
+            // Nobody can wake it (owner offline or at the echo limit): the body is lost with the pedestal, its items are not.
+            StoredEcho lost = this.housed.stream().filter(e -> e.echo().equals(first.echo())).findFirst().orElse(first);
+            this.housed.remove(lost);
+            for (SlotStack slot : lost.inventory()) {
+                if (!slot.stack().isEmpty()) {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), slot.stack().copy());
+                }
+            }
+            this.setChanged();
         }
     }
 

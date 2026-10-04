@@ -160,7 +160,8 @@ public class LedgerMite extends TamableAnimal {
     }
 
     private void tickGather(ServerLevel level) {
-        if (this.gatherCooldown-- > 0 || !(this.getOwner() instanceof Player owner)) {
+        if (this.gatherCooldown-- > 0 || !(this.getOwner() instanceof Player owner) || !owner.isAlive()) {
+            // A dead owner is still in the level until they respawn, and what lands in that inventory is lost.
             return;
         }
         this.gatherCooldown = 15;

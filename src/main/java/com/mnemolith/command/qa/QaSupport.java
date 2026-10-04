@@ -44,6 +44,16 @@ public final class QaSupport {
         return hasTag(level, pos, ImprintTag.PATH) || hasTag(level, next, ImprintTag.PATH);
     }
 
+    /**
+     * A mute stone the way the world has one: the block and its mark. Placed without {@code onPlace} (flag 512) so the
+     * silence write and the pressure changes a real placement makes stay out of the checks that use it, and a mark
+     * with no block under it is pruned as stale.
+     */
+    public static void muteStone(ServerLevel level, BlockPos pos) {
+        level.setBlock(pos, com.mnemolith.content.ModBlocks.MUTE_STONE.get().defaultBlockState(), 2 | 16 | 512);
+        LoadedChunkMemory.addMuteStone(level, pos);
+    }
+
     static boolean writeTag(ServerLevel level, BlockPos pos, ImprintTag tag) {
         clear(level, pos);
         return ImprintWriter.tryWrite(level, pos, tag, null, false) && hasTag(level, pos, tag);

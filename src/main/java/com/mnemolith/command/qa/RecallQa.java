@@ -155,7 +155,7 @@ public final class RecallQa {
             player.setData(ModAttachments.GESTURE_LOG.get(), new GestureLog());
             LivingMemory.plant(player, gesture(GestureKind.PLACE, dimension, site, oldTime, false));
             checks[11] = LivingMemory.localCandidate(player).isPresent();
-            LoadedChunkMemory.addMuteStone(level, site);
+            QaSupport.muteStone(level, site);
             checks[12] = LivingMemory.localCandidate(player).isEmpty();
 
             Gesture plain = gesture(GestureKind.USE, dimension, site, 0.0F, oldTime, false);

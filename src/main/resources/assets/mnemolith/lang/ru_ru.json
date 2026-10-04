@@ -391,6 +391,7 @@
   "mnemolith.command.echoqa": "Проверка отголосков: %s из %s",
   "mnemolith.configuration.echo": "Отголоски",
   "mnemolith.configuration.echo.button": "Отголоски",
+  "mnemolith.configuration.enabled": "Включено",
   "mnemolith.configuration.echoesEnabled": "Отголоски включены",
   "mnemolith.configuration.echoesEnabled.tooltip": "Записывают ли бланки отголоска, вызывают ли записи отголосков и можно ли вселяться через линзу.",
   "mnemolith.configuration.echoRecordSeconds": "Длина записи",

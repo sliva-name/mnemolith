@@ -14,14 +14,15 @@ import java.util.stream.Stream;
  * Structure-site flags packed into one codec field so {@link ChunkMemory} stays within DFU's 16-arity group.
  * Reads legacy top-level {@code observatory} / {@code residue_seeded} booleans when {@code landmarks} is absent.
  */
-public record Landmarks(boolean observatory, boolean hushChapel, boolean memoryField, boolean residueSeeded) {
-    public static final Landmarks NONE = new Landmarks(false, false, false, false);
+public record Landmarks(boolean observatory, boolean hushChapel, boolean memoryField, boolean residueSeeded, boolean structureSeeded) {
+    public static final Landmarks NONE = new Landmarks(false, false, false, false, false);
 
     public static final Codec<Landmarks> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("observatory", false).forGetter(Landmarks::observatory),
             Codec.BOOL.optionalFieldOf("hush_chapel", false).forGetter(Landmarks::hushChapel),
             Codec.BOOL.optionalFieldOf("memory_field", false).forGetter(Landmarks::memoryField),
-            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(Landmarks::residueSeeded)
+            Codec.BOOL.optionalFieldOf("residue_seeded", false).forGetter(Landmarks::residueSeeded),
+            Codec.BOOL.optionalFieldOf("structure_seeded", false).forGetter(Landmarks::structureSeeded)
     ).apply(instance, Landmarks::new));
 
     public static final MapCodec<Landmarks> FIELD = new MapCodec<>() {
@@ -41,7 +42,7 @@ public record Landmarks(boolean observatory, boolean hushChapel, boolean memoryF
             if (residueNode != null) {
                 residue = Codec.BOOL.parse(ops, residueNode).result().orElse(false);
             }
-            return DataResult.success(new Landmarks(observatory, false, false, residue));
+            return DataResult.success(new Landmarks(observatory, false, false, residue, false));
         }
 
         @Override
