@@ -43,7 +43,7 @@ final class RelayLiveTests {
     private RelayLiveTests() {}
 
     /** Relay sites: 6 chunks apart, south of everything else. */
-    private static BlockPos site(GameTestHelper helper, int index) {
+    static BlockPos site(GameTestHelper helper, int index) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);
         BlockPos pos = LivePlayers.surface(level, (origin.getX() >> 4) + 6 * index, (origin.getZ() >> 4) + 50);
@@ -66,7 +66,7 @@ final class RelayLiveTests {
         return pos;
     }
 
-    private static EchoEntity echo(GameTestHelper helper, ServerPlayer owner, BlockPos at) {
+    static EchoEntity echo(GameTestHelper helper, ServerPlayer owner, BlockPos at) {
         ServerLevel level = helper.getLevel();
         Vec3 origin = Vec3.atBottomCenterOf(at);
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.allocate(20 * EchoRecording.FRAME_BYTES).order(java.nio.ByteOrder.LITTLE_ENDIAN);

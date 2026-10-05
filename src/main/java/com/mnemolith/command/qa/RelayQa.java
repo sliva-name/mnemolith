@@ -342,7 +342,7 @@ public final class RelayQa {
             // ---------- discharge: everything into the chunk; a mute stone refuses ----------
             reset(level, b);
             vault.replace(List.of(imprint(ImprintTag.FIRE, v), imprint(ImprintTag.DEATH, v), imprint(ImprintTag.FALL, v)));
-            LoadedChunkMemory.addMuteStone(level, b.offset(-6, 0, -6));
+            QaSupport.muteStone(level, b.offset(-6, 0, -6));
             int refused = ArchiveVaults.discharge(level, v, vault, null);
             int keptWhileMuted = vault.count();
             LoadedChunkMemory.removeMuteStone(level, b.offset(-6, 0, -6));

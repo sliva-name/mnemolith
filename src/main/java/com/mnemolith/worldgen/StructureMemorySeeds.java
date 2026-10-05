@@ -54,7 +54,8 @@ public final class StructureMemorySeeds {
             return;
         }
         ChunkMemory existing = LoadedChunkMemory.existing(chunk);
-        if (existing != null && existing.imprintCount() > 0) {
+        // Once per chunk: without the flag, extracting the seeded imprints and reloading the chunk would seed them again.
+        if (existing != null && (existing.imprintCount() > 0 || existing.structureSeeded())) {
             return;
         }
         Map<Structure, StructureStart> starts = chunk.getAllStarts();
@@ -96,6 +97,7 @@ public final class StructureMemorySeeds {
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         BlockPos pos = new BlockPos(x, y, z);
         ChunkMemory memory = existing != null ? existing : LoadedChunkMemory.getOrCreate(chunk);
+        memory.setStructureSeeded(true);
         long now = level.getGameTime();
         for (ImprintTag tag : toWrite) {
             memory.addImprint(

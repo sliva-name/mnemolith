@@ -75,7 +75,19 @@ public class EchoHomeBlock extends BaseEntityBlock {
         }
         var taught = EchoRoles.roleFor(stack);
         if (taught != null && home.size() > 0) {
-            home.assignRole(0, taught);
+            // The first echo that is the player's own: a stranger's echo is not theirs to retrain.
+            int own = -1;
+            var housed = home.housed();
+            for (int i = 0; i < housed.size() && own < 0; i++) {
+                if (housed.get(i).owner().equals(serverPlayer.getUUID())) {
+                    own = i;
+                }
+            }
+            if (own < 0) {
+                serverPlayer.sendSystemMessage(Component.translatable("mnemolith.echo.not_yours", housed.get(0).ownerName()), true);
+                return InteractionResult.SUCCESS_SERVER;
+            }
+            home.assignRole(own, taught);
             serverPlayer.sendSystemMessage(Component.translatable("mnemolith.echo.home.role",
                     Component.translatable("mnemolith.echo.role." + taught.name().toLowerCase(java.util.Locale.ROOT))), true);
             return InteractionResult.SUCCESS_SERVER;

@@ -206,7 +206,7 @@ public class KinWitness extends PathfinderMob {
         String cardinal = MemoryNavigation.cardinalKey(bearing);
         this.getLookControl().setLookAt(target.pos().getX() + 0.5D, target.pos().getY() + 1.0D, target.pos().getZ() + 0.5D);
         player.sendSystemMessage(Component.translatable(
-                "mnemolith.armory.witness_point." + target.kind().name().toLowerCase(),
+                "mnemolith.armory.witness_point." + target.kind().name().toLowerCase(java.util.Locale.ROOT),
                 Component.translatable("mnemolith.cardinal." + cardinal)), true);
     }
 

@@ -197,17 +197,17 @@ public final class EchoLife {
 
     /** Wakes the first housed echo onto {@code at} (O3). */
     public static boolean wake(ServerPlayer player, EchoHomeBlockEntity home, BlockPos at) {
-        var taken = home.takeFirst();
+        // The player's own first echo, whoever else sleeps in front of it.
+        var taken = home.takeFirstOwnedBy(player.getUUID());
         if (taken.isEmpty()) {
-            player.sendSystemMessage(Component.translatable("mnemolith.echo.home.empty"), true);
+            if (home.isEmpty()) {
+                player.sendSystemMessage(Component.translatable("mnemolith.echo.home.empty"), true);
+            } else {
+                player.sendSystemMessage(Component.translatable("mnemolith.echo.not_yours", home.housed().get(0).ownerName()), true);
+            }
             return false;
         }
         StoredEcho stored = taken.get();
-        if (!stored.owner().equals(player.getUUID())) {
-            home.offer(stored);
-            player.sendSystemMessage(Component.translatable("mnemolith.echo.not_yours", stored.ownerName()), true);
-            return false;
-        }
         if (EchoRegistry.get(player.level().getServer()).count(player.getUUID()) >= EchoProgress.echoLimit(player)) {
             home.offer(stored);
             player.sendSystemMessage(Component.translatable("mnemolith.echo.activate_limit", EchoProgress.echoLimit(player)), true);

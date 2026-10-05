@@ -73,7 +73,76 @@ public final class LoadedChunkMemory {
     }
 
     public static boolean isMuted(ServerLevel level, BlockPos pos) {
-        return anyLoaded(level, pos, CommonConfig.MUTE_RADIUS_CHUNKS.get(), ChunkMemory::hasAnyMute);
+        int radius = CommonConfig.MUTE_RADIUS_CHUNKS.get();
+        int originX = pos.getX() >> 4;
+        int originZ = pos.getZ() >> 4;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int chunkX = originX + dx;
+                int chunkZ = originZ + dz;
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    continue;
+                }
+                ChunkAccess chunk = level.getChunk(chunkX, chunkZ);
+                ChunkMemory memory = existing(chunk);
+                if (memory != null && memory.hasAnyMute()) {
+                    pruneStaleMutes(chunk, memory);
+                    if (memory.hasAnyMute()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Drops mute marks whose stone is gone. The removal hook only runs when a block is replaced with the neighbour
+     * update flag, and {@code /setblock}, {@code /fill} and most editing tools replace without it, which would leave
+     * the chunk muted with no stone in it for good.
+     */
+    public static boolean pruneStaleMutes(ChunkAccess chunk, ChunkMemory memory) {
+        boolean pruned = false;
+        for (int i = memory.muteStoneCount() - 1; i >= 0; i--) {
+            if (i < memory.muteStoneCount() && !chunk.getBlockState(memory.muteStoneAt(i)).is(ModBlocks.MUTE_STONE.get())) {
+                removeMuteStone(chunk, memory.muteStoneAt(i));
+                pruned = true;
+            }
+        }
+        for (int i = memory.selectiveMuteCount() - 1; i >= 0; i--) {
+            if (i < memory.selectiveMuteCount() && !chunk.getBlockState(memory.selectiveMuteAt(i).pos()).is(ModBlocks.SELECTIVE_MUTE_STONE.get())) {
+                removeSelectiveMute(chunk, memory.selectiveMuteAt(i).pos());
+                pruned = true;
+            }
+        }
+        return pruned;
+    }
+
+    /**
+     * A chunk load: every mark list is checked against the blocks, so a stone, stratum, ward or trap removed by a
+     * command or an editing tool does not keep muting, bleeding or warding. True when any mark went.
+     */
+    public static boolean pruneStale(ChunkAccess chunk, ChunkMemory memory) {
+        boolean pruned = pruneStaleMutes(chunk, memory);
+        for (int i = memory.resonatorCount() - 1; i >= 0; i--) {
+            if (i < memory.resonatorCount() && !chunk.getBlockState(memory.resonatorAt(i)).is(ModBlocks.RESONATOR_TRAP.get())) {
+                removeResonator(chunk, memory.resonatorAt(i));
+                pruned = true;
+            }
+        }
+        for (int i = memory.wardCount() - 1; i >= 0; i--) {
+            if (i < memory.wardCount() && !chunk.getBlockState(memory.wardAt(i)).is(ModBlocks.SCAR_GLASS.get())) {
+                removeWard(chunk, memory.wardAt(i));
+                pruned = true;
+            }
+        }
+        for (int i = memory.strataCount() - 1; i >= 0; i--) {
+            if (i < memory.strataCount() && !chunk.getBlockState(memory.stratumAt(i)).is(ModBlocks.ARCHIVAL_STRATUM.get())) {
+                forgetStratum(chunk, memory.stratumAt(i));
+                pruned = true;
+            }
+        }
+        return pruned;
     }
 
     /**
@@ -95,9 +164,13 @@ public final class LoadedChunkMemory {
                 if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
                     continue;
                 }
-                ChunkMemory memory = existing(level.getChunk(chunkX, chunkZ));
+                ChunkAccess chunk = level.getChunk(chunkX, chunkZ);
+                ChunkMemory memory = existing(chunk);
                 if (memory == null) {
                     continue;
+                }
+                if (memory.hasAnyMute()) {
+                    pruneStaleMutes(chunk, memory);
                 }
                 if (memory.hasMuteStone()) {
                     anyFull = true;
@@ -133,7 +206,11 @@ public final class LoadedChunkMemory {
     }
 
     public static void removeMuteStone(ServerLevel level, BlockPos pos) {
-        LevelChunk chunk = level.getChunkAt(pos);
+        removeMuteStone(level.getChunkAt(pos), pos);
+    }
+
+    /** As above for a chunk already in hand: a chunk load must not ask the level for the chunk it is loading. */
+    public static void removeMuteStone(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = existing(chunk);
         if (memory == null) {
             return;
@@ -159,7 +236,10 @@ public final class LoadedChunkMemory {
     }
 
     public static void removeSelectiveMute(ServerLevel level, BlockPos pos) {
-        LevelChunk chunk = level.getChunkAt(pos);
+        removeSelectiveMute(level.getChunkAt(pos), pos);
+    }
+
+    public static void removeSelectiveMute(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = existing(chunk);
         if (memory == null) {
             return;
@@ -215,7 +295,10 @@ public final class LoadedChunkMemory {
     }
 
     public static void removeResonator(ServerLevel level, BlockPos pos) {
-        LevelChunk chunk = level.getChunkAt(pos);
+        removeResonator(level.getChunkAt(pos), pos);
+    }
+
+    public static void removeResonator(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = existing(chunk);
         if (memory == null) {
             return;
@@ -302,7 +385,10 @@ public final class LoadedChunkMemory {
     }
 
     public static void removeWard(ServerLevel level, BlockPos pos) {
-        LevelChunk chunk = level.getChunkAt(pos);
+        removeWard(level.getChunkAt(pos), pos);
+    }
+
+    public static void removeWard(ChunkAccess chunk, BlockPos pos) {
         ChunkMemory memory = existing(chunk);
         if (memory == null) {
             return;

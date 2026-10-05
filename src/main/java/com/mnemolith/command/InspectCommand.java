@@ -32,7 +32,7 @@ public final class InspectCommand {
                 "mnemolith.command.inspect",
                 pressure,
                 Component.translatable(band.translationKey()),
-                state.name().toLowerCase(),
+                state.name().toLowerCase(java.util.Locale.ROOT),
                 count,
                 tags), false);
         return pressure;
