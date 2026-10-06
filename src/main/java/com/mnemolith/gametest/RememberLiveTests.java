@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +62,10 @@ final class RememberLiveTests {
         return pos;
     }
 
-    /** Places 64 blocks, sleeps in a bed, kills a strong zombie and dies: one build, one home, one fight, one death. */
+    /**
+     * Places 64 blocks, sleeps a night in a bed (a lie-down does not count), kills weaker mobs (they do not count) and a
+     * strong zombie, and dies: one build, one home, one fight, one death.
+     */
     static void recordsRealEvents(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos site = site(helper, 0);
@@ -89,15 +93,25 @@ final class RememberLiveTests {
                     helper.assertTrue(builds.size() == 1 && builds.get(0).itemId().equals("minecraft:cobblestone") && builds.get(0).pos().distSqr(site) <= 4.0D,
                             "the floor was not remembered as one cobblestone build near the site: " + builds);
 
-                    // A bed: lie down and get up.
+                    // A bed. Lying down and getting up ("Leave Bed") is not a home, nor is being shaken awake after a while.
                     BlockPos head = site.offset(8, 0, 6);
                     BlockState bed = Blocks.BED.red().defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
                     level.setBlock(head.west(), bed.setValue(BedBlock.PART, BedPart.FOOT), 3);
                     level.setBlock(head, bed.setValue(BedBlock.PART, BedPart.HEAD), 3);
                     player.startSleeping(head);
+                    sleepTimer(player, 0);
                     player.stopSleepInBed(false, true);
-                    List<LifeMoment> homes = moments.of(player.getUUID()).stream().filter(m -> m.kind() == LifeMomentKind.HOME).toList();
-                    helper.assertTrue(homes.size() == 1 && homes.get(0).pos().equals(head), "the bed was not remembered as a home: " + homes);
+                    helper.assertTrue(homes(moments, player).isEmpty(), "lying down and getting up was remembered as a home");
+                    player.startSleeping(head);
+                    sleepTimer(player, 100);
+                    player.stopSleepInBed(true, true);
+                    helper.assertTrue(homes(moments, player).isEmpty(), "being shaken awake was remembered as a home");
+                    // A whole night: asleep long enough, and the level wakes everyone when the night is skipped.
+                    player.startSleeping(head);
+                    sleepTimer(player, 100);
+                    player.stopSleepInBed(false, false);
+                    List<LifeMoment> homes = homes(moments, player);
+                    helper.assertTrue(homes.size() == 1 && homes.get(0).pos().equals(head), "a night slept through was not remembered as a home: " + homes);
 
                     // A strong zombie, killed by the player. A plain one is not a fight.
                     Zombie plain = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
@@ -109,8 +123,34 @@ final class RememberLiveTests {
                     strong.snapTo(Vec3.atBottomCenterOf(site.offset(-8, 0, -8)));
                     level.addFreshEntity(plain);
                     level.addFreshEntity(strong);
+                    // Under the threshold (default 50): endermen and hoglins (40 health), and a zombie one point short of it.
+                    int threshold = com.mnemolith.config.CommonConfig.REMEMBER_BATTLE_MIN_HEALTH.get();
+                    LivingEntity enderman = EntityTypes.ENDERMAN.create(level, EntitySpawnReason.COMMAND);
+                    LivingEntity hoglin = EntityTypes.HOGLIN.create(level, EntitySpawnReason.COMMAND);
+                    Zombie tough = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+                    helper.assertTrue(enderman != null && hoglin != null && tough != null, "no enderman, hoglin or zombie");
+                    tough.getAttribute(Attributes.MAX_HEALTH).setBaseValue(threshold - 1.0D);
+                    tough.setHealth(threshold - 1.0F);
+                    enderman.snapTo(Vec3.atBottomCenterOf(site.offset(8, 0, -8)));
+                    hoglin.snapTo(Vec3.atBottomCenterOf(site.offset(0, 0, 10)));
+                    tough.snapTo(Vec3.atBottomCenterOf(site.offset(10, 0, 0)));
+                    level.addFreshEntity(enderman);
+                    level.addFreshEntity(hoglin);
+                    level.addFreshEntity(tough);
                     player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
                     plain.hurtServer(level, player.damageSources().playerAttack(player), 1000.0F);
+                    if (threshold > 40) {
+                        enderman.hurtServer(level, player.damageSources().playerAttack(player), 1000.0F);
+                        hoglin.hurtServer(level, player.damageSources().playerAttack(player), 1000.0F);
+                    } else {
+                        // A config still on an older threshold: these would count, so they are not part of this check.
+                        enderman.discard();
+                        hoglin.discard();
+                    }
+                    tough.hurtServer(level, player.damageSources().playerAttack(player), 1000.0F);
+                    helper.assertTrue((threshold <= 40 || enderman.isDeadOrDying() && hoglin.isDeadOrDying()) && tough.isDeadOrDying(), "the weaker mobs did not die");
+                    helper.assertTrue(moments.of(player.getUUID()).stream().noneMatch(m -> m.kind() == LifeMomentKind.BATTLE),
+                            "an enderman, a hoglin or a zombie under the threshold was remembered as a fight: " + moments.of(player.getUUID()));
                     strong.hurtServer(level, player.damageSources().playerAttack(player), 1000.0F);
                     List<LifeMoment> fights = moments.of(player.getUUID()).stream().filter(m -> m.kind() == LifeMomentKind.BATTLE).toList();
                     helper.assertTrue(fights.size() == 1 && fights.get(0).detail().equals("minecraft:zombie") && fights.get(0).itemId().equals("minecraft:iron_sword")
@@ -125,6 +165,19 @@ final class RememberLiveTests {
                     moments.forget(player.getUUID());
                 })
                 .thenSucceed();
+    }
+
+    private static List<LifeMoment> homes(LifeMoments moments, ServerPlayer player) {
+        return moments.of(player.getUUID()).stream().filter(m -> m.kind() == LifeMomentKind.HOME).toList();
+    }
+
+    /** Sets the vanilla sleep timer (100 is "asleep long enough"), which only real ticks in a dark world would reach. */
+    private static void sleepTimer(ServerPlayer player, int ticks) {
+        try {
+            net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.player.Player.class, "sleepCounter").setInt(player, ticks);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     /**

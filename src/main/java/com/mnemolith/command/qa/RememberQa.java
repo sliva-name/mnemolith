@@ -51,7 +51,7 @@ public final class RememberQa {
             "fakeSkipped", "recorded", "merged", "kindCap", "firstKept", "totalCap", "persisted",
             "freshSkipped", "awayChosen", "tooClose", "otherDimension", "muted", "maxReplays", "otherPlayer",
             "sceneSpawns", "sceneBlocksNext", "deathScene", "notSaved", "ownerOnly", "homeBedFree", "buildTally",
-            "battleNotable", "whisper", "considerCounts", "staleFreed"
+            "battleNotable", "whisper", "considerCounts", "staleFreed", "battleThreshold", "sleptThrough"
     };
     private static final UUID QA_ID = UUID.fromString("55555555-5555-5555-5555-555555555555");
     private static final UUID OTHER_ID = UUID.fromString("55555555-5555-5555-5555-555555555556");
@@ -235,6 +235,30 @@ public final class RememberQa {
             checks[20] = !early && done && builds.size() == 1 && builds.get(0).kind() == LifeMomentKind.BUILD
                     && builds.get(0).itemId().equals("minecraft:cobblestone") && builds.get(0).pos().distSqr(base) < 16.0D
                     && RememberYou.tallied(player) == 0;
+
+            // Bosses and elites always count; other mobs from 50 max health (the default), so endermen and hoglins (40) do not.
+            int threshold = CommonConfig.REMEMBER_BATTLE_MIN_HEALTH.get();
+            net.minecraft.world.entity.LivingEntity enderman = net.minecraft.world.entity.EntityTypes.ENDERMAN.create(level, EntitySpawnReason.COMMAND);
+            net.minecraft.world.entity.LivingEntity hoglin = net.minecraft.world.entity.EntityTypes.HOGLIN.create(level, EntitySpawnReason.COMMAND);
+            net.minecraft.world.entity.LivingEntity golem = net.minecraft.world.entity.EntityTypes.IRON_GOLEM.create(level, EntitySpawnReason.COMMAND);
+            net.minecraft.world.entity.LivingEntity witherBoss = net.minecraft.world.entity.EntityTypes.WITHER.create(level, EntitySpawnReason.COMMAND);
+            Zombie under = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+            Zombie at50 = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+            if (enderman != null && hoglin != null && golem != null && witherBoss != null && under != null && at50 != null) {
+                under.getAttribute(Attributes.MAX_HEALTH).setBaseValue(threshold - 1.0D);
+                at50.getAttribute(Attributes.MAX_HEALTH).setBaseValue(threshold);
+                checks[25] = CommonConfig.REMEMBER_BATTLE_MIN_HEALTH.getDefault() == 50
+                        && (threshold != 50 || (!RememberYou.notable(enderman) && !RememberYou.notable(hoglin)))
+                        && !RememberYou.notable(under) && RememberYou.notable(at50) && RememberYou.notable(golem) && RememberYou.notable(witherBoss);
+                notes.add("battle threshold=" + threshold + " enderman=" + enderman.getMaxHealth() + " hoglin=" + hoglin.getMaxHealth());
+            }
+            // A home only after a whole night: not shaken awake, asleep long enough, and the night skipped or morning come.
+            checks[26] = RememberYou.sleptThrough(false, false, true, false)
+                    && RememberYou.sleptThrough(false, true, true, true)
+                    && !RememberYou.sleptThrough(false, true, true, false)
+                    && !RememberYou.sleptThrough(true, true, true, true)
+                    && !RememberYou.sleptThrough(true, false, true, true)
+                    && !RememberYou.sleptThrough(false, false, false, true);
 
             Zombie plain = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
             Zombie big = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);

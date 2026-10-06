@@ -437,7 +437,7 @@ public final class CommonConfig {
         SpecValues.section(builder, "remember", "The world remembers you. A few large events of your life here (a death, a home, a big build, a hard fight) can replay at their place, played by a translucent figure in your own skin, after you have been away. Only you see it unless othersSee is on.");
         REMEMBER_ENABLED = builder.comment("Whether life events are recorded and may replay.").translation("mnemolith.configuration.rememberEnabled").define("enabled", true);
         REMEMBER_RECORD_DEATH = builder.comment("Whether a death is recorded.").translation("mnemolith.configuration.rememberRecordDeath").define("recordDeath", true);
-        REMEMBER_RECORD_HOME = builder.comment("Whether sleeping in a bed records that bed as a home.").translation("mnemolith.configuration.rememberRecordHome").define("recordHome", true);
+        REMEMBER_RECORD_HOME = builder.comment("Whether sleeping through a night in a bed records that bed as a home. Lying down and getting up does not.").translation("mnemolith.configuration.rememberRecordHome").define("recordHome", true);
         REMEMBER_RECORD_BUILD = builder.comment("Whether a big build is recorded (see buildBlocks).").translation("mnemolith.configuration.rememberRecordBuild").define("recordBuild", true);
         REMEMBER_RECORD_BATTLE = builder.comment("Whether killing a boss, an elite, or a strong mob is recorded (see battleMinHealth).").translation("mnemolith.configuration.rememberRecordBattle").define("recordBattle", true);
         REMEMBER_MAX_MOMENTS = builder.comment("Life events kept per player. The oldest go first; the first death, home, build and fight stay.").translation("mnemolith.configuration.rememberMaxMoments").defineInRange("maxMoments", 24, 8, 128);
@@ -449,7 +449,7 @@ public final class CommonConfig {
         REMEMBER_BUILD_BLOCKS = builder.comment("Blocks placed close together that make a big build.").translation("mnemolith.configuration.rememberBuildBlocks").defineInRange("buildBlocks", 64, 8, 4096);
         REMEMBER_BUILD_RADIUS = builder.comment("Blocks from the first placed block that still count toward the same build.").translation("mnemolith.configuration.rememberBuildRadius").defineInRange("buildRadius", 12, 4, 48);
         REMEMBER_BUILD_WINDOW = builder.comment("Ticks a build tally lasts from its first block. 36000 is thirty minutes. The tally is not saved across logouts.").translation("mnemolith.configuration.rememberBuildWindow").defineInRange("buildWindowTicks", 36_000, 1_200, 720_000);
-        REMEMBER_BATTLE_MIN_HEALTH = builder.comment("Max health a killed mob needs to count as a fight. Bosses and elites always count.").translation("mnemolith.configuration.rememberBattleMinHealth").defineInRange("battleMinHealth", 40, 10, 1024);
+        REMEMBER_BATTLE_MIN_HEALTH = builder.comment("Max health a killed mob needs to count as a fight. 50 leaves out endermen and hoglins (40). Bosses and elites always count.").translation("mnemolith.configuration.rememberBattleMinHealth").defineInRange("battleMinHealth", 50, 10, 1024);
         REMEMBER_WHISPER = builder.comment("Whether a scene shows one quiet line above the hotbar (not in chat), such as \"Here you died.\"").translation("mnemolith.configuration.rememberWhisper").define("whisper", true);
         REMEMBER_OTHERS_SEE = builder.comment("Whether other players can see your past self too. The line and the vision stay yours.").translation("mnemolith.configuration.rememberOthersSee").define("othersSee", false);
         builder.pop();

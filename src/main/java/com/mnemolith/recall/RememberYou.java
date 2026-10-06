@@ -92,7 +92,22 @@ public final class RememberYou {
         record(player, LifeMomentKind.DEATH, player.blockPosition(), player.getYRot(), itemId(player.getMainHandItem()), detail);
     }
 
-    /** The player lay down in the bed at {@code bed} (its head block). */
+    /**
+     * True when a wake-up ends a real night's sleep: not shaken awake, asleep long enough to count (the vanilla five
+     * seconds a night skip needs), and either the level itself woke everyone (the night was skipped) or it is already
+     * morning. Leaving the bed at night with the "Leave Bed" button wakes the same way as morning does, so the time of
+     * day tells them apart.
+     */
+    public static boolean sleptThrough(boolean wakeImmediately, boolean updateLevel, boolean longEnough, boolean bright) {
+        return !wakeImmediately && longEnough && (!updateLevel || bright);
+    }
+
+    /** {@link #sleptThrough(boolean, boolean, boolean, boolean)} for a player waking now. Call before the bed is left. */
+    public static boolean sleptThrough(ServerPlayer player, boolean wakeImmediately, boolean updateLevel) {
+        return sleptThrough(wakeImmediately, updateLevel, player.isSleepingLongEnough(), player.level().isBrightOutside());
+    }
+
+    /** The player slept through the night in the bed at {@code bed} (its head block). See {@link #sleptThrough}. */
     public static void onHome(ServerPlayer player, BlockPos bed) {
         if (!accept(player) || !CommonConfig.REMEMBER_RECORD_HOME.get()) {
             return;
@@ -115,7 +130,7 @@ public final class RememberYou {
         tally(player, pos, state);
     }
 
-    /** A boss, an elite, or a mob with at least {@code battleMinHealth} max health. Never a player. */
+    /** A boss, an elite, or a mob with at least {@code battleMinHealth} (50) max health. Never a player. */
     public static boolean notable(LivingEntity dead) {
         if (dead instanceof Player) {
             return false;
