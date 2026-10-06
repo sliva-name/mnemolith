@@ -11,6 +11,7 @@ import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.entity.ModEntities;
 import com.mnemolith.entity.echo.PastSelf;
+import com.mnemolith.event.SleepEvents;
 import com.mnemolith.imprint.ModAttachments;
 import com.mnemolith.recall.GestureLog;
 import com.mnemolith.recall.LifeMoment;
@@ -252,13 +253,13 @@ public final class RememberQa {
                         && !RememberYou.notable(under) && RememberYou.notable(at50) && RememberYou.notable(golem) && RememberYou.notable(witherBoss);
                 notes.add("battle threshold=" + threshold + " enderman=" + enderman.getMaxHealth() + " hoglin=" + hoglin.getMaxHealth());
             }
-            // A home only after a whole night: not shaken awake, asleep long enough, and the night skipped or morning come.
-            checks[26] = RememberYou.sleptThrough(false, false, true, false)
-                    && RememberYou.sleptThrough(false, true, true, true)
-                    && !RememberYou.sleptThrough(false, true, true, false)
-                    && !RememberYou.sleptThrough(true, true, true, true)
-                    && !RememberYou.sleptThrough(true, false, true, true)
-                    && !RememberYou.sleptThrough(false, false, false, true);
+            // A home (and sleep consolidation) only after a whole night: not shaken awake, asleep long enough, and the night skipped or morning come.
+            checks[26] = SleepEvents.sleptThrough(false, false, true, false)
+                    && SleepEvents.sleptThrough(false, true, true, true)
+                    && !SleepEvents.sleptThrough(false, true, true, false)
+                    && !SleepEvents.sleptThrough(true, true, true, true)
+                    && !SleepEvents.sleptThrough(true, false, true, true)
+                    && !SleepEvents.sleptThrough(false, false, false, true);
 
             Zombie plain = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
             Zombie big = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);

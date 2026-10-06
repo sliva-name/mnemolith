@@ -37,7 +37,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * <p>
  * Batches (one per environment), run one after the other: {@code mnemolith:suites} (the QA suites, each done within
  * its first tick), {@code mnemolith:village} (one real village house, kept off the suites' world random),
- * {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the environment's teardown), and one
+ * {@code mnemolith:live} (multi-tick tests with real players, cleaned up by the environment's teardown),
+ * {@code mnemolith:live_night} (the same at midnight, the clock put back afterwards), and one
  * batch per storm test (storms are capped per dimension, so they must not run side by side).
  */
 public final class MnemolithGameTests {
@@ -49,12 +50,13 @@ public final class MnemolithGameTests {
 
     static {
         ENVIRONMENT_TYPES.register("live_players", () -> LivePlayers.Environment.CODEC);
+        ENVIRONMENT_TYPES.register("night", () -> LivePlayers.Night.CODEC);
     }
 
     /** The anchor template: 3x3x3 air (see {@code tools/gametest_structure.py}). */
     private static final Identifier EMPTY = id("gametest/empty");
 
-    /** {@code environment}: "suites", "live", or a storm batch of its own. */
+    /** {@code environment}: "suites", "live", "night" (live players at midnight), or a storm batch of its own. */
     private record Spec(DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> function, String environment, int maxTicks) {}
 
     private static final List<Spec> SPECS = new ArrayList<>();
@@ -107,6 +109,8 @@ public final class MnemolithGameTests {
         // The world remembers you: real events recorded, and a scene on return (checks every 40 ticks, 60% a roll).
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);
+        // Sleep consolidation only after a whole night, not a "Leave Bed" at night. Own batch: it sets the clock to midnight.
+        SPECS.add(new Spec(FUNCTIONS.register("sleep_leave_bed_does_not_consolidate", () -> SleepLiveTests::leaveBedDoesNotConsolidate), "night", 600));
 
         quick("pleading_chair", ChairTests::run);
         // Elite stalker and twin memory mob flags survive a save and load.
@@ -157,11 +161,13 @@ public final class MnemolithGameTests {
         Holder<TestEnvironmentDefinition<?>> suites = event.registerEnvironment(id("suites"));
         Holder<TestEnvironmentDefinition<?>> village = event.registerEnvironment(id("village"));
         Holder<TestEnvironmentDefinition<?>> live = event.registerEnvironment(id("live"), new LivePlayers.Environment());
+        Holder<TestEnvironmentDefinition<?>> night = event.registerEnvironment(id("live_night"), new LivePlayers.Environment(), new LivePlayers.Night());
         for (Spec spec : SPECS) {
             Holder<TestEnvironmentDefinition<?>> environment = switch (spec.environment()) {
                 case "suites" -> suites;
                 case "village" -> village;
                 case "live" -> live;
+                case "night" -> night;
                 default -> event.registerEnvironment(id(spec.environment()), new LivePlayers.Environment(true));
             };
             TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, EMPTY, spec.maxTicks(), 0, true);
