@@ -19,6 +19,7 @@ public final class ModEntityAttributes {
         event.put(ModEntities.FRACTURE_STALKER.get(), com.mnemolith.entity.mob.FractureStalker.createAttributes().build());
         event.put(ModEntities.ECHO.get(), com.mnemolith.entity.echo.EchoEntity.createAttributes().build());
         event.put(ModEntities.ECHO_SHELL.get(), com.mnemolith.entity.echo.EchoShell.createAttributes().build());
+        event.put(ModEntities.PAST_SELF.get(), com.mnemolith.entity.echo.PastSelf.createAttributes().build());
         event.put(ModEntities.RESIDUE.get(), com.mnemolith.entity.echo.ResidueEntity.createAttributes().build());
         event.put(ModEntities.SCAR.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());
         event.put(ModEntities.SILENCE_MIRROR.get(), com.mnemolith.entity.echo.ScarEntity.createAttributes().build());

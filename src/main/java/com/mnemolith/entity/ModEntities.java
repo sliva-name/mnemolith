@@ -68,6 +68,13 @@ public final class ModEntities {
             MobCategory.MISC,
             builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(10).updateInterval(2).noLootTable());
 
+    /** "The past you": a short owner-only scene of one remembered life event. Never saved. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.PastSelf>> PAST_SELF = ENTITY_TYPES.registerEntityType(
+            "past_self",
+            com.mnemolith.entity.echo.PastSelf::create,
+            MobCategory.MISC,
+            builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(8).updateInterval(2).noLootTable().noSave().fireImmune());
+
     public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.echo.ResidueEntity>> RESIDUE = ENTITY_TYPES.registerEntityType(
             "residue",
             com.mnemolith.entity.echo.ResidueEntity::new,

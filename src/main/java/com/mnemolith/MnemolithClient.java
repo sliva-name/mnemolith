@@ -35,10 +35,12 @@ public final class MnemolithClient {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         com.mnemolith.entity.echo.EchoEntity.clientFactory = com.mnemolith.client.echo.ClientEcho::new;
         com.mnemolith.entity.echo.EchoShell.clientFactory = com.mnemolith.client.echo.ClientEchoShell::new;
+        com.mnemolith.entity.echo.PastSelf.clientFactory = com.mnemolith.client.echo.ClientPastSelf::new;
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modEventBus.addListener(ClientScreens::registerMenus);
         modEventBus.addListener(LensOverlay::register);
         modEventBus.addListener(FractureFeel::register);
+        modEventBus.addListener(com.mnemolith.client.recall.PastVision::register);
         modEventBus.addListener(ClientPayloads::register);
         modEventBus.addListener(ClientParticles::register);
         modEventBus.addListener(ModEntityRenderers::registerLayers);
@@ -63,6 +65,8 @@ public final class MnemolithClient {
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.TraceMarks::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.OriginView::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.TraceMarks::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.PastVision::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.PastVision::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.echo.EchoJobClient::onLoggingOut);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> com.mnemolith.network.ServerTuning.clear());
         modEventBus.addListener(com.mnemolith.client.echo.EchoJobClient::registerHud);

@@ -51,25 +51,39 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
     private static final int LABEL_STOPPED = 0xFFFFB089;
     private static final int LABEL_BACKGROUND = 0xC0200A18;
 
+    /** Past self: pale rose, at most about this opaque, fading in and out with the scene. */
+    public static final int PAST_RGB = 0xFFE2F0;
+    private static final int PAST_ALPHA = 0x9C;
+
+    /** Which body this renderer draws. */
+    public enum Mode { ECHO, SHELL, PAST }
+
     private static @Nullable EchoRenderer<?> echoRenderer;
     private static @Nullable EchoRenderer<?> shellRenderer;
+    private static @Nullable EchoRenderer<?> pastRenderer;
 
+    private final Mode mode;
     private final boolean echo;
     private final @Nullable EchoRenderer<T> slim;
 
     public EchoRenderer(EntityRendererProvider.Context context, boolean echo) {
-        this(context, echo, false);
+        this(context, echo ? Mode.ECHO : Mode.SHELL);
     }
 
-    private EchoRenderer(EntityRendererProvider.Context context, boolean echo, boolean slimModel) {
+    public EchoRenderer(EntityRendererProvider.Context context, Mode mode) {
+        this(context, mode, false);
+    }
+
+    private EchoRenderer(EntityRendererProvider.Context context, Mode mode, boolean slimModel) {
         super(context, slimModel);
-        this.echo = echo;
-        this.slim = slimModel ? null : new EchoRenderer<>(context, echo, true);
+        this.mode = mode;
+        this.echo = mode == Mode.ECHO;
+        this.slim = slimModel ? null : new EchoRenderer<>(context, mode, true);
         if (!slimModel) {
-            if (echo) {
-                echoRenderer = this;
-            } else {
-                shellRenderer = this;
+            switch (mode) {
+                case ECHO -> echoRenderer = this;
+                case SHELL -> shellRenderer = this;
+                case PAST -> pastRenderer = this;
             }
         }
     }
@@ -86,7 +100,8 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
         }
         AvatarRenderState state = event.getRenderState();
         EchoRenderer<?> target = state.entityType == ModEntities.ECHO.get() ? echoRenderer
-                : state.entityType == ModEntities.ECHO_SHELL.get() ? shellRenderer : null;
+                : state.entityType == ModEntities.ECHO_SHELL.get() ? shellRenderer
+                : state.entityType == ModEntities.PAST_SELF.get() ? pastRenderer : null;
         if (target == null) {
             return;
         }
@@ -214,8 +229,22 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
         return alpha << 24 | temper.rgb();
     }
 
+    /** Past self: the scene's fade, read from the client entity. */
+    private static int pastTint(AvatarRenderState state) {
+        Minecraft minecraft = Minecraft.getInstance();
+        float visible = 1.0F;
+        if (minecraft.level != null && minecraft.level.getEntity(state.id) instanceof com.mnemolith.entity.echo.PastSelf past) {
+            visible = past.visibility(state.ageInTicks);
+        }
+        int alpha = Mth.clamp(Math.round(PAST_ALPHA * visible), 0, 255);
+        return alpha << 24 | PAST_RGB;
+    }
+
     @Override
     protected int getModelTint(AvatarRenderState state) {
+        if (this.mode == Mode.PAST) {
+            return pastTint(state);
+        }
         if (!this.echo) {
             return SHELL_TINT;
         }
@@ -229,7 +258,7 @@ public class EchoRenderer<T extends Avatar & ClientAvatarEntity> extends AvatarR
 
     @Override
     protected @Nullable RenderType getRenderType(AvatarRenderState state, boolean isBodyVisible, boolean forceTransparent, boolean appearGlowing) {
-        if (this.echo && isBodyVisible) {
+        if ((this.echo || this.mode == Mode.PAST) && isBodyVisible) {
             return RenderTypes.entityTranslucentCullItemTarget(this.getTextureLocation(state));
         }
         return super.getRenderType(state, isBodyVisible, forceTransparent, appearGlowing);

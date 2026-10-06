@@ -84,6 +84,10 @@ public final class ImprintEvents {
         ImprintWriter.write(level, pos, ImprintWriter.witnessedTags(level, pos, tags), playerId, false);
         if (event.getEntity() instanceof ServerPlayer dead) {
             com.mnemolith.recall.Investigate.onDeath(dead);
+            com.mnemolith.recall.RememberYou.onDeath(dead, event.getSource());
+        }
+        if (event.getSource().getEntity() instanceof ServerPlayer killer) {
+            com.mnemolith.recall.RememberYou.onKill(killer, event.getEntity());
         }
     }
 

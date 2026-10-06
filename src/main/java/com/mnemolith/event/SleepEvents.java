@@ -35,6 +35,8 @@ public final class SleepEvents {
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
+        // The world remembers the bed as a home, however short the night.
+        player.getSleepingPos().ifPresent(bed -> com.mnemolith.recall.RememberYou.onHome(player, bed));
         // Punching out of bed early skips consolidation.
         if (event.wakeImmediately()) {
             return;

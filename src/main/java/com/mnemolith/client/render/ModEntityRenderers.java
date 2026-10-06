@@ -45,14 +45,15 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.SILENCE_MIRROR.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.ARCHIVE_GUARDIAN.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.PLEADING_CHAIR.get(), PleadingChairRenderer::new);
-        registerAvatar(event, ModEntities.ECHO.get(), true);
-        registerAvatar(event, ModEntities.ECHO_SHELL.get(), false);
+        registerAvatar(event, ModEntities.ECHO.get(), com.mnemolith.client.echo.EchoRenderer.Mode.ECHO);
+        registerAvatar(event, ModEntities.ECHO_SHELL.get(), com.mnemolith.client.echo.EchoRenderer.Mode.SHELL);
+        registerAvatar(event, ModEntities.PAST_SELF.get(), com.mnemolith.client.echo.EchoRenderer.Mode.PAST);
     }
 
-    /** Client echoes and shells are always the client subclasses, so the avatar renderer can be bound to their types. */
+    /** Client echoes, shells and past selves are always the client subclasses, so the avatar renderer can be bound to their types. */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void registerAvatar(EntityRenderersEvent.RegisterRenderers event, net.minecraft.world.entity.EntityType<?> type, boolean echo) {
-        event.registerEntityRenderer((net.minecraft.world.entity.EntityType) type, context -> new com.mnemolith.client.echo.EchoRenderer(context, echo));
+    private static void registerAvatar(EntityRenderersEvent.RegisterRenderers event, net.minecraft.world.entity.EntityType<?> type, com.mnemolith.client.echo.EchoRenderer.Mode mode) {
+        event.registerEntityRenderer((net.minecraft.world.entity.EntityType) type, context -> new com.mnemolith.client.echo.EchoRenderer(context, mode));
     }
 
     private static ModelLayerLocation layer(String name) {

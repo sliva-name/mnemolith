@@ -45,6 +45,7 @@ public final class MobEvents {
         com.mnemolith.recall.LivingMemory.tick(serverPlayer);
         com.mnemolith.recall.Investigate.tick(serverPlayer);
         com.mnemolith.recall.UseMemory.tick(serverPlayer);
+        com.mnemolith.recall.RememberYou.tick(serverPlayer);
         if (was != null && was && !grounded && player.getDeltaMovement().y > 0.2D) {
             ActionMemory.record(serverPlayer, CopiedActionKind.JUMP, serverPlayer.blockPosition(), ItemStack.EMPTY);
         }
@@ -58,6 +59,7 @@ public final class MobEvents {
         com.mnemolith.recall.LivingMemory.forgetSteps(player);
         com.mnemolith.recall.Investigate.forgetSession(player);
         com.mnemolith.recall.UseMemory.forgetSession(player);
+        com.mnemolith.recall.RememberYou.forgetSession(player);
     }
 
     /** Drops all per-player mob state (server stopped). */
@@ -68,6 +70,7 @@ public final class MobEvents {
         com.mnemolith.recall.LivingMemory.clearSteps();
         com.mnemolith.recall.Investigate.clearSessions();
         com.mnemolith.recall.UseMemory.clearSessions();
+        com.mnemolith.recall.RememberYou.clearSessions();
     }
 
     @SubscribeEvent
@@ -93,6 +96,7 @@ public final class MobEvents {
         }
         ActionMemory.record(player, CopiedActionKind.PLACE, event.getPos(), new ItemStack(event.getPlacedBlock().getBlock()));
         com.mnemolith.recall.LivingMemory.onPlace(player, event.getPos(), event.getPlacedBlock());
+        com.mnemolith.recall.RememberYou.onPlace(player, event.getPos(), event.getPlacedBlock());
     }
 
     @SubscribeEvent

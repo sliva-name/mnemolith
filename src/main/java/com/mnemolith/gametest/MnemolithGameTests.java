@@ -78,6 +78,7 @@ public final class MnemolithGameTests {
         suite("investigateqa", com.mnemolith.command.qa.InvestigateQa::check, Map.of());
         suite("useqa", com.mnemolith.command.qa.UseQa::check, Map.of());
         suite("interveneqa", com.mnemolith.command.qa.InterveneQa::check, Map.of());
+        suite("rememberqa", com.mnemolith.command.qa.RememberQa::check, Map.of());
 
         // Formation: pulses every 200 ticks at 1 in 2; 4400 ticks is 22 pulses, a miss chance under 1 in 4 million.
         live("residue_forms_where_player_stands", ResidueLiveTests::formsWherePlayerStands, 4400);
@@ -102,6 +103,10 @@ public final class MnemolithGameTests {
         live("vault_draws_then_spends", RelayLiveTests::vaultDrawsThenSpends, 700);
         // Item conservation under random possess / return / hop / house / wake / kill / drop.
         live("echo_items_are_conserved", ConservationLiveTests::chaos, 600 + ConservationLiveTests.envInt("MNEMOLITH_CHAOS_STEPS", 0));
+
+        // The world remembers you: real events recorded, and a scene on return (checks every 40 ticks, 60% a roll).
+        live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
+        live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);
 
         quick("pleading_chair", ChairTests::run);
         // Elite stalker and twin memory mob flags survive a save and load.
