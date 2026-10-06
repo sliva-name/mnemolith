@@ -276,7 +276,7 @@ public final class LivingMemory {
     }
 
     /** Creative, spectator, an open menu, or a storm overhead: no wow moment. Recording still happens. */
-    private static boolean showing(ServerPlayer player) {
+    public static boolean showing(ServerPlayer player) {
         if (CommonConfig.RECALL_SKIP_CREATIVE.get() && (player.isCreative() || player.isSpectator())) {
             return false;
         }

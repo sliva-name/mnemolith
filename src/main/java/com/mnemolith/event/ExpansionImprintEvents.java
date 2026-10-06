@@ -193,7 +193,7 @@ public final class ExpansionImprintEvents {
         ImprintWriter.write(level, pos, List.of(ImprintTag.TRADE, ImprintTag.PLAYER), player.getUUID(), true);
     }
 
-    private static boolean isBoss(LivingEntity entity) {
+    public static boolean isBoss(LivingEntity entity) {
         if (entity instanceof ScarEntity) {
             return true;
         }
