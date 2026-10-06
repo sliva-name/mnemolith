@@ -2,8 +2,8 @@ package com.mnemolith.client.gui;
 
 import java.util.List;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.content.composition.CompositionRecipe;
-import com.mnemolith.content.composition.CompositionRecipes;
 import com.mnemolith.imprint.Discovery;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.imprint.ModAttachments;
@@ -102,7 +102,7 @@ public class CatalogScreen extends Screen {
         int written = 0;
         if (this.formulas != 0 || shown != 0 || this.tags != 0) {
             GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.catalog_formulas"), left + 10, formulaY, GuiArt.BONE);
-            List<CompositionRecipe> recipes = CompositionRecipes.all();
+            List<CompositionRecipe> recipes = ServerTuning.formulas();
             for (int i = 0; i < recipes.size() && i < Discovery.FORMULA_COUNT; i++) {
                 if ((this.formulas & (1 << i)) == 0) {
                     continue;
@@ -220,7 +220,7 @@ public class CatalogScreen extends Screen {
     }
 
     private static Component[] formulaLabels() {
-        List<CompositionRecipe> recipes = CompositionRecipes.all();
+        List<CompositionRecipe> recipes = ServerTuning.formulas();
         Component[] out = new Component[Math.max(recipes.size(), 1)];
         for (int i = 0; i < recipes.size(); i++) {
             out[i] = Component.translatable(recipes.get(i).translationKey());

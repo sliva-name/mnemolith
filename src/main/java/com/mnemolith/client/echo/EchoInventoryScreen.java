@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.client.gui.GuiArt;
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.menu.EchoMenu;
 import com.mnemolith.echo.EchoLesson;
 import com.mnemolith.entity.echo.EchoEntity;
@@ -37,8 +37,11 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
     private static final int PINK = 0xFFFFC6E6;
     private static final int WARM = 0xFFFFB089;
     private static final int DIM = 0xFFA89FB8;
-    /** Height of the job panel (the inventory panel keeps {@link EchoMenu#HEIGHT}). */
-    private static final int JOB_H = 282;
+    /**
+     * Height of both panels. 240 is the smallest GUI height vanilla's auto scale guarantees (1280x720, 1366x768,
+     * 1920x1080 at 270, 2560x1440 at 240), so the echo's top slot row and the job header are never cut off.
+     */
+    private static final int JOB_H = 240;
 
     private @Nullable Button replay;
     private @Nullable Button mine;
@@ -76,29 +79,29 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         int y = this.topPos;
         int right = x + BUTTON_W + 4;
         this.replay = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.replay"), b -> this.send(EchoJobPayload.Action.MODE_REPLAY))
-                .bounds(x, y + 51, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.replay.tip"))).build());
+                .bounds(x, y + 46, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.replay.tip"))).build());
         this.mine = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.mine"), b -> this.send(EchoJobPayload.Action.MODE_MINE))
-                .bounds(right, y + 51, BUTTON_W, 16).build());
+                .bounds(right, y + 46, BUTTON_W, 16).build());
         this.build = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.build"), b -> this.onBuild())
-                .bounds(x, y + 69, BUTTON_W, 16).build());
+                .bounds(x, y + 63, BUTTON_W, 16).build());
         this.farm = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.farm"), b -> this.send(EchoJobPayload.Action.MODE_FARM))
-                .bounds(right, y + 69, BUTTON_W, 16).build());
+                .bounds(right, y + 63, BUTTON_W, 16).build());
         this.lumber = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.lumber"), b -> this.send(EchoJobPayload.Action.MODE_LUMBER))
-                .bounds(x, y + 87, BUTTON_W, 16).build());
+                .bounds(x, y + 80, BUTTON_W, 16).build());
         this.care = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.care"), b -> this.send(EchoJobPayload.Action.MODE_CARE))
-                .bounds(right, y + 87, BUTTON_W, 16).build());
+                .bounds(right, y + 80, BUTTON_W, 16).build());
         this.stop = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.stop"), b -> this.send(EchoJobPayload.Action.STOP))
-                .bounds(x, y + 105, BUTTON_W * 2 + 4, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.stop.tip"))).build());
+                .bounds(x, y + 97, BUTTON_W * 2 + 4, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.stop.tip"))).build());
         this.radiusDown = this.addRenderableWidget(Button.builder(Component.literal("−"), b -> this.changeRadius(-1))
-                .bounds(x + 96, y + 126, 18, 16).build());
+                .bounds(x + 96, y + 116, 18, 16).build());
         this.radiusUp = this.addRenderableWidget(Button.builder(Component.literal("+"), b -> this.changeRadius(1))
-                .bounds(x + 116, y + 126, 18, 16).build());
+                .bounds(x + 116, y + 116, 18, 16).build());
         this.link = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.link"), b -> this.onLink())
-                .bounds(x, y + 157, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.link.tip"))).build());
+                .bounds(x, y + 145, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.link.tip"))).build());
         this.unlink = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.unlink"), b -> this.send(EchoJobPayload.Action.UNLINK_CHEST))
-                .bounds(right, y + 157, BUTTON_W, 16).build());
+                .bounds(right, y + 145, BUTTON_W, 16).build());
         this.place = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.place"), b -> this.onPlace())
-                .bounds(x, y + 189, BUTTON_W * 2 + 4, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.place.tip"))).build());
+                .bounds(x, y + 174, BUTTON_W * 2 + 4, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.place.tip"))).build());
         this.refreshButtons();
     }
 
@@ -115,7 +118,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             return;
         }
         int step = this.minecraft.hasShiftDown() ? 8 : 2;
-        int max = CommonConfig.ECHO_MINE_MAX_RADIUS.get();
+        int max = ServerTuning.mineMaxRadius();
         int value = Math.max(2, Math.min(max, echo.jobRadius() + direction * step));
         ClientPacketDistributor.sendToServer(new EchoJobPayload(echo.getId(), EchoJobPayload.Action.RADIUS, BlockPos.ZERO, value));
     }
@@ -221,7 +224,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         int x = PANEL_X + PAD;
         int width = PANEL_W - PAD * 2;
         EchoEntity echo = this.echo();
-        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.job"), x, 7, GuiArt.BONE);
+        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.job"), x, 6, GuiArt.BONE);
         List<Component> lesson = new java.util.ArrayList<>(this.lesson().describeShort());
         boolean farming = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_FARMING) != 0;
         boolean lumbering = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_LUMBER) != 0;
@@ -241,7 +244,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             }
         }
         for (int i = 0; i < Math.min(3, lesson.size()); i++) {
-            this.fitted(graphics, lesson.get(i), x, 19 + i * 10, width, PINK);
+            this.fitted(graphics, lesson.get(i), x, 17 + i * 9, width, PINK);
         }
         if (echo == null) {
             return;
@@ -261,24 +264,24 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             int by = active.getY() - this.topPos + active.getHeight();
             graphics.fill(bx + 2, by, bx + active.getWidth() - 2, by + 1, PINK);
         }
-        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.radius", echo.jobRadius()), x, 130, GuiArt.BONE);
+        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.radius", echo.jobRadius()), x, 120, GuiArt.BONE);
         Component chest = echo.jobChest().map(EchoInventoryScreen::pos).orElse(Component.translatable("mnemolith.gui.echo.none"));
-        this.fitted(graphics, Component.translatable("mnemolith.gui.echo.chest").append(": ").append(chest), x, 146, width,
+        this.fitted(graphics, Component.translatable("mnemolith.gui.echo.chest").append(": ").append(chest), x, 135, width,
                 echo.jobChest().isPresent() ? GuiArt.BONE : DIM);
         Component anchor = echo.jobAnchor().map(EchoInventoryScreen::pos).orElse(Component.translatable("mnemolith.gui.echo.blueprint_none"));
-        this.fitted(graphics, Component.translatable("mnemolith.gui.echo.blueprint").append(": ").append(anchor), x, 178, width,
+        this.fitted(graphics, Component.translatable("mnemolith.gui.echo.blueprint").append(": ").append(anchor), x, 164, width,
                 echo.jobAnchor().isPresent() ? GuiArt.BONE : DIM);
-        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.status"), x, 211, GuiArt.BONE);
+        GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.echo.status"), x, 193, GuiArt.BONE);
         List<FormattedCharSequence> lines = this.font.split(echo.jobStatus(), width);
         int color = echo.jobStopped() ? WARM : PINK;
         for (int i = 0; i < Math.min(2, lines.size()); i++) {
-            graphics.text(this.font, lines.get(i), x + 1, 223 + i * 10, GuiArt.SHADOW, false);
-            graphics.text(this.font, lines.get(i), x, 222 + i * 10, color, false);
+            graphics.text(this.font, lines.get(i), x + 1, 204 + i * 9, GuiArt.SHADOW, false);
+            graphics.text(this.font, lines.get(i), x, 203 + i * 9, color, false);
         }
         // Memory graft: temper and charges, or a hint that a slip can be grafted.
         com.mnemolith.echo.graft.Temper temper = echo.graftTemper();
         Component graft = temper == null ? Component.translatable("mnemolith.gui.echo.graft_none") : echo.graftLine();
-        this.fitted(graphics, graft, x, 248, width, temper == null ? DIM : 0xFF000000 | temper.rgb());
+        this.fitted(graphics, graft, x, 223, width, temper == null ? DIM : 0xFF000000 | temper.rgb());
     }
 
     private void fitted(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {

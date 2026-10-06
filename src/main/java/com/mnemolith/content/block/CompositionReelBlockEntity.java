@@ -1,5 +1,7 @@
 package com.mnemolith.content.block;
 
+import com.mnemolith.content.composition.Composition;
+
 import com.mnemolith.content.ModBlockEntities;
 import com.mnemolith.content.ModItems;
 import com.mnemolith.content.menu.CompositionMenu;
@@ -41,7 +43,7 @@ public class CompositionReelBlockEntity extends BaseContainerBlockEntity {
     /** Hoppers and droppers use this. The menu slot check does not apply to them. */
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return stack.is(ModItems.IMPRINT_SLIP.get());
+        return Composition.composable(stack);
     }
 
     @Override

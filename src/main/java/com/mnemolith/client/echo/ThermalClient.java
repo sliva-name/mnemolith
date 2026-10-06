@@ -2,9 +2,9 @@ package com.mnemolith.client.echo;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.mnemolith.network.ServerTuning;
 import com.mnemolith.Mnemolith;
 import com.mnemolith.client.config.ClientConfig;
-import com.mnemolith.config.CommonConfig;
 import com.mnemolith.content.item.ChronicleLensItem;
 import com.mnemolith.echo.EchoView;
 import com.mnemolith.entity.echo.EchoEntity;
@@ -109,7 +109,8 @@ public final class ThermalClient {
 
     /** Own echo with the smallest angle to the crosshair, inside the aim-assist cone (widened for close echoes). */
     public static EchoEntity pick(Minecraft minecraft, LocalPlayer player) {
-        double range = CommonConfig.ECHO_POSSESS_RANGE.get();
+        // The server's range (common config is not synced); the server re-checks it anyway.
+        double range = ServerTuning.possessRange();
         double assist = ClientConfig.ECHO_AIM_ASSIST.get();
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getLookAngle();

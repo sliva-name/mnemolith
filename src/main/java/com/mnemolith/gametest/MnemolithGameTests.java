@@ -104,6 +104,12 @@ public final class MnemolithGameTests {
         live("echo_items_are_conserved", ConservationLiveTests::chaos, 600 + ConservationLiveTests.envInt("MNEMOLITH_CHAOS_STEPS", 0));
 
         quick("pleading_chair", ChairTests::run);
+        // Elite stalker and twin memory mob flags survive a save and load.
+        quick("mob_flags_persist", PersistenceTests::run);
+        quick("reel_blank_slips", Round2Tests::blankSlips);
+        quick("server_tuning_payload", Round2Tests::tuningPayload);
+        quick("mute_library_ground", Round2Tests::muteLibraryGround);
+        quick("structure_templates_place", Round2Tests::templatesPlace);
         // Fixes from the QA sweep (stale mute marks, structure seeding, echo home, archive shrine).
         quick("regressions", RegressionTests::run);
         // Own batch: placing a real house must not share the suites' world random.

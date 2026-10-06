@@ -1,10 +1,12 @@
 package com.mnemolith.network;
 
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
+ * Version 6: server tuning sync (possess range, mining radius, drum formulas) for dedicated servers.
  * Version 5: the lens origin line and trace footsteps. Version 4 added the owner-only recall ghost.
  * A stage-3 guide reuses that ghost; it does not add a packet.
  */
@@ -13,10 +15,12 @@ public final class ModNetwork {
 
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ModNetwork::onRegister);
+        modEventBus.addListener(ServerTuning::onConfigReload);
+        NeoForge.EVENT_BUS.addListener(ServerTuning::onDatapackSync);
     }
 
     private static void onRegister(RegisterPayloadHandlersEvent event) {
-        event.registrar("5")
+        event.registrar("6")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)
@@ -28,6 +32,7 @@ public final class ModNetwork {
                 .playToClient(RecallGhostPayload.TYPE, RecallGhostPayload.STREAM_CODEC)
                 .playToClient(OriginReadPayload.TYPE, OriginReadPayload.STREAM_CODEC)
                 .playToClient(TraceMarkPayload.TYPE, TraceMarkPayload.STREAM_CODEC)
-                .playToServer(EchoCommandPayload.TYPE, EchoCommandPayload.STREAM_CODEC, EchoNetwork::handleCommand);
+                .playToServer(EchoCommandPayload.TYPE, EchoCommandPayload.STREAM_CODEC, EchoNetwork::handleCommand)
+                .playToClient(ServerTuningPayload.TYPE, ServerTuningPayload.STREAM_CODEC);
     }
 }

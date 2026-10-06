@@ -44,10 +44,11 @@ public class CompositionMenu extends AbstractContainerMenu {
         }
         checkContainerSize(container, ImprintConstants.COMPOSITION_SLOTS);
         for (int slot = 0; slot < ImprintConstants.COMPOSITION_SLOTS; slot++) {
-            this.addSlot(new SlipSlot(container, slot, 62 + slot * 18, 30));
+            this.addSlot(new SlipSlot(container, slot, 62 + slot * 18, 18));
         }
-        // PANEL_HEIGHT 266 → inventoryLabelY 172; slots sit 12px under the label (vanilla rhythm).
-        this.addStandardInventorySlots(inventory, 8, 184);
+        // PANEL_HEIGHT 240 → inventoryLabelY 146; slots sit 12px under the label (vanilla rhythm). 240 is the
+        // smallest GUI height auto scale guarantees (1280x720, 1366x768 at scale 3), so nothing is cut off.
+        this.addStandardInventorySlots(inventory, 8, 158);
         this.addDataSlots(this.data);
         this.data.set(DATA_FORMULA, -1);
         this.data.set(DATA_HINTS, 1);
@@ -135,7 +136,8 @@ public class CompositionMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() == ModItems.IMPRINT_SLIP.get();
+            // Blank slips would only make Compose fail (and burn a slip), so the reel takes written ones only.
+            return Composition.composable(stack);
         }
     }
 }

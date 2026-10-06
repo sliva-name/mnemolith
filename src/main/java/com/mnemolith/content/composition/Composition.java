@@ -46,6 +46,11 @@ public final class Composition {
         return CompositionRecipes.match(tags);
     }
 
+    /** Only a written imprint slip can go into the reel; a blank slip has no tag to compose. */
+    public static boolean composable(ItemStack stack) {
+        return stack.is(ModItems.IMPRINT_SLIP.get()) && stack.has(ModDataComponents.IMPRINT_CAST.get());
+    }
+
     public static ComposeResult compose(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, Container container) {
         if (!CommonConfig.COMPOSITION_ENABLED.get()) {
             if (player != null) {
@@ -62,7 +67,12 @@ public final class Composition {
             }
             ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
             if (stack.getItem() != ModItems.IMPRINT_SLIP.get() || cast == null) {
-                return fail(level, pos, player, container, tags);
+                // Blank slips can no longer be put in, but older saves may still hold some. Refuse without
+                // burning a slip or spiking pressure, and say what is wrong.
+                if (player != null) {
+                    player.sendSystemMessage(Component.translatable("mnemolith.message.compose_blank"));
+                }
+                return finish(level, pos, player, ComposeResult.BLANK, -1);
             }
             slots.add(slot);
             tags.add(cast.tag());
@@ -136,7 +146,6 @@ public final class Composition {
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         MemoryFx.composeFail(level, pos);
         if (player != null) {
-            // Needed for the invalid-item path, which reaches fail() before compose() notes the tags.
             // On a formula miss the tags are already noted; noteTag is idempotent (no second sync or message).
             for (ImprintTag tag : tags) {
                 DiscoveryNotes.noteTag(player, tag);

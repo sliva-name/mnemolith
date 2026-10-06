@@ -85,7 +85,10 @@ class Builder:
         self.sx, self.sy, self.sz = sx, sy, sz
         self.palette_index: OrderedDict[tuple, int] = OrderedDict()
         self.palette: list[bytes] = []
-        self.blocks: list[bytes] = []
+        # One entry per position, last write wins. A template with two entries for one position places them in
+        # Minecraft's order (full blocks, then other blocks such as air, then block entities), so a later "clear to
+        # air" pass used to erase the walls and leave only chests, walls and lanterns standing.
+        self.cells: OrderedDict[tuple[int, int, int], tuple[int, bytes | None]] = OrderedDict()
         self.air = self.state('minecraft:air')
 
     def state(self, name: str, props: dict[str, str] | None = None) -> int:
@@ -98,7 +101,7 @@ class Builder:
     def set(self, x: int, y: int, z: int, state: int, nbt: bytes | None = None) -> None:
         if not (0 <= x < self.sx and 0 <= y < self.sy and 0 <= z < self.sz):
             return
-        self.blocks.append(block_entry(state, (x, y, z), nbt))
+        self.cells[(x, y, z)] = (state, nbt)
 
     def fill(self, x0, y0, z0, x1, y1, z1, state: int) -> None:
         for x in range(min(x0, x1), max(x0, x1) + 1):
@@ -130,7 +133,8 @@ class Builder:
         # also clear a second cell for wider passages when needed by caller
 
     def write(self, rel: str) -> None:
-        write_structure(os.path.join(OUT, rel), (self.sx, self.sy, self.sz), self.palette, self.blocks)
+        blocks = [block_entry(state, pos, nbt) for pos, (state, nbt) in self.cells.items()]
+        write_structure(os.path.join(OUT, rel), (self.sx, self.sy, self.sz), self.palette, blocks)
 
 
 def flooded_archive() -> None:

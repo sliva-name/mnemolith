@@ -44,6 +44,19 @@ public abstract class MemoryMob extends Monster {
         this.entityData.set(DATA_TWIN, twin);
     }
 
+    /** The twin flag is synced data; saved here so a twin stays a twin after a chunk reload or restart. */
+    @Override
+    protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("twin", this.twin());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setTwin(input.getBooleanOr("twin", false));
+    }
+
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason, SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);

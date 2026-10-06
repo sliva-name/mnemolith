@@ -9,6 +9,8 @@ public record ComposeResult(int status, int formulaOrdinal) {
     public static final int DISABLED = 4;
     /** The formula would hand over an item, and the inventory cannot take it. Nothing was spent. */
     public static final int FULL = 5;
+    /** A blank slip (or another item) sits in the reel, e.g. from an older save. Nothing was spent. */
+    public static final int BLANK = 6;
 
     public boolean success() {
         return this.status == SUCCESS;
