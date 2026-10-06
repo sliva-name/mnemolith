@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 public class ClientPastSelf extends PastSelf implements ClientAvatarEntity {
     private final ClientAvatarState avatarState = new ClientAvatarState();
     private final AvatarSkin skin = new AvatarSkin();
+    private boolean wasSleeping;
 
     public ClientPastSelf(EntityType<? extends PastSelf> type, Level level) {
         super(type, level);
@@ -34,6 +35,15 @@ public class ClientPastSelf extends PastSelf implements ClientAvatarEntity {
         if (accessor.equals(DATA_PROFILE)) {
             this.skin.request(this.getProfile());
         }
+        // Lying down: vanilla snaps the body onto the bed when the sleeping position arrives, right after the move
+        // packet started interpolating toward the same spot. The interpolation then adds that snap a second time and
+        // the body floats a block beside and above the bed until the next forced position sync. Stop it here.
+        boolean sleeping = this.isSleeping();
+        if (sleeping && !this.wasSleeping) {
+            this.getInterpolation().cancel();
+            this.setOldPosAndRot();
+        }
+        this.wasSleeping = sleeping;
     }
 
     @Override
