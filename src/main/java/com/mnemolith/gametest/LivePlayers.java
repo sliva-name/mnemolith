@@ -140,4 +140,41 @@ public final class LivePlayers {
             return CODEC;
         }
     }
+
+    /**
+     * Midnight for one batch, through the level's own clock (as {@code /time set midnight} does), so beds work and the
+     * night can really be skipped; the teardown puts the clock back where it was. A test may start thousands of ticks
+     * after its batch is set up (the clock runs on meanwhile), so a test that needs the night calls {@link #midnight}
+     * again when it starts.
+     */
+    public record Night() implements TestEnvironmentDefinition<Long> {
+        public static final MapCodec<Night> CODEC = MapCodec.unit(Night::new);
+
+        /** Moves the level's clock on to the next midnight. */
+        public static void midnight(ServerLevel level) {
+            var clock = level.dimensionType().defaultClock().orElseThrow();
+            level.getServer().clockManager().moveToTimeMarker(clock, net.minecraft.world.clock.ClockTimeMarkers.MIDNIGHT);
+            level.updateSkyBrightness();
+        }
+
+        @Override
+        public Long setup(ServerLevel level) {
+            var clock = level.dimensionType().defaultClock().orElseThrow();
+            long previous = level.getServer().clockManager().getTotalTicks(clock);
+            midnight(level);
+            return previous;
+        }
+
+        @Override
+        public void teardown(ServerLevel level, Long previous) {
+            var clock = level.dimensionType().defaultClock().orElseThrow();
+            level.getServer().clockManager().setTotalTicks(clock, previous);
+            level.updateSkyBrightness();
+        }
+
+        @Override
+        public MapCodec<Night> codec() {
+            return CODEC;
+        }
+    }
 }
