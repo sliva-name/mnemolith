@@ -1,9 +1,9 @@
 package com.mnemolith.content.block;
 
-import com.mnemolith.content.composition.Composition;
 
 import com.mnemolith.content.ModBlockEntities;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.content.composition.Composition;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.ImprintConstants;
 import net.minecraft.core.BlockPos;
