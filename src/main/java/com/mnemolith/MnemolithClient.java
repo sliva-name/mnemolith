@@ -43,6 +43,7 @@ public final class MnemolithClient {
         modEventBus.addListener(com.mnemolith.client.recall.PastVision::register);
         modEventBus.addListener(ClientPayloads::register);
         modEventBus.addListener(ClientParticles::register);
+        modEventBus.addListener(com.mnemolith.client.model.ImprintTagProperty::register);
         modEventBus.addListener(ModEntityRenderers::registerLayers);
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
