@@ -371,30 +371,31 @@ public final class ResidueQa {
             BlockPos flame = null;
             Residues.Fester fireResult = null;
             try {
+                // A real patch of short grass around the residue: dirt under it (flatten() leaves stone, where short
+                // grass cannot stand, and each placement's shape update then knocked the earlier blades over, leaving
+                // one at +4,+4). On it, act-out fire lands in the air right above the grass (a flammable neighbour),
+                // whichever of the 81 random columns it picks, so both layers are searched.
                 for (int dx = -4; dx <= 4; dx++) {
                     for (int dz = -4; dz <= 4; dz++) {
+                        level.setBlock(b.offset(dx, -1, dz), Blocks.DIRT.defaultBlockState(), 3);
                         level.setBlock(b.offset(dx, 0, dz), Blocks.SHORT_GRASS.defaultBlockState(), 3);
                     }
                 }
                 ResidueEntity kindled = Residues.spawn(level, b.offset(0, 1, 0), ImprintTag.FIRE, 4, false);
                 fireResult = kindled == null ? null : Residues.fester(level, kindled);
-                for (int dx = -4; dx <= 4 && flame == null; dx++) {
-                    for (int dz = -4; dz <= 4; dz++) {
-                        BlockPos spot = b.offset(dx, 0, dz);
-                        if (level.getBlockState(spot).is(Blocks.FIRE)) {
-                            flame = spot;
-                            break;
-                        }
-                    }
-                }
+                flame = fireIn(level, b);
                 discard(kindled);
             } finally {
                 level.getGameRules().set(GameRules.MOB_GRIEFING, griefing, level.getServer());
-                for (int dx = -4; dx <= 4; dx++) {
-                    for (int dz = -4; dz <= 4; dz++) {
-                        BlockPos spot = b.offset(dx, 0, dz);
-                        if (level.getBlockState(spot).is(Blocks.FIRE) || level.getBlockState(spot).is(Blocks.SHORT_GRASS)) {
-                            level.setBlock(spot, Blocks.AIR.defaultBlockState(), 3);
+                for (int dy = 1; dy >= -1; dy--) {
+                    for (int dx = -4; dx <= 4; dx++) {
+                        for (int dz = -4; dz <= 4; dz++) {
+                            BlockPos spot = b.offset(dx, dy, dz);
+                            if (dy == -1) {
+                                level.setBlock(spot, Blocks.STONE.defaultBlockState(), 3);
+                            } else if (level.getBlockState(spot).is(Blocks.FIRE) || level.getBlockState(spot).is(Blocks.SHORT_GRASS)) {
+                                level.setBlock(spot, Blocks.AIR.defaultBlockState(), 3);
+                            }
                         }
                     }
                 }
@@ -512,6 +513,21 @@ public final class ResidueQa {
 
     private static List<ResidueEntity> residues(ServerLevel level, BlockPos pos, ImprintTag tag) {
         return level.getEntitiesOfClass(ResidueEntity.class, new AABB(pos).inflate(12.0D), r -> r.isAlive() && r.tag() == tag);
+    }
+
+    /** A fire block in the 9x9 field around {@code center}, on the ground layer or the one above it; null if none. */
+    private static @Nullable BlockPos fireIn(ServerLevel level, BlockPos center) {
+        for (int dy = 0; dy <= 1; dy++) {
+            for (int dx = -4; dx <= 4; dx++) {
+                for (int dz = -4; dz <= 4; dz++) {
+                    BlockPos spot = center.offset(dx, dy, dz);
+                    if (level.getBlockState(spot).is(Blocks.FIRE)) {
+                        return spot;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static int zombies(ServerLevel level, BlockPos pos) {
