@@ -63,7 +63,8 @@ public class FieldGuideScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int step = (int) Math.signum(scrollY) * Math.max(this.font.lineHeight, 9);
+        // One whole line per notch, so the window always starts and ends on a line boundary.
+        int step = (int) Math.signum(scrollY) * this.font.lineHeight;
         this.scroll = clampScroll(this.scroll - step);
         return true;
     }
@@ -163,7 +164,7 @@ public class FieldGuideScreen extends Screen {
 
     private int textHeight(Component body, int width) {
         int lines = Math.max(1, this.font.split(body, Math.max(8, width - 6)).size());
-        return lines * this.font.lineHeight + 1;
+        return lines * this.font.lineHeight;
     }
 
     private int clampScroll(int value) {
@@ -211,7 +212,8 @@ public class FieldGuideScreen extends Screen {
         int bodyW = panelW - 24;
         int buttonY = top + panelH - 26;
         int dotsY = buttonY - 12;
-        int bodyH = Math.max(this.font.lineHeight * 3, dotsY - 4 - bodyY);
+        // Whole lines only: a window that ends mid-line showed the last visible line cut in half.
+        int bodyH = Math.max(3, (dotsY - 4 - bodyY) / this.font.lineHeight) * this.font.lineHeight;
         int count = GuideBook.pageCount();
         int rowW = count * DOT + (count - 1) * DOT_GAP;
         int dotsX = left + (panelW - rowW) / 2;
