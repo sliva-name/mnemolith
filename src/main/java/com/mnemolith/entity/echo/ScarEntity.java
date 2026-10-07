@@ -380,7 +380,7 @@ public final class ScarEntity extends Mob {
             String readKey = this.isMirror() ? "mnemolith.silence_mirror.read"
                     : this.isGuardian() ? "mnemolith.archive_guardian.read" : "mnemolith.scar.read";
             reader.sendOverlayMessage(Component.translatable(readKey, PIN_TICKS / 20));
-            Mnemolith.LOGGER.info("Mnemolith scar read by {}", reader.getGameProfile().name());
+            Mnemolith.LOGGER.debug("Mnemolith scar read by {}", reader.getGameProfile().name());
         } else {
             this.entityData.set(DATA_READ, progress);
         }

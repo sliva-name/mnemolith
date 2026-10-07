@@ -107,6 +107,21 @@ public final class ThermalClient {
         return result;
     }
 
+    private static long nearbyCheckedAt = Long.MIN_VALUE;
+    private static boolean nearbyCached;
+
+    /** True when one of your own echoes is within possess range. Checked at most once per game tick. */
+    public static boolean ownEchoNearby(Minecraft minecraft, LocalPlayer player) {
+        long now = minecraft.level.getGameTime();
+        if (now != nearbyCheckedAt) {
+            nearbyCheckedAt = now;
+            double range = ServerTuning.possessRange();
+            nearbyCached = !minecraft.level.getEntitiesOfClass(EchoEntity.class, player.getBoundingBox().inflate(range),
+                    echo -> echo.isAlive() && echo.isOwnedBy(player) && echo.distanceToSqr(player) <= range * range).isEmpty();
+        }
+        return nearbyCached;
+    }
+
     /** Own echo with the smallest angle to the crosshair, inside the aim-assist cone (widened for close echoes). */
     public static EchoEntity pick(Minecraft minecraft, LocalPlayer player) {
         // The server's range (common config is not synced); the server re-checks it anyway.

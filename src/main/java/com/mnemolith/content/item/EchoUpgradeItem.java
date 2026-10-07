@@ -77,7 +77,7 @@ public class EchoUpgradeItem extends Item {
                 }
             }
         }
-        Mnemolith.LOGGER.info("Mnemolith echo upgrade player={} kind={} level={}", player.getGameProfile().name(), kind, current + 1);
+        Mnemolith.LOGGER.debug("Mnemolith echo upgrade player={} kind={} level={}", player.getGameProfile().name(), kind, current + 1);
         return true;
     }
 }

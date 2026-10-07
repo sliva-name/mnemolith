@@ -109,7 +109,7 @@ public final class EchoRecorder {
         com.mnemolith.recall.Investigate.onBlank(player);
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8F, 1.3F);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_start", frames / 20), true);
-        Mnemolith.LOGGER.info("Mnemolith echo recording start player={} frames={}", player.getGameProfile().name(), frames);
+        Mnemolith.LOGGER.debug("Mnemolith echo recording start player={} frames={}", player.getGameProfile().name(), frames);
         return true;
     }
 
@@ -242,18 +242,18 @@ public final class EchoRecorder {
             if (care.teaches()) {
                 result.set(ModDataComponents.ECHO_CARE.get(), care);
             }
-            Mnemolith.LOGGER.info("Mnemolith echo farm lesson player={} crops={} tilled={} planted={} harvested={}", player.getGameProfile().name(),
+            Mnemolith.LOGGER.debug("Mnemolith echo farm lesson player={} crops={} tilled={} planted={} harvested={}", player.getGameProfile().name(),
                     farm.crops().size(), farm.tilled(), farm.planted(), farm.harvested());
-            Mnemolith.LOGGER.info("Mnemolith echo lumber lesson player={} logs={} saplings={} chopped={} planted={}", player.getGameProfile().name(),
+            Mnemolith.LOGGER.debug("Mnemolith echo lumber lesson player={} logs={} saplings={} chopped={} planted={}", player.getGameProfile().name(),
                     lumber.logs().size(), lumber.saplings().size(), lumber.chopped(), lumber.planted());
-            Mnemolith.LOGGER.info("Mnemolith echo care lesson player={} shear={} milk={} breed={} actions={}", player.getGameProfile().name(),
+            Mnemolith.LOGGER.debug("Mnemolith echo care lesson player={} shear={} milk={} breed={} actions={}", player.getGameProfile().name(),
                     care.shear(), care.milk(), care.breed(), care.actions());
-            Mnemolith.LOGGER.info("Mnemolith echo lesson player={} mining={} blueprint={}", player.getGameProfile().name(),
+            Mnemolith.LOGGER.debug("Mnemolith echo lesson player={} mining={} blueprint={}", player.getGameProfile().name(),
                     lesson.mining().size(), lesson.blueprint().map(EchoLesson.Blueprint::size).orElse(0));
             player.sendSystemMessage(Component.translatable("mnemolith.echo.recording_done", recording.seconds(), recording.actions().size()), true);
             player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.8F, 1.1F);
         }
-        Mnemolith.LOGGER.info("Mnemolith echo recording end player={} frames={} actions={} reason={}", player.getGameProfile().name(), session.count, session.actions.size(), reason);
+        Mnemolith.LOGGER.debug("Mnemolith echo recording end player={} frames={} actions={} reason={}", player.getGameProfile().name(), session.count, session.actions.size(), reason);
         ItemStack given = result.copy();
         if (!com.mnemolith.content.InventorySpace.give(player, result)) {
             // The slip was spent when the recording began. The finished item cannot stay in a full inventory,

@@ -171,7 +171,7 @@ public final class EchoPossession {
         MemoryFx.mob(level, ModParticles.IMPRINT_SHIMMER.get(), x, y + 1.0D, z, 16);
         sync(player);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.possessed"), true);
-        Mnemolith.LOGGER.info("Mnemolith echo possess player={} realItems={} echo={} shell={}", player.getGameProfile().name(), SlotStack.count(real), echo.getUUID(), shellId);
+        Mnemolith.LOGGER.debug("Mnemolith echo possess player={} realItems={} echo={} shell={}", player.getGameProfile().name(), SlotStack.count(real), echo.getUUID(), shellId);
         return Result.POSSESSED;
     }
 
@@ -249,7 +249,7 @@ public final class EchoPossession {
         if (reason != Reason.LOGOUT && reason != Reason.SERVER_STOP) {
             player.sendSystemMessage(Component.translatable("mnemolith.echo.returned_" + reason.name().toLowerCase(java.util.Locale.ROOT)), true);
         }
-        Mnemolith.LOGGER.info("Mnemolith echo unpossess player={} reason={} bodyItems={} realItems={}", player.getGameProfile().name(), reason, bodyCount, SlotStack.count(real.items()));
+        Mnemolith.LOGGER.debug("Mnemolith echo unpossess player={} reason={} bodyItems={} realItems={}", player.getGameProfile().name(), reason, bodyCount, SlotStack.count(real.items()));
         return true;
     }
 
@@ -300,7 +300,7 @@ public final class EchoPossession {
         MemoryFx.mob(level, ModParticles.IMPRINT_SHIMMER.get(), x, y + 1.0D, z, 16);
         sync(player);
         player.sendSystemMessage(Component.translatable("mnemolith.relay.hopped"), true);
-        Mnemolith.LOGGER.info("Mnemolith relay hop player={} into={}", player.getGameProfile().name(), target.getUUID());
+        Mnemolith.LOGGER.debug("Mnemolith relay hop player={} into={}", player.getGameProfile().name(), target.getUUID());
         return true;
     }
 
@@ -367,7 +367,7 @@ public final class EchoPossession {
         }
         owner.invulnerableTime = 0;
         owner.hurtServer(owner.level(), source, Float.MAX_VALUE);
-        Mnemolith.LOGGER.info("Mnemolith echo shell killed player={} alive={}", owner.getGameProfile().name(), owner.isAlive());
+        Mnemolith.LOGGER.debug("Mnemolith echo shell killed player={} alive={}", owner.getGameProfile().name(), owner.isAlive());
     }
 
     /** Returns every possessing player on the server. Used when the server stops. */

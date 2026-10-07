@@ -96,6 +96,6 @@ final class JobStrain {
 
     void misfireNotice(EchoEntity echo, String kind, BlockPos pos) {
         this.job.notice(JobStatus.of(JobStatus.Kind.MISFIRE, kind), 60);
-        Mnemolith.LOGGER.info("Mnemolith echo misfire owner={} kind={} at {}", echo.ownerName(), kind, pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith echo misfire owner={} kind={} at {}", echo.ownerName(), kind, pos.toShortString());
     }
 }

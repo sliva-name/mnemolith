@@ -551,7 +551,7 @@ public final class EchoJob {
         }
         this.setStatus(why);
         this.dirty = true;
-        Mnemolith.LOGGER.info("Mnemolith echo job stopped owner={} status={} detail={} a={} b={}", echo.ownerName(), why.kind().getSerializedName(), why.detail(), why.a(), why.b());
+        Mnemolith.LOGGER.debug("Mnemolith echo job stopped owner={} status={} detail={} a={} b={}", echo.ownerName(), why.kind().getSerializedName(), why.detail(), why.a(), why.b());
     }
 
     // ---- save ----

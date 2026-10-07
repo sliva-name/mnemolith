@@ -167,7 +167,7 @@ public final class ScarSites {
         memory.setScar(site.withSeededAt(level.getGameTime()));
         chunk.markUnsaved();
         level.sendParticles(EchoGrafts.particle(temper), at.getX() + 0.5D, at.getY() + 0.5D, at.getZ() + 0.5D, 20, 0.5D, 0.5D, 0.5D, 0.02D);
-        Mnemolith.LOGGER.info("Mnemolith scar site seeded tag={} at {}", temper.tag().getSerializedName(), at.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith scar site seeded tag={} at {}", temper.tag().getSerializedName(), at.toShortString());
         return residue;
     }
 

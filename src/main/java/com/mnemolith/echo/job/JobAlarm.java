@@ -39,7 +39,7 @@ final class JobAlarm {
             this.job.release(echo);
             this.job.mimic.stumbleTicks = 0;
             this.job.setStatus(JobStatus.of(JobStatus.Kind.ATTACKED));
-            Mnemolith.LOGGER.info("Mnemolith echo attacked owner={} by={} at {}", echo.ownerName(),
+            Mnemolith.LOGGER.debug("Mnemolith echo attacked owner={} by={} at {}", echo.ownerName(),
                     BuiltInRegistries.ENTITY_TYPE.getKey(attacker.getType()), echo.blockPosition().toShortString());
             this.flee(level, echo);
         } else if (!this.job.mover.active()) {
@@ -95,6 +95,6 @@ final class JobAlarm {
         echo.setMoveTarget(null);
         this.job.restartPhase();
         this.job.setStatus(this.job.workingStatus());
-        Mnemolith.LOGGER.info("Mnemolith echo resumed owner={} mode={} at {}", echo.ownerName(), this.job.mode.getSerializedName(), echo.blockPosition().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith echo resumed owner={} mode={} at {}", echo.ownerName(), this.job.mode.getSerializedName(), echo.blockPosition().toShortString());
     }
 }

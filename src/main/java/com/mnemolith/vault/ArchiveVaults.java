@@ -211,7 +211,7 @@ public final class ArchiveVaults {
         level.sendParticles(ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 6, 0.25D, 0.1D, 0.25D, 0.01D);
         level.playSound(null, pos, ModSounds.VAULT_CHIME.get(), SoundSource.BLOCKS, 0.6F, 0.7F);
         refreshLoad(level, pos);
-        Mnemolith.LOGGER.info("Mnemolith vault drew tag={} intensity={} from {} into {} held={}", best.tag().getSerializedName(), best.intensity(),
+        Mnemolith.LOGGER.debug("Mnemolith vault drew tag={} intensity={} from {} into {} held={}", best.tag().getSerializedName(), best.intensity(),
                 from.toShortString(), pos.toShortString(), vault.count());
         return Draw.DREW;
     }
@@ -252,7 +252,7 @@ public final class ArchiveVaults {
         taken.ifPresent(imprint -> {
             ImprintWriter.giveSlip(level, pos, player, imprint);
             refreshLoad(level, pos);
-            Mnemolith.LOGGER.info("Mnemolith vault extract tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
+            Mnemolith.LOGGER.debug("Mnemolith vault extract tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
         });
         return taken;
     }
@@ -305,7 +305,7 @@ public final class ArchiveVaults {
                         : Component.translatable("mnemolith.vault.discharged", written), true);
             }
         }
-        Mnemolith.LOGGER.info("Mnemolith vault discharge written={} slips={} at {}", written, handed, pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith vault discharge written={} slips={} at {}", written, handed, pos.toShortString());
         return written + handed;
     }
 
@@ -322,7 +322,7 @@ public final class ArchiveVaults {
                 vault.remove(match);
                 refreshLoad(level, pos);
                 level.sendParticles(EchoGrafts.particle(temper), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.02D);
-                Mnemolith.LOGGER.info("Mnemolith vault fed tag={} echo={} at {}", match.tag().getSerializedName(), echo.getUUID(), pos.toShortString());
+                Mnemolith.LOGGER.debug("Mnemolith vault fed tag={} echo={} at {}", match.tag().getSerializedName(), echo.getUUID(), pos.toShortString());
                 return true;
             }
         }
@@ -370,7 +370,7 @@ public final class ArchiveVaults {
         }
         level.playSound(null, pos, ModSounds.VAULT_RUPTURE.get(), SoundSource.BLOCKS, 1.2F, 0.4F);
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 20, 0.7D, 0.5D, 0.7D, 0.04D);
-        Mnemolith.LOGGER.info("Mnemolith vault spill why={} taken={} written={} dropped={} left={} at {}", why, taken, written, dropped, vault.count(), pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith vault spill why={} taken={} written={} dropped={} left={} at {}", why, taken, written, dropped, vault.count(), pos.toShortString());
         refreshLoad(level, pos);
         return written + dropped;
     }
@@ -432,7 +432,7 @@ public final class ArchiveVaults {
         refreshLoad(level, pos);
         level.sendParticles(ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 6, 0.25D, 0.1D, 0.25D, 0.01D);
         level.playSound(null, pos, ModSounds.VAULT_CHIME.get(), SoundSource.BLOCKS, 0.6F, 0.7F);
-        Mnemolith.LOGGER.info("Mnemolith vault kept tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
+        Mnemolith.LOGGER.debug("Mnemolith vault kept tag={} at {} held={}", imprint.tag().getSerializedName(), pos.toShortString(), vault.count());
         return true;
     }
 
@@ -464,7 +464,7 @@ public final class ArchiveVaults {
             return ItemStack.EMPTY;
         }
         refreshLoad(level, pos);
-        Mnemolith.LOGGER.info("Mnemolith vault raided tag={} at {} held={}", taken.get().tag().getSerializedName(), pos.toShortString(), vault.count());
+        Mnemolith.LOGGER.debug("Mnemolith vault raided tag={} at {} held={}", taken.get().tag().getSerializedName(), pos.toShortString(), vault.count());
         return ImprintSlips.of(taken.get());
     }
 
@@ -503,7 +503,7 @@ public final class ArchiveVaults {
             stack.set(ModDataComponents.VAULT_CONTENTS.get(), new VaultContents(left));
         }
         player.sendOverlayMessage(Component.translatable("mnemolith.vault.leaked", Component.translatable(leaked.tag().translationKey())));
-        Mnemolith.LOGGER.info("Mnemolith vault leaked tag={} carrier={} at {}", leaked.tag().getSerializedName(), player.getGameProfile().name(), player.blockPosition().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith vault leaked tag={} carrier={} at {}", leaked.tag().getSerializedName(), player.getGameProfile().name(), player.blockPosition().toShortString());
         return true;
     }
 }

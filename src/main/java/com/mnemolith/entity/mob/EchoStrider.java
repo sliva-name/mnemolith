@@ -89,7 +89,7 @@ public class EchoStrider extends MemoryMob {
         this.chargeCooldown = 0;
         this.setAction(MobActions.TELEGRAPH);
         BlockPos pos = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith strider charge at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith strider charge at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
         this.playSound(ModSounds.STRIDER_CHARGE.get(), 1.0F, 0.7F);
         if (this.level() instanceof ServerLevel server) {
             MemoryFx.mob(server, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 8);
@@ -224,7 +224,7 @@ public class EchoStrider extends MemoryMob {
             if (this.level() instanceof ServerLevel server) {
                 MemoryFx.mob(server, ModParticles.STRIDER_TRAIL.get(), this.getX(), this.getY() + 1.0D, this.getZ(), 6);
             }
-            Mnemolith.LOGGER.info("Mnemolith strider shadows echo owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith strider shadows echo owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
         }
         Vec3 back = echo.getLookAngle().multiply(1.0D, 0.0D, 1.0D);
         back = back.lengthSqr() < 1.0E-4D ? Vec3.ZERO : back.normalize().scale(-3.0D);

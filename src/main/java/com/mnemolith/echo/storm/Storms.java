@@ -252,7 +252,7 @@ public final class Storms {
                 storm.setPhase(RecollectionStorm.Phase.RAGING);
                 tell(level, storm, "mnemolith.storm.raging", true);
                 level.playSound(null, surface(level, storm), ModSounds.STORM_WAVE.get(), SoundSource.HOSTILE, 3.0F, 0.6F);
-                Mnemolith.LOGGER.info("Mnemolith storm raging id={}", storm.id());
+                Mnemolith.LOGGER.debug("Mnemolith storm raging id={}", storm.id());
                 wave(level, data, storm);
             }
             return;
@@ -316,7 +316,7 @@ public final class Storms {
         lastWave = new Wave(condensed, acted, held, starved, fed, hushed, choked, living.size());
         level.playSound(null, middle, ModSounds.STORM_WAVE.get(), SoundSource.HOSTILE, 2.5F, 0.55F + 0.05F * storm.wavesLeft());
         level.sendParticles(ModParticles.PRESSURE_WARN.get(), middle.getX() + 0.5D, middle.getY() + 2.0D, middle.getZ() + 0.5D, 30, 6.0D, 2.0D, 6.0D, 0.02D);
-        Mnemolith.LOGGER.info("Mnemolith storm wave id={} left={} condensed={} acted={} held={} starved={} fed={} hushed={} choked={} standing={}",
+        Mnemolith.LOGGER.debug("Mnemolith storm wave id={} left={} condensed={} acted={} held={} starved={} fed={} hushed={} choked={} standing={}",
                 storm.id(), storm.wavesLeft(), condensed, acted, held, starved, fed, hushed, choked, living.size());
         data.setDirty();
         updateBar(level, storm);

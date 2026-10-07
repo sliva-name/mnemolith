@@ -137,7 +137,7 @@ public final class ImprintWriter {
         int pressure = memory.cachedPressure();
         PressureBand band = MemoryPressure.band(pressure);
         if (announce) {
-            Mnemolith.LOGGER.info("Mnemolith instability spike amount={} pressure={} band={}", amount, pressure, band);
+            Mnemolith.LOGGER.debug("Mnemolith instability spike amount={} pressure={} band={}", amount, pressure, band);
         } else {
             Mnemolith.LOGGER.debug("Mnemolith instability spike amount={} pressure={} band={}", amount, pressure, band);
         }
@@ -197,7 +197,7 @@ public final class ImprintWriter {
                     continue;
                 }
                 giveSlip(level, neighbor, player, removed.get());
-                Mnemolith.LOGGER.info("Mnemolith extract reach at {},{},{}", neighbor.getX(), neighbor.getY(), neighbor.getZ());
+                Mnemolith.LOGGER.debug("Mnemolith extract reach at {},{},{}", neighbor.getX(), neighbor.getY(), neighbor.getZ());
                 return removed;
             }
         }

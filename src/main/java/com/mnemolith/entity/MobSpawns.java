@@ -114,7 +114,7 @@ public final class MobSpawns {
         }
         if (replicant != null) {
             BlockPos at = replicant.blockPosition();
-            Mnemolith.LOGGER.info("Mnemolith replicant spawn at {},{},{}", at.getX(), at.getY(), at.getZ());
+            Mnemolith.LOGGER.debug("Mnemolith replicant spawn at {},{},{}", at.getX(), at.getY(), at.getZ());
         }
     }
 

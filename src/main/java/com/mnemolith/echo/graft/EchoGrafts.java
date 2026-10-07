@@ -103,7 +103,7 @@ public final class EchoGrafts {
         level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.PLAYERS, 1.0F, 0.5F);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL, echo.getX(), echo.getY() + 1.0D, echo.getZ(), 30, 0.4D, 0.8D, 0.4D, 0.05D);
         player.sendSystemMessage(Component.translatable("mnemolith.graft.scar_set"), true);
-        Mnemolith.LOGGER.info("Mnemolith echo scar-set owner={}", echo.ownerName());
+        Mnemolith.LOGGER.debug("Mnemolith echo scar-set owner={}", echo.ownerName());
         return true;
     }
 
@@ -159,7 +159,7 @@ public final class EchoGrafts {
         slip.consume(1, player);
         level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 0.7F);
         burst(level, echo, temper, 18);
-        Mnemolith.LOGGER.info("Mnemolith graft owner={} temper={} charge={} at {}", echo.ownerName(), temper, echo.graft() == null ? 0 : echo.graft().charge(),
+        Mnemolith.LOGGER.debug("Mnemolith graft owner={} temper={} charge={} at {}", echo.ownerName(), temper, echo.graft() == null ? 0 : echo.graft().charge(),
                 echo.blockPosition().toShortString());
         return true;
     }
@@ -202,7 +202,7 @@ public final class EchoGrafts {
         }
         level.playSound(null, echo.blockPosition(), com.mnemolith.audio.ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 0.8F, 0.8F);
         burst(level, echo, temper, 10);
-        Mnemolith.LOGGER.info("Mnemolith graft unpicked owner={} temper={} charge={} returned={}", echo.ownerName(), temper, graft.charge(), worthReturning(graft));
+        Mnemolith.LOGGER.debug("Mnemolith graft unpicked owner={} temper={} charge={} returned={}", echo.ownerName(), temper, graft.charge(), worthReturning(graft));
         return true;
     }
 
@@ -233,7 +233,7 @@ public final class EchoGrafts {
             level.addFreshEntity(drop);
             result = "dropped";
         }
-        Mnemolith.LOGGER.info("Mnemolith graft released temper={} why={} charge={} -> {} at {}", graft.temper(), why, graft.charge(), result, pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith graft released temper={} why={} charge={} -> {} at {}", graft.temper(), why, graft.charge(), result, pos.toShortString());
         return result;
     }
 
@@ -278,7 +278,7 @@ public final class EchoGrafts {
         shard.consume(1, player);
         level.playSound(null, echo.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 0.5F);
         burst(level, echo, temper, 28);
-        Mnemolith.LOGGER.info("Mnemolith graft from shard owner={} temper={} charge={}", echo.ownerName(), temper, now);
+        Mnemolith.LOGGER.debug("Mnemolith graft from shard owner={} temper={} charge={}", echo.ownerName(), temper, now);
         return true;
     }
 
@@ -336,7 +336,7 @@ public final class EchoGrafts {
             burst(level, echo, graft.temper(), 6);
             tellOwner(level, echo, Component.translatable("mnemolith.graft.spent", Component.translatable(graft.temper().key())));
         }
-        Mnemolith.LOGGER.info("Mnemolith graft spent owner={} temper={}", echo.ownerName(), graft.temper());
+        Mnemolith.LOGGER.debug("Mnemolith graft spent owner={} temper={}", echo.ownerName(), graft.temper());
     }
 
     // ---- work hooks ----
@@ -407,7 +407,7 @@ public final class EchoGrafts {
         EchoEntity hush = hushSource(level, echo);
         if (hush != null) {
             spend(hush, 1);
-            Mnemolith.LOGGER.info("Mnemolith graft hush swallowed work imprint owner={} at {} by={}", echo.ownerName(), pos.toShortString(),
+            Mnemolith.LOGGER.debug("Mnemolith graft hush swallowed work imprint owner={} at {} by={}", echo.ownerName(), pos.toShortString(),
                     hush == echo ? "self" : "neighbour");
             return null;
         }
@@ -568,7 +568,7 @@ public final class EchoGrafts {
                     net.minecraft.sounds.SoundEvents.CHORUS_FRUIT_TELEPORT, net.minecraft.sounds.SoundSource.NEUTRAL, 0.8F, 1.2F);
             // Owner is still in {@code from} when travel fires; speak to them here.
             player.sendOverlayMessage(Component.translatable("mnemolith.graft.wandered", Component.translatable(Temper.WANDERING.key())));
-            Mnemolith.LOGGER.info("Mnemolith wandering echo followed owner={} into {}", echo.ownerName(), destKey.identifier());
+            Mnemolith.LOGGER.debug("Mnemolith wandering echo followed owner={} into {}", echo.ownerName(), destKey.identifier());
         }
     }
 
@@ -602,7 +602,7 @@ public final class EchoGrafts {
         }
         if (enabled() && graft.temper() == Temper.VOLATILE) {
             echo.setGraft(null);
-            Mnemolith.LOGGER.info("Mnemolith graft volatile burst owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith graft volatile burst owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
             level.explode(echo, echo.getX(), echo.getY() + 0.5D, echo.getZ(), VOLATILE_BLAST, Level.ExplosionInteraction.NONE);
             return;
         }
@@ -620,7 +620,7 @@ public final class EchoGrafts {
         if (enabled() && graft.temper() == Temper.VOLATILE) {
             ImprintWriter.write(level, pos, List.of(ImprintTag.EXPLOSION), owner, false);
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 1, 0.0D, 0.0D, 0.0D, 0.0D);
-            Mnemolith.LOGGER.info("Mnemolith graft volatile vent (possessed) at {}", pos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith graft volatile vent (possessed) at {}", pos.toShortString());
             return;
         }
         releaseGraft(level, graft, owner, pos, "possessed_death");
@@ -700,7 +700,7 @@ public final class EchoGrafts {
         setPossessedGraft(player, null);
         player.removeEffect(effectOf(graft.temper()));
         player.sendOverlayMessage(Component.translatable("mnemolith.graft.spent", Component.translatable(graft.temper().key())));
-        Mnemolith.LOGGER.info("Mnemolith graft spent in possessed body player={} temper={}", player.getGameProfile().name(), graft.temper());
+        Mnemolith.LOGGER.debug("Mnemolith graft spent in possessed body player={} temper={}", player.getGameProfile().name(), graft.temper());
     }
 
     private static Holder<MobEffect> effectOf(Temper temper) {

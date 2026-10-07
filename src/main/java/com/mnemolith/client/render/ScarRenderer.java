@@ -135,8 +135,8 @@ public class ScarRenderer extends MobRenderer<ScarEntity, ScarRenderState, Resid
             String labelKey = state.guardian ? "mnemolith.archive_guardian.label"
                     : state.mirror ? "mnemolith.silence_mirror.label" : "mnemolith.scar.label";
             Component line = Component.translatable(labelKey, state.strength);
-            Component status = state.pinned ? Component.translatable("mnemolith.residue.label_read")
-                    : Component.translatable("mnemolith.residue.label_reading", Math.round(state.read * 100.0F));
+            Component status = state.pinned ? Component.translatable("mnemolith.scar.label_pinned")
+                    : Component.translatable("mnemolith.scar.label_reading", Math.round(state.read * 100.0F));
             float distance = (float) Math.sqrt(state.distanceToCameraSq);
             float grow = Mth.clamp(distance / 6.0F, 1.0F, 6.0F);
             poseStack.pushPose();

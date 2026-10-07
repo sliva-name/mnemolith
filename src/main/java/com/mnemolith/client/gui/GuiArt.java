@@ -45,6 +45,17 @@ public final class GuiArt {
     /** Inactive page dot on the bone page. Dark enough to read, lighter than {@link #GUIDE_INK}. */
     public static final int GUIDE_DOT = MemoryPalette.opaque(MemoryPalette.GUIDE_DOT);
 
+    /** Body text on the bone paper panel (catalog, reel, echo inventory): dark, no shadow, like a vanilla book. */
+    public static final int PAPER_INK = GUIDE_INK;
+    /** Section headings on the paper panel. */
+    public static final int PAPER_HEAD = MemoryPalette.opaque(MemoryPalette.INK);
+    /** Positive accent on paper (counters, success). Dark verdigris; the light one vanishes on bone. */
+    public static final int PAPER_ACCENT = 0xFF1F5E52;
+    /** Warning accent on paper (failed compose). */
+    public static final int PAPER_WARN = 0xFF8E2F1C;
+    /** Muted text on paper (unset fields). */
+    public static final int PAPER_DIM = 0xFF6B6258;
+
     private static final int BORDER = 4;
     private static final int PANEL_SIZE = 32;
 
@@ -62,6 +73,21 @@ public final class GuiArt {
     public static void label(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, int shadow) {
         graphics.text(font, text, x + 1, y + 1, shadow, false);
         graphics.text(font, text, x, y, color, false);
+    }
+
+    /** Text on the paper panel: no shadow at all. */
+    public static void ink(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color) {
+        graphics.text(font, text, x, y, color, false);
+    }
+
+    /** Wrapped text on the paper panel, no shadow. */
+    public static void inkParagraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color) {
+        graphics.textWithWordWrap(font, text, x, y, width, color, false);
+    }
+
+    /** Section heading on the paper panel: bold dark ink. */
+    public static void heading(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y) {
+        graphics.text(font, text.copy().withStyle(net.minecraft.ChatFormatting.BOLD), x, y, PAPER_HEAD, false);
     }
 
     public static void paragraph(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color) {

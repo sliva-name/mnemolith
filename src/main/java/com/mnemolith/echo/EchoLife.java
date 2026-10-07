@@ -136,7 +136,7 @@ public final class EchoLife {
         level.addFreshEntity(echo);
         level.playSound(null, echo.blockPosition(), ModSounds.ECHO_WAKE.get(), SoundSource.PLAYERS, 0.9F, 0.7F);
         MemoryFx.mob(level, com.mnemolith.particle.ModParticles.COMPOSE_SUCCESS.get(), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 12);
-        Mnemolith.LOGGER.info("Mnemolith echo spawned owner={} frames={} actions={} at {}", owner.getGameProfile().name(), recording.length(), recording.actions().size(), echo.blockPosition().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith echo spawned owner={} frames={} actions={} at {}", owner.getGameProfile().name(), recording.length(), recording.actions().size(), echo.blockPosition().toShortString());
         return echo;
     }
 
@@ -170,7 +170,7 @@ public final class EchoLife {
         int spike = CommonConfig.ECHO_DEATH_PRESSURE_SPIKE.get();
         int pressure = spike > 0 ? ImprintWriter.spike(level, pos, spike) : -1;
         ImprintWriter.write(level, pos, List.of(ImprintTag.DEATH), owner, false);
-        Mnemolith.LOGGER.info("Mnemolith echo body died owner={} at {} spike={} pressure={}", ownerName, pos.toShortString(), spike, pressure);
+        Mnemolith.LOGGER.debug("Mnemolith echo body died owner={} at {} spike={} pressure={}", ownerName, pos.toShortString(), spike, pressure);
     }
 
     /** Despawns an idle owned echo into the pedestal (O3). Frees the live registry slot. */

@@ -216,7 +216,7 @@ public final class UseMemory {
             if (residue != null) {
                 residue.markLegend(player.getUUID());
                 spawned = true;
-                Mnemolith.LOGGER.info("Mnemolith legend condensed tag={} at {}", tag.getSerializedName(), legend.pos().toShortString());
+                Mnemolith.LOGGER.debug("Mnemolith legend condensed tag={} at {}", tag.getSerializedName(), legend.pos().toShortString());
             }
         }
         if (legend.lie()) {
@@ -260,7 +260,7 @@ public final class UseMemory {
             return false;
         }
         save(player, legend.withStruck());
-        Mnemolith.LOGGER.info("Mnemolith legend lie struck at {}", legend.guide().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith legend lie struck at {}", legend.guide().toShortString());
         return true;
     }
 
@@ -433,7 +433,7 @@ public final class UseMemory {
         Legends.get(level.getServer()).put(player.getUUID(), new Legends.Sheet(
                 java.util.Optional.of(legend), sheet.spent(), sheet.soured(), sheet.sealed(), sheet.refused()));
         bear(player, level);
-        Mnemolith.LOGGER.info("Mnemolith legend source={} lie={} at {}", kind.getSerializedName(), lie, pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith legend source={} lie={} at {}", kind.getSerializedName(), lie, pos.toShortString());
         return legend;
     }
 
@@ -460,7 +460,7 @@ public final class UseMemory {
         discardResidues(level, player.getUUID(), legend.pos());
         Legends.get(level.getServer()).put(player.getUUID(), new Legends.Sheet(
                 java.util.Optional.of(legend.withChoice(choice)), spent, soured, sealed, refused));
-        Mnemolith.LOGGER.info("Mnemolith legend choice={} source={} at {}", choice.getSerializedName(), legend.source().getSerializedName(), legend.pos().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith legend choice={} source={} at {}", choice.getSerializedName(), legend.source().getSerializedName(), legend.pos().toShortString());
         return true;
     }
 

@@ -91,7 +91,7 @@ public final class Intervene {
                 found.imprint.origin().getZ() + 0.5D,
                 24, 0.4D, 0.6D, 0.4D, 0.04D);
         MemoryFx.write(level, found.imprint.origin());
-        Mnemolith.LOGGER.info("Mnemolith imprint rewritten {} -> {} at {}",
+        Mnemolith.LOGGER.debug("Mnemolith imprint rewritten {} -> {} at {}",
                 found.imprint.tag().getSerializedName(), next.getSerializedName(), found.imprint.origin().toShortString());
         return true;
     }
