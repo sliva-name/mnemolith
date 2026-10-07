@@ -17,13 +17,13 @@ import net.minecraft.core.BlockPos;
  */
 public final class ChunkMemory {
     public static final MapCodec<ChunkMemory> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.list(Imprint.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).fieldOf("imprints").forGetter(ChunkMemory::imprintsCopy),
-            Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).fieldOf("mute_stones").forGetter(ChunkMemory::muteStonesCopy),
-            Codec.BOOL.fieldOf("fractured").forGetter(ChunkMemory::fractured),
-            Codec.BOOL.fieldOf("archival").forGetter(ChunkMemory::archival),
-            Codec.LONG.fieldOf("last_write").forGetter(ChunkMemory::lastWriteGameTime),
-            Codec.INT.fieldOf("pressure").forGetter(ChunkMemory::cachedPressure),
-            Codec.INT.fieldOf("instability").forGetter(ChunkMemory::instability),
+            written(Codec.list(Imprint.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP), "imprints", List.of()).forGetter(ChunkMemory::imprintsCopy),
+            written(Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP), "mute_stones", List.of()).forGetter(ChunkMemory::muteStonesCopy),
+            written(Codec.BOOL, "fractured", false).forGetter(ChunkMemory::fractured),
+            written(Codec.BOOL, "archival", false).forGetter(ChunkMemory::archival),
+            written(Codec.LONG, "last_write", 0L).forGetter(ChunkMemory::lastWriteGameTime),
+            written(Codec.INT, "pressure", 0).forGetter(ChunkMemory::cachedPressure),
+            written(Codec.INT, "instability", 0).forGetter(ChunkMemory::instability),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("resonators", List.of()).forGetter(ChunkMemory::resonatorsCopy),
             Codec.list(BlockPos.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("strata", List.of()).forGetter(ChunkMemory::strataCopy),
             Landmarks.FIELD.forGetter(ChunkMemory::landmarks),
@@ -33,6 +33,14 @@ public final class ChunkMemory {
             Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy),
             VoidPressure.CODEC.optionalFieldOf("void", VoidPressure.NONE).forGetter(ChunkMemory::voidState)
     ).apply(instance, ChunkMemory::fromCodec));
+
+    /**
+     * A field that is always written but may be missing from an older or damaged save; it then reads as {@code fallback}
+     * instead of throwing the whole chunk memory (its mute stones and imprints) away.
+     */
+    private static <T> MapCodec<T> written(Codec<T> codec, String name, T fallback) {
+        return codec.optionalFieldOf(name).xmap(value -> value.orElse(fallback), java.util.Optional::of);
+    }
 
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();

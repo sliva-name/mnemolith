@@ -129,6 +129,18 @@ public final class PressureSync {
         return -1;
     }
 
+    /**
+     * What the last answer to {@code player} was: {@code "lens"} or {@code "ambient"} for a full snapshot, {@code "bands"}
+     * for the band-only one, {@code "none"} when nothing was answered since {@link #forget}. QA and game tests only.
+     */
+    public static String lastAnswer(UUID player) {
+        Stamp stamp = LensPollCache.get(player);
+        if (stamp == null) {
+            return "none";
+        }
+        return stamp.lens() ? "lens" : stamp.ambient() ? "ambient" : "bands";
+    }
+
     public static boolean holdsLens(ServerPlayer player) {
         return ChronicleLensItem.isHeld(player);
     }

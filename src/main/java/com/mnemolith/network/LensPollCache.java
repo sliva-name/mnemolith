@@ -113,6 +113,14 @@ final class LensPollCache {
             return this.shimmer;
         }
 
+        boolean lens() {
+            return this.lens;
+        }
+
+        boolean ambient() {
+            return this.ambient;
+        }
+
         void setShimmer(long shimmer) {
             this.shimmer = shimmer;
         }

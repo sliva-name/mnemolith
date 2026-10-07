@@ -121,6 +121,25 @@ public final class MnemolithGameTests {
         quick("structure_templates_place", Round2Tests::templatesPlace);
         // Fixes from the QA sweep (stale mute marks, structure seeding, echo home, archive shrine).
         quick("regressions", RegressionTests::run);
+        // Negative tests: hostile or broken input is refused with nothing changed and no item lost.
+        quick("neg_net_job_payloads", NetworkNegativeTests::jobPayloads);
+        quick("neg_net_lens_possess", NetworkNegativeTests::lensOrdersAndPossession);
+        quick("neg_net_pressure_request", NetworkNegativeTests::pressureRequest);
+        quick("neg_reel_compose", ReelNegativeTests::compose);
+        quick("neg_reel_menu_button", ReelNegativeTests::menuButton);
+        quick("neg_reel_save_load", ReelNegativeTests::saveLoad);
+        quick("neg_home_strangers", EchoHomeNegativeTests::strangers);
+        quick("neg_home_limits", EchoHomeNegativeTests::limits);
+        quick("neg_home_stray_items", EchoHomeNegativeTests::strayItemsOnWake);
+        quick("neg_save_possession", SaveNegativeTests::possessionState);
+        quick("neg_save_housed", SaveNegativeTests::housedEchoes);
+        quick("neg_save_echo_entity", SaveNegativeTests::echoEntity);
+        quick("neg_save_memories", SaveNegativeTests::memories);
+        quick("neg_remember_blocked", RememberNegativeTests::blocked);
+        quick("neg_commands", CommandNegativeTests::badCalls);
+        quick("neg_config_spec", ConfigNegativeTests::specRejectsGarbage);
+        quick("neg_config_worldgen_bounds", ConfigNegativeTests::worldgenBounds);
+        live("neg_mite_dead_owner", MiteNegativeTests::deadOwnerGetsNothing, 200);
         // Own batch: placing a real house must not share the suites' world random.
         village("village_chair", ChairTests::villageHouse);
     }

@@ -1,9 +1,9 @@
 package com.mnemolith.content.block;
 
-import com.mnemolith.content.composition.Composition;
 
 import com.mnemolith.content.ModBlockEntities;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.content.composition.Composition;
 import com.mnemolith.content.menu.CompositionMenu;
 import com.mnemolith.imprint.ImprintConstants;
 import net.minecraft.core.BlockPos;
@@ -76,7 +76,14 @@ public class CompositionReelBlockEntity extends BaseContainerBlockEntity {
         for (int slot = 0; slot < this.items.size(); slot++) {
             this.items.set(slot, loaded.get(slot));
         }
-        this.legacyExtra = loaded.get(2);
+        // The old layout kept a non-slip in the third slot; only that is put out on load. A slip there stays a slip.
+        ItemStack third = this.items.get(2);
+        if (!third.isEmpty() && !Composition.composable(third)) {
+            this.legacyExtra = third;
+            this.items.set(2, ItemStack.EMPTY);
+        } else {
+            this.legacyExtra = ItemStack.EMPTY;
+        }
     }
 
     @Override
