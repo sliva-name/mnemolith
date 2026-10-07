@@ -21,7 +21,7 @@
 
 ## Скачать и установить
 
-Последний релиз: **[Mnemolith 0.2.1 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.2.1)**  
+Последний релиз: **[Mnemolith 0.3.0 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.3.0)**  
 Все релизы: [github.com/sliva-name/mnemolith/releases](https://github.com/sliva-name/mnemolith/releases)
 
 ### Что нужно
@@ -30,7 +30,7 @@
 | --- | --- |
 | Игра | Minecraft **Java Edition 26.2** |
 | Загрузчик | **NeoForge 26.2.x** (собрано против 26.2.0.88) |
-| Файл мода | `mnemolith-0.2.1.jar` (или новее из Releases) |
+| Файл мода | `mnemolith-0.3.0.jar` (или новее из Releases) |
 | Куда | Один и тот же jar на **клиенте и выделенном сервере** |
 
 Других модов не требуется. Дополнительные оверлеи (JEI / WTHIT) работают, если вы ими уже пользуетесь.
@@ -39,7 +39,7 @@
 
 1. Установите Minecraft Java Edition **26.2**.
 2. Установите NeoForge для 26.2 с [projects.neoforged.net/neoforged/neoforge](https://projects.neoforged.net/neoforged/neoforge) (берите сборку **26.2.x**, например 26.2.0.88). Запустите установщик и выберите созданный им профиль лаунчера Minecraft.
-3. Откройте страницу [Releases](https://github.com/sliva-name/mnemolith/releases). В разделе **Mnemolith 0.2.1 (бета)** (или новейшей беты) скачайте ассет **`mnemolith-0.2.1.jar`**. Не скачивайте zip с исходниками.
+3. Откройте страницу [Releases](https://github.com/sliva-name/mnemolith/releases). В разделе **Mnemolith 0.3.0 (бета)** (или новейшей беты) скачайте ассет **`mnemolith-0.3.0.jar`**. Не скачивайте zip с исходниками.
 4. В лаунчере Minecraft один раз выберите профиль NeoForge 26.2, чтобы он создал папку игры, затем откройте эту папку (или «Open game directory» в лаунчере).
 5. Положите jar в папку `mods`. Создайте `mods`, если её нет. Не распаковывайте jar.
 6. Запустите этот профиль NeoForge. В списке модов должен появиться **Mnemolith**.
@@ -50,7 +50,7 @@
 2. Положите **тот же** `mnemolith-*.jar` в папку `mods` сервера.
 3. Запустите сервер, затем зайдите клиентом, у которого тоже есть этот jar.
 
-Клиент и сервер должны работать на **одной версии Mnemolith**. Миры 0.1.3 и 0.2.0 открываются на 0.2.1; разные jar на клиенте и сервере ломают игру.
+Клиент и сервер должны работать на **одной версии Mnemolith**. Миры 0.1.3, 0.2.0 и 0.2.1 открываются на 0.3.0; разные jar на клиенте и сервере ломают игру.
 
 ### Сборка из исходников (по желанию)
 
@@ -275,7 +275,7 @@ Mappings are Mojang's official names. The Gradle project is the [ModDevGradle 26
 
 ## Download and install
 
-Latest release: **[Mnemolith 0.2.1 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.2.1)**  
+Latest release: **[Mnemolith 0.3.0 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.3.0)**  
 All releases: [github.com/sliva-name/mnemolith/releases](https://github.com/sliva-name/mnemolith/releases)
 
 ### What you need
@@ -284,7 +284,7 @@ All releases: [github.com/sliva-name/mnemolith/releases](https://github.com/sliv
 | --- | --- |
 | Game | Minecraft **Java Edition 26.2** |
 | Loader | **NeoForge 26.2.x** (built against 26.2.0.88) |
-| Mod file | `mnemolith-0.2.1.jar` (or newer from Releases) |
+| Mod file | `mnemolith-0.3.0.jar` (or newer from Releases) |
 | Where | The same jar on **client and dedicated server** |
 
 No other mods are required. Optional overlays (JEI / WTHIT) work if you already use them.
@@ -293,7 +293,7 @@ No other mods are required. Optional overlays (JEI / WTHIT) work if you already 
 
 1. Install Minecraft Java Edition **26.2**.
 2. Install NeoForge for 26.2 from [projects.neoforged.net/neoforged/neoforge](https://projects.neoforged.net/neoforged/neoforge) (pick a **26.2.x** build, e.g. 26.2.0.88). Run the installer and choose the Minecraft launcher profile it creates.
-3. Open the [Releases](https://github.com/sliva-name/mnemolith/releases) page. Under **Mnemolith 0.2.1 (бета)** (or the newest beta), download the asset **`mnemolith-0.2.1.jar`**. Do not download the source zip.
+3. Open the [Releases](https://github.com/sliva-name/mnemolith/releases) page. Under **Mnemolith 0.3.0 (бета)** (or the newest beta), download the asset **`mnemolith-0.3.0.jar`**. Do not download the source zip.
 4. In the Minecraft launcher, select the NeoForge 26.2 profile once so it creates the game folder, then open that folder (or use the launcher’s “Open game directory”).
 5. Put the jar into the `mods` folder. Create `mods` if it is missing. Do not unzip the jar.
 6. Launch that NeoForge profile. In the mods list you should see **Mnemolith**.
@@ -304,7 +304,7 @@ No other mods are required. Optional overlays (JEI / WTHIT) work if you already 
 2. Put the **same** `mnemolith-*.jar` into the server’s `mods` folder.
 3. Start the server, then join with a client that also has that jar.
 
-Client and server must run the **same Mnemolith version**. Worlds from 0.1.3 and 0.2.0 open on 0.2.1; mixing different jars between client and server will break.
+Client and server must run the **same Mnemolith version**. Worlds from 0.1.3, 0.2.0 and 0.2.1 open on 0.3.0; mixing different jars between client and server will break.
 
 ### Build from source (optional)
 

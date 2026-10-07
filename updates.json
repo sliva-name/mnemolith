@@ -3,10 +3,11 @@
   "26.2": {
     "0.1.3": "Z1–Z3: own voices/music, JEI+WTHIT, datagen/metadata",
     "0.2.0": "Expansion catalog T1–Z4, Archive Guardian, QA/UI/texture/structure fixes",
-    "0.2.1": "Bug fixes: structures no longer generate as empty pits, Mute Library needs ground in the End, UI no longer cut off, elite/twin mobs keep status after reload, server syncs limits to clients"
+    "0.2.1": "Bug fixes: structures no longer generate as empty pits, Mute Library needs ground in the End, UI no longer cut off, elite/twin mobs keep status after reload, server syncs limits to clients",
+    "0.3.0": "The world remembers you: your past self replays your death, home, big build or hard fight when you return; Leave Bed at night no longer counts as sleep; fixes for reel slips, echo items and chunk memory lost on load"
   },
   "promos": {
-    "26.2-latest": "0.2.1",
-    "26.2-recommended": "0.2.1"
+    "26.2-latest": "0.3.0",
+    "26.2-recommended": "0.3.0"
   }
 }
