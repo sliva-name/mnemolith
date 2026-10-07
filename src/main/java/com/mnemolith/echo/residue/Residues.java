@@ -414,9 +414,10 @@ public final class Residues {
     }
 
     /**
-     * A cell where fire survives being placed: air, or a replaceable plant such as short grass, on a block fire accepts.
-     * Air directly above grass fails that check, and vanilla removes the flame in the same tick. Searches down at most 8.
-     * Null when this column has nowhere fire can stay.
+     * A cell where fire survives being placed: air, or a replaceable plant such as short grass, with a sturdy floor or a
+     * flammable neighbour (vanilla {@code FireBlock.canSurvive}). Searches down at most 8 and takes the first such cell,
+     * so over short grass the flame sits in the air just above the blades (the grass is its flammable neighbour), as
+     * vanilla fire spread places it. Null when this column has nowhere fire can stay.
      */
     private static @Nullable BlockPos fireSpot(ServerLevel level, BlockPos pos) {
         BlockPos.MutableBlockPos cursor = pos.mutable();
