@@ -205,7 +205,7 @@ public class Archivist extends MemoryMob {
                 && owner.distanceToSqr(echo) <= 64.0D * 64.0D) {
             owner.sendOverlayMessage(Component.translatable("mnemolith.message.echo_stolen", stolen.getCount(), stolen.getHoverName()));
         }
-        Mnemolith.LOGGER.info("Mnemolith archivist stole from echo owner={} item={} count={} at {}", echo.ownerName(),
+        Mnemolith.LOGGER.debug("Mnemolith archivist stole from echo owner={} item={} count={} at {}", echo.ownerName(),
                 net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stolen.getItem()), stolen.getCount(), at.toShortString());
         return true;
     }
@@ -240,7 +240,7 @@ public class Archivist extends MemoryMob {
                 && owner.distanceToSqr(echo) <= 64.0D * 64.0D) {
             owner.sendOverlayMessage(Component.translatable("mnemolith.graft.stolen", temper));
         }
-        Mnemolith.LOGGER.info("Mnemolith archivist stole graft owner={} temper={} charge={} at {}", echo.ownerName(), graft.temper(), graft.charge(), at.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith archivist stole graft owner={} temper={} charge={} at {}", echo.ownerName(), graft.temper(), graft.charge(), at.toShortString());
         return true;
     }
 
@@ -327,7 +327,7 @@ public class Archivist extends MemoryMob {
         ImprintCast cast = stolen.get(ModDataComponents.IMPRINT_CAST.get());
         String tag = cast == null ? "blank" : cast.tag().getSerializedName();
         BlockPos pos = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith archivist stole=true tag={} at {},{},{}", tag, pos.getX(), pos.getY(), pos.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith archivist stole=true tag={} at {},{},{}", tag, pos.getX(), pos.getY(), pos.getZ());
         level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 1.1F);
         MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10);
         if (player != null && cast != null) {
@@ -551,7 +551,7 @@ public class Archivist extends MemoryMob {
         this.fleeTicks = 80;
         this.setAction(MobActions.FLEE);
         BlockPos pos = residue.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith archivist archived residue tag={} strength={} at {}", residue.tag().getSerializedName(), residue.strength(), pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith archivist archived residue tag={} strength={} at {}", residue.tag().getSerializedName(), residue.strength(), pos.toShortString());
         level.playSound(null, pos, ModSounds.ARCHIVIST_STEAL.get(), SoundSource.NEUTRAL, 1.0F, 0.8F);
         MemoryFx.mob(level, ModParticles.ARCHIVIST_SNATCH.get(), residue.getX(), residue.getY() + 0.8D, residue.getZ(), 14);
         residue.discard();

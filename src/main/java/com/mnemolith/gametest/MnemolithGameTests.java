@@ -99,6 +99,9 @@ public final class MnemolithGameTests {
         storm("storm_mute_stone_contains", StormLiveTests::muteStoneContains, 300);
         storm("scar_read_then_hurt", StormLiveTests::scarReadThenHurt, 400);
 
+        // A killed boss takes its bar down and keeps it down (the death tick and any server tick after the removal).
+        live("boss_bar_clears_on_death", StormLiveTests::bossBarClearsOnDeath, 300);
+
         // Echo relay and archive vault. The vault draws every 200 ticks, so two draws take up to 400.
         live("relay_thread_links_then_hop", RelayLiveTests::threadLinksThenHop, 100);
         live("relay_mirror_break", RelayLiveTests::mirrorBreak, 100);

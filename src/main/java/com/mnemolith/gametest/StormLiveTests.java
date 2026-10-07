@@ -204,6 +204,54 @@ final class StormLiveTests {
                 .thenSucceed();
     }
 
+    /**
+     * A killed boss takes its bar down for good: the Silence Mirror shows its bar to the player beside it, is killed,
+     * and the bar must stay empty through the death animation, the removal and any later server tick (it used to be
+     * re-added on a tick that was a multiple of 20 after the removal, and then stayed on screen until a rejoin).
+     */
+    static void bossBarClearsOnDeath(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = site(helper, 6);
+        ScarEntity mirror = ModEntities.SILENCE_MIRROR.get().create(level, EntitySpawnReason.COMMAND);
+        if (mirror == null) {
+            throw helper.assertionException(Component.literal("could not create the Silence Mirror"));
+        }
+        mirror.snapTo(Vec3.atBottomCenterOf(site.above(2)), 0.0F, 0.0F);
+        mirror.setup(0, 3, site);
+        helper.assertTrue(level.addFreshEntity(mirror), "the Silence Mirror was not added");
+        Vec3 stand = Vec3.atBottomCenterOf(site.offset(5, 0, 0));
+        ServerPlayer player = LivePlayers.join(helper, "LiveBossBar", stand);
+        player.getAbilities().invulnerable = true;
+        boolean[] dead = {false};
+        helper.onEachTick(() -> {
+            player.snapTo(stand);
+            player.setDeltaMovement(Vec3.ZERO);
+            if (dead[0]) {
+                helper.assertTrue(mirror.bossBarPlayers().isEmpty(), "the dead boss shows its bar again (removed " + mirror.isRemoved()
+                        + ", tick " + mirror.tickCount + ")");
+            }
+        });
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(mirror.bossBarPlayers().contains(player), "the bar never showed to the player beside it"))
+                .thenExecute(() -> {
+                    mirror.hurtServer(level, level.damageSources().genericKill(), Float.MAX_VALUE);
+                    helper.assertTrue(mirror.isDeadOrDying(), "the boss did not die");
+                    dead[0] = true;
+                    helper.assertTrue(mirror.bossBarPlayers().isEmpty(), "the bar stayed when the boss died");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(mirror.isRemoved(), "the dead boss was never removed"))
+                .thenExecute(() -> {
+                    // The tick that used to re-add the bar: a server tick on a multiple of 20, after the removal.
+                    for (int i = 0; i < 3; i++) {
+                        mirror.tickCount = 40 + 20 * i;
+                        mirror.serverTick(level, level.players());
+                    }
+                    helper.assertTrue(mirror.bossBarPlayers().isEmpty(), "a server tick after the removal put the bar back");
+                })
+                .thenIdle(25)
+                .thenSucceed();
+    }
+
     private static void keepLoud(ServerLevel level, BlockPos pos, PressureBand target) {
         for (int i = 0; i < 80 && band(level, pos).ordinal() < target.ordinal(); i++) {
             ImprintWriter.spike(level, pos, 3);

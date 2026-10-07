@@ -1,4 +1,4 @@
-"""Field guide illustrations: 33 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
+"""Field guide illustrations: 35 pages at 512x256 (the screen normalises to a 256x128 art box, so this is 2x density).
 Every page is an ink-paper plate with a brass-cornered frame, one small in-world diorama rendered from the real
 block models and entity layouts (render3d), the real item sprites at 2x, and a few diagram marks. No text: the book
 prints its words from the lang file."""
@@ -14,8 +14,8 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
-         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'armory', 'beasts', 'roles',
-         'world', 'players', 'reference')
+         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
+         'world', 'places', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -853,6 +853,52 @@ def p_world():
     p.center(d.render(0, -1.8, 0), 196, 128)
     p.sprite('archival_tablet', 440, 80, 2)
     p.sprite('catalog_fragment', 440, 180, 2)
+    return p.image()
+
+
+def p_places():
+    """A small hall of mute brick: an open doorway, a shrine at the back; the compass that finds such places."""
+    p = Page('places')
+    d = Diorama(330, 230, 26)
+    d.ground(5, 4, 1)
+    bricks = 'mnemolith:block/mute_stone_bricks'
+    # A cutaway: the back and right walls stand, the front wall is cut down to a low sill with an open doorway.
+    for i in range(5):
+        for y in range(3):
+            d.add(block_quads(bricks, i - 2.5, y, -2.0))         # back wall
+    for j in range(-1, 2):
+        for y in range(3):
+            d.add(block_quads(bricks, 1.5, y, j))                # right wall
+    for i in (-2.5, -1.5, 0.5):
+        d.add(block_quads(bricks, i, 0, 1.0))                    # low front sill, gap at the doorway
+    d.add(block_quads('mnemolith:block/archive_shrine', -0.5, 0, -1.0))
+    d.add(block_quads('mnemolith:block/archival_stratum_bricks', -2.5, 0, -1.0))
+    p.center(d.render(0, 0.6, 0), 190, 132)
+    p.arrow((86, 214), (150, 176), dotted=True, width=2, head=6)
+    p.spark(214, 92, 18, c('brass', 5), 6)
+    p.sprite('memory_compass', 430, 82, 2, src=_item_tex('memory_compass'))
+    p.sprite('chronicle_lens', 430, 182, 2)
+    return p.image()
+
+
+def p_remembers():
+    """The world remembers you: your pale past self lies where you fell, while you stand and watch."""
+    p = Page('remembers')
+    d = Diorama(330, 210, 28)
+    d.ground(6, 3, 1)
+    d.add(mob_quads('wanderer', 1.6, 0, 0.2, 235))
+    d.add(mob_quads('wanderer', -1.2, 0, 0.1, 200), light='entity', tint=(235, 242, 255, 120), bright=1.6)
+    p.center(d.render(0, 0.05, 0), 180, 128)
+    p.spark(120, 62, 26, PALE, 8)
+    # Four moments, top to bottom: a death, a home, a build, a won fight.
+    for y in (40, 90, 140, 190):
+        p.plate(404, y, 474, y + 36)
+    p.cross(439, 58, 9, c('red', 3))
+    p.d.rectangle([423, 102, 455, 116], fill=(*c('red', 3), 255), outline=(*OUTLINE, 255))
+    p.d.rectangle([423, 112, 455, 120], fill=(*c('wood', 4), 255), outline=(*OUTLINE, 255))
+    for k in range(3):
+        p.d.rectangle([425 + k * 10, 162 - k * 6, 433 + k * 10, 170], fill=(*c('mute', 4), 255), outline=(*OUTLINE, 255))
+    p.spark(439, 208, 12, c('brass', 5), 6)
     return p.image()
 
 

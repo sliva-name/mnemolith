@@ -38,7 +38,7 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
     @Override
     protected void init() {
         super.init();
-        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
+        this.titleLabelX = (this.imageWidth - this.font.width(this.title.copy().withStyle(net.minecraft.ChatFormatting.BOLD))) / 2;
         this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.compose"), button -> {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.gameMode != null) {
@@ -60,15 +60,15 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         for (Slot slot : this.menu.slots) {
             GuiArt.slot(graphics, slot.x - 1, slot.y - 1);
         }
-        GuiArt.label(graphics, this.font, this.title, this.titleLabelX, this.titleLabelY, GuiArt.BONE);
-        GuiArt.label(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, GuiArt.BONE);
+        GuiArt.heading(graphics, this.font, this.title, this.titleLabelX, this.titleLabelY);
+        GuiArt.ink(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, GuiArt.PAPER_INK);
         Component status = this.statusLine();
         int color = switch (this.menu.status()) {
-            case ComposeResult.SUCCESS -> GuiArt.VERDIGRIS;
-            case ComposeResult.FAIL, ComposeResult.DISABLED, ComposeResult.FULL, ComposeResult.BLANK -> GuiArt.FAIL;
-            default -> GuiArt.BONE;
+            case ComposeResult.SUCCESS -> GuiArt.PAPER_ACCENT;
+            case ComposeResult.FAIL, ComposeResult.DISABLED, ComposeResult.FULL, ComposeResult.BLANK -> GuiArt.PAPER_WARN;
+            default -> GuiArt.PAPER_INK;
         };
-        GuiArt.paragraph(graphics, this.font, status, 8, 60, this.imageWidth - 16, color);
+        GuiArt.inkParagraph(graphics, this.font, status, 8, 60, this.imageWidth - 16, color);
         this.drawSilhouettes(graphics);
     }
 
@@ -84,45 +84,115 @@ public class CompositionScreen extends AbstractContainerScreen<CompositionMenu> 
         };
     }
 
+    /** How long a newly learned formula's chip glows, in milliseconds. */
+    private static final long GLOW_MILLIS = 2500L;
+    /** Mask seen on the last frame; -1 until the first frame, so formulas known before opening do not glow. */
+    private int seenMask = -1;
+    private int glowIndex = -1;
+    private long glowUntil;
+    /** The "not read yet" chip, in screen space, for its tooltip (width 0 when it is not drawn). */
+    private int unknownX;
+    private int unknownY;
+    private int unknownW;
+    private int unknownCount;
+
     private void drawSilhouettes(GuiGraphicsExtractor graphics) {
         int mask = this.menu.discoveredFormulas();
         boolean hints = this.menu.discoveryHints();
         List<CompositionRecipe> recipes = ServerTuning.formulas();
-        int known = Integer.bitCount(mask & ((1 << Math.min(Discovery.FORMULA_COUNT, recipes.size())) - 1));
+        int count = Math.min(Discovery.FORMULA_COUNT, recipes.size());
+        int all = count >= 31 ? -1 : (1 << count) - 1;
+        this.noticeDiscovery(mask & all);
+        int known = Integer.bitCount(mask & all);
+        this.unknownW = 0;
         if (!hints && known == 0) {
-            GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, CHIP_TOP, GuiArt.BONE);
+            GuiArt.ink(graphics, this.font, Component.translatable("mnemolith.gui.compose_no_pattern"), 8, CHIP_TOP, GuiArt.PAPER_INK);
             return;
         }
         int x = 8;
         int row = CHIP_TOP;
         // Inventory title sits at imageHeight - 94 (=146 with PANEL_HEIGHT 240). Chips must stay above it.
         int chipFloor = Math.min(CHIP_MAX_BOTTOM, this.inventoryLabelY - 4);
-        for (int i = 0; i < recipes.size() && i < Discovery.FORMULA_COUNT; i++) {
-            if (x > this.imageWidth - 40) {
+        // Learned formulas first, then one chip that counts the rest (it used to be a wall of 15 "?").
+        for (int i = 0; i < count; i++) {
+            if ((mask & (1 << i)) == 0) {
+                continue;
+            }
+            int width = Math.max(34, recipes.get(i).tags().size() * 16);
+            if (x + width > this.imageWidth - 8) {
                 x = 8;
                 row += CHIP_STEP;
             }
             if (row + 14 > chipFloor) {
-                break;
+                return;
             }
-            x = drawFormulaChip(graphics, mask, hints, x, row, i, recipes.get(i).tags());
+            this.drawLearnedChip(graphics, x, row, i, recipes.get(i).tags());
+            x += width + 8;
+        }
+        int unknown = count - known;
+        if (hints && unknown > 0) {
+            Component label = Component.translatable("mnemolith.gui.compose_unknown_more", unknown);
+            int width = Math.max(34, this.font.width(label) + 12);
+            if (x + width > this.imageWidth - 8) {
+                x = 8;
+                row += CHIP_STEP;
+            }
+            if (row + 14 <= chipFloor) {
+                graphics.fill(x, row, x + width, row + 14, GuiArt.CHIP);
+                GuiArt.label(graphics, this.font, label, x + (width - this.font.width(label)) / 2, row + 3, GuiArt.BONE);
+                this.unknownX = x;
+                this.unknownY = row;
+                this.unknownW = width;
+                this.unknownCount = unknown;
+            }
         }
     }
 
-    private int drawFormulaChip(GuiGraphicsExtractor graphics, int mask, boolean hints, int x, int row, int index, List<ImprintTag> tags) {
-        boolean learned = (mask & (1 << index)) != 0;
-        int width = Math.max(34, tags.size() * 16);
-        if (learned) {
-            int iconX = x;
-            for (ImprintTag tag : tags) {
-                GuiArt.tag(graphics, tag, iconX, row);
-                iconX += 16;
-            }
-        } else if (hints) {
-            graphics.fill(x, row, x + width, row + 14, GuiArt.CHIP);
-            GuiArt.label(graphics, this.font, Component.translatable("mnemolith.gui.compose_unknown"), x + 13, row + 3, GuiArt.BONE);
+    private void drawLearnedChip(GuiGraphicsExtractor graphics, int x, int row, int index, List<ImprintTag> tags) {
+        long now = net.minecraft.util.Util.getMillis();
+        if (index == this.glowIndex && now < this.glowUntil) {
+            // A pulsing frame around the formula just learned.
+            float pulse = 0.5F + 0.5F * net.minecraft.util.Mth.sin((float) (this.glowUntil - now) / 120.0F);
+            int alpha = (int) (110 + 145 * pulse);
+            int color = (alpha << 24) | (GuiArt.PAPER_ACCENT & 0xFFFFFF);
+            int width = tags.size() * 16;
+            graphics.fill(x - 2, row - 2, x + width + 1, row - 1, color);
+            graphics.fill(x - 2, row + 15, x + width + 1, row + 16, color);
+            graphics.fill(x - 2, row - 1, x - 1, row + 15, color);
+            graphics.fill(x + width, row - 1, x + width + 1, row + 15, color);
         }
-        return x + width + 8;
+        int iconX = x;
+        for (ImprintTag tag : tags) {
+            GuiArt.tag(graphics, tag, iconX, row);
+            iconX += 16;
+        }
+    }
+
+    /** A formula learned while the screen is open glows for a moment, with a chime, so the discovery is not missed. */
+    private void noticeDiscovery(int mask) {
+        if (this.seenMask >= 0 && mask != this.seenMask) {
+            int fresh = mask & ~this.seenMask;
+            if (fresh != 0) {
+                this.glowIndex = Integer.numberOfTrailingZeros(fresh);
+                this.glowUntil = net.minecraft.util.Util.getMillis() + GLOW_MILLIS;
+                Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                        net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 1.5F, 0.6F));
+            }
+        }
+        this.seenMask = mask;
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.extractTooltip(graphics, mouseX, mouseY);
+        int x = mouseX - this.leftPos;
+        int y = mouseY - this.topPos;
+        if (this.unknownW > 0 && x >= this.unknownX && x < this.unknownX + this.unknownW && y >= this.unknownY && y < this.unknownY + 14) {
+            graphics.setTooltipForNextFrame(this.font, List.of(
+                    Component.translatable("mnemolith.gui.compose_unknown_tip", this.unknownCount),
+                    Component.translatable("mnemolith.gui.compose_unknown_how").withStyle(net.minecraft.ChatFormatting.GRAY)),
+                    java.util.Optional.empty(), mouseX, mouseY);
+        }
     }
 
     private Component formulaName(int ordinal) {

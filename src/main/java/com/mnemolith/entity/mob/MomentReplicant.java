@@ -138,7 +138,7 @@ public class MomentReplicant extends MemoryMob {
         this.executeTicks = 0;
         this.setAction(MobActions.TELEGRAPH);
         BlockPos at = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith replicant telegraph={} at {},{},{}", kind.serialized(), at.getX(), at.getY(), at.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith replicant telegraph={} at {},{},{}", kind.serialized(), at.getX(), at.getY(), at.getZ());
         this.playSound(ModSounds.REPLICANT_TELEGRAPH.get(), 1.0F, 1.0F);
         if (this.level() instanceof ServerLevel server) {
             MemoryFx.mob(server, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 10);
@@ -186,7 +186,7 @@ public class MomentReplicant extends MemoryMob {
         this.getNavigation().stop();
         this.setAction(MobActions.IDLE);
         BlockPos at = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith replicant recall kind={} at {},{},{}", gesture.kind().getSerializedName(), at.getX(), at.getY(), at.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith replicant recall kind={} at {},{},{}", gesture.kind().getSerializedName(), at.getX(), at.getY(), at.getZ());
     }
 
     public void tickRecall(ServerLevel level) {
@@ -407,7 +407,7 @@ public class MomentReplicant extends MemoryMob {
         this.telegraphTicks = MobTuning.REPLICANT_TELEGRAPH_TICKS;
         this.setAction(MobActions.TELEGRAPH);
         BlockPos at = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith replicant telegraph=echo_job owner={} at {},{},{}", best.ownerName(), at.getX(), at.getY(), at.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith replicant telegraph=echo_job owner={} at {},{},{}", best.ownerName(), at.getX(), at.getY(), at.getZ());
         this.playSound(ModSounds.REPLICANT_TELEGRAPH.get(), 1.0F, 0.9F);
         MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 10);
     }
@@ -426,7 +426,7 @@ public class MomentReplicant extends MemoryMob {
         echo.job().beginMimic(this.getUUID(), ticks, com.mnemolith.config.CommonConfig.ECHO_REPLICANT_UNDO_MAX.get());
         this.setAction(MobActions.IDLE);
         MemoryFx.mob(level, ModParticles.REPLICANT_TELEGRAPH.get(), echo.getX(), echo.getY() + 1.2D, echo.getZ(), 12);
-        Mnemolith.LOGGER.info("Mnemolith replicant mimics echo owner={} mode={} ticks={}", echo.ownerName(), echo.job().mode().getSerializedName(), ticks);
+        Mnemolith.LOGGER.debug("Mnemolith replicant mimics echo owner={} mode={} ticks={}", echo.ownerName(), echo.job().mode().getSerializedName(), ticks);
         return true;
     }
 
@@ -518,7 +518,7 @@ public class MomentReplicant extends MemoryMob {
         this.telegraphTicks = MobTuning.REPLICANT_TELEGRAPH_TICKS;
         this.setAction(MobActions.TELEGRAPH);
         BlockPos at = this.blockPosition();
-        Mnemolith.LOGGER.info("Mnemolith replicant telegraph={} at {},{},{}", action.kind().serialized(), at.getX(), at.getY(), at.getZ());
+        Mnemolith.LOGGER.debug("Mnemolith replicant telegraph={} at {},{},{}", action.kind().serialized(), at.getX(), at.getY(), at.getZ());
         this.playSound(ModSounds.REPLICANT_TELEGRAPH.get(), 1.0F, 1.2F);
     }
 

@@ -1,6 +1,110 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mnemolith:item/imprint_slip"
+    "type": "minecraft:select",
+    "property": "mnemolith:imprint_tag",
+    "cases": [
+      {
+        "when": "fire",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_fire"
+        }
+      },
+      {
+        "when": "fall",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_fall"
+        }
+      },
+      {
+        "when": "death",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_death"
+        }
+      },
+      {
+        "when": "build",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_build"
+        }
+      },
+      {
+        "when": "explosion",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_explosion"
+        }
+      },
+      {
+        "when": "silence",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_silence"
+        }
+      },
+      {
+        "when": "player",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_player"
+        }
+      },
+      {
+        "when": "redstone",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_redstone"
+        }
+      },
+      {
+        "when": "path",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_path"
+        }
+      },
+      {
+        "when": "lightning",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_lightning"
+        }
+      },
+      {
+        "when": "portal",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_portal"
+        }
+      },
+      {
+        "when": "sculk",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_sculk"
+        }
+      },
+      {
+        "when": "boss",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_boss"
+        }
+      },
+      {
+        "when": "trade",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mnemolith:item/imprint_slip_trade"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mnemolith:item/imprint_slip"
+    }
   }
 }

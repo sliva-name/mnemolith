@@ -100,7 +100,7 @@ public final class EchoNetwork {
         if (accepted) {
             player.sendSystemMessage(Component.translatable("mnemolith.command.order." + order.getSerializedName()), true);
         }
-        Mnemolith.LOGGER.info("Mnemolith echo order owner={} order={} accepted={}", echo.ownerName(), order.getSerializedName(), accepted);
+        Mnemolith.LOGGER.debug("Mnemolith echo order owner={} order={} accepted={}", echo.ownerName(), order.getSerializedName(), accepted);
         return accepted;
     }
 

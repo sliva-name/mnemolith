@@ -51,7 +51,10 @@ public final class EchoHud {
         int target = EchoView.targetId();
         Entity entity = target < 0 ? null : minecraft.level.getEntity(target);
         if (entity == null) {
-            chip(graphics, font, Component.translatable("mnemolith.hud.thermal"), centerX, hintY);
+            // The aiming hint only matters when there is an echo of yours to aim at.
+            if (ThermalClient.ownEchoNearby(minecraft, minecraft.player)) {
+                chip(graphics, font, Component.translatable("mnemolith.hud.thermal"), centerX, hintY);
+            }
             return;
         }
         int distance = (int) Math.round(Math.sqrt(entity.distanceToSqr(minecraft.player)));

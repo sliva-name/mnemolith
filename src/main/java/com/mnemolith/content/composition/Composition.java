@@ -142,7 +142,7 @@ public final class Composition {
         if (replicant) {
             MobSpawns.trySpawnReplicant(level, pos.above());
         }
-        Mnemolith.LOGGER.info("Mnemolith compose fail pressure={} band={} replicantAsked={}", pressure, band, replicant);
+        Mnemolith.LOGGER.debug("Mnemolith compose fail pressure={} band={} replicantAsked={}", pressure, band, replicant);
         level.playSound(null, pos, ModSounds.COMPOSE_FAIL.get(), SoundSource.BLOCKS, 0.7F, 0.8F);
         MemoryFx.composeFail(level, pos);
         if (player != null) {
@@ -156,7 +156,7 @@ public final class Composition {
     }
 
     private static ComposeResult finish(ServerLevel level, BlockPos pos, @Nullable ServerPlayer player, int status, int formulaOrdinal) {
-        Mnemolith.LOGGER.info("Mnemolith compose status={} formula={}", status, formulaOrdinal);
+        Mnemolith.LOGGER.debug("Mnemolith compose status={} formula={}", status, formulaOrdinal);
         NeoForge.EVENT_BUS.post(new ComposeFinishedEvent(level, pos, player, status, formulaOrdinal));
         return new ComposeResult(status, formulaOrdinal);
     }

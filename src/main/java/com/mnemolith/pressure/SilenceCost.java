@@ -126,7 +126,7 @@ public final class SilenceCost {
         level.playSound(null, center, ModSounds.PRESSURE_WARN.get(), SoundSource.AMBIENT, 1.2F, 0.4F);
         level.playSound(null, center, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.AMBIENT, 0.35F, 1.6F);
         player.sendSystemMessage(Component.translatable("mnemolith.silence.warn"), true);
-        Mnemolith.LOGGER.info(
+        Mnemolith.LOGGER.debug(
                 "Mnemolith void pressure warning at chunk {} {} pressure={}",
                 chunk.getPos().x(),
                 chunk.getPos().z(),

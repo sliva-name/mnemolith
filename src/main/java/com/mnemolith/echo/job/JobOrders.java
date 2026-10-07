@@ -98,7 +98,7 @@ final class JobOrders {
             this.job.mover.stop(level, echo);
             this.order = EchoJob.Order.STAY;
             this.job.setStatus(JobStatus.of(JobStatus.Kind.LOST_OWNER));
-            Mnemolith.LOGGER.info("Mnemolith echo lost its owner owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo lost its owner owner={} at {}", echo.ownerName(), echo.blockPosition().toShortString());
             return;
         }
         double distance = owner.distanceToSqr(echo);
@@ -179,7 +179,7 @@ final class JobOrders {
         } else {
             this.job.setStatus(JobStatus.of(JobStatus.Kind.AT_POINT));
         }
-        Mnemolith.LOGGER.info("Mnemolith echo back at its point owner={} mode={} at {}", echo.ownerName(), this.job.mode.getSerializedName(), echo.blockPosition().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith echo back at its point owner={} mode={} at {}", echo.ownerName(), this.job.mode.getSerializedName(), echo.blockPosition().toShortString());
     }
 
     /** O2: when a looped replay finishes, start it again from the first frame. */

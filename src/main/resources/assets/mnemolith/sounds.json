@@ -4,6 +4,18 @@
       {
         "name": "mnemolith:imprint_write",
         "stream": false
+      },
+      {
+        "name": "mnemolith:imprint_write",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:imprint_write",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.imprint_write"
@@ -13,6 +25,18 @@
       {
         "name": "mnemolith:extract",
         "stream": false
+      },
+      {
+        "name": "mnemolith:extract",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:extract",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.extract"
@@ -40,6 +64,18 @@
       {
         "name": "mnemolith:lens_focus",
         "stream": false
+      },
+      {
+        "name": "mnemolith:lens_focus",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:lens_focus",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.lens_focus"
@@ -58,6 +94,18 @@
       {
         "name": "mnemolith:mute_break",
         "stream": false
+      },
+      {
+        "name": "mnemolith:mute_break",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:mute_break",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.mute_break"
@@ -67,6 +115,18 @@
       {
         "name": "mnemolith:mute_place",
         "stream": false
+      },
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.mute_place"
@@ -76,6 +136,18 @@
       {
         "name": "mnemolith:stratum_break",
         "stream": false
+      },
+      {
+        "name": "mnemolith:stratum_break",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:stratum_break",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.stratum_break"
@@ -85,6 +157,18 @@
       {
         "name": "mnemolith:stratum_place",
         "stream": false
+      },
+      {
+        "name": "mnemolith:stratum_place",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:stratum_place",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.stratum_place"
@@ -94,6 +178,18 @@
       {
         "name": "mnemolith:strider_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:strider_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:strider_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.strider_ambient"
@@ -103,6 +199,18 @@
       {
         "name": "mnemolith:strider_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:strider_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:strider_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.strider_hurt"
@@ -112,6 +220,18 @@
       {
         "name": "mnemolith:strider_death",
         "stream": false
+      },
+      {
+        "name": "mnemolith:strider_death",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:strider_death",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.strider_death"
@@ -121,6 +241,18 @@
       {
         "name": "mnemolith:strider_charge",
         "stream": false
+      },
+      {
+        "name": "mnemolith:strider_charge",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:strider_charge",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.strider_charge"
@@ -130,6 +262,18 @@
       {
         "name": "mnemolith:archivist_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:archivist_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:archivist_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.archivist_ambient"
@@ -139,6 +283,18 @@
       {
         "name": "mnemolith:archivist_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:archivist_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:archivist_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.archivist_hurt"
@@ -148,6 +304,18 @@
       {
         "name": "mnemolith:archivist_death",
         "stream": false
+      },
+      {
+        "name": "mnemolith:archivist_death",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:archivist_death",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.archivist_death"
@@ -157,6 +325,18 @@
       {
         "name": "mnemolith:archivist_steal",
         "stream": false
+      },
+      {
+        "name": "mnemolith:archivist_steal",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:archivist_steal",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.archivist_steal"
@@ -166,6 +346,18 @@
       {
         "name": "mnemolith:replicant_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:replicant_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:replicant_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.replicant_ambient"
@@ -175,6 +367,18 @@
       {
         "name": "mnemolith:replicant_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:replicant_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:replicant_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.replicant_hurt"
@@ -184,6 +388,18 @@
       {
         "name": "mnemolith:replicant_death",
         "stream": false
+      },
+      {
+        "name": "mnemolith:replicant_death",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:replicant_death",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.replicant_death"
@@ -211,6 +427,18 @@
       {
         "name": "mnemolith:mite_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:mite_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:mite_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.mite_ambient"
@@ -220,6 +448,18 @@
       {
         "name": "mnemolith:mite_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:mite_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:mite_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.mite_hurt"
@@ -229,6 +469,18 @@
       {
         "name": "mnemolith:witness_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:witness_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:witness_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.witness_ambient"
@@ -238,6 +490,18 @@
       {
         "name": "mnemolith:witness_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:witness_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:witness_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.witness_hurt"
@@ -247,6 +511,18 @@
       {
         "name": "mnemolith:stalker_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:stalker_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:stalker_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.stalker_ambient"
@@ -256,6 +532,18 @@
       {
         "name": "mnemolith:stalker_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:stalker_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:stalker_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.stalker_hurt"
@@ -265,6 +553,18 @@
       {
         "name": "mnemolith:stalker_death",
         "stream": false
+      },
+      {
+        "name": "mnemolith:stalker_death",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:stalker_death",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.stalker_death"
@@ -275,13 +575,26 @@
         "name": "mnemolith:chair_voice",
         "stream": true
       }
-    ]
+    ],
+    "subtitle": "subtitles.mnemolith.chair_voice"
   },
   "echo_step": {
     "sounds": [
       {
         "name": "mnemolith:echo_step",
         "stream": false
+      },
+      {
+        "name": "mnemolith:echo_step",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:echo_step",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.echo_step"
@@ -291,6 +604,18 @@
       {
         "name": "mnemolith:echo_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:echo_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:echo_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.echo_hurt"
@@ -300,6 +625,18 @@
       {
         "name": "mnemolith:echo_death",
         "stream": false
+      },
+      {
+        "name": "mnemolith:echo_death",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:echo_death",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.echo_death"
@@ -327,6 +664,18 @@
       {
         "name": "mnemolith:scar_ambient",
         "stream": false
+      },
+      {
+        "name": "mnemolith:scar_ambient",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:scar_ambient",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.scar_ambient"
@@ -336,6 +685,18 @@
       {
         "name": "mnemolith:scar_hurt",
         "stream": false
+      },
+      {
+        "name": "mnemolith:scar_hurt",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:scar_hurt",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.scar_hurt"
@@ -372,6 +733,18 @@
       {
         "name": "mnemolith:storm_wave",
         "stream": false
+      },
+      {
+        "name": "mnemolith:storm_wave",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:storm_wave",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.storm_wave"
@@ -417,6 +790,18 @@
       {
         "name": "mnemolith:vault_chime",
         "stream": false
+      },
+      {
+        "name": "mnemolith:vault_chime",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:vault_chime",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.vault_chime"
@@ -426,6 +811,18 @@
       {
         "name": "mnemolith:vault_draw",
         "stream": false
+      },
+      {
+        "name": "mnemolith:vault_draw",
+        "stream": false,
+        "volume": 0.9,
+        "pitch": 0.92
+      },
+      {
+        "name": "mnemolith:vault_draw",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.08
       }
     ],
     "subtitle": "subtitles.mnemolith.vault_draw"

@@ -87,7 +87,7 @@ final class JobMimic {
                 level.sendParticles(ModParticles.REPLICANT_TELEGRAPH.get(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 10, 0.3D, 0.3D, 0.3D, 0.01D);
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.HOSTILE, 0.6F, 0.6F);
                 this.job.notice(JobStatus.of(JobStatus.Kind.MIMIC, this.mimicCount, 0), Math.max(40, this.mimicTicks));
-                Mnemolith.LOGGER.info("Mnemolith replicant undid echo block owner={} at {} undone={}", echo.ownerName(), pos.toShortString(), this.mimicCount);
+                Mnemolith.LOGGER.debug("Mnemolith replicant undid echo block owner={} at {} undone={}", echo.ownerName(), pos.toShortString(), this.mimicCount);
             }
         }
         if (this.mimicTicks <= 0) {

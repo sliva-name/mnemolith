@@ -68,7 +68,7 @@ final class JobChest {
         level.playSound(null, chestPos, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.5F, 1.0F);
         if (this.job.mode == EchoJob.Mode.MINE) {
             int moved = EchoWork.deposit(echo, container, Map.of());
-            Mnemolith.LOGGER.info("Mnemolith echo deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
             if (this.needsDropOff(echo)) {
                 this.job.halt(echo, JobStatus.of(JobStatus.Kind.CHEST_FULL));
                 return;
@@ -80,7 +80,7 @@ final class JobChest {
             this.job.setStatus(new JobStatus(JobStatus.Kind.MINING, detail, this.job.mined, 0));
         } else if (this.job.mode == EchoJob.Mode.FARM) {
             int moved = EchoWork.depositFarm(echo, container, this.job.farm.seedItems(), 64);
-            Mnemolith.LOGGER.info("Mnemolith echo farm deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo farm deposit owner={} moved={} chest={}", echo.ownerName(), moved, chestPos.toShortString());
             if (this.needsDropOff(echo)) {
                 this.job.halt(echo, JobStatus.of(JobStatus.Kind.CHEST_FULL));
                 return;
@@ -92,7 +92,7 @@ final class JobChest {
                 entry.setValue(Math.max(0, entry.getValue() - JobTexts.count(echo.inventory(), entry.getKey())));
             }
             int taken = EchoWork.take(echo, container, wanted);
-            Mnemolith.LOGGER.info("Mnemolith echo fetch owner={} taken={} chest={}", echo.ownerName(), taken, chestPos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo fetch owner={} taken={} chest={}", echo.ownerName(), taken, chestPos.toShortString());
         }
         level.playSound(null, chestPos, SoundEvents.CHEST_CLOSE, SoundSource.BLOCKS, 0.5F, 1.0F);
         this.job.motion.phase = JobMotion.Phase.SELECT;

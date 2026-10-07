@@ -149,7 +149,7 @@ public final class Residues {
         }
         memory.removeImprint(loudest);
         MemoryPressure.recompute(chunk, memory);
-        Mnemolith.LOGGER.info("Mnemolith residue condensed tag={} strength={} at {} pressure={}", loudest.tag().getSerializedName(),
+        Mnemolith.LOGGER.debug("Mnemolith residue condensed tag={} strength={} at {} pressure={}", loudest.tag().getSerializedName(),
                 residue.strength(), at.toShortString(), memory.cachedPressure());
         return residue;
     }
@@ -220,7 +220,7 @@ public final class Residues {
         }
         memory.setResidueSeeded(true);
         chunk.markUnsaved();
-        Mnemolith.LOGGER.info("Mnemolith residue seeded observatory tag={} at {}", tag.getSerializedName(), at.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith residue seeded observatory tag={} at {}", tag.getSerializedName(), at.toShortString());
         return residue;
     }
 
@@ -312,7 +312,7 @@ public final class Residues {
     public static void dissolve(ServerLevel level, ResidueEntity residue) {
         level.sendParticles(EchoGrafts.particle(residue.temper()), residue.getX(), residue.getY() + 0.8D, residue.getZ(), 24, 0.4D, 0.6D, 0.4D, 0.04D);
         level.playSound(null, residue.blockPosition(), SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.HOSTILE, 0.8F, 1.4F);
-        Mnemolith.LOGGER.info("Mnemolith residue dissolved tag={} at {}", residue.tag().getSerializedName(), residue.blockPosition().toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith residue dissolved tag={} at {}", residue.tag().getSerializedName(), residue.blockPosition().toShortString());
         residue.discard();
     }
 
@@ -333,7 +333,7 @@ public final class Residues {
             if (partner != null && EchoGrafts.topUp(partner, Math.max(1, EchoGrafts.slipCharge(temper) / 2))) {
                 level.sendParticles(EchoGrafts.particle(temper), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.02D);
                 level.sendParticles(EchoGrafts.particle(temper), partner.getX(), partner.getY() + 1.0D, partner.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.02D);
-                Mnemolith.LOGGER.info("Mnemolith relay drink tag={} via={} into={}", residue.tag().getSerializedName(), echo.getUUID(), partner.getUUID());
+                Mnemolith.LOGGER.debug("Mnemolith relay drink tag={} via={} into={}", residue.tag().getSerializedName(), echo.getUUID(), partner.getUUID());
                 return true;
             }
         }
@@ -371,7 +371,7 @@ public final class Residues {
         EchoEntity hush = EchoGrafts.hushNear(level, pos);
         if (hush != null) {
             level.sendParticles(EchoGrafts.particle(Temper.HUSHED), pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 10, 0.4D, 0.5D, 0.4D, 0.0D);
-            Mnemolith.LOGGER.info("Mnemolith residue act-out hushed tag={} at {}", tag.getSerializedName(), pos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith residue act-out hushed tag={} at {}", tag.getSerializedName(), pos.toShortString());
             return false;
         }
         actOutUnhushed(level, source, tag, pos);
@@ -392,7 +392,7 @@ public final class Residues {
                     BlockPos spot = fireSpot(level, pos.offset(level.getRandom().nextInt(9) - 4, 0, level.getRandom().nextInt(9) - 4));
                     if (spot != null) {
                         level.setBlockAndUpdate(spot, net.minecraft.world.level.block.BaseFireBlock.getState(level, spot));
-                        Mnemolith.LOGGER.info("Mnemolith residue fire at {}", spot.toShortString());
+                        Mnemolith.LOGGER.debug("Mnemolith residue fire at {}", spot.toShortString());
                     }
                 }
             }
@@ -410,7 +410,7 @@ public final class Residues {
             }
             default -> {}
         }
-        Mnemolith.LOGGER.info("Mnemolith residue acted out tag={} at {}", tag.getSerializedName(), pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith residue acted out tag={} at {}", tag.getSerializedName(), pos.toShortString());
     }
 
     /**
@@ -574,7 +574,7 @@ public final class Residues {
         level.playSound(null, residue.blockPosition(), com.mnemolith.audio.ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 1.0F, 0.6F);
         player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.residue.captured",
                 net.minecraft.network.chat.Component.translatable(residue.tag().translationKey()), residue.strength()), true);
-        Mnemolith.LOGGER.info("Mnemolith residue captured tag={} strength={} by {}", residue.tag().getSerializedName(), residue.strength(), player.getGameProfile().name());
+        Mnemolith.LOGGER.debug("Mnemolith residue captured tag={} strength={} by {}", residue.tag().getSerializedName(), residue.strength(), player.getGameProfile().name());
         com.mnemolith.recall.UseMemory.onHarvest(player, residue);
         residue.discard();
         return true;
@@ -597,7 +597,7 @@ public final class Residues {
         }
         player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.residue.absorbed",
                 net.minecraft.network.chat.Component.translatable(residue.temper().key())), true);
-        Mnemolith.LOGGER.info("Mnemolith residue absorbed by possessed {} tag={}", player.getGameProfile().name(), residue.tag().getSerializedName());
+        Mnemolith.LOGGER.debug("Mnemolith residue absorbed by possessed {} tag={}", player.getGameProfile().name(), residue.tag().getSerializedName());
         residue.discard();
         return true;
     }

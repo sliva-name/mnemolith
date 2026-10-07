@@ -317,7 +317,7 @@ public class EchoEntity extends MemoryAvatar {
         this.replayTick++;
         if (this.replayTick >= rec.length()) {
             this.stopReplay();
-            Mnemolith.LOGGER.info("Mnemolith echo replay done owner={} at {}", this.ownerName(), this.blockPosition().toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo replay done owner={} at {}", this.ownerName(), this.blockPosition().toShortString());
         }
     }
 

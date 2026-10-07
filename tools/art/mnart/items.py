@@ -109,6 +109,45 @@ def imprint_slip():
     return finish(cv)
 
 
+# One seal colour per imprint tag (ImprintTag order); a written slip wears its tag's glyph on that seal.
+SLIP_SEALS = {
+    'fire': 'ember', 'fall': 'verdigris', 'death': 'red', 'build': 'wood', 'explosion': 'brass', 'silence': 'mute',
+    'player': 'echo', 'redstone': 'redstone', 'path': 'leather', 'lightning': 'gold', 'portal': 'magenta',
+    'sculk': 'deep', 'boss': 'amethyst', 'trade': 'copper',
+}
+
+
+def _glyph_small(tag, size):
+    from PIL import Image
+    from .gui import _glyph
+    g = Image.fromarray((_glyph(tag) * 255).astype(np.uint8)).resize((size, size), Image.BOX)
+    return np.array(g) > 96
+
+
+def _tag_slip(tag):
+    def build():
+        cv, m, rng = _slip_base('imprint_slip')
+        pts = [(9, 14), (11, 11), (13, 16), (15, 9), (17, 17), (19, 12), (21, 14), (23, 13)]
+        cv.fill(core.m_lines(S, S, pts, 1) & m, RAMPS['indigo'][2])
+        for x, y in pts[2:6]:
+            cv.px(x, y, RAMPS['verdigris'][4])
+        for y in (20, 22):
+            cv.fill(m_rect(S, S, 19, y, 22, y) & m, RAMPS['paper'][2])
+        # a big wax seal in the tag's colour, its glyph pressed in light
+        ramp = SLIP_SEALS[tag]
+        sm = m_ellipse(S, S, 12.5, 23.5, 7.2, 7.2)
+        cv.part(sm, ramp, 'sphere', 3)
+        rim = sm & ~erode(sm)
+        cv.fill(rim, RAMPS[ramp][1])
+        g = _glyph_small(tag, 11)
+        mask = np.zeros((S, S), bool)
+        mask[18:29, 7:18] = g
+        cv.fill(mask & erode(sm), RAMPS['bone'][6])
+        cv.fill(np.roll(np.roll(mask, 1, 0), 1, 1) & ~mask & erode(sm), RAMPS[ramp][1])
+        return finish(cv)
+    return build
+
+
 def _echo_figure(cv, m, x, y, ramp='echo', s=1.0, alpha_rows=False):
     fm = shapes.figure_mask(S, S, x, y, s) & m
     idx = core.shade(fm, 'grad', 4, direction=(0.3, 1), span=(1.2, -1.2))
@@ -403,6 +442,7 @@ ITEMS = {
     'chronicle_lens': chronicle_lens,
     'extraction_needle': extraction_needle,
     'imprint_slip': imprint_slip,
+    **{'imprint_slip_' + t: _tag_slip(t) for t in SLIP_SEALS},
     'echo_slip': echo_slip,
     'echo_recording': echo_recording,
     'echo_chorus_slip': echo_chorus_slip,

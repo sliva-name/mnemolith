@@ -129,7 +129,7 @@ public final class EchoRelays {
         b.setRelay(id);
         level.playSound(null, b.blockPosition(), ModSounds.RELAY_HOP.get(), SoundSource.PLAYERS, 1.0F, 1.6F);
         thread(level, a.position(), b.position(), false);
-        Mnemolith.LOGGER.info("Mnemolith relay linked owner={} a={} b={}", a.ownerName(), a.getUUID(), b.getUUID());
+        Mnemolith.LOGGER.debug("Mnemolith relay linked owner={} a={} b={}", a.ownerName(), a.getUUID(), b.getUUID());
         return id;
     }
 
@@ -255,7 +255,7 @@ public final class EchoRelays {
         if (level.getServer().getPlayerList().getPlayer(owner) instanceof ServerPlayer player) {
             player.sendOverlayMessage(Component.translatable("mnemolith.relay.shock"));
         }
-        Mnemolith.LOGGER.info("Mnemolith relay shock owner={} survivor={} at {}", partner.ownerName(), partner.getUUID(), pos.toShortString());
+        Mnemolith.LOGGER.debug("Mnemolith relay shock owner={} survivor={} at {}", partner.ownerName(), partner.getUUID(), pos.toShortString());
     }
 
     // ---- hop ----

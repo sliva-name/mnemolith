@@ -14,6 +14,10 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.ISubtypeRegistration;
+import mezz.jei.api.ingredients.subtypes.UidContext;
+import com.mnemolith.data.ImprintCast;
+import com.mnemolith.data.ModDataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +29,21 @@ public final class MnemolithJeiPlugin implements IModPlugin {
     @Override
     public Identifier getPluginUid() {
         return UID;
+    }
+
+    /**
+     * Residual shards (and written imprint slips) differ only by the imprint they carry: tell JEI the imprint tag is
+     * the subtype, so the seven shards in the creative tab are seven entries rather than "duplicates".
+     */
+    @Override
+    public void registerItemSubtypes(ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(ModItems.RESIDUAL_SHARD.get(), MnemolithJeiPlugin::imprintTag);
+        registration.registerSubtypeInterpreter(ModItems.IMPRINT_SLIP.get(), MnemolithJeiPlugin::imprintTag);
+    }
+
+    private static Object imprintTag(ItemStack stack, UidContext context) {
+        ImprintCast cast = stack.get(ModDataComponents.IMPRINT_CAST.get());
+        return cast == null ? null : cast.tag().getSerializedName();
     }
 
     @Override

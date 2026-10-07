@@ -81,8 +81,13 @@ def write_structure(path: str, size: tuple[int, int, int], palette: list[bytes],
 
 
 class Builder:
-    def __init__(self, sx: int, sy: int, sz: int):
+    def __init__(self, sx: int, sy: int, sz: int, ox: int = 0, oy: int = 0, oz: int = 0):
         self.sx, self.sy, self.sz = sx, sy, sz
+        # Offset added to every coordinate: room for a foundation below y=0 or a landing in front of a door.
+        self.ox, self.oy, self.oz = ox, oy, oz
+        # Doorways between rooms, carved at write time. Rooms share their walls, so a doorway carved before the next
+        # room's box was built used to be walled up again, and the main halls were sealed off from their entrances.
+        self.openings: list[tuple[int, int, int, int, int, int]] = []
         self.palette_index: OrderedDict[tuple, int] = OrderedDict()
         self.palette: list[bytes] = []
         # One entry per position, last write wins. A template with two entries for one position places them in
@@ -99,6 +104,7 @@ class Builder:
         return self.palette_index[key]
 
     def set(self, x: int, y: int, z: int, state: int, nbt: bytes | None = None) -> None:
+        x, y, z = x + self.ox, y + self.oy, z + self.oz
         if not (0 <= x < self.sx and 0 <= y < self.sy and 0 <= z < self.sz):
             return
         self.cells[(x, y, z)] = (state, nbt)
@@ -124,15 +130,13 @@ class Builder:
                 self.set(x0, y, z, wall)
                 self.set(x1, y, z, wall)
 
-    def doorway(self, x: int, y: int, z: int, facing: str = 'z') -> None:
-        """2-high doorway carved to air."""
-        self.set(x, y, z, self.air)
-        self.set(x, y + 1, z, self.air)
-        if facing == 'x':
-            self.set(x, y, z, self.air)
-        # also clear a second cell for wider passages when needed by caller
+    def opening(self, x0, y0, z0, x1, y1, z1) -> None:
+        """A doorway or passage, carved to air after every room is built (see ``openings``)."""
+        self.openings.append((x0, y0, z0, x1, y1, z1))
 
     def write(self, rel: str) -> None:
+        for x0, y0, z0, x1, y1, z1 in self.openings:
+            self.fill(x0, y0, z0, x1, y1, z1, self.air)
         blocks = [block_entry(state, pos, nbt) for pos, (state, nbt) in self.cells.items()]
         write_structure(os.path.join(OUT, rel), (self.sx, self.sy, self.sz), self.palette, blocks)
 
@@ -165,25 +169,24 @@ def flooded_archive() -> None:
         b.set(4, y, 11, stratum)
     b.set(2, 1, 10, chest2, chest_nbt('mnemolith:chests/flooded_archive'))
     # entrance from west
-    b.set(0, 1, 6, air)
-    b.set(0, 2, 6, air)
+    b.opening(0, 1, 6, 0, 2, 6)
     # --- corridor / doorway into flooded hall ---
-    b.fill(5, 1, 5, 5, 3, 7, air)
+    b.opening(5, 1, 5, 5, 3, 7)
     # --- room 2: flooded hall (center) ---
     b.box(5, 0, 0, 11, 6, 12, deep, air)
     b.fill(6, 0, 1, 10, 0, 11, tiles)
     b.fill(6, 1, 1, 10, 1, 11, water)
-    # dry walkway along north wall
+    # dry walkways along the north and south walls, a stratum kerb between them and the water channel
     b.fill(6, 1, 1, 10, 1, 2, tiles)
     b.fill(6, 1, 10, 10, 1, 11, tiles)
-    for x in (6, 10):
-        for z in range(3, 10):
-            b.set(x, 2, z, stratum)
+    for x in range(6, 11):
+        b.set(x, 1, 3, stratum)
+        b.set(x, 1, 9, stratum)
     # pillars
     for z in (3, 9):
         b.fill(8, 1, z, 8, 4, z, bricks)
     # doorway into vault room
-    b.fill(11, 1, 5, 11, 3, 7, air)
+    b.opening(11, 1, 5, 11, 3, 7)
     # --- room 3: vault / shrine chamber (east, dry ledge) ---
     b.box(11, 0, 0, 16, 6, 12, deep, air)
     b.fill(12, 0, 1, 15, 0, 11, bricks)
@@ -220,10 +223,9 @@ def hush_chapel() -> None:
     # --- narthex (south entry) ---
     b.box(4, 0, 0, 10, 5, 3, mute_brick, air)
     b.fill(5, 0, 1, 9, 0, 2, mute)
-    b.set(7, 1, 0, air)
-    b.set(7, 2, 0, air)
+    b.opening(7, 1, 0, 7, 2, 0)
     # doorway to nave
-    b.fill(6, 1, 3, 8, 3, 3, air)
+    b.opening(6, 1, 3, 8, 3, 3)
     # --- nave (center hall with pews as mute walls) ---
     b.box(2, 0, 3, 12, 6, 7, mute_brick, air)
     b.fill(3, 0, 4, 11, 0, 6, mute)
@@ -234,7 +236,7 @@ def hush_chapel() -> None:
     b.set(3, 1, 5, chest2, chest_nbt('mnemolith:chests/hush_chapel'))
     b.set(7, 5, 5, lantern)
     # doorway to sanctuary
-    b.fill(6, 1, 7, 8, 3, 7, air)
+    b.opening(6, 1, 7, 8, 3, 7)
     # --- sanctuary / altar ---
     b.box(4, 0, 7, 10, 6, 10, mute_brick, air)
     b.fill(5, 0, 8, 9, 0, 9, mute)
@@ -286,31 +288,40 @@ def memory_field() -> None:
         for z in (12, 14):
             b.fill(x, 1, z, x, 3, z, stratum)
     b.set(8, 1, 13, chest, chest_nbt('mnemolith:chests/memory_field'))
-    b.fill(7, 1, 11, 9, 2, 11, air)  # open to plaza
+    b.opening(7, 1, 11, 9, 2, 11)  # open to plaza
     # --- east lookout tower ---
     b.box(12, 0, 6, 15, 5, 10, bricks, air)
     b.fill(13, 0, 7, 14, 0, 9, bricks)
-    b.fill(13, 1, 7, 14, 1, 9, stairs)
-    b.fill(13, 2, 7, 14, 2, 9, slab)
-    for x, z in ((13, 7), (13, 9), (14, 7), (14, 9)):
+    # windows in the outer walls (the room used to be filled with stairs and slabs that buried its chest)
+    for x, z in ((15, 7), (15, 9), (13, 6), (14, 10)):
         b.set(x, 3, z, glass)
+    b.set(14, 1, 7, stairs)
     b.set(14, 1, 8, chest2, chest_nbt('mnemolith:chests/memory_field'))
-    b.fill(12, 1, 7, 12, 2, 9, air)
+    b.opening(12, 1, 7, 12, 2, 9)
     # --- west shrine alcove ---
     b.box(1, 0, 6, 4, 4, 10, bricks, air)
     b.fill(2, 0, 7, 3, 0, 9, stratum)
     b.set(2, 1, 8, shrine)
-    b.fill(4, 1, 7, 4, 2, 9, air)
+    b.opening(4, 1, 7, 4, 2, 9)
     # central low platform
     b.fill(7, 1, 7, 9, 1, 9, bricks)
     b.fill(7, 2, 7, 9, 2, 9, slab)
     b.write('memory_field.nbt')
 
 
+ASHEN_FOUNDATION = 8
+
+
 def ashen_archive() -> None:
-    """W3 Nether: entry vestibule → magma corridor → shrine chamber."""
-    b = Builder(15, 8, 13)
+    """W3 Nether: entry vestibule → magma corridor → shrine chamber, on basalt piers over the lava sea.
+
+    The floor sits ASHEN_FOUNDATION blocks above the template's bottom (MnemonicJigsawStructure places the template
+    that much lower, so the floor stays at y=32, just over the lava sea), with a landing in front of the west door.
+    """
+    b = Builder(18, 8 + ASHEN_FOUNDATION, 15, ox=3, oy=ASHEN_FOUNDATION, oz=1)
     black = b.state('minecraft:polished_blackstone_bricks')
+    pier = b.state('minecraft:basalt', {'axis': 'y'})
+    footing = b.state('minecraft:polished_blackstone')
     basalt = b.state('minecraft:smooth_basalt')
     magma = b.state('minecraft:magma_block')
     stratum = b.state('mnemolith:archival_stratum')
@@ -323,10 +334,9 @@ def ashen_archive() -> None:
     # --- vestibule (west) ---
     b.box(0, 0, 3, 4, 6, 9, black, air)
     b.fill(1, 0, 4, 3, 0, 8, basalt)
-    b.set(0, 1, 6, air)
-    b.set(0, 2, 6, air)
+    b.opening(0, 1, 6, 0, 2, 6)
     b.set(2, 1, 4, chest2, chest_nbt('mnemolith:chests/ashen_archive'))
-    b.fill(4, 1, 5, 4, 3, 7, air)
+    b.opening(4, 1, 5, 4, 3, 7)
     # --- magma corridor ---
     b.box(4, 0, 3, 9, 6, 9, black, air)
     b.fill(5, 0, 4, 8, 0, 8, basalt)
@@ -336,7 +346,7 @@ def ashen_archive() -> None:
     for y in range(1, 5):
         b.set(5, y, 6, stratum)
         b.set(8, y, 6, stratum)
-    b.fill(9, 1, 5, 9, 3, 7, air)
+    b.opening(9, 1, 5, 9, 3, 7)
     # --- shrine chamber ---
     b.box(9, 0, 2, 14, 6, 10, black, air)
     b.fill(10, 0, 3, 13, 0, 9, basalt)
@@ -347,6 +357,15 @@ def ashen_archive() -> None:
     b.set(12, 1, 6, lantern)
     b.set(11, 1, 4, chest, chest_nbt('mnemolith:chests/ashen_archive'))
     b.set(11, 5, 6, lantern)
+    # --- foundation: a blackstone footing under the floor and basalt piers down into the lava sea ---
+    for x0, z0, x1, z1 in ((0, 3, 4, 9), (4, 3, 9, 9), (9, 2, 14, 10)):
+        b.fill(x0, -1, z0, x1, -1, z1, footing)
+    for x, z in ((0, 3), (0, 9), (4, 3), (4, 9), (9, 2), (9, 10), (14, 2), (14, 10), (14, 6), (7, 3), (7, 9), (-3, 5), (-3, 7)):
+        b.fill(x, -ASHEN_FOUNDATION, z, x, -2, z, pier)
+    # landing in front of the west door, so it no longer opens straight onto the lava
+    b.fill(-3, 0, 5, -1, 0, 7, black)
+    b.fill(-3, 1, 5, -1, 3, 7, air)
+    b.fill(-3, -1, 5, -1, -1, 7, footing)
     b.write('ashen_archive.nbt')
 
 
@@ -366,10 +385,9 @@ def mute_library() -> None:
     # --- foyer (south) ---
     b.box(4, 0, 0, 10, 6, 3, end_brick, air)
     b.fill(5, 0, 1, 9, 0, 2, purpur)
-    b.set(7, 1, 0, air)
-    b.set(7, 2, 0, air)
+    b.opening(7, 1, 0, 7, 2, 0)
     b.set(5, 1, 1, chest2, chest_nbt('mnemolith:chests/mute_library'))
-    b.fill(6, 1, 3, 8, 3, 3, air)
+    b.opening(6, 1, 3, 8, 3, 3)
     # --- stack corridor with mute+bookshelf aisles ---
     b.box(2, 0, 3, 12, 6, 8, end_brick, air)
     b.fill(3, 0, 4, 11, 0, 7, purpur)
@@ -384,7 +402,7 @@ def mute_library() -> None:
     # clear central walk
     b.fill(6, 1, 4, 8, 3, 7, air)
     b.set(7, 1, 5, lamp)
-    b.fill(6, 1, 8, 8, 3, 8, air)
+    b.opening(6, 1, 8, 8, 3, 8)
     # --- reading room ---
     b.box(4, 0, 8, 10, 6, 12, end_brick, air)
     b.fill(5, 0, 9, 9, 0, 11, purpur)

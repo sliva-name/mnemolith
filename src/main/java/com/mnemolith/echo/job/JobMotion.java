@@ -360,7 +360,7 @@ final class JobMotion {
             com.mnemolith.echo.graft.EchoGrafts.onPlungeDig(echo);
         }
         if (result.toolBroke()) {
-            Mnemolith.LOGGER.info("Mnemolith echo tool broke owner={} at {}", echo.ownerName(), pos.toShortString());
+            Mnemolith.LOGGER.debug("Mnemolith echo tool broke owner={} at {}", echo.ownerName(), pos.toShortString());
         }
         this.afterDig(level, echo, pos, result.toolBroke());
     }
