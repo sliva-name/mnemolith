@@ -235,13 +235,30 @@ public final class EchoLife {
             echo.setScarred(true);
         }
         stored.customName().ifPresent(echo::setCustomName);
+        // Each item goes back to its slot. One saved under a slot an echo does not have, or under a slot already
+        // taken (a damaged or hand-edited save), goes into a free slot instead, and is dropped if there is none.
+        java.util.List<ItemStack> strays = new java.util.ArrayList<>();
         for (SlotStack slot : stored.inventory()) {
-            if (slot.slot() >= 0 && slot.slot() < echo.inventory().getContainerSize()) {
-                echo.inventory().setItem(slot.slot(), slot.stack().copy());
+            ItemStack stack = slot.stack().copy();
+            if (stack.isEmpty()) {
+                continue;
             }
+            if (slot.slot() >= 0 && slot.slot() < echo.inventory().getContainerSize() && echo.inventory().getItem(slot.slot()).isEmpty()) {
+                echo.inventory().setItem(slot.slot(), stack);
+            } else {
+                strays.add(stack);
+            }
+        }
+        for (ItemStack stray : strays) {
+            echo.inventory().insert(stray);
         }
         echo.setPos(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D);
         level.addFreshEntity(echo);
+        for (ItemStack stray : strays) {
+            if (!stray.isEmpty()) {
+                net.minecraft.world.Containers.dropItemStack(level, at.getX() + 0.5D, at.getY() + 0.5D, at.getZ() + 0.5D, stray);
+            }
+        }
         level.playSound(null, at, ModSounds.ECHO_WAKE.get(), SoundSource.BLOCKS, 0.9F, 1.2F);
         MemoryFx.mob(level, com.mnemolith.particle.ModParticles.COMPOSE_SUCCESS.get(), echo.getX(), echo.getY() + 1.0D, echo.getZ(), 10);
         player.sendSystemMessage(Component.translatable("mnemolith.echo.home.woken", echo.getDisplayName()), true);

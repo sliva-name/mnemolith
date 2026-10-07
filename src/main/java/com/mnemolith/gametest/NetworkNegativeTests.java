@@ -184,7 +184,7 @@ final class NetworkNegativeTests {
             ServerPlayer stranger = support.player("NegLensStranger", at.offset(-3, 0, 0));
             EchoEntity echo = support.echo(owner, at, EchoLesson.NONE);
             echo.inventory().setItem(0, new ItemStack(Items.IRON_PICKAXE));
-            stranger.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 7));
+            stranger.getInventory().setItem(5, new ItemStack(Items.DIAMOND, 7));
             EchoJob.Order before = echo.job().order();
 
             // Orders without the lens check (the QA path), then the network path that requires it.
@@ -218,7 +218,7 @@ final class NetworkNegativeTests {
             aim(stranger, echo);
             EchoNetwork.handlePossess(new EchoPossessPayload(echo.getId()), NegativeSupport.context(stranger));
             helper.assertTrue(!EchoPossession.isPossessing(stranger), "a stranger possessed someone else's echo");
-            helper.assertTrue(stranger.getInventory().getItem(0).is(Items.DIAMOND) && stranger.getInventory().getItem(0).getCount() == 7,
+            helper.assertTrue(stranger.getInventory().getItem(5).is(Items.DIAMOND) && stranger.getInventory().getItem(5).getCount() == 7,
                     "a refused possession touched the stranger's items");
             helper.assertTrue(EchoPossession.possess(stranger, echo) == EchoPossession.Result.NOT_YOURS, "possess(stranger) did not say NOT_YOURS");
             // The owner with the lens raised but looking the other way.

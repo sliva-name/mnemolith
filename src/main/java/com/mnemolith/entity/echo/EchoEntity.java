@@ -82,6 +82,8 @@ public class EchoEntity extends MemoryAvatar {
     public static EntityType.@Nullable EntityFactory<EchoEntity> clientFactory;
 
     private final NonNullList<ItemStack> main = NonNullList.withSize(EchoInventory.MAIN, ItemStack.EMPTY);
+    /** Saved items with no free slot to go back to (a damaged save). Dropped on the first tick, kept in the save until then. */
+    private final List<ItemStack> loadStrays = new java.util.ArrayList<>();
     private final EchoInventory inventory = new EchoInventory(this);
     private int selected;
     private @Nullable EchoRecording recording;
@@ -326,6 +328,12 @@ public class EchoEntity extends MemoryAvatar {
                 Mnemolith.LOGGER.warn("Mnemolith echo stale copy removed id={} owner={} generation={}", this.getUUID(), this.ownerName(), this.generation);
                 this.discardSilently();
                 return;
+            }
+            if (!this.loadStrays.isEmpty()) {
+                for (ItemStack stray : this.loadStrays) {
+                    this.spawnAtLocation(level, stray);
+                }
+                this.loadStrays.clear();
             }
             this.stepReplay(level);
             if (!this.isReplaying() && this.isAlive()) {
@@ -867,6 +875,9 @@ public class EchoEntity extends MemoryAvatar {
                 stacks.add(new SlotStack(i, this.main.get(i)));
             }
         }
+        for (ItemStack stray : this.loadStrays) {
+            stacks.add(new SlotStack(-1, stray));
+        }
         output.store("echo_main", SlotStack.LIST_CODEC, stacks);
         output.putInt("echo_selected", this.selected);
         output.putLong("echo_generation", this.generation);
@@ -905,10 +916,24 @@ public class EchoEntity extends MemoryAvatar {
         for (int i = 0; i < EchoInventory.MAIN; i++) {
             this.main.set(i, ItemStack.EMPTY);
         }
+        this.loadStrays.clear();
         input.read("echo_main", SlotStack.LIST_CODEC).ifPresent(list -> {
+            // An item saved under a slot the echo does not have, or under a slot already taken, goes into a free slot.
+            List<ItemStack> strays = new java.util.ArrayList<>();
             for (SlotStack stack : list) {
-                if (stack.slot() >= 0 && stack.slot() < EchoInventory.MAIN) {
+                if (stack.stack().isEmpty()) {
+                    continue;
+                }
+                if (stack.slot() >= 0 && stack.slot() < EchoInventory.MAIN && this.main.get(stack.slot()).isEmpty()) {
                     this.main.set(stack.slot(), stack.stack());
+                } else {
+                    strays.add(stack.stack());
+                }
+            }
+            for (ItemStack stray : strays) {
+                this.inventory().insert(stray);
+                if (!stray.isEmpty()) {
+                    this.loadStrays.add(stray);
                 }
             }
         });
