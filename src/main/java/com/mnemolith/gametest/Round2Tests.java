@@ -148,13 +148,15 @@ final class Round2Tests {
      */
     static void templatesPlace(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        // name, main wall block, feet height of the ground floor above the template's bottom (-1: not walked through).
         Object[][] cases = {
-                {"mute_library", Blocks.END_STONE_BRICKS},
-                {"hush_chapel", ModBlocks.MUTE_STONE_BRICKS.get()},
-                {"flooded_archive", Blocks.DEEPSLATE_BRICKS},
-                {"memory_field", ModBlocks.ARCHIVAL_STRATUM_BRICKS.get()},
-                {"ashen_archive", Blocks.POLISHED_BLACKSTONE_BRICKS},
-                {"chronicle_observatory", Blocks.STONE_BRICKS},
+                {"mute_library", Blocks.END_STONE_BRICKS, 1},
+                {"hush_chapel", ModBlocks.MUTE_STONE_BRICKS.get(), 1},
+                {"flooded_archive", Blocks.DEEPSLATE_BRICKS, 1},
+                {"memory_field", ModBlocks.ARCHIVAL_STRATUM_BRICKS.get(), 1},
+                // On 8 blocks of basalt piers.
+                {"ashen_archive", Blocks.POLISHED_BLACKSTONE_BRICKS, 9},
+                {"chronicle_observatory", Blocks.STONE_BRICKS, -1},
         };
         // High above the test lane so neighbouring tests are not touched; cleared again afterwards.
         BlockPos origin = helper.absolutePos(BlockPos.ZERO).atY(level.getMaxY() - 24);
@@ -172,6 +174,10 @@ final class Round2Tests {
             helper.assertTrue(wanted.size() > 20, name + " has almost no " + wall);
             template.placeInWorld(level, origin, origin, settings, level.getRandom(), Block.UPDATE_CLIENTS);
             BoundingBox box = template.getBoundingBox(settings, origin);
+            int feet = (Integer) c[2];
+            if (feet >= 0) {
+                assertWalkable(helper, level, name, box, box.minY() + feet);
+            }
             int placed = 0;
             for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
                 if (level.getBlockState(pos).is(wall)) {
@@ -184,6 +190,72 @@ final class Round2Tests {
             helper.assertTrue(placed == wanted.size(), name + " placed " + placed + " of " + wanted.size() + " " + wall + " blocks");
         }
         helper.succeed();
+    }
+
+    /**
+     * Every chest, shrine and vault of a placed template can be walked up to from outside on its ground floor: a
+     * flood fill over the cells a player fits through (feet and head clear; a bottom slab is stepped onto, water
+     * waded through) from the ring around the template. Rooms share walls, and doorways carved before the next room
+     * was built used to be walled up again, sealing the main halls off from their entrances.
+     */
+    private static void assertWalkable(GameTestHelper helper, ServerLevel level, String name, BoundingBox box, int feetY) {
+        int minX = box.minX() - 1;
+        int maxX = box.maxX() + 1;
+        int minZ = box.minZ() - 1;
+        int maxZ = box.maxZ() + 1;
+        Set<BlockPos> seen = new HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (x == minX || x == maxX || z == minZ || z == maxZ) {
+                    BlockPos start = new BlockPos(x, feetY, z);
+                    if (fits(level, start) && seen.add(start)) {
+                        queue.add(start);
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            BlockPos at = queue.poll();
+            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+                BlockPos next = at.relative(direction);
+                if (next.getY() < feetY || next.getY() > feetY + 1 || next.getX() < minX || next.getX() > maxX
+                        || next.getZ() < minZ || next.getZ() > maxZ || seen.contains(next) || !fits(level, next)) {
+                    continue;
+                }
+                seen.add(next);
+                queue.add(next);
+            }
+        }
+        int targets = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+            net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+            if (!state.is(Blocks.CHEST) && !state.is(ModBlocks.ARCHIVE_SHRINE.get()) && !state.is(ModBlocks.ARCHIVE_VAULT.get())) {
+                continue;
+            }
+            targets++;
+            boolean reached = false;
+            for (net.minecraft.core.Direction side : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                BlockPos beside = pos.relative(side);
+                if (seen.contains(beside) || seen.contains(beside.below())) {
+                    reached = true;
+                }
+            }
+            BlockPos local = pos.subtract(new BlockPos(box.minX(), box.minY(), box.minZ()));
+            helper.assertTrue(reached, name + ": the " + state.getBlock().getName().getString() + " at " + local.toShortString()
+                    + " cannot be walked up to from the entrance (walled in)");
+        }
+        helper.assertTrue(targets > 0, name + " has no chest or shrine to reach");
+    }
+
+    /** A player fits with their feet in {@code pos}: feet and head have no collision above a bottom slab's height. */
+    private static boolean fits(ServerLevel level, BlockPos pos) {
+        return low(level, pos) && low(level, pos.above());
+    }
+
+    private static boolean low(ServerLevel level, BlockPos pos) {
+        net.minecraft.world.phys.shapes.VoxelShape shape = level.getBlockState(pos).getCollisionShape(level, pos);
+        return shape.isEmpty() || shape.max(net.minecraft.core.Direction.Axis.Y) <= 0.5D;
     }
 
     private static Structure.GenerationContext context(ServerLevel end, ChunkGenerator generator, Predicate<Holder<Biome>> valid, ChunkPos pos) {

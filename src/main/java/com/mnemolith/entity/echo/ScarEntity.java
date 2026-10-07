@@ -278,8 +278,20 @@ public final class ScarEntity extends Mob {
         this.serverTick(level, level.players());
     }
 
+    /** The players the boss bar is shown to (the game tests check it is empty once the boss is dead). */
+    public java.util.Collection<ServerPlayer> bossBarPlayers() {
+        return this.bossEvent.getPlayers();
+    }
+
     /** One server tick against {@code players} (the level's players; the QA passes its fake player). */
     public void serverTick(ServerLevel level, Iterable<? extends ServerPlayer> players) {
+        // A dying or removed boss does nothing more: no casts, no imprints, and above all no boss bar. super.tick()
+        // removes it on the 20th tick of the death animation, and re-adding players after that would leave the bar
+        // on their screens for good (nothing is left to take it down).
+        if (this.isRemoved() || this.isDeadOrDying()) {
+            this.bossEvent.removeAllPlayers();
+            return;
+        }
         if (this.pinTicks > 0 && --this.pinTicks == 0) {
             this.entityData.set(DATA_PINNED, false);
             this.unreadableTicks = UNREADABLE_TICKS;
@@ -416,6 +428,10 @@ public final class ScarEntity extends Mob {
     }
 
     private void updateBar(ServerLevel level, Iterable<? extends ServerPlayer> players) {
+        if (this.isRemoved() || this.isDeadOrDying()) {
+            this.bossEvent.removeAllPlayers();
+            return;
+        }
         float maxHealth = this.getMaxHealth();
         this.bossEvent.setProgress(maxHealth <= 0.0F ? 0.0F : Mth.clamp(this.getHealth() / maxHealth, 0.0F, 1.0F));
         for (ServerPlayer player : players) {
@@ -556,6 +572,8 @@ public final class ScarEntity extends Mob {
     @Override
     public void die(DamageSource source) {
         super.die(source);
+        this.bossEvent.setProgress(0.0F);
+        this.bossEvent.removeAllPlayers();
         if (this.level() instanceof ServerLevel level) {
             String kind = this.isGuardian() ? "archive guardian" : this.isMirror() ? "silence mirror" : "scar";
             Mnemolith.LOGGER.info("Mnemolith {} defeated merged={} at {} by {}", kind, this.merged, this.blockPosition().toShortString(),

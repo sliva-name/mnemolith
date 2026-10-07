@@ -9,7 +9,7 @@
     "description": {
       "translate": "advancements.mnemolith.root.description"
     },
-    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "background": "minecraft:gui/advancements/backgrounds/stone",
     "frame": "task",
     "show_toast": true,
     "announce_to_chat": false,

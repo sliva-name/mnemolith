@@ -38,7 +38,9 @@ public final class MnemonicJigsawStructure extends Structure {
         FLOODED_ARCHIVE("flooded_archive", WorldgenTuning::floodedArchiveEnabled, -24, false),
         HUSH_CHAPEL("hush_chapel", WorldgenTuning::hushChapelEnabled, 0, true),
         MEMORY_FIELD("memory_field", WorldgenTuning::memoryFieldEnabled, 0, true),
-        ASHEN_ARCHIVE("ashen_archive", WorldgenTuning::ashenArchiveEnabled, 32, false),
+        // The template has 8 blocks of basalt piers under its floor (tools/build_w2_w3_structures.py, ASHEN_FOUNDATION),
+        // so it starts at 24 to keep the floor at 32, just over the Nether's lava sea.
+        ASHEN_ARCHIVE("ashen_archive", WorldgenTuning::ashenArchiveEnabled, 24, false),
         MUTE_LIBRARY("mute_library", WorldgenTuning::muteLibraryEnabled, 0, true);
 
         final String id;
