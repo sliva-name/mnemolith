@@ -22,9 +22,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
- * Config at its edges and past them. Every declared default sits inside its own range and the spec turns garbage
- * (a word where a number goes, a number past the range) back into the default; worldgen survives bounds that are
- * swapped or lie outside the world (vein and pocket min Y above max Y, both above the build height) without throwing.
+ * Config at its edges and past them. No number setting is unbounded, and a hand-edited file with garbage in it (a word
+ * where a number goes, a number past the range, NaN) is corrected back to a usable value (NeoForge itself already refuses
+ * to load a default outside its range). Worldgen survives bounds that are swapped or lie outside the world (vein and
+ * pocket min Y above max Y, both at the build height) without throwing, and swapped vein bounds still mean the range
+ * between them. Placing a pocket into a finished chunk logs one vanilla "Unprimed heightmap" line; that is expected here.
  */
 final class ConfigNegativeTests {
     private ConfigNegativeTests() {}
@@ -47,7 +49,6 @@ final class ConfigNegativeTests {
                 ModConfigSpec.ValueSpec spec = value.getSpec();
                 String name = holder.getSimpleName() + "." + field.getName();
                 Object def = value.getDefault();
-                helper.assertTrue(spec.test(def), name + ": its default " + def + " is outside its own range");
                 helper.assertTrue(!spec.test("garbage"), name + " accepts the word 'garbage'");
                 helper.assertTrue(def.equals(spec.correct("garbage")), name + " corrects 'garbage' to " + spec.correct("garbage") + " instead of the default " + def);
                 if (value instanceof ModConfigSpec.IntValue) {
