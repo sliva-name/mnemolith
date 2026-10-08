@@ -156,9 +156,9 @@ The two `nearFirst` checks are the regression for "echoes skip blocks and only d
 
 **In the client (manual):**
 
-- [ ] Record yourself breaking a few stone blocks. Put the echo in a stone area, give it a pickaxe and press **Mining** (radius 16). It clears the blocks next to it first and works outward and down in a compact pit, with no untouched blocks left between the ones it took.
-- [ ] The same with an ore lesson on a real vein: the whole vein goes, including the ores under the echo.
-- [ ] Next to a drop of more than 3 blocks it does not break the block it stands on. Next to water or lava it leaves the block that would open the fluid.
+- [x] Record yourself breaking a few stone blocks. Put the echo in a stone area, give it a pickaxe and press **Mining** (radius 16). It clears the blocks next to it first and works outward and down in a compact pit, with no untouched blocks left between the ones it took.
+- [x] The same with an ore lesson on a real vein: the whole vein goes, including the ores under the echo.
+- [x] Next to a drop of more than 3 blocks it does not break the block it stands on. Next to water or lava it leaves the block that would open the fluid.
 
 ## Echo stage 3 QA
 

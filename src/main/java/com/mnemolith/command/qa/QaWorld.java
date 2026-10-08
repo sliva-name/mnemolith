@@ -137,6 +137,11 @@ public final class QaWorld {
 
     static boolean vein(ServerLevel level, BlockPos pos) {
         BlockPos origin = pos.below(8);
+        // Flat spawn sits on the world floor. Eight blocks down is the void, setBlock does nothing, and the vein places nothing.
+        int floor = level.getMinY() + 1;
+        if (origin.getY() < floor) {
+            origin = new BlockPos(origin.getX(), floor, origin.getZ());
+        }
         // The feature replaces stone. A repeat pass, or dirt, would place nothing, so lay stone on both axes first.
         int length = WorldgenTuning.veinSize();
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
