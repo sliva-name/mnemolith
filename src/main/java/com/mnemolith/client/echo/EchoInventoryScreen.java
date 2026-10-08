@@ -279,9 +279,16 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             graphics.text(this.font, lines.get(i), x, 203 + i * 9, color, false);
         }
         // Memory graft: temper and charges, or a hint that a slip can be grafted.
+        // fitted() ellipsizes, and the Russian line ("Прививка: Могильный · 24/48") is wider than the
+        // panel, so the charge count was cut off. Wrap onto the two rows under the job status instead.
         com.mnemolith.echo.graft.Temper temper = echo.graftTemper();
         Component graft = temper == null ? Component.translatable("mnemolith.gui.echo.graft_none") : echo.graftLine();
-        this.fitted(graphics, graft, x, 223, width, temper == null ? DIM : 0xFF000000 | temper.rgb());
+        List<FormattedCharSequence> graftLines = this.font.split(graft, width);
+        int graftColor = temper == null ? DIM : 0xFF000000 | temper.rgb();
+        for (int i = 0; i < Math.min(2, graftLines.size()); i++) {
+            graphics.text(this.font, graftLines.get(i), x + 1, 224 + i * 9, GuiArt.SHADOW, false);
+            graphics.text(this.font, graftLines.get(i), x, 223 + i * 9, graftColor, false);
+        }
     }
 
     private void fitted(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {

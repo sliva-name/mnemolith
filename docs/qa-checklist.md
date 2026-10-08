@@ -243,8 +243,8 @@ Manual (client):
 Manual (client):
 
 - [ ] Overload a chunk and stand in it: within a minute or two a faint fragment in a temper color drifts out; holding the lens makes it clear.
-- [ ] Raise the lens on it: the label reads «Осадок · Огонь · сила 3» and «чтение N%»; after 3 s it glows and «прочитан — игла возьмёт».
-- [ ] Needle on it before reading: you are lashed and nothing is taken. After reading: «Осколок осадка» with tooltip «Осадок: … · сила N».
+- [x] Raise the lens on it: the label reads «Осадок · Огонь · сила 3» and «чтение N%»; after 3 s it glows and «прочитан — игла возьмёт».
+- [x] Needle on it before reading: you are lashed and nothing is taken. After reading: «Осколок осадка» with tooltip «Осадок: … · сила N».
 - [ ] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
 - [ ] Visit an observatory: an old residue floats by the reel.
 - [ ] Field guide page «Осадки памяти» renders with its picture in RU and EN.
@@ -279,7 +279,7 @@ Manual (client):
 
 - [ ] Craft a relay thread (string, echo slip, copper ingot) and an archive vault (4 stratum, 4 amethyst, needle in the middle); the tooltips show purpose and source.
 - [ ] Right-click one echo with the thread: «Первый конец завязан…», the thread tooltip says so; right-click another echo within 16 blocks: «Связаны…»; a faint pink thread of motes between them.
-- [ ] Right-click an echo you own: its status line ends with «Связь: есть, N м».
+- [x] Right-click an echo you own: its status line ends with «Связь: есть, N м».
 - [ ] Possess one end, sneak and press `V`: «Вы переходите по нити…», you are in the other; the HUD hint mentions the hop. Break a block: the other end breaks the same spot beside itself.
 - [ ] Place the vault, right-click with an empty hand: it lights up (pink drawers) and the action bar shows «втягивает, 0/12»; wait: the count rises and the area's imprints disappear from the lens.
 - [ ] Break it with a pickaxe: the item tooltip shows «Хранит отпечатков: N»; carry it for a minute: «Хранилище у вас в руках протекает…».
@@ -327,8 +327,8 @@ Manual (client):
 `/mnemolith echodemo <scene>` (operator) builds a scene about 6 blocks south of you and runs your own echo in it.
 
 - [ ] `farm`: raise the lens on the echo. The label reads «Ферма: Пшеница · N», later «Ферма: ждёт урожая (Пшеница) · 10»; the wheat is in the chest.
-- [ ] `overload`: the label shows «Память: Перегрузка» as a second line above the head, and now and then «Сбой: пропустил блок» / «Сбой: не те семена» in orange. No items are lost.
-- [ ] Lens hint: with the lens raised on your echo, three chips «ЛКМ — вселиться», «Z — стой · R — за мной · B — к точке», «Отголосок Dev · N м» sit above the pressure pill without overlapping; with an action-bar message both lift.
+- [x] `overload`: the label shows «Память: Перегрузка» as a second line above the head, and now and then «Сбой: пропустил блок» / «Сбой: не те семена» in orange. No items are lost.
+- [x] Lens hint: with the lens raised on your echo, three chips «ЛКМ — вселиться», «Z — стой · R — за мной · B — к точке», «Отголосок Dev · N м» sit above the pressure pill without overlapping; with an action-bar message both lift.
 - [ ] `Z`, `R`, `B` on your own echo: «Стоит по команде», «Идёт за вами», «Возвращается к точке». On someone else's echo nothing happens.
 - [ ] `door`, `gate`, `ladder`: the echo passes the wooden door or gate and closes it behind itself, or climbs the ladder over the wall.
 - [ ] A zombie or husk near a working echo attacks it: «Стоп: атакован» in orange, the echo runs, then resumes.
