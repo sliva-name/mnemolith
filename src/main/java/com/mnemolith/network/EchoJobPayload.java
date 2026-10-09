@@ -28,6 +28,8 @@ public record EchoJobPayload(int entityId, Action action, BlockPos pos, int valu
         MODE_CARE,
         /** Guard job. */
         MODE_GUARD,
+        /** Guard stage 2: "guard me" (the post follows the owner). */
+        MODE_ESCORT,
         /**
          * Must stay last. An id this build does not know decodes as this and is rejected, so a bad packet cannot be
          * read as {@link #STOP}. Add further actions above this constant so their ordinals stay stable.

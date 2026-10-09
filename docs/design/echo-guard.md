@@ -1,6 +1,6 @@
 # Echo guard (the post job)
 
-Status: implemented on `feature/echo-guard` (first stage).
+Status: shipped in #56 (first stage). Stage 2 (bows, shields, escort): [echo-guard-2.md](echo-guard-2.md).
 
 ## Problem
 

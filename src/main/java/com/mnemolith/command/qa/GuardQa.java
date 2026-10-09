@@ -63,7 +63,7 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  */
 public final class GuardQa {
     private static final String[] NAMES = {"lesson", "filter", "damage", "refusals", "fight", "bystanders", "durability", "leash", "fightBack",
-            "graveTaunt", "volatileSpends", "persistence"};
+            "graveTaunt", "volatileSpends", "persistence", "noArrows", "bowShot", "lineOfFire", "arrowGuard", "shieldRaised", "escort", "escortWaits"};
     private static final UUID OWNER = UUID.fromString("77777777-6666-6666-6666-666666666666");
     private static final int PAD = 12;
     private static int salt;
@@ -263,6 +263,114 @@ public final class GuardQa {
             ok[11] = copy.mode() == EchoJob.Mode.GUARD && copy.guardLesson().equals(lesson) && copy.defeated() >= 1
                     && storedBack.guard().equals(lesson);
             notes.add("persistence mode=" + copy.mode().getSerializedName() + " defeated=" + copy.defeated() + " stored=" + storedBack.guard().hits());
+
+            // ========== stage 2: bows, line of fire, shields, escort ==========
+            other.discardSilently();
+            echo.job().stop(echo);
+            echo.inventory().clearContent();
+            echo.setGraft(null);
+            BlockPos post = a;
+            echo.snapTo(Vec3.atBottomCenterOf(post), 0.0F, 0.0F);
+
+            // ---------- a bow with no arrows is no weapon ----------
+            echo.inventory().insert(new ItemStack(Items.BOW));
+            boolean noArrows = !echo.job().startGuarding(echo) && echo.job().status().kind() == JobStatus.Kind.NO_TOOL
+                    && echo.job().status().detail().equals("arrows");
+            ok[12] = noArrows;
+            notes.add("noArrows refused=" + noArrows + " detail=" + echo.job().status().detail());
+
+            // ---------- a pure archer shoots and spends an arrow ----------
+            echo.inventory().insert(new ItemStack(Items.ARROW, 5));
+            boolean archer = echo.job().startGuarding(echo);
+            Mob mark = mob(level, EntityTypes.ZOMBIE, post.offset(-7, 0, 0), extras);
+            mark.setNoAi(true);
+            for (int i = 0; i < 5 && echo.job().guardShots() == 0; i++) {
+                echo.job().tick(level, echo);
+            }
+            int arrowsLeft = countItem(echo, Items.ARROW);
+            int bowSlot = GuardController.bestBow(echo);
+            int bowWear = bowSlot < 0 ? -1 : echo.inventory().getItem(bowSlot).getDamageValue();
+            List<net.minecraft.world.entity.projectile.arrow.AbstractArrow> flying = level.getEntitiesOfClass(
+                    net.minecraft.world.entity.projectile.arrow.AbstractArrow.class, new AABB(post).inflate(16.0D), e -> e.getOwner() == echo);
+            ok[13] = archer && echo.job().guardShots() == 1 && arrowsLeft == 4 && bowWear == 1 && flying.size() == 1 && GuardController.arrowDamage(echo, true) == 2.0D
+                    && flying.get(0).pickup == net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.ALLOWED && !flying.get(0).isOnFire();
+            notes.add("bowShot started=" + archer + " shots=" + echo.job().guardShots() + " arrowsLeft=" + arrowsLeft + " bowWear=" + bowWear
+                    + " flying=" + flying.size() + " cooldownTicks=" + GuardController.shotTicks(new ItemStack(Items.BOW))
+                    + "/" + GuardController.shotTicks(new ItemStack(Items.CROSSBOW)));
+            flying.forEach(Entity::discard);
+
+            // ---------- no shot while a villager stands in the line of fire ----------
+            BlockPos villagerHome = villager.blockPosition();
+            villager.setNoAi(true);
+            villager.snapTo(Vec3.atBottomCenterOf(post.offset(-3, 0, 0)), 0.0F, 0.0F);
+            boolean blockedLine = !GuardController.clearShot(level, echo, mark);
+            int shotsBefore = echo.job().guardShots();
+            for (int i = 0; i < 80; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean heldFire = echo.job().guardShots() == shotsBefore;
+            villager.snapTo(Vec3.atBottomCenterOf(villagerHome), 0.0F, 0.0F);
+            boolean clearAgain = GuardController.clearShot(level, echo, mark);
+            ok[14] = blockedLine && heldFire && clearAgain;
+            notes.add("lineOfFire blocked=" + blockedLine + " heldFire=" + heldFire + " clearAgain=" + clearAgain);
+
+            // ---------- the guard's arrows fly through protected entities ----------
+            net.minecraft.world.entity.projectile.arrow.Arrow probe = new net.minecraft.world.entity.projectile.arrow.Arrow(level, echo, new ItemStack(Items.ARROW), null);
+            boolean passVillager = net.neoforged.neoforge.event.EventHooks.onProjectileImpact(probe, new net.minecraft.world.phys.EntityHitResult(villager));
+            boolean passOwner = net.neoforged.neoforge.event.EventHooks.onProjectileImpact(probe, new net.minecraft.world.phys.EntityHitResult(owner));
+            boolean passWolf = net.neoforged.neoforge.event.EventHooks.onProjectileImpact(probe, new net.minecraft.world.phys.EntityHitResult(wolf));
+            boolean passCow = net.neoforged.neoforge.event.EventHooks.onProjectileImpact(probe, new net.minecraft.world.phys.EntityHitResult(cow));
+            boolean hitsZombie = !net.neoforged.neoforge.event.EventHooks.onProjectileImpact(probe, new net.minecraft.world.phys.EntityHitResult(mark));
+            probe.discard();
+            ok[15] = passVillager && passOwner && passWolf && passCow && hitsZombie;
+            notes.add("arrowGuard villager=" + passVillager + " owner=" + passOwner + " wolf=" + passWolf + " cow=" + passCow + " zombieHit=" + hitsZombie);
+            mark.discard();
+
+            // ---------- a shield goes to the off hand and is raised while there is a foe ----------
+            echo.job().stop(echo);
+            echo.inventory().clearContent();
+            echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
+            echo.inventory().insert(new ItemStack(Items.SHIELD));
+            boolean melee = echo.job().startGuarding(echo);
+            Mob rusher = mob(level, EntityTypes.ZOMBIE, post.offset(-6, 0, 0), extras);
+            rusher.setNoAi(true);
+            for (int i = 0; i < 4; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean inOffhand = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND).is(Items.SHIELD);
+            boolean up = echo.isUsingItem() && echo.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND;
+            rusher.discard();
+            for (int i = 0; i < 12; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean downWhenClear = !echo.isUsingItem();
+            ok[16] = melee && inOffhand && up && downWhenClear;
+            notes.add("shield started=" + melee + " offhand=" + inOffhand + " raised=" + up + " loweredWhenClear=" + downWhenClear);
+
+            // ---------- escort: the post follows the owner ----------
+            owner.snapTo(Vec3.atBottomCenterOf(post.offset(2, 0, 2)), 0.0F, 0.0F);
+            boolean escortStarted = echo.job().startGuarding(echo, true);
+            echo.job().tick(level, echo);
+            boolean onOwner = owner.blockPosition().equals(echo.job().workAnchor());
+            owner.snapTo(Vec3.atBottomCenterOf(post.offset(-5, 0, 4)), 0.0F, 0.0F);
+            echo.job().tick(level, echo);
+            boolean moved = owner.blockPosition().equals(echo.job().workAnchor());
+            int escortRadius = echo.job().guardRadius();
+            ok[17] = escortStarted && echo.job().escorting() && onOwner && moved && escortRadius == 5
+                    && echo.job().status().kind() == JobStatus.Kind.GUARD_ESCORT;
+            notes.add("escort started=" + escortStarted + " onOwner=" + onOwner + " followed=" + moved + " radius=" + escortRadius
+                    + " status=" + echo.job().status().kind().getSerializedName());
+
+            // ---------- escort: an owner far away is waited for, not followed ----------
+            BlockPos last = echo.job().workAnchor();
+            owner.snapTo(Vec3.atBottomCenterOf(post.offset(40, 0, 0)), 0.0F, 0.0F);
+            for (int i = 0; i < 3; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean waits = echo.job().status().kind() == JobStatus.Kind.GUARD_WAITING && last != null && last.equals(echo.job().workAnchor());
+            ok[18] = waits;
+            notes.add("escortWaits status=" + echo.job().status().kind().getSerializedName() + " anchorKept=" + (last != null && last.equals(echo.job().workAnchor())));
+            echo.job().stop(echo);
         } catch (RuntimeException e) {
             notes.add("exception " + e);
             com.mnemolith.Mnemolith.LOGGER.error("guardqa failed", e);
@@ -289,6 +397,17 @@ public final class GuardQa {
             MemoryAvatar.STAND_INS.remove(OWNER);
         }
         return new QaReport("guardqa", NAMES, ok, notes).log();
+    }
+
+    private static int countItem(EchoEntity echo, net.minecraft.world.item.Item item) {
+        int count = 0;
+        for (int i = 0; i < echo.inventory().getContainerSize(); i++) {
+            ItemStack stack = echo.inventory().getItem(i);
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
     }
 
     private static boolean near(float a, float b) {

@@ -102,8 +102,8 @@ public final class EchoEvents {
     /** Guard: teach from melee hits on hostile mobs during a recording. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onGuardHit(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
-        if (event.getInflictedDamage() <= 0.0F || !(event.getSource().getDirectEntity() instanceof ServerPlayer player)
-                || event.getSource().getEntity() != player || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
+        if (event.getInflictedDamage() <= 0.0F || !(guardHitter(event.getSource()) instanceof ServerPlayer player)
+                || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
             return;
         }
         EchoRecorder.onGuardHit(player, event.getEntity(), false);
@@ -111,11 +111,60 @@ public final class EchoEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onGuardKill(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
-        if (event.isCanceled() || !(event.getSource().getDirectEntity() instanceof ServerPlayer player)
-                || event.getSource().getEntity() != player || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
+        if (event.isCanceled() || !(guardHitter(event.getSource()) instanceof ServerPlayer player)
+                || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
             return;
         }
         EchoRecorder.onGuardHit(player, event.getEntity(), true);
+    }
+
+    /** The player behind a melee hit or one of their arrows, for the guard lesson; null for anything else. */
+    private static net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity guardHitter(net.minecraft.world.damagesource.DamageSource source) {
+        net.minecraft.world.entity.Entity direct = source.getDirectEntity();
+        net.minecraft.world.entity.Entity cause = source.getEntity();
+        if (!(cause instanceof ServerPlayer)) {
+            return null;
+        }
+        return direct == cause || direct instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow ? cause : null;
+    }
+
+    /** A guard's arrow killed a hostile mob: it counts for the guard's kills and the owner's advancement. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onEchoArrowKill(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (!event.isCanceled() && event.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow
+                && event.getSource().getEntity() instanceof com.mnemolith.entity.echo.EchoEntity echo
+                && echo.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            echo.job().onGuardArrowKill(level, echo, event.getEntity());
+        }
+    }
+
+    /** A guard's raised shield stopped a hit: count it and wear the shield. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onEchoShieldBlock(net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent event) {
+        if (event.getBlocked() && event.getBlockedDamage() > 0.0F && event.getEntity() instanceof com.mnemolith.entity.echo.EchoEntity echo
+                && echo.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            echo.job().onGuardBlocked();
+            // Vanilla only wears a player's shield; an echo's shield wears the same way.
+            net.minecraft.world.item.ItemStack shield = echo.getUseItem();
+            var blocks = shield.get(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS);
+            if (blocks != null) {
+                int wear = event.shieldDamage() >= 0 ? event.shieldDamage() : blocks.itemDamage().apply(event.getBlockedDamage());
+                if (wear > 0) {
+                    net.minecraft.world.entity.EquipmentSlot slot = echo.getUsedItemHand().asEquipmentSlot();
+                    shield.hurtAndBreak(wear, level, echo, item -> echo.onEquippedItemBroken(item, slot));
+                }
+            }
+        }
+    }
+
+    /** Arrows an echo guard fires never hit the owner, players, villagers, pets or passive mobs: they fly through. */
+    @SubscribeEvent
+    public static void onEchoArrowImpact(net.neoforged.neoforge.event.entity.ProjectileImpactEvent event) {
+        if (event.getRayTraceResult() instanceof net.minecraft.world.phys.EntityHitResult hit
+                && event.getProjectile().getOwner() instanceof com.mnemolith.entity.echo.EchoEntity echo
+                && !com.mnemolith.echo.job.GuardController.canFight(echo, hit.getEntity())) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

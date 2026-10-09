@@ -106,6 +106,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue ECHO_GUARD_RADIUS;
     public static final ModConfigSpec.IntValue ECHO_GUARD_ATTACK_TICKS;
     public static final ModConfigSpec.DoubleValue ECHO_GUARD_DAMAGE_SCALE;
+    public static final ModConfigSpec.IntValue ECHO_GUARD_SHOT_TICKS;
+    public static final ModConfigSpec.DoubleValue ECHO_GUARD_ARROW_DAMAGE_SCALE;
+    public static final ModConfigSpec.BooleanValue ECHO_GUARD_SHIELDS;
+    public static final ModConfigSpec.IntValue ECHO_GUARD_SHIELD_COOLDOWN;
+    public static final ModConfigSpec.IntValue ECHO_GUARD_ESCORT_RADIUS;
     public static final ModConfigSpec.IntValue ECHO_WORK_IMPRINT_EVERY;
     public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
     public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
@@ -345,6 +350,11 @@ public final class CommonConfig {
         ECHO_GUARD_RADIUS = SpecValues.integer(builder, "echoGuardRadius", "Largest radius around its post a guarding echo fights in (the job radius is capped to this). It never chases more than 3 blocks past it.", 8, 2, 16);
         ECHO_GUARD_ATTACK_TICKS = SpecValues.integer(builder, "echoGuardAttackTicks", "Ticks between two hits of a guarding echo.", 15, 5, 60);
         ECHO_GUARD_DAMAGE_SCALE = SpecValues.decimal(builder, "echoGuardDamageScale", "Share of its weapon's attack damage a guarding echo deals per hit (an iron sword deals 6 in a player's hand).", 0.75D, 0.1D, 2.0D);
+        ECHO_GUARD_SHOT_TICKS = SpecValues.integer(builder, "echoGuardShotTicks", "Ticks between two bow shots of a guarding echo (a crossbow takes 1.4 times as long). Every shot spends one arrow from its inventory.", 35, 10, 100);
+        ECHO_GUARD_ARROW_DAMAGE_SCALE = SpecValues.decimal(builder, "echoGuardArrowDamageScale", "Base damage of a guard's arrow relative to a normal arrow (2). At velocity 1.6 a hit deals about 4.", 1.0D, 0.1D, 3.0D);
+        ECHO_GUARD_SHIELDS = SpecValues.bool(builder, "echoGuardShields", "A guarding echo with a shield raises it while it has a foe (vanilla blocking, the shield wears down).", true);
+        ECHO_GUARD_SHIELD_COOLDOWN = SpecValues.integer(builder, "echoGuardShieldCooldown", "Ticks a guard's shield stays down after an axe disables it.", 100, 20, 400);
+        ECHO_GUARD_ESCORT_RADIUS = SpecValues.integer(builder, "echoGuardEscortRadius", "Radius around its owner an escorting guard (\"guard me\") fights in.", 5, 2, 10);
         ECHO_WORK_IMPRINT_EVERY = SpecValues.integer(builder, "echoWorkImprintEvery", "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns work imprints off.", 20, 0, 1000);
         ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);

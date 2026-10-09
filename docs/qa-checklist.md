@@ -18,7 +18,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
-| `mnemolith:suite_guardqa` | `/mnemolith guardqa` (12) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
+| `mnemolith:suite_guardqa` | `/mnemolith guardqa` (19) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -54,6 +54,8 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 
 | Test | What is proved | Budget |
 | --- | --- | --- |
+| `guard_archer_holds_fire_then_shoots` | A pure archer (bow, 16 arrows), a husk 7 blocks west with no AI, a villager in the line of fire: no shot in 80 ticks; the villager steps aside and the archer shoots the husk dead; the villager keeps full health and arrows left = 16 − shots | 700 |
+| `guard_shield_blocks_frontal_hit` | A guard with a sword and a shield walks to a zombie; once the shield is up (vanilla `isBlocking`), a 4-damage frontal hit does no damage, is counted as blocked and wears the shield | 200 |
 | `guard_kills_husk_spares_bystanders` | A guarding echo with an iron sword, a husk 4 blocks from its post, a villager and a cow beside it, a creative owner: on the real server tick the echo walks to the husk and kills it; the villager and the cow keep full health, the sword lost durability, the echo is still guarding | 600 |
 
 **Live relay and vault tests** (`com.mnemolith.gametest.RelayLiveTests`), in the `mnemolith:live` batch on their own pads (south of the other sites; the teardown also discards echoes and dropped items there).
@@ -335,7 +337,7 @@ Manual (client):
 
 ## Echo guard QA
 
-`/mnemolith guardqa` (gamemaster) checks the guard job ([design note](design/echo-guard.md)) on a dedicated server in a cleared chunk next to the command source, with a fake-player owner. The last line must be `guardqa: 12 of 12`. Mobs in the fight checks have no AI and their hurt cooldown is cleared between steps, because the suite steps the job itself instead of waiting for the server tick.
+`/mnemolith guardqa` (gamemaster) checks the guard job ([design note](design/echo-guard.md)) on a dedicated server in a cleared chunk next to the command source, with a fake-player owner. The last line must be `guardqa: 19 of 19`. Stage 2 flags are in the second table ([design note](design/echo-guard-2.md)). Mobs in the fight checks have no AI and their hurt cooldown is cleared between steps, because the suite steps the job itself instead of waiting for the server tick.
 
 | Flag | What is proved |
 | --- | --- |
@@ -352,18 +354,41 @@ Manual (client):
 | `volatileSpends` | A volatile guard spends one charge per landed hit |
 | `persistence` | The job save (mode, lesson, kills) and an echo-home snapshot keep the guard lesson through the codecs |
 
+Stage 2 flags:
+
+| Flag | What is proved |
+| --- | --- |
+| `noArrows` | A bow with no arrows and no melee weapon: stop «нет стрел» (`NO_TOOL`, detail `arrows`) |
+| `bowShot` | A pure archer shoots a zombie 7 blocks out at once: one shot, 4 of 5 arrows left, the bow worn by 1, one arrow in flight that can be picked up and is not on fire, base damage 2; shot ticks 35 for a bow, 49 for a crossbow |
+| `lineOfFire` | A villager between the archer and the zombie blocks the line of fire and no arrow flies for 80 ticks; with the villager back in place the line is clear |
+| `arrowGuard` | The impact of an echo arrow on a villager, the owner, a tamed wolf or a cow is canceled (it flies through); on the zombie it is not |
+| `shieldRaised` | A guard with a sword and a shield moves the shield to its off hand and raises it (uses it from the off hand) while a zombie is near; with nothing to fight it lowers it |
+| `escort` | "Guard me": the post is the owner's spot, moves when they move, radius 5, status `guard_escort` |
+| `escortWaits` | The owner 40 blocks away: status `guard_waiting`, the post stays where they were last seen |
+
 Manual (client):
 
 - [x] `/mnemolith echodemo guard`, then `/summon zombie` and `/summon skeleton` inside the radius: «Охрана: бой — Зомби · 0», the echo walks over and swings the sword; back on post afterwards with the kill count.
 - [x] A mob outside the radius (12 blocks) is left alone; teleported to 6 blocks it is attacked.
-- [ ] A mob that runs out of the leash is let go and the echo walks back (server side: guardqa `leash`).
+- [x] A mob that runs out of the leash is let go and the echo walks back: a husk under attack teleported 16 blocks from the post keeps its wounds (11 HP), the echo is back on post («Охрана: на посту»).
 - [x] The sword loses durability (`minecraft:damage` on the echo's sword grows with each hit).
-- [ ] The echo screen shows the worn sword; with no weapon left the job stops with «нет оружия» / «инструмент сломался» (server side: guardqa `refusals`).
+- [x] `/mnemolith echodemo worn`: the first hit breaks the sword and the echo screen shows «Стоп: инструмент сломался»; pressing «Охрана» with an empty inventory shows «Стоп: нет оружия».
 - [x] Grave: a zombie turns to the echo and charges drop. Volatile: harder hits (6.53 vs 4.43 on a helmeted zombie), one charge per hit. Hushed: the first strike on an unaware zombie is 1.5× and spends a charge; later hits are normal.
 - [x] Villagers, cows and a tamed wolf inside the radius are never hit; creepers are left alone.
 - [x] The guard dies to a zombie hit (`/damage … by` a zombie): the usual echo death, its sword drops where it fell.
 - [x] Echo screen: the «Охрана» button, its tooltips, the lesson line; the field guide page «Отголосок на охране» renders in RU.
-- [ ] The field guide page renders in EN.
+- [x] The field guide page renders in EN ("Echo guard", with the stage 2 paragraph after scrolling).
+
+Manual stage 2 (client):
+
+- [x] `/mnemolith echodemo archer` with a husk 7 blocks away and a villager in the line: «Охрана: бой — Кадавр · 0», no shot while the villager stands there; after it steps aside the archer kills the husk (6 arrows, bow worn by 6), the villager keeps 20 HP.
+- [x] An arrow summoned with the echo as owner flies through a villager (20 HP, the arrow lands behind it); the same arrow without an owner hits it (14 HP).
+- [x] The archer runs out of arrows: "Stopped: no arrows" («Стоп: нет стрел»).
+- [x] A guard with a shield raises it while fighting (visible pose); a 5-damage `/damage … by` a husk in front while it is up does nothing ("invulnerable") and the shield shows wear (damage 6).
+- [x] `/mnemolith echodemo escort`: «Охрана: рядом с вами · 0»; walking 17 blocks the echo stays within about 3 blocks; it kills a husk that comes at you.
+- [x] Echo screen: the ☺ button next to «Охрана» with the "Guard me" tooltip (EN).
+- [ ] An axe hit disables the guard's shield and it stays down for 5 s.
+- [ ] Mobs that do not target the echo rarely hit it, so live shield blocks mostly come from grave guards or ranged mobs aiming at it; check a skeleton shooting a grave guard.
 
 ### Manual stage 3 checks (client)
 

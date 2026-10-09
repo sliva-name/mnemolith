@@ -251,6 +251,8 @@ public final class QaWorld {
     }
 
     static BlockPos locate(ServerLevel level, BlockPos pos, Holder<Structure> structure) {
+        // For a random_spread placement the radius counts placement cells (spacing = 32 chunks for the observatory),
+        // not chunks: ChunkGenerator.getNearestGeneratedStructure steps chunkOrigin + spacing * x. So 4 is ~128 chunks.
         try {
             Pair<BlockPos, Holder<Structure>> found = level.getChunkSource().getGenerator().findNearestMapStructure(
                     level,

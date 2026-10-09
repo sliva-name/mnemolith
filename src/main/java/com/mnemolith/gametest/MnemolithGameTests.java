@@ -97,6 +97,9 @@ public final class MnemolithGameTests {
 
         // Echo guard: walk four blocks, five hits 15 ticks apart; 600 ticks leaves room for pathing.
         live("guard_kills_husk_spares_bystanders", GuardLiveTests::guardKillsHuskSparesBystanders, 600);
+        // Guard stage 2: 80 ticks of held fire, then about five shots 35 ticks apart.
+        live("guard_archer_holds_fire_then_shoots", GuardLiveTests::guardArcherHoldsFireThenShoots, 700);
+        live("guard_shield_blocks_frontal_hit", GuardLiveTests::guardShieldBlocksFrontalHit, 200);
 
         // Storms: one batch each (storms are capped per dimension). Gathering 200 ticks + six waves of 200 = 1400.
         storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);

@@ -53,7 +53,9 @@ public final class EchoJob {
         /** O1: shear, milk, breed nearby animals. */
         CARE,
         /** Hold a post and fight hostile mobs near it. */
-        GUARD;
+        GUARD,
+        /** Guard stage 2: the post follows the owner ("guard me"). */
+        ESCORT;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -292,7 +294,7 @@ public final class EchoJob {
     /** MINE, BUILD or FARM, also while a lens order pauses it. */
     public boolean hasWorkMode() {
         return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM || this.mode == Mode.LUMBER || this.mode == Mode.CARE
-                || this.mode == Mode.GUARD;
+                || this.guarding();
     }
 
     public Order order() {
@@ -356,7 +358,39 @@ public final class EchoJob {
 
     /** True while guarding (also under a lens order): the attack alarm does not make it flee. */
     public boolean guarding() {
-        return this.mode == Mode.GUARD;
+        return this.mode == Mode.GUARD || this.mode == Mode.ESCORT;
+    }
+
+    /** True while the guard follows its owner ("guard me"). */
+    public boolean escorting() {
+        return this.mode == Mode.ESCORT;
+    }
+
+    /** QA: arrows shot, attacks the shield blocked, and the guard's current post. */
+    public int guardShots() {
+        return this.guard.shots;
+    }
+
+    public int guardBlocked() {
+        return this.guard.blocked;
+    }
+
+    /** One of this guard's arrows killed {@code victim}. */
+    public void onGuardArrowKill(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.LivingEntity victim) {
+        if (this.guarding()) {
+            this.guard.onArrowKill(level, echo, victim);
+            this.dirty = true;
+        }
+    }
+
+    /** Counts a hit the guard's shield took (called by the echo when vanilla blocking stopped damage). */
+    public void onGuardBlocked() {
+        this.guard.blocked++;
+    }
+
+    /** The shield the guard holds up right now, or null. */
+    public net.minecraft.world.item.@Nullable ItemStack guardShield(EchoEntity echo) {
+        return this.guarding() && !this.orders.active() ? this.guard.raisedShield(echo) : null;
     }
 
     public int harvested() {
@@ -557,6 +591,11 @@ public final class EchoJob {
 
     /** Hold the post where the echo stands and fight hostile mobs near it. */
     public boolean startGuarding(EchoEntity echo) {
+        return this.startGuarding(echo, false);
+    }
+
+    /** Hold a post, or with {@code escort} follow the owner and guard them. */
+    public boolean startGuarding(EchoEntity echo, boolean escort) {
         this.clearInterruptions(echo);
         this.release(echo);
         if (!this.guard.taught.teaches()) {
@@ -564,18 +603,20 @@ public final class EchoJob {
             this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
             return false;
         }
-        if (GuardController.bestWeapon(echo) < 0) {
+        if (GuardController.bestWeapon(echo) < 0 && !GuardController.canShoot(echo)) {
             this.mode = Mode.IDLE;
-            this.setStatus(JobStatus.of(JobStatus.Kind.NO_TOOL, "weapon"));
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_TOOL, GuardController.bestBow(echo) >= 0 ? "arrows" : "weapon"));
             return false;
         }
-        this.mode = Mode.GUARD;
+        this.mode = escort ? Mode.ESCORT : Mode.GUARD;
         this.workAnchor = echo.blockPosition();
         this.guard.defeated = 0;
         this.guard.landed = 0;
         this.guard.cooldown = 0;
+        this.guard.shots = 0;
+        this.guard.blocked = 0;
         this.restartPhase();
-        this.setStatus(JobStatus.of(JobStatus.Kind.GUARD_POST, 0, 0));
+        this.setStatus(JobStatus.of(escort ? JobStatus.Kind.GUARD_ESCORT : JobStatus.Kind.GUARD_POST, 0, 0));
         this.dirty = true;
         return true;
     }
@@ -601,6 +642,7 @@ public final class EchoJob {
     /** Stops moving and clears a crack overlay. */
     public void release(EchoEntity echo) {
         echo.setMoveTarget(null);
+        this.guard.lower(echo);
         if (echo.level() instanceof ServerLevel level) {
             this.motion.walker.reset(level, echo);
         }
@@ -711,6 +753,7 @@ public final class EchoJob {
             this.strain.refresh(level, echo);
         }
         if (this.orders.active()) {
+            this.guard.lower(echo);
             this.orders.tick(level, echo);
             return;
         }
@@ -728,7 +771,7 @@ public final class EchoJob {
             case FARM -> this.farm.tick(level, echo);
             case LUMBER -> this.lumber.tick(level, echo);
             case CARE -> this.care.tick(level, echo);
-            case GUARD -> this.guard.tick(level, echo);
+            case GUARD, ESCORT -> this.guard.tick(level, echo);
             case REPLAY -> {
                 if (!echo.isReplaying()) {
                     // O2: REPEAT order keeps looping via JobOrders; otherwise the replay ends idle.
@@ -744,7 +787,7 @@ public final class EchoJob {
     }
 
     public void onAttacked(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.LivingEntity attacker) {
-        if (this.mode == Mode.GUARD && !this.orders.active()) {
+        if (this.guarding() && !this.orders.active()) {
             // The guard is the one job that hits back instead of running.
             this.guard.onAttacked(level, echo, attacker);
             return;
@@ -776,6 +819,7 @@ public final class EchoJob {
             case LUMBER -> new JobStatus(JobStatus.Kind.LUMBER, this.lumber.logKey(), this.lumber.chopped, 0);
             case CARE -> new JobStatus(JobStatus.Kind.CARE, "", this.care.tended, 0);
             case GUARD -> JobStatus.of(JobStatus.Kind.GUARD_POST, this.guard.defeated, 0);
+            case ESCORT -> JobStatus.of(JobStatus.Kind.GUARD_ESCORT, this.guard.defeated, 0);
             default -> JobStatus.IDLE;
         };
     }
@@ -807,7 +851,7 @@ public final class EchoJob {
                 + " shown=" + this.shownStatus().kind().getSerializedName() + (this.alarm.alarmed ? " alarmed" : "") + " mined=" + this.mined
                 + " harvested=" + this.farm.harvested + " built=" + this.build.builtCount + "/" + this.build.plan.size() + " candidates=" + this.mine.candidates.size()
                 + " refused=" + this.mine.refused.size()
-                + (this.mode == Mode.GUARD ? " guardLanded=" + this.guard.landed + " guardCooldown=" + this.guard.cooldown + " defeated=" + this.guard.defeated
+                + (this.guarding() ? " guardShots=" + this.guard.shots + " guardBlocked=" + this.guard.blocked + " guardLanded=" + this.guard.landed + " guardCooldown=" + this.guard.cooldown + " defeated=" + this.guard.defeated
                         + " moverActive=" + this.mover.active() : "");
     }
 
