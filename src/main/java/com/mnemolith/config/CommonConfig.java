@@ -73,6 +73,8 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue MUTE_LIBRARY_ENABLED;
     public static final ModConfigSpec.BooleanValue ARCHIVIST_OBSERVATORY_BIAS;
     public static final ModConfigSpec.BooleanValue STRIDER_PATH_BIAS;
+    public static final ModConfigSpec.BooleanValue MEMORY_HOLLOWS_ENABLED;
+    public static final ModConfigSpec.DoubleValue HOLLOW_FLICKER_DENSITY;
     public static final ModConfigSpec.BooleanValue ECHOES_ENABLED;
     public static final ModConfigSpec.IntValue ECHO_RECORD_SECONDS;
     public static final ModConfigSpec.IntValue ECHO_MAX_PER_PLAYER;
@@ -270,6 +272,8 @@ public final class CommonConfig {
         MUTE_LIBRARY_ENABLED = SpecValues.boolRestart(builder, "muteLibraryEnabled", "Whether mute libraries may generate in the End. Also requires structuresEnabled.", true);
         ARCHIVIST_OBSERVATORY_BIAS = SpecValues.bool(builder, "archivistObservatoryBias", "Whether an archivist's natural pressure gate is lower in and near an observatory chunk.", true);
         STRIDER_PATH_BIAS = SpecValues.bool(builder, "striderPathBias", "Whether an echo strider's natural pressure gate is lower in a chunk that already holds a path imprint.", true);
+        MEMORY_HOLLOWS_ENABLED = SpecValues.boolRestart(builder, "memoryHollowsEnabled", "Whether the Memory Hollows biome region is placed over the overworld (the region itself is the datapack biome modifier mnemolith:memory_hollows_region). Chunks already generated keep their biome.", true);
+        HOLLOW_FLICKER_DENSITY = SpecValues.decimal(builder, "hollowFlickerDensity", "How often memory flickers (short ghostly replays of the chunk's imprints) appear around a player in Memory Hollows. 1.0 is about one every seven seconds per player; 0 turns them off on the server.", 1.0D, 0.0D, 4.0D);
         builder.pop();
 
         SpecValues.section(builder, "gameplay", "Player-facing memory rules for writing, extraction, and composition.");

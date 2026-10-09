@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "P": "minecraft:paper",
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "I": "minecraft:ink_sac"
   },
   "pattern": [

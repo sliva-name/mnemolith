@@ -25,6 +25,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue THERMAL_VIEW;
     public static final ModConfigSpec.DoubleValue ECHO_AIM_ASSIST;
     public static final ModConfigSpec.BooleanValue ECHO_HINTS;
+    public static final ModConfigSpec.BooleanValue HOLLOW_FLICKERS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -47,6 +48,7 @@ public final class ClientConfig {
         THERMAL_VIEW = SpecValues.bool(builder, "thermalView", "Whether holding use with the chronicle lens tints the view dark pink. Echo outlines and targeting stay on either way.", true);
         ECHO_AIM_ASSIST = SpecValues.decimal(builder, "echoAimAssist", "Aim assist cone, in degrees, for targeting your echo through the lens.", 6.0D, 0.0D, 20.0D);
         ECHO_HINTS = SpecValues.bool(builder, "echoHints", "Whether the lens and possession draw short key hints.", true);
+        HOLLOW_FLICKERS = SpecValues.bool(builder, "hollowFlickers", "Whether memory flickers in Memory Hollows are drawn on this client. The server decides how often they appear.", true);
         builder.pop();
 
         SPEC = builder.build();

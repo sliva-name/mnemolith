@@ -26,7 +26,7 @@ Python 3.10+, Pillow and numpy. Every asset seeds its random source from its own
 
 | Module | Role |
 | --- | --- |
-| `mnart/palette.py` | 25 seven-step ramps (index 3 is the base tone), outline and shadow colours, temper accents |
+| `mnart/palette.py` | 27 seven-step ramps (index 3 is the base tone), outline and shadow colours, temper accents |
 | `mnart/core.py` | Canvas, masks, depth/edge maps, value noise and fBm, shading modes (flat, cylinder, sphere, gradient), selective outline, wear marks (scratches, chips, grime, speckle, glint, crack, stitch) |
 | `mnart/materials.py` | Material library: `surface(mat, w, h, rng, face, bevel, wear, tile)`; rivets, insets, raised panels |
 | `mnart/shapes.py` | Rods with a lit edge, rings, gems, paper slips, the small figure, glow |
@@ -38,7 +38,8 @@ Python 3.10+, Pillow and numpy. Every asset seeds its random source from its own
 | `mnart/entities.py` | Entity skins (128×128) and the preview-only wanderer skin |
 | `mnart/entity_models.py` | Part trees transcribed from the Java `LayerDefinition`s, for offline renders only; keep in sync by hand |
 | `mnart/particles.py`, `mnart/gui.py` | Particle sprites; panel, slot and tag icons |
-| `mnart/guide.py` | The 30 field-guide pages |
+| `mnart/hollows.py` | Memory Hollows cube faces (faded turf, hollowstone, bricks, recollite ore and block), the forget-me-not and the recollite shard (stage `hollows`) |
+| `mnart/guide.py` | The 37 field-guide pages |
 | `mnart/render3d.py` | Small software renderer for JSON models and entity boxes (guide dioramas and previews) |
 | `build.py`, `validate_assets.py`, `preview.py` | Entry points |
 
@@ -54,7 +55,8 @@ Ramps run darkest to lightest; index 3 is the base tone. The table lists the bas
 | Organic | bone `#C3B39A`, paper `#CFC0A3`, leather `#7B5036`, wood `#8A683C`, gel `#36A088` |
 | Cloth | indigo `#3C4989`, ink `#222A52` |
 | Stone | mute `#525764`, navy `#2F3965`, deep `#26263B` |
-| Memory and crystal | amethyst `#7D52BF`, scar `#8446BF`, magenta `#C440AA`, echo `#DF78AE`, glass `#5C90A4` |
+| Memory and crystal | amethyst `#7D52BF`, scar `#8446BF`, magenta `#C440AA`, echo `#DF78AE`, glass `#5C90A4`, recollite `#6A8BC4` |
+| Memory Hollows | lilac `#958CB8` (faded turf) |
 | Signals | ember `#E07A4A`, red `#C23A34`, redstone `#AA1A14`, pale `#B9BCD0`, white `#DCDCDC` |
 
 Temper accents are the `Temper.rgb()` values (hushed `#B8C6DC`, grave `#B6A2E8`, kindled `#FF9A5C`, plunging `#7FE0CF`, volatile `#FF5E4E`). Textures the client tints (`residue`, `scar`, `echo_silhouette`, particles) stay pale or white so the multiply keeps its colour.
@@ -76,6 +78,9 @@ Temper accents are the `Temper.rgb()` values (hushed `#B8C6DC`, grave `#B6A2E8`,
 | amethyst, scar | crystal ramps | facets | (scar) cracks |
 | gel, echo, ember | glow ramps | glow | none |
 | glass | glass | glass | none |
+| hollowstone | pale (3) | stone | chips |
+| lilac | lilac | mottle | none |
+| recollite | recollite | facets | none |
 
 ## Items
 
@@ -115,6 +120,18 @@ Identical painted faces share a region. The skyline packer places them; if a rec
 | `scar_heart` | 6 | Dark cracked base with a violet crystal cluster, four crystals tilted 22.5° |
 | `scar_glass` | cube | `cube_all`, 32×32 translucent cracked violet glass |
 | `replicated_moment` | cube | No texture of its own: `cube_all` on vanilla `light_blue_stained_glass` (unchanged) |
+
+Memory Hollows blocks are plain cubes on vanilla parents (stage `hollows`, 32×32 faces):
+
+| Texture | Read |
+| --- | --- |
+| `hollow_turf_top`, `hollow_turf_side` | Pale lilac turf with a few white specks; the side is dirt under a ragged lilac lip (`cube_bottom_top`, bottom is vanilla dirt) |
+| `hollowstone` | Pale grey stone with soft blotches and chips |
+| `hollowstone_bricks` | Hollowstone in offset courses; stairs, slab and wall reuse it |
+| `recollite_ore` | Hollowstone with icy blue crystal glints |
+| `recollite_block` | Four faceted recollite panes with glints |
+| `forget_me_not` | Cross sprite: five sky-blue five-petal flowers with yellow eyes on dark stems |
+| `recollite_shard` (item) | Icy faceted shard on a diagonal |
 
 Break and place sounds for mute stone and archival stratum are mod events. Step, hit, and fall stay on stone and deepslate.
 
@@ -186,7 +203,7 @@ Sprites in `textures/particle/` are 32×32 white shapes with a soft alpha halo: 
 
 ## Field guide
 
-30 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
+37 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
 
 ## Validation
 

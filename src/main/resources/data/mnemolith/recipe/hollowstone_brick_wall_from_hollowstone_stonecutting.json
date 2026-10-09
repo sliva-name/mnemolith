@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "mnemolith:hollowstone",
+  "result": {
+    "id": "mnemolith:hollowstone_brick_wall"
+  }
+}

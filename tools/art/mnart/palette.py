@@ -45,6 +45,9 @@ RAMPS = {
     'glass':     _r('#1a3040', '#2a4c60', '#3f6c80', '#5c90a4', '#86b8c8', '#b8dde6', '#eefbff'),
     'redstone':  _r('#2a0606', '#520a0a', '#7e1010', '#aa1a14', '#d8321f', '#f7684a', '#ffb09a'),
     'gold':      _r('#2d1d06', '#5a3a0c', '#8c6014', '#bf8b1f', '#e8b448', '#f7da86', '#fff4cc'),
+    # Memory Hollows: faded lilac turf, pale hollowstone (the 'pale' ramp) and icy recollite crystal
+    'lilac':     _r('#2e2843', '#4a4266', '#6d6490', '#958cb8', '#b8b0d6', '#d6d0ea', '#f1eef9'),
+    'recollite': _r('#161c38', '#28345e', '#435a91', '#6a8bc4', '#9dbbe8', '#cbdef7', '#f2f8ff'),
 }
 
 # Accent colours shared with gameplay code (tempers are the Temper.rgb() values; tags follow the tag icons).

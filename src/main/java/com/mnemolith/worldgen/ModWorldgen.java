@@ -13,5 +13,6 @@ public final class ModWorldgen {
         ModFeatures.register(modEventBus);
         ModStructureTypes.register(modEventBus);
         ModProcessors.register(modEventBus);
+        com.mnemolith.worldgen.hollows.HollowRegions.register(modEventBus);
     }
 }

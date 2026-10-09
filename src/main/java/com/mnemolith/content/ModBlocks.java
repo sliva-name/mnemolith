@@ -127,7 +127,62 @@ public final class ModBlocks {
     public static final DeferredBlock<PressureLampBlock> PRESSURE_LAMP = BLOCKS.registerBlock(
             "pressure_lamp", PressureLampBlock::new, lampProperties());
 
+    // Memory Hollows (stage 1): surface, stone, ore, crystal block and flower of the biome.
+    public static final DeferredBlock<Block> HOLLOW_TURF = BLOCKS.registerSimpleBlock(
+            "hollow_turf", properties -> properties
+                    .mapColor(MapColor.TERRACOTTA_WHITE)
+                    .strength(0.6F)
+                    .sound(SoundType.GRASS));
+    public static final DeferredBlock<Block> HOLLOWSTONE = BLOCKS.registerSimpleBlock(
+            "hollowstone", hollowstoneProperties(1.5F));
+    public static final DeferredBlock<Block> HOLLOWSTONE_BRICKS = BLOCKS.registerSimpleBlock(
+            "hollowstone_bricks", hollowstoneProperties(1.8F));
+    public static final DeferredBlock<StairBlock> HOLLOWSTONE_BRICK_STAIRS = BLOCKS.register(
+            "hollowstone_brick_stairs",
+            key -> new StairBlock(HOLLOWSTONE_BRICKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.ofLegacyCopy(HOLLOWSTONE_BRICKS.get())
+                            .setId(ResourceKey.create(Registries.BLOCK, key))));
+    public static final DeferredBlock<SlabBlock> HOLLOWSTONE_BRICK_SLAB = BLOCKS.registerBlock(
+            "hollowstone_brick_slab", SlabBlock::new, hollowstoneProperties(1.8F));
+    public static final DeferredBlock<WallBlock> HOLLOWSTONE_BRICK_WALL = BLOCKS.registerBlock(
+            "hollowstone_brick_wall", WallBlock::new,
+            props -> hollowstoneProperties(1.8F).apply(props).forceSolidOn());
+    public static final DeferredBlock<net.minecraft.world.level.block.DropExperienceBlock> RECOLLITE_ORE = BLOCKS.registerBlock(
+            "recollite_ore",
+            props -> new net.minecraft.world.level.block.DropExperienceBlock(net.minecraft.util.valueproviders.UniformInt.of(2, 5), props),
+            properties -> properties
+                    .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                    .strength(3.0F, 3.0F)
+                    .sound(SoundType.CALCITE)
+                    .lightLevel(state -> 3)
+                    .requiresCorrectToolForDrops());
+    public static final DeferredBlock<Block> RECOLLITE_BLOCK = BLOCKS.registerSimpleBlock(
+            "recollite_block", properties -> properties
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 6)
+                    .requiresCorrectToolForDrops());
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FORGET_ME_NOT = BLOCKS.registerBlock(
+            "forget_me_not",
+            props -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 5.0F, props),
+            properties -> properties
+                    .mapColor(MapColor.PLANT)
+                    .noCollision()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY));
+
     private ModBlocks() {}
+
+    private static UnaryOperator<BlockBehaviour.Properties> hollowstoneProperties(float hardness) {
+        return properties -> properties
+                .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                .strength(hardness, 6.0F)
+                .sound(SoundType.TUFF)
+                .requiresCorrectToolForDrops();
+    }
 
     private static UnaryOperator<BlockBehaviour.Properties> sensorProperties() {
         return properties -> properties

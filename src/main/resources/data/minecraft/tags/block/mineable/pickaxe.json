@@ -21,6 +21,13 @@
     "mnemolith:composition_reel",
     "mnemolith:pressure_sensor",
     "mnemolith:resonator_trap",
-    "mnemolith:archive_shrine"
+    "mnemolith:archive_shrine",
+    "mnemolith:hollowstone",
+    "mnemolith:hollowstone_bricks",
+    "mnemolith:hollowstone_brick_stairs",
+    "mnemolith:hollowstone_brick_slab",
+    "mnemolith:hollowstone_brick_wall",
+    "mnemolith:recollite_ore",
+    "mnemolith:recollite_block"
   ]
 }

@@ -8,7 +8,7 @@
   ],
   "key": {
     "G": "minecraft:glass",
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "R": "mnemolith:pressure_sensor"
   },
   "result": {

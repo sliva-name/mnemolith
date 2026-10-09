@@ -45,6 +45,16 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.ARCHIVAL_STRATUM_STAIRS.get());
                 output.accept(ModItems.ARCHIVAL_STRATUM_SLAB.get());
                 output.accept(ModItems.ARCHIVAL_STRATUM_WALL.get());
+                output.accept(ModItems.HOLLOW_TURF.get());
+                output.accept(ModItems.HOLLOWSTONE.get());
+                output.accept(ModItems.HOLLOWSTONE_BRICKS.get());
+                output.accept(ModItems.HOLLOWSTONE_BRICK_STAIRS.get());
+                output.accept(ModItems.HOLLOWSTONE_BRICK_SLAB.get());
+                output.accept(ModItems.HOLLOWSTONE_BRICK_WALL.get());
+                output.accept(ModItems.RECOLLITE_ORE.get());
+                output.accept(ModItems.RECOLLITE_SHARD.get());
+                output.accept(ModItems.RECOLLITE_BLOCK.get());
+                output.accept(ModItems.FORGET_ME_NOT.get());
                 output.accept(ModItems.ARCHIVAL_TABLET.get());
                 output.accept(ModItems.ARCHIVE_SCHEMATIC.get());
                 output.accept(ModItems.RESONATOR_TRAP.get());

@@ -4,7 +4,7 @@
   "key": {
     "E": "mnemolith:echo_slip",
     "B": "minecraft:bow",
-    "A": "minecraft:amethyst_shard"
+    "A": "#mnemolith:memory_crystals"
   },
   "pattern": [
     "E",

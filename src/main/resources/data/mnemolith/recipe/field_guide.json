@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "B": "minecraft:book",
-    "A": "minecraft:amethyst_shard"
+    "A": "#mnemolith:memory_crystals"
   },
   "pattern": [
     "B",

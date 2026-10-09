@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "group": "recollite_shard",
+  "ingredient": "mnemolith:recollite_ore",
+  "result": {
+    "id": "mnemolith:recollite_shard"
+  }
+}

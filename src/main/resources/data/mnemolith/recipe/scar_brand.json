@@ -4,7 +4,7 @@
   "key": {
     "F": "mnemolith:scar_fragment",
     "S": "mnemolith:scar_sinew",
-    "A": "minecraft:amethyst_shard"
+    "A": "#mnemolith:memory_crystals"
   },
   "pattern": [
     "F",

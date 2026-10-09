@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    "minecraft:amethyst_shard",
+    "#mnemolith:memory_crystals",
     "minecraft:paper"
   ],
   "result": {

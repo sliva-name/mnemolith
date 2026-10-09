@@ -5,7 +5,7 @@
     "mnemolith:echo_slip",
     "mnemolith:unstable_slip",
     "mnemolith:archival_tablet",
-    "minecraft:amethyst_shard"
+    "#mnemolith:memory_crystals"
   ],
   "result": {
     "id": "mnemolith:echo_chorus_slip",

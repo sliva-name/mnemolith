@@ -4,7 +4,7 @@
   "ingredients": [
     "mnemolith:extraction_needle",
     "minecraft:iron_ingot",
-    "minecraft:amethyst_shard"
+    "#mnemolith:memory_crystals"
   ],
   "result": {
     "id": "mnemolith:reinforced_needle"

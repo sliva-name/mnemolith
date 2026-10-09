@@ -24,7 +24,7 @@ sys.path.insert(0, HERE)
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 ASSETS = os.path.join(REPO, 'src', 'main', 'resources', 'assets')
 
-from mnart import armory, blocks, entities, gui, guide, handheld, items, modelgen, particles, render3d  # noqa: E402
+from mnart import armory, blocks, entities, gui, guide, handheld, hollows, items, modelgen, particles, render3d  # noqa: E402
 
 # Files this pipeline replaced; removed on build so nothing stale ships.
 STALE = [
@@ -118,6 +118,14 @@ def build_gui(o):
         o.png('textures/gui/%s.png' % n, fn())
 
 
+def build_hollows(o):
+    """Memory Hollows: cube faces and the flower sprite under textures/block, the shard under textures/item."""
+    for n, fn in hollows.BLOCK_TEXTURES.items():
+        o.png('textures/block/%s.png' % n, fn())
+    for n, fn in hollows.ITEM_TEXTURES.items():
+        o.png('textures/item/%s.png' % n, fn())
+
+
 def build_guide(o):
     # guide dioramas render the freshly built models/textures, so point the renderer at this output
     render3d.MOD_ASSETS = os.path.dirname(o.root)
@@ -130,7 +138,7 @@ def build_guide(o):
 
 
 STAGES = {'items': build_items, 'blocks': build_blocks, 'entities': build_entities, 'armory': build_armory,
-          'particles': build_particles, 'gui': build_gui, 'guide': build_guide}
+          'particles': build_particles, 'gui': build_gui, 'hollows': build_hollows, 'guide': build_guide}
 
 
 def run(root, only):

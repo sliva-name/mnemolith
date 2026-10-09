@@ -7,7 +7,7 @@
     " B "
   ],
   "key": {
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "S": "mnemolith:archival_stratum",
     "B": "mnemolith:mute_stone"
   },

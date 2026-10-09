@@ -2,6 +2,9 @@ package com.mnemolith.worldgen;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.worldgen.feature.ArchivalVeinFeature;
+import com.mnemolith.worldgen.feature.HollowGroundFeature;
+import com.mnemolith.worldgen.feature.HollowRemnantFeature;
+import com.mnemolith.worldgen.feature.HollowSinkFeature;
 import com.mnemolith.worldgen.feature.MutePocketFeature;
 
 import net.minecraft.core.registries.Registries;
@@ -15,6 +18,10 @@ public final class ModFeatures {
 
     public static final DeferredHolder<Feature<?>, ArchivalVeinFeature> ARCHIVAL_VEIN = FEATURES.register("archival_vein", ArchivalVeinFeature::new);
     public static final DeferredHolder<Feature<?>, MutePocketFeature> MUTE_POCKET = FEATURES.register("mute_pocket", MutePocketFeature::new);
+
+    public static final DeferredHolder<Feature<?>, HollowGroundFeature> HOLLOW_GROUND = FEATURES.register("hollow_ground", HollowGroundFeature::new);
+    public static final DeferredHolder<Feature<?>, HollowRemnantFeature> HOLLOW_REMNANT = FEATURES.register("hollow_remnant", HollowRemnantFeature::new);
+    public static final DeferredHolder<Feature<?>, HollowSinkFeature> HOLLOW_SINK = FEATURES.register("hollow_sink", HollowSinkFeature::new);
 
     private ModFeatures() {}
 
