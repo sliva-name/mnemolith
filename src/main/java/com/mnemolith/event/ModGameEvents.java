@@ -11,6 +11,10 @@ import com.mnemolith.command.qa.SmokeCommand;
 import com.mnemolith.config.ServerConfig;
 import com.mnemolith.pressure.MemoryPressure;
 
+import com.mnemolith.command.qa.DebugCommands;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+
 import net.minecraft.commands.Commands;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -132,6 +136,53 @@ public final class ModGameEvents {
                         .then(Commands.literal("door").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "door")))
                         .then(Commands.literal("gate").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "gate")))
                         .then(Commands.literal("ladder").executes(context -> com.mnemolith.command.qa.EchoDemo.run(context, "ladder"))))
+                .then(Commands.literal("debug")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .then(Commands.literal("pressure")
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(0, 10000)).executes(DebugCommands::pressureAmount))
+                                .then(Commands.literal("calm").executes(context -> DebugCommands.pressureNamed(context, "calm")))
+                                .then(Commands.literal("saturated").executes(context -> DebugCommands.pressureNamed(context, "saturated")))
+                                .then(Commands.literal("overloaded").executes(context -> DebugCommands.pressureNamed(context, "overloaded")))
+                                .then(Commands.literal("fracture").executes(context -> DebugCommands.pressureNamed(context, "fracture"))))
+                        .then(Commands.literal("storm")
+                                .then(Commands.literal("start").executes(DebugCommands::stormStart))
+                                .then(Commands.literal("stop").executes(DebugCommands::stormStop))
+                                .then(Commands.literal("scar").executes(DebugCommands::stormScar))
+                                .then(Commands.literal("step").then(Commands.argument("ticks", IntegerArgumentType.integer(1, 400)).executes(DebugCommands::stormStep))))
+                        .then(Commands.literal("vault")
+                                .then(Commands.literal("fill")
+                                        .executes(DebugCommands::vaultFill)
+                                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 64)).executes(DebugCommands::vaultFill)))
+                                .then(Commands.literal("leak").executes(DebugCommands::vaultLeak)))
+                        .then(Commands.literal("relay")
+                                .then(Commands.literal("link").executes(DebugCommands::relayLink))
+                                .then(Commands.literal("thread").executes(DebugCommands::relayThread))
+                                .then(Commands.literal("possess").executes(DebugCommands::relayPossess))
+                                .then(Commands.literal("hop").executes(DebugCommands::relayHop)))
+                        .then(Commands.literal("misfire")
+                                .then(Commands.literal("skip").executes(context -> DebugCommands.misfire(context, "skip")))
+                                .then(Commands.literal("wrong").executes(context -> DebugCommands.misfire(context, "wrong")))
+                                .then(Commands.literal("extra").executes(context -> DebugCommands.misfire(context, "extra")))
+                                .then(Commands.literal("seed").executes(context -> DebugCommands.misfire(context, "seed"))))
+                        .then(Commands.literal("residue")
+                                .then(Commands.literal("observatory").executes(context -> DebugCommands.residueNamed(context, "observatory")))
+                                .then(Commands.literal("old").executes(DebugCommands::residueOld)
+                                        .then(Commands.argument("tag", StringArgumentType.word()).executes(DebugCommands::residueOld)))
+                                .then(Commands.argument("tag", StringArgumentType.word()).executes(DebugCommands::residue)
+                                        .then(Commands.argument("strength", IntegerArgumentType.integer(1, 8)).executes(DebugCommands::residue))))
+                        .then(Commands.literal("graft")
+                                .then(Commands.argument("temper", StringArgumentType.word()).executes(DebugCommands::graft)))
+                        .then(Commands.literal("farm")
+                                .then(Commands.literal("grow").executes(DebugCommands::farmGrow))
+                                .then(Commands.literal("show").then(Commands.argument("count", IntegerArgumentType.integer(0, 999)).executes(DebugCommands::farmShow))))
+                        .then(Commands.literal("lava").executes(DebugCommands::lava))
+                        .then(Commands.literal("shard")
+                                .then(Commands.literal("graft").executes(DebugCommands::shardGraft))
+                                .then(Commands.literal("release").executes(DebugCommands::shardRelease)))
+                        .then(Commands.literal("imprint")
+                                .then(Commands.argument("tag", StringArgumentType.word())
+                                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 64)).executes(DebugCommands::imprint))))
+                        .then(Commands.literal("stranger").executes(DebugCommands::stranger)))
                 .then(Commands.literal("qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MnemolithQa::run)));

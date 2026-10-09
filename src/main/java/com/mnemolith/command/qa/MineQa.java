@@ -149,6 +149,12 @@ public final class MineQa {
         if (y + 8 > level.getMaxY()) {
             y -= 32;
         }
+        // A flat world sits on the bottom section. The mass is 20 deep, so offset 1 would start in the void
+        // and every void cell would count as an opened block far from the work point. Step up whole sections:
+        // the work point stays `offset` above a section bottom, and the volume stays inside the world.
+        while (y - 20 < level.getMinY() && y + 16 + 8 <= level.getMaxY()) {
+            y += 16;
+        }
         BlockPos big = new BlockPos(surface.getX(), y, surface.getZ());
         tickColumn(level, big);
         try {

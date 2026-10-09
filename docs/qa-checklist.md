@@ -156,9 +156,9 @@ The two `nearFirst` checks are the regression for "echoes skip blocks and only d
 
 **In the client (manual):**
 
-- [ ] Record yourself breaking a few stone blocks. Put the echo in a stone area, give it a pickaxe and press **Mining** (radius 16). It clears the blocks next to it first and works outward and down in a compact pit, with no untouched blocks left between the ones it took.
-- [ ] The same with an ore lesson on a real vein: the whole vein goes, including the ores under the echo.
-- [ ] Next to a drop of more than 3 blocks it does not break the block it stands on. Next to water or lava it leaves the block that would open the fluid.
+- [x] Record yourself breaking a few stone blocks. Put the echo in a stone area, give it a pickaxe and press **Mining** (radius 16). It clears the blocks next to it first and works outward and down in a compact pit, with no untouched blocks left between the ones it took.
+- [x] The same with an ore lesson on a real vein: the whole vein goes, including the ores under the echo.
+- [x] Next to a drop of more than 3 blocks it does not break the block it stands on. Next to water or lava it leaves the block that would open the fluid.
 
 ## Echo stage 3 QA
 
@@ -208,10 +208,10 @@ The last line of `mnemolith echo3qa` must be `Echo stage 3 check: 13 of 13`. `qa
 
 Manual (client):
 
-- [ ] Right-click your echo with a death slip: purple motes, the label over its head reads «Прививка: Могильный · 24/24», the echo inventory screen shows the same line.
-- [ ] A volatile echo flickers red; a kindled echo stands in lava unhurt.
-- [ ] With the needle on your grafted echo you get the slip back; a stranger's echo refuses.
-- [ ] Field guide pages «Запись и вселение» and «Прививки памяти» render with pictures in RU and EN.
+- [x] Right-click your echo with a death slip: purple motes, the label over its head reads «Прививка: Могильный · 24/48», the echo inventory screen shows the same line. One death slip is 24 of a two-slip graft (48). A silence slip is the 12 then 24/24 case; 24/24 on a single death slip was a checklist error.
+- [x] A volatile echo flickers red; a kindled echo stands in lava unhurt.
+- [x] With the needle on your grafted echo you get the slip back; a stranger's echo refuses.
+- [x] Field guide pages «Запись и вселение» and «Прививки памяти» render with pictures in RU and EN.
 
 ## Residual echo QA
 
@@ -243,11 +243,11 @@ Manual (client):
 Manual (client):
 
 - [ ] Overload a chunk and stand in it: within a minute or two a faint fragment in a temper color drifts out; holding the lens makes it clear.
-- [ ] Raise the lens on it: the label reads «Осадок · Огонь · сила 3» and «чтение N%»; after 3 s it glows and «прочитан — игла возьмёт».
-- [ ] Needle on it before reading: you are lashed and nothing is taken. After reading: «Осколок осадка» with tooltip «Осадок: … · сила N».
-- [ ] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
-- [ ] Visit an observatory: an old residue floats by the reel.
-- [ ] Field guide page «Осадки памяти» renders with its picture in RU and EN.
+- [x] Raise the lens on it: the label reads «Осадок · Огонь · сила 3» and «чтение N%»; after 3 s it glows and «прочитан — игла возьмёт».
+- [x] Needle on it before reading: you are lashed and nothing is taken. After reading: «Осколок осадка» with tooltip «Осадок: … · сила N».
+- [x] Right-click your echo with the shard: the graft line shows the full capacity. Use a shard on the ground: the residue comes back.
+- [x] Visit an observatory: an old residue floats by the reel.
+- [x] Field guide page «Осадки памяти» renders with its picture in RU and EN.
 
 ## Echo relay and archive vault QA
 
@@ -278,12 +278,12 @@ Manual (client):
 Manual (client):
 
 - [ ] Craft a relay thread (string, echo slip, copper ingot) and an archive vault (4 stratum, 4 amethyst, needle in the middle); the tooltips show purpose and source.
-- [ ] Right-click one echo with the thread: «Первый конец завязан…», the thread tooltip says so; right-click another echo within 16 blocks: «Связаны…»; a faint pink thread of motes between them.
-- [ ] Right-click an echo you own: its status line ends with «Связь: есть, N м».
-- [ ] Possess one end, sneak and press `V`: «Вы переходите по нити…», you are in the other; the HUD hint mentions the hop. Break a block: the other end breaks the same spot beside itself.
-- [ ] Place the vault, right-click with an empty hand: it lights up (pink drawers) and the action bar shows «втягивает, 0/12»; wait: the count rises and the area's imprints disappear from the lens.
-- [ ] Break it with a pickaxe: the item tooltip shows «Хранит отпечатков: N»; carry it for a minute: «Хранилище у вас в руках протекает…».
-- [ ] Field guide pages «Связь отголосков» and «Архивное хранилище» render with pictures in RU and EN.
+- [x] Right-click one echo with the thread: «Первый конец завязан…», the thread tooltip says so; right-click another echo within 16 blocks: «Связаны…»; a faint lavender-blue thread of motes between them (`MemoryPalette.SHIMMER`, `#6E7CC4`).
+- [x] Right-click an echo you own: its status line ends with «Связь: есть, N м».
+- [x] Possess one end, sneak and press `V`: «Вы переходите по нити…», you are in the other; the HUD hint mentions the hop. Break a block: the other end breaks the same spot beside itself.
+- [x] Place the vault, right-click with an empty hand: it lights up (pink drawers) and the action bar shows «втягивает, 0/12»; wait: the count rises and the area's imprints disappear from the lens.
+- [x] Break it with a pickaxe: the item tooltip shows «Хранит отпечатков: N»; carry it for a minute: «Хранилище у вас в руках протекает…».
+- [x] Field guide pages «Связь отголосков» and «Архивное хранилище» render with pictures in RU and EN.
 
 ## Recollection storm QA
 
@@ -313,23 +313,24 @@ Manual (client):
 
 Manual (client):
 
-- [ ] Stand in a fractured chunk for a minute or two (or free a shard there): «Собирается буря воспоминаний…», the bar «Буря воспоминаний: собирается», the sky darkens, the edge of the 3×3 area flickers.
-- [ ] Place a mute stone in the centre chunk while it gathers: «Буря воспоминаний сдержана.» and the bar goes.
-- [ ] Let one rage: every 10 s storm residues appear and act out (zombie, fire, small blast with mobGriefing, lift, darkness); the bar counts the storm residues.
-- [ ] Let three or more survive: the Scar rises, violet and cracked, its tint drifting through the merged tempers; heart and scar glass around it (mobGriefing on).
-- [ ] Hit it unread: nothing. Raise the lens for 3 s: «Прочитано: Шрам скован…», it slows and can be hurt for 8 s. Hear the charge before each recall and step out of 10 blocks to dodge it.
-- [ ] Kill it: scar fragment(s), shards and xp. Use a fragment on your echo: «закалён Шрамом», the graft line shows 3 slips' worth.
-- [ ] Come back the next in-game day: an old residue floats by the heart. Mine scar glass with a pickaxe and place it by a fracture: no storm gathers there.
-- [ ] Field guide pages «Бури воспоминаний» and «Шрам» render with pictures in RU and EN.
+- [x] Stand in a fractured chunk for a minute or two (or free a shard there): «Собирается буря воспоминаний…», the bar «Буря воспоминаний: собирается», the sky darkens, the edge of the 3×3 area flickers.
+- [x] Place a mute stone in the centre chunk while it gathers: «Буря воспоминаний сдержана.» and the bar goes.
+- [x] Let one rage: every 10 s storm residues appear and act out (zombie, fire, small blast with mobGriefing, lift, darkness); the bar counts the storm residues.
+- [x] Let three or more survive: the Scar rises, violet and cracked, its tint drifting through the merged tempers; heart and scar glass around it (mobGriefing on).
+- [x] Hit it unread: nothing. Raise the lens for 3 s: «Прочитано: Шрам скован…», it slows and can be hurt for 8 s. Step out of 10 blocks to dodge a recall.
+- [ ] Hear the charge before each recall.
+- [x] Kill it: scar fragment(s), shards and xp. Use a fragment on your echo: «закалён Шрамом», the graft line shows 3 slips' worth.
+- [x] Come back the next in-game day: an old residue floats by the heart. Mine scar glass with a pickaxe and place it by a fracture: no storm gathers there.
+- [x] Field guide pages «Бури воспоминаний» and «Шрам» render with pictures in RU and EN.
 
 ### Manual stage 3 checks (client)
 
 `/mnemolith echodemo <scene>` (operator) builds a scene about 6 blocks south of you and runs your own echo in it.
 
-- [ ] `farm`: raise the lens on the echo. The label reads «Ферма: Пшеница · N», later «Ферма: ждёт урожая (Пшеница) · 10»; the wheat is in the chest.
-- [ ] `overload`: the label shows «Память: Перегрузка» as a second line above the head, and now and then «Сбой: пропустил блок» / «Сбой: не те семена» in orange. No items are lost.
-- [ ] Lens hint: with the lens raised on your echo, three chips «ЛКМ — вселиться», «Z — стой · R — за мной · B — к точке», «Отголосок Dev · N м» sit above the pressure pill without overlapping; with an action-bar message both lift.
-- [ ] `Z`, `R`, `B` on your own echo: «Стоит по команде», «Идёт за вами», «Возвращается к точке». On someone else's echo nothing happens.
+- [x] `farm`: raise the lens on the echo. The label reads «Ферма: Пшеница · N», later «Ферма: ждёт урожая (Пшеница) · 10»; the wheat is in the chest.
+- [x] `overload`: the label shows «Память: Перегрузка» as a second line above the head, and now and then «Сбой: пропустил блок» / «Сбой: не те семена» in orange. No items are lost.
+- [x] Lens hint: with the lens raised on your echo, three chips «ЛКМ — вселиться», «Z — стой · R — за мной · B — к точке», «Отголосок Dev · N м» sit above the pressure pill without overlapping; with an action-bar message both lift.
+- [x] `Z`, `R`, `B` on your own echo: «Стоит по команде», «Идёт за вами», «Возвращается к точке». On someone else's echo nothing happens.
 - [ ] `door`, `gate`, `ladder`: the echo passes the wooden door or gate and closes it behind itself, or climbs the ladder over the wall.
 - [ ] A zombie or husk near a working echo attacks it: «Стоп: атакован» in orange, the echo runs, then resumes.
 - [ ] Craft the three upgrade slips in the 2×2 grid; the tooltip shows «Впитано: N из M»; RMB absorbs, a slip beyond the limit stays in hand.
@@ -384,3 +385,34 @@ The field-guide page is the bone center of that panel (`#E6DCC8`). Title, page n
 | `GuiArt.GUIDE_DOT` | `#6B6258` | Inactive field-guide page dot on the bone page |
 
 A physical client logs `Mnemolith gui contrast glyph=ffe6dcc8 shadow=ff070b18 panel=ff1c244a accent=ff8ed9c8 fail=ffffb089` from `MnemolithClient`. That class is not loaded on a dedicated server.
+
+## Debug commands
+
+`/mnemolith debug` is operator-only (permission level 2, the same gate as the QA suites). It does not run during normal play. Feedback strings are `mnemolith.debug.*` in `en_us` and `ru_ru`.
+
+| Command | What it does |
+| --- | --- |
+| `/mnemolith debug pressure <amount\|calm\|saturated\|overloaded\|fracture>` | Sets the chunk's instability so its memory pressure lands on that score or band, including fracture (80). Imprints already in the chunk are kept. |
+| `/mnemolith debug storm start` | Raises the chunk to fracture if it is not already, then starts a recollection storm the same way the game does (`Storms.start`: boss bar darkens the sky, gathering message). |
+| `/mnemolith debug storm step <ticks>` | Advances that storm by up to 400 ticks. |
+| `/mnemolith debug storm stop` | Ends the storm here as passed. |
+| `/mnemolith debug storm scar` | Seeds three pinned residues and runs the storm through its waves so they merge into the Scar. Peaceful difficulty never spawns the boss, so this raises the world to easy. |
+| `/mnemolith debug vault fill [count]` | Places a vault if there is none nearby, keeps that many death imprints, and turns drawing on. |
+| `/mnemolith debug vault leak` | Puts a filled vault in the hand if needed and leaks one imprint the way carrying one does. |
+| `/mnemolith debug relay link` | Ties the two nearest echoes with `EchoRelays.link`. |
+| `/mnemolith debug relay thread` | Draws the relay motes between a linked echo and its partner. |
+| `/mnemolith debug relay possess` | Possesses the nearest echo you own. |
+| `/mnemolith debug relay hop` | Possesses if needed, then hops the thread (`EchoRelays.hop`). |
+| `/mnemolith debug misfire <skip\|wrong\|extra\|seed>` | Shows that misfire line on the nearest echo, including «не те семена». |
+| `/mnemolith debug residue <tag> [strength]` | Spawns a residue of that tag (fire, explosion, death, …). |
+| `/mnemolith debug residue old [tag]` | Spawns an old residue (strength 5). |
+| `/mnemolith debug residue observatory` | Marks the chunk as an observatory, places a reel if the spot is empty, and seeds its old residue. |
+| `/mnemolith debug graft <temper>` | Grafts that temper onto the nearest echo with a real slip (grave, kindled, volatile, …). |
+| `/mnemolith debug farm grow` | Grows crops within 6 blocks to their last age. |
+| `/mnemolith debug farm show <count>` | Sets the nearest echo's farm line to wheat × count and puts that much wheat in a nearby chest. |
+| `/mnemolith debug lava` | Sets lava at the nearest echo. A kindled echo is fireproof. |
+| `/mnemolith debug shard graft` | Grafts a strength-4 death shard onto the nearest echo. |
+| `/mnemolith debug shard release` | Releases a fire shard onto the ground the way using one does. |
+| `/mnemolith debug stranger` | Hands the nearest echo to an offline player named Stranger, so `Z`/`R`/`B` and the needle can be checked against someone else's echo (both must refuse it). |
+| `/mnemolith debug imprint <tag> <count>` | Writes that many imprints of one tag where you stand (`ImprintWriter.write`), so a storm there has fire, fall or silence memories to condense. |
+
