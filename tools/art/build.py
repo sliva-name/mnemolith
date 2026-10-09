@@ -55,7 +55,13 @@ class Out:
         return p
 
     def png(self, rel, img):
-        img.save(self.path(rel), optimize=False)
+        # Keep a file whose pixels already match: the PNG bytes depend on the Pillow/zlib build, the art does not.
+        p = self.path(rel)
+        if os.path.exists(p):
+            with Image.open(p) as old:
+                if old.size == img.size and np.array_equal(np.array(old.convert('RGBA')), np.array(img.convert('RGBA'))):
+                    return
+        img.save(p, optimize=False)
 
     def json(self, rel, obj):
         with open(self.path(rel), 'w') as fh:

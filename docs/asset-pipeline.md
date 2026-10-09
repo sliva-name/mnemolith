@@ -20,7 +20,7 @@ python tools/art/validate_assets.py [--vanilla <extracted client assets>]
 python tools/art/preview.py --before <git rev> --out <dir> [--vanilla <extracted client assets>]
 ```
 
-Python 3.10+, Pillow and numpy. Every asset seeds its random source from its own name (`mnart.core.rng_for`), so output does not depend on build order. `build.py` also deletes files the pipeline replaced (`STALE`), so a rename never leaves an orphan texture behind.
+Python 3.10+ with the pinned Pillow and numpy in `tools/art/requirements.txt` (`pip install -r tools/art/requirements.txt`). A PNG whose pixels already match is left untouched, so a rebuild on another Pillow or zlib build does not rewrite files whose art did not change (PNG bytes depend on the encoder; the art does not). Run `--check` and `validate_assets.py` before committing art (a CI step for both is proposed in the PR that added this note; it needs a maintainer push because workflow files cannot be changed by the bot's token). Every asset seeds its random source from its own name (`mnart.core.rng_for`), so output does not depend on build order. `build.py` also deletes files the pipeline replaced (`STALE`), so a rename never leaves an orphan texture behind.
 
 ## Layout
 
@@ -203,7 +203,7 @@ Sprites in `textures/particle/` are 32×32 white shapes with a soft alpha halo: 
 
 ## Field guide
 
-37 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
+37 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The reference page holds two rows of nine slots; the thirteen imprint slip tag variants sit together on a strip under them, and the build fails if the slot grid would overflow. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
 
 ## Validation
 
