@@ -1,0 +1,17 @@
+{
+  "type": "mnemolith:biome_region",
+  "biome": "mnemolith:memory_hollows",
+  "hosts": "#mnemolith:memory_hollows_hosts",
+  "weirdness": [
+    0.08,
+    0.26
+  ],
+  "erosion": [
+    0.2,
+    0.4
+  ],
+  "continentalness": [
+    0.0,
+    0.5
+  ]
+}

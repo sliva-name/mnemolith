@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "mnemolith:block/hollowstone_brick_slab"
+    },
+    "type=double": {
+      "model": "mnemolith:block/hollowstone_bricks"
+    },
+    "type=top": {
+      "model": "mnemolith:block/hollowstone_brick_slab_top"
+    }
+  }
+}

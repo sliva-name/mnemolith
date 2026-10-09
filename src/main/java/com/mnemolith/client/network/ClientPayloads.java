@@ -25,5 +25,6 @@ public final class ClientPayloads {
         event.register(com.mnemolith.network.ServerTuningPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.network.ServerTuning.accept(payload)));
         event.register(com.mnemolith.network.TraceMarkPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.recall.TraceMarks.accept(payload)));
         event.register(com.mnemolith.network.PastVisionPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.recall.PastVision.accept(payload)));
+        event.register(com.mnemolith.network.HollowFlickerPayload.TYPE, (payload, context) -> context.enqueueWork(() -> com.mnemolith.client.hollows.FlickerRenderer.accept(payload)));
     }
 }

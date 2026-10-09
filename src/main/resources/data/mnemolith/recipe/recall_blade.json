@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "I": "minecraft:iron_ingot",
     "S": "minecraft:stick"
   },

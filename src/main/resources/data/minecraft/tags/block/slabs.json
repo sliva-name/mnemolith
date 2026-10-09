@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "mnemolith:archival_stratum_slab",
-    "mnemolith:mute_stone_slab"
+    "mnemolith:mute_stone_slab",
+    "mnemolith:hollowstone_brick_slab"
   ]
 }

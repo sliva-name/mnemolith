@@ -128,6 +128,16 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> MUTE_STONE_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.MUTE_STONE_WALL);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SCAR_GLASS_PANE = ITEMS.registerSimpleBlockItem(ModBlocks.SCAR_GLASS_PANE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> PRESSURE_LAMP = ITEMS.registerSimpleBlockItem(ModBlocks.PRESSURE_LAMP);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOW_TURF = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOW_TURF);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOWSTONE = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOWSTONE);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOWSTONE_BRICKS = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOWSTONE_BRICKS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOWSTONE_BRICK_STAIRS = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOWSTONE_BRICK_STAIRS);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOWSTONE_BRICK_SLAB = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOWSTONE_BRICK_SLAB);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> HOLLOWSTONE_BRICK_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.HOLLOWSTONE_BRICK_WALL);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> RECOLLITE_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.RECOLLITE_ORE);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> RECOLLITE_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.RECOLLITE_BLOCK);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> FORGET_ME_NOT = ITEMS.registerSimpleBlockItem(ModBlocks.FORGET_ME_NOT);
+    public static final DeferredItem<net.minecraft.world.item.Item> RECOLLITE_SHARD = ITEMS.registerItem("recollite_shard", net.minecraft.world.item.Item::new, properties -> properties.stacksTo(64));
     /** Optional music disc — storm/Scar motif placeholders (Z1). */
     public static final DeferredItem<Item> MUSIC_DISC_RECOLLECTION = ITEMS.registerItem(
             "music_disc_recollection",

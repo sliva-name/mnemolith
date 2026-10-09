@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "G": "minecraft:glass_pane",
     "C": "minecraft:copper_ingot"
   },

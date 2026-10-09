@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "P": "minecraft:paper",
     "I": "minecraft:ink_sac"
   },

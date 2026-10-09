@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'players', 'reference')
+         'guard', 'world', 'places', 'hollows', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -990,6 +990,41 @@ def p_guard():
     for k, t in enumerate(('death', 'explosion', 'silence')):
         p.tag(t, 440, 130 + k * 42)
     return p.image()
+
+
+FLICKER_TINT = (220, 224, 246, 150)     # FlickerRenderer's pale base, translucent
+
+
+def p_hollows():
+    """Memory Hollows: faded turf over hollowstone, a broken remnant showing recollite, a flicker walking past."""
+    p = Page('hollows')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('h_brick', 'hollowstone_bricks'), ('h_ore', 'recollite_ore'), ('h_crystal', 'recollite_block')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(370, 230, 27)
+    d.ground(7, 5, 2, top='h_top', side='h_side', under='h_stone', skip={(5, 4), (6, 4), (6, 3)})
+    # the sunken corner: one step down, faded turf on the floor
+    for i, j in ((5, 4), (6, 4), (6, 3)):
+        d.add(cube('h_top', 'h_side', i - 3.5, -2, j - 2.5))
+    # remnant: a broken brick pillar with an ore block showing, and a lone stump beside it
+    for k, t in enumerate(('h_brick', 'h_ore', 'h_brick', 'h_brick')):
+        d.add(cube(t, t, -3.5, k, -1.5))
+    d.add(cube('h_brick', 'h_brick', -3.5, 0, -0.5))
+    d.add(cube('h_crystal', 'h_crystal', -3.5, 1, -0.5, h=0.5))
+    d.add(cube('h_stone', 'h_stone', -1.5, 0, 1.5, h=0.5))
+    d.add(mob_quads('echo', 0.5, 0, 0.0, 210), light='entity', tint=FLICKER_TINT)
+    d.add(mob_quads('echo', 1.5, 0, -2.0, 160), light='entity', tint=(*FLICKER_TINT[:3], 90))
+    p.center(d.render(0, 0.3, 0), 200, 132)
+    p.sprite('recollite_shard', 430, 62, 2, src=_hollows_tex('item', 'recollite_shard'))
+    p.sprite('forget_me_not', 430, 134, 2, src=_hollows_tex('block', 'forget_me_not'))
+    plate = Diorama(70, 70, 30)
+    plate.add(block_quads('mnemolith:block/recollite_ore', -0.5, 0, -0.5))
+    p.center(plate.render(0, 0.45, 0), 430, 206)
+    return p.image()
+
+
+def _hollows_tex(kind, name):
+    return Image.fromarray(R.texture('mnemolith:%s/%s' % (kind, name)))
 
 
 BUILDERS = {n: globals()['p_' + n] for n in PAGES}

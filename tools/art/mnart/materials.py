@@ -30,6 +30,9 @@ MATERIALS = {
     'ember': ('ember', 4, 'glow', None),
     'glass': ('glass', 4, 'glass', None),
     'pale': ('pale', 4, 'fine', None),
+    'hollowstone': ('pale', 3, 'stone', 'chip'),
+    'lilac': ('lilac', 3, 'mottle', None),
+    'recollite': ('recollite', 4, 'facet', None),
 }
 
 

@@ -19,6 +19,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
 | `mnemolith:suite_guardqa` | `/mnemolith guardqa` (24) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
+| `mnemolith:suite_hollowsqa` | `/mnemolith hollowsqa` (22) | The flat test world has no multi-noise source, so the biome hooks are checked on overworld and nether sources built from the presets; features run on a pad in a cleared chunk |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -472,6 +473,36 @@ The field-guide page is the bone center of that panel (`#E6DCC8`). Title, page n
 | `GuiArt.GUIDE_DOT` | `#6B6258` | Inactive field-guide page dot on the bone page |
 
 A physical client logs `Mnemolith gui contrast glyph=ffe6dcc8 shadow=ff070b18 panel=ff1c244a accent=ff8ed9c8 fail=ffffb089` from `MnemolithClient`. That class is not loaded on a dedicated server.
+
+## Memory Hollows QA
+
+`/mnemolith hollowsqa` (gamemaster) checks stage 1 of Memory Hollows ([design note](design/memory-hollows.md)). `/mnemolith hollows survey [radius]` samples the overworld biome source every 64 blocks and prints the share of hollows among all samples and among host land plus the nearest hit; `/mnemolith hollows flicker [scene]` sends one flicker 6 blocks ahead.
+
+| Flag | What is proved |
+| --- | --- |
+| `biome`, `region`, `hosts` | The biome is registered, the `biome_region` modifier registered its region, the host tag has its 11 biomes |
+| `possibleOverworld`, `possibleNether` | A fresh overworld multi-noise source lists the biome among its possible biomes; a nether source does not |
+| `windowReplaces`, `outsideStays`, `nonHostStays` | A host biome inside the climate window becomes Memory Hollows; outside the window, or for a non-host biome, vanilla's pick stays |
+| `ground`, `ore` | The ground pass turns grass into faded turf and stone near the surface into hollowstone, and seeds recollite clusters inside the square |
+| `remnant`, `sink` | A remnant stands on sturdy ground and refuses water; a sink carves a dish on flat ground and refuses slopes |
+| `turfHoldsFlower` | A forget-me-not survives on faded turf |
+| `oreDrops`, `turfDrops` | Ore drops 1–2 shards without silk touch and itself with it; turf drops dirt, or itself with silk touch |
+| `flickerScenes`, `flickerPick`, `densityOff` | Tags map to the five scenes; a spot is picked only in the biome and in a loaded chunk; density 0 sends nothing |
+| `recipes`, `advancements` | Brick, stonecutting, smelting, blasting, block and dye recipes and the two advancements load |
+| `crystalTag` | The shard is a memory crystal; every Mnemolith ingredient that takes an amethyst shard also takes a recollite shard |
+| `guidePage` | The guide has the `hollows` page and `PAGE_COUNT` matches |
+
+Manual (fresh normal world, seed 424242, 2026-10-10):
+
+- [x] `/mnemolith hollows survey 4096` after tuning: 0.69% of all samples, 1.62% of host land; `/locate biome mnemolith:memory_hollows` finds one 706 blocks from spawn. The first window (weirdness 0.05..0.3, erosion 0.1..0.45) gave 7.4% of host land, too common.
+- [x] Fly there: pale turf with ragged 4-block biome edges, no chunk-square seams, vanilla terrain and rivers unchanged around it.
+- [x] Remnant pillars and an arch of hollowstone brick, sinks, fallen birches, forget-me-nots.
+- [x] Clearing hollowstone out of a 13×27×13 box leaves recollite ore floating (6 blocks there, 17 in a 31×31 box); stone is hollowstone down to about 18 blocks under the surface.
+- [x] A flicker walks toward the player and fades; natural ones show up in the log at about one per 8 s with density 1.
+- [x] All new blocks placed, including a double slab (its blockstate first pointed to a missing model; fixed).
+- [x] JEI: shard from the block, smelting and blasting, the info page for ore and shard; hollowstone works as stone in vanilla recipes; bricks into stairs, slab and wall, plus stonecutting. RU and EN.
+- [x] Field guide page «Лощины памяти» / "Memory Hollows" with its picture, RU and EN. The advancement «Там, где стёрся цвет» is granted on entering the biome.
+- [x] MSPT with density 0, 1 and 4: no difference (see [performance.md](performance.md#memory-hollows)).
 
 ## Debug commands
 

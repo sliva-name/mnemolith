@@ -73,6 +73,16 @@ public final class MnemolithJeiPlugin implements IModPlugin {
                 new ItemStack(ModItems.COMPOSITION_REEL.get()),
                 VanillaTypes.ITEM_STACK,
                 Component.translatable("mnemolith.jei.composition.hint"));
+        // Memory Hollows: where the biome's blocks come from (their crafting, smelting and stonecutting recipes are
+        // vanilla recipe types, which JEI lists on its own).
+        registration.addIngredientInfo(
+                List.of(new ItemStack(ModItems.RECOLLITE_ORE.get()), new ItemStack(ModItems.RECOLLITE_SHARD.get())),
+                VanillaTypes.ITEM_STACK,
+                Component.translatable("mnemolith.jei.hollows.recollite"));
+        registration.addIngredientInfo(
+                List.of(new ItemStack(ModItems.HOLLOW_TURF.get()), new ItemStack(ModItems.HOLLOWSTONE.get()), new ItemStack(ModItems.FORGET_ME_NOT.get())),
+                VanillaTypes.ITEM_STACK,
+                Component.translatable("mnemolith.jei.hollows.ground"));
     }
 
     @Override

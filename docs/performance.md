@@ -68,3 +68,18 @@ Neither adds a per-tick scan. A linked echo looks for its partner through the ow
 | Main-world copy | 1191 | 553 |
 
 The mirrored break is dominated by the fake player's break event and the drop; it happens only when the player breaks a block while possessing a linked echo. A draw runs once per 10 s per drawing vault. No new network payload: the hop reuses the unpossess payload; block states, particles and sounds are vanilla sends.
+
+## Memory Hollows
+
+The biome hook runs inside `MultiNoiseBiomeSource.getNoiseBiome`: one list read when no region is active, otherwise one host-tag check on the biome vanilla already picked and, for a host, five climate comparisons. `possibleBiomes` is augmented once per source and cached. Flickers cost one random roll per Overworld player per second; only a player standing in the biome pays two biome reads, a heightmap read and an imprint read, and at most one small payload every 3 s.
+
+Measured on a fresh normal world (seed 424242, dedicated dev server, one client standing in Memory Hollows at -738 63 50, view distance 6). `/tick query` averages over the last 100 ticks, six samples per setting after a 15 s settle; the config file is hot-reloaded between runs:
+
+| `hollowFlickerDensity` | MSPT avg (six samples) | P95 range | Flickers in 33 s |
+| --- | --- | --- | ---: |
+| 0 (off) | 2.5–2.9 | 3.1–4.3 ms | 0 |
+| 1 (default) | 2.7–3.0 | 3.6–4.1 ms | 4 |
+| 4 (max) | 2.5–2.7 | 3.2–4.0 ms | 10 |
+| 0 again | 2.6–3.0 | 3.3–4.5 ms | 0 |
+
+No difference above noise. Density 4 is capped by the 60-tick cooldown (at most 11 in 33 s).

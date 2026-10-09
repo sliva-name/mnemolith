@@ -74,6 +74,8 @@ public final class MnemolithGameTests {
         suite("stormqa", StormQa::check, Map.of());
         suite("relayqa", com.mnemolith.command.qa.RelayQa::check, Map.of());
         suite("guardqa", com.mnemolith.command.qa.GuardQa::check, Map.of());
+        // Memory Hollows: region hooks on sources built in the test, features on a pad, drops, flickers, data.
+        suite("hollowsqa", com.mnemolith.command.qa.HollowsQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());

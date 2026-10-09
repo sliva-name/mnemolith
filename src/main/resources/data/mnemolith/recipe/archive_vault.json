@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "S": "mnemolith:archival_stratum",
-    "A": "minecraft:amethyst_shard",
+    "A": "#mnemolith:memory_crystals",
     "N": "mnemolith:extraction_needle"
   },
   "pattern": [

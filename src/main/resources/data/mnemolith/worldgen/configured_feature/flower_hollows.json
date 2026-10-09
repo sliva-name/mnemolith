@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "mnemolith:forget_me_not"
+          },
+          "weight": 5
+        },
+        {
+          "data": {
+            "Name": "minecraft:azure_bluet"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:lily_of_the_valley"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "mnemolith:block/hollow_turf_top",
+    "side": "mnemolith:block/hollow_turf_side",
+    "bottom": "minecraft:block/dirt",
+    "particle": "mnemolith:block/hollow_turf_top"
+  }
+}

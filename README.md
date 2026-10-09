@@ -124,6 +124,10 @@
 
 **Архивное хранилище** (архивный пласт и аметист вокруг иглы извлечения) делает давление тем, чем вы управляете. Включите его пустой рукой — раз в 10 секунд оно забирает самый громкий отпечаток из своего чанка и восьми соседних, до 12. Ничего не стирается: 15% хранимого давит на его собственный чанк. Если этот чанк дошёл до разлома, половина содержимого выплёскивается обратно на каждом такте хранилища, пока чанк не успокоится; взрыв выплёскивает всё; глушащий камень глотает выплеск (память теряется). Добытое киркой хранилище сохраняет содержимое, но переносимое хранилище протекает — по одному отпечатку там, где вы стоите, каждые 60 секунд. Тратьте его иглой (один бланк), ПКМ присев пустой рукой (выпустить всё в чанк; под глушащим камнем отказ) или дайте покоящемуся хранилищу кормить привитого отголоска в 4 блоках. Архивариусы со свободными руками грабят заполненное хранилище в 10 блоках. `/mnemolith relayqa` проверяет обе системы; заметки по дизайну — в [docs/echo-design.md](docs/echo-design.md) §15.
 
+### Лощины памяти
+
+Редкий бледный биом внутри равнин, лесов, лугов и тайги: **выцветший дёрн** поверх **пустокамня**, разбитые колонны и арки из пустокаменных кирпичей, неглубокие впадины, берёзы и **незабудки**. В камне в нескольких блоках под дёрном и в останках лежит **реколлитовая руда**; **осколок реколлита** заменяет осколок аметиста во всех рецептах Mnemolith. Пустокамень режется на камнерезе в кирпичи, ступени, плиты и ограды. По лощине бродят **вспышки** — бледные фигуры, которые несколько секунд повторяют то, что отпечаталось в чанке (шаг, работу, падение, колено, гаснущий факел); они безвредны и ничего не пишут в мир. Биом ставится поверх выбранных биомов-хозяев модификатором `mnemolith:biome_region`, не трогая ванильный рельеф и биомы других модов (`/locate biome mnemolith:memory_hollows`). `/mnemolith hollowsqa` проверяет биом, регион, особенности, дроп, вспышки и данные; заметка по дизайну — [docs/design/memory-hollows.md](docs/design/memory-hollows.md).
+
 ### Живая память
 
 Мир хранит это прохождение и молчит об этом.
@@ -153,6 +157,8 @@ NeoForge пишет три файла. Правите их при закрыто
 `spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна. `spawnRates.imprintNodeWeight` по-прежнему зарезервирован и ни на что не влияет.
 
 `relay.relayEnabled` (true), `relay.relayLinkRange` (16 блоков для связи), `relay.relayHopCooldownSeconds` (5) и `relay.relayMirror` (true) задают связь отголосков. `vault.vaultsEnabled` (true), `vault.vaultCapacity` (12), `vault.vaultDrawSeconds` (10), `vault.vaultBleed` (0.15 хранимого давления на чанк хранилища) и `vault.vaultLeakSeconds` (60; 0 выключает протечку) задают архивные хранилища. Все применяются при следующем таком действии; связи и сохранённые отпечатки остаются, пока функция выключена.
+
+`worldGen.memoryHollowsEnabled` (true, нужен перезапуск) ставит лощины памяти в новых чанках; уже созданные остаются. `worldGen.hollowFlickerDensity` (общий, 0–4, по умолчанию 1 — примерно одна вспышка в 7 секунд на игрока в лощине; 0 выключает) применяется сразу. Клиентский `hollowFlickers` (true) прячет вспышки только у вас.
 
 Мир может переопределить серверный файл, положив копию в папку `serverconfig` этого мира (`saves/<world>/serverconfig` на клиенте, `<server>/world/serverconfig` на выделенном сервере).
 
@@ -386,6 +392,10 @@ A **relay thread** (string + echo slip + copper ingot, shapeless, gives 2) ties 
 
 An **archive vault** (archival stratum and amethyst around an extraction needle) makes pressure something you manage. Switch it on with an empty hand and every 10 seconds it draws the loudest imprint out of its chunk and the eight around it, up to 12. Nothing is deleted: 15% of what it holds bleeds into its own chunk's pressure. If that chunk fractures, half its contents spill back each vault tick until it calms; an explosion spills everything; a mute stone swallows a spill (lost). Mine it with a pickaxe and it keeps its contents, but a carried vault leaks one imprint where you stand every 60 seconds. Spend it with the needle (one slip), a sneaking empty-hand click (discharge everything into the chunk, refused under a mute stone), or let an idle vault feed a grafted echo within 4 blocks. Archivists with free hands raid a filled vault within 10 blocks. `/mnemolith relayqa` checks both; design notes are in [docs/echo-design.md](docs/echo-design.md) §15.
 
+### Memory Hollows
+
+A rare pale biome inside plains, forests, meadows and taiga: **faded turf** over **hollowstone**, broken pillars and arches of hollowstone brick, shallow sinks, birches and **forget-me-nots**. **Recollite ore** sits in the stone a few blocks under the turf and in the remnants; a **recollite shard** works wherever an amethyst shard does in Mnemolith recipes. Hollowstone cuts into bricks, stairs, slabs and walls. **Flickers** drift through a hollow: pale figures that replay a few seconds of what the chunk's imprints remember (a walk, work, a fall, a kneel, a guttering torch); they are harmless and write nothing to the world. The biome is laid over chosen host biomes by the `mnemolith:biome_region` biome modifier, leaving vanilla terrain and other mods' biomes alone (`/locate biome mnemolith:memory_hollows`). `/mnemolith hollowsqa` checks the biome, the region, the features, drops, flickers and data; the design note is [docs/design/memory-hollows.md](docs/design/memory-hollows.md).
+
 ### Living memory
 
 The world keeps this play, and it stays quiet about it.
@@ -415,6 +425,8 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 `spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible. `spawnRates.imprintNodeWeight` is still reserved and has no effect.
 
 `relay.relayEnabled` (true), `relay.relayLinkRange` (16 blocks to tie), `relay.relayHopCooldownSeconds` (5) and `relay.relayMirror` (true) shape the echo relay. `vault.vaultsEnabled` (true), `vault.vaultCapacity` (12), `vault.vaultDrawSeconds` (10), `vault.vaultBleed` (0.15 of stored pressure on the vault's chunk) and `vault.vaultLeakSeconds` (60; 0 turns leaking off) shape archive vaults. All apply the next time that action runs; links and stored imprints stay saved while a feature is off.
+
+`worldGen.memoryHollowsEnabled` (true, needs a restart) places Memory Hollows in new chunks; existing ones stay. `worldGen.hollowFlickerDensity` (common, 0 to 4, default 1, about one flicker every 7 seconds per player in a hollow; 0 turns them off) applies at once. The client `hollowFlickers` (true) hides flickers just for you.
 
 A world can override the server file by placing a copy in that world's `serverconfig` folder (`saves/<world>/serverconfig` on the client, `<server>/world/serverconfig` on a dedicated server).
 

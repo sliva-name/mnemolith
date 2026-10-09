@@ -16,15 +16,17 @@ Mnemolith on a dedicated server is server-authoritative. Clients send a lens req
 | Recollection storm and Scar | Server only (`Storms`, `StormData`). The natural roll runs on each player's tick in that player's chunk; a shard call is decided where it is used. Boss bars are vanilla `ServerBossEvent`s for players within 48 blocks; the Scar is one server entity with four synced fields (temper mask, pinned, reading progress, casting). Reading pins it for everyone; its recall hits every player within 10 blocks; the drop goes to the ground at its death. No new payload, protocol version unchanged |
 | Echo relay | Server only (`EchoRelays`). The link is a UUID on each echo, synced to nobody; the other end is looked up in the owner's registry entries, so only the owner's echoes can be tied, and only by the owner. The hop reuses the existing unpossess payload (`EchoUnpossessPayload`) and reads the server-side sneak state; the mirror is fed by the server's own break and place events. No new payload, protocol version unchanged |
 | Archive vault | One block entity; whoever clicks uses it (like a chest). Drawing, rupture and feeding run on its server tick; the contents never go to clients except the count in the item tooltip (an item component). Carrying leaks on the carrier's own tick. No new payload, protocol version unchanged |
+| Memory flicker | Server only (`HollowFlickers`): once a second per Overworld player standing in Memory Hollows, a roll against `hollowFlickerDensity`, then one spot in a loaded chunk; `HollowFlickerPayload` goes to everyone within 48 blocks of the spot, so friends see the same figure. Nothing is written to the world; the client may hide it (`visuals.hollowFlickers`) |
 | Archivist steal | One slip. An open container is taken before the player's inventory, so both players viewing that container see the same removal |
 
-Payloads are registered as version `5` in `ModNetwork` (2 added the snapshot scope; later bumps cover graft/storm/relay/vault and follow-on payloads):
+Payloads are registered as version `8` in `ModNetwork` (2 added the snapshot scope; later bumps cover graft/storm/relay/vault and follow-on payloads; 8 added `hollow_flicker`). A client with another version is refused at login:
 
 | Payload | Direction | What it carries |
 | --- | --- | --- |
 | `mnemolith:request_pressure` | client to server | One boolean, kept so older clients still match; the client sets it for shimmer without a lens or for fracture feel. The server ignores it as permission. A live player who holds a lens, or any player when `gameplay.allowAmbientPressure` is true, gets a full snapshot; anyone else gets a band-only one. It does not write memory |
 | `mnemolith:pressure_snapshot` | server to that player | A scope and up to 49 nearby chunks. `FULL`: pressure, band, and chunk state for the lens radius. `BANDS`: only overloaded and fracture chunks within 2, pressure 0, state `NORMAL`; the client uses it for fracture feel only. A repeat is skipped when the memory epoch, dimension, chunk, and the server's full, ambient, or band-only decision are unchanged |
 | `mnemolith:open_catalog` | server to that player | That player's tag and formula bits. The screen class is client-only |
+| `mnemolith:hollow_flicker` | server to players near the spot | Block position, yaw, scene (walk, work, fall, kneel, flare) and the imprint tag that tints it. The client draws it for 4 s with no entity |
 
 Logout and a dimension change drop the saved lens stamp. The client also drops its snapshot when the dimension changes, so matching chunk coordinates in another dimension cannot keep the previous band on screen. Overworld teleports already miss the stamp because the chunk coordinates are part of it.
 

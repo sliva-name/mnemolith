@@ -6,6 +6,7 @@
     "minecraft:savanna_plateau",
     "minecraft:meadow",
     "minecraft:desert",
-    "#minecraft:is_badlands"
+    "#minecraft:is_badlands",
+    "mnemolith:memory_hollows"
   ]
 }
