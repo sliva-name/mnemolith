@@ -140,6 +140,7 @@ public final class MnemolithGameTests {
         quick("neg_save_memories", SaveNegativeTests::memories);
         quick("neg_remember_blocked", RememberNegativeTests::blocked);
         quick("neg_commands", CommandNegativeTests::badCalls);
+        quick("debug_commands", DebugCommandTests::pressureAndStorm);
         quick("neg_config_spec", ConfigNegativeTests::specRejectsGarbage);
         quick("neg_config_worldgen_bounds", ConfigNegativeTests::worldgenBounds);
         live("neg_mite_dead_owner", MiteNegativeTests::deadOwnerGetsNothing, 200);
