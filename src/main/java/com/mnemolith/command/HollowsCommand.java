@@ -75,8 +75,12 @@ public final class HollowsCommand {
         float yaw = source.getRotation().y;
         Vec3 ahead = eye.add(-Mth.sin(yaw * Mth.DEG_TO_RAD) * 6.0D, 0.0D, Mth.cos(yaw * Mth.DEG_TO_RAD) * 6.0D);
         BlockPos at = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(ahead));
-        HollowFlickers.send(level, new HollowFlickerPayload(at, yaw + 180.0F, Mth.clamp(scene, 0, HollowFlickers.SCENES - 1), -1));
-        source.sendSuccess(() -> Component.literal("hollows flicker scene=" + scene + " at " + at.toShortString()), false);
+        // carry the spot's own imprint, as a natural flicker would, so it can be caught into a slip
+        com.mnemolith.imprint.ImprintTag tag = HollowFlickers.imprintAt(
+                com.mnemolith.world.LoadedChunkMemory.existing(level.getChunkAt(at)), level.getRandom());
+        int shown = scene < 0 ? HollowFlickers.scene(tag) : Mth.clamp(scene, 0, HollowFlickers.SCENES - 1);
+        HollowFlickers.send(level, new HollowFlickerPayload(at, yaw + 180.0F, shown, tag == null ? -1 : tag.ordinal()));
+        source.sendSuccess(() -> Component.literal("hollows flicker scene=" + shown + " tag=" + tag + " at " + at.toShortString()), false);
         return 1;
     }
 

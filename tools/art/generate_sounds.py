@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-"""Procedural placeholder OGGs for Mnemolith (Z1). Distinct tones, not AAA."""
-import math, os, struct, subprocess, wave
+"""Procedural placeholder OGGs for Mnemolith (Z1). Distinct tones, not AAA.
+
+Everything here is synthesised from sine/saw/noise math: no samples, no third-party audio.
+``--hollows`` writes only the Memory Hollows sounds (stage 2), leaving the older files untouched.
+"""
+import math, os, struct, subprocess, sys, wave
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(REPO, 'src', 'main', 'resources', 'assets', 'mnemolith', 'sounds')
@@ -62,7 +66,75 @@ def music_loop(name, base_freq, seconds=12.0, dark=True):
         out.append(s * max(0.0, min(1.0, edge)))
     save_ogg(name, out, stream=True)
 
+def bell(freq, dur, vol=0.3, decay=2.5):
+    """A struck glass bell: a few inharmonic partials with an exponential tail."""
+    n = int(SR * dur); out = []
+    partials = ((1.0, 1.0), (2.76, 0.45), (5.4, 0.2), (8.93, 0.08))
+    for i in range(n):
+        t = i / SR
+        env = min(1.0, t / 0.004) * math.exp(-decay * t)
+        s = sum(math.sin(2 * math.pi * freq * m * t) * a * math.exp(-decay * m * 0.35 * t) for m, a in partials)
+        out.append(s * vol * env)
+    return out
+
+
+def at(samples, offset_s, total):
+    """``samples`` placed ``offset_s`` seconds into a silent track of ``total`` samples."""
+    start = int(offset_s * SR)
+    out = [0.0] * total
+    for i, v in enumerate(samples):
+        if start + i < total:
+            out[start + i] = v
+    return out
+
+
+def hollows_music(name, seconds=48.0):
+    """Memory Hollows: a soft pad on D with slow glass-bell phrases. Original, generated here."""
+    n = int(SR * seconds)
+    pad_track = []
+    for i in range(n):
+        t = i / SR
+        lfo = 0.55 + 0.45 * math.sin(2 * math.pi * 0.05 * t)
+        s = 0.0
+        for f, v in ((73.42, 0.16), (110.0, 0.10), (146.83, 0.07), (220.0, 0.035)):
+            s += math.sin(2 * math.pi * f * t + 0.3 * math.sin(2 * math.pi * 0.11 * t)) * v
+        edge = min(t, seconds - t, 3.0) / 3.0
+        pad_track.append(s * lfo * max(0.0, min(1.0, edge)))
+    # D dorian phrases, a note every 1.5 s with rests, each bell rings out
+    notes = [587.33, 659.25, 698.46, 880.0, 783.99, 698.46, 659.25, 0,
+             523.25, 587.33, 659.25, 587.33, 440.0, 0, 493.88, 587.33,
+             698.46, 659.25, 587.33, 0, 880.0, 783.99, 659.25, 587.33,
+             0, 440.0, 523.25, 587.33]
+    tracks = [pad_track]
+    for k, f in enumerate(notes):
+        if f:
+            tracks.append(at(bell(f, 3.5, 0.11, 1.6), 2.0 + k * 1.5, n))
+    save_ogg(name, mix(*tracks), stream=True)
+
+
+def hollows_sounds():
+    # ambient additions: a single far glass chime, pitch varied in sounds.json
+    save_ogg('hollows_chime', pad(bell(1174.66, 1.6, 0.18, 3.0), int(1.8 * SR)))
+    # mood: a low breath under the turf, like a memory almost surfacing
+    n = int(SR * 3.0); breath = []
+    for i in range(n):
+        t = i / SR
+        env = math.sin(math.pi * t / 3.0) ** 2
+        s = math.sin(2 * math.pi * 92.5 * t) * 0.18 + math.sin(2 * math.pi * 138.6 * t) * 0.08
+        s += math.sin(t * 1834.1) * math.cos(t * 1213.7) * 0.05
+        breath.append(s * env)
+    save_ogg('hollows_mood', breath)
+    # catching a flicker: a rising pair of bells and a short shimmer
+    catch = mix(bell(880.0, 0.9, 0.2, 4.0), at(bell(1318.5, 0.8, 0.18, 4.5), 0.09, int(0.9 * SR)),
+                at(tone(2637.0, 0.25, 0.05, 0.02, 0.2), 0.12, int(0.9 * SR)))
+    save_ogg('flicker_catch', catch)
+    hollows_music('music_memory_hollows')
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == '--hollows':
+        hollows_sounds()
+        return
     save_ogg('mite_ambient', mix(tone(1800, 0.08, 0.35, 0.005, 0.03, 'square'),
         pad(tone(2400, 0.05, 0.25, 0.002, 0.02, 'sine'), int(0.18*SR)) + tone(2100, 0.06, 0.3, 0.002, 0.02, 'square')))
     save_ogg('mite_hurt', tone(900, 0.12, 0.45, 0.005, 0.04, 'saw'))
@@ -88,6 +160,7 @@ def main():
     music_loop('music_storm_gathering', 55.0, 14.0, True)
     music_loop('music_scar_fight', 70.0, 12.0, True)
     music_loop('music_disc_recollection', 65.0, 16.0, True)
+    hollows_sounds()
 
 if __name__ == '__main__':
     main()

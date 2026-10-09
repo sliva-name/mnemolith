@@ -146,6 +146,9 @@ final class Round2Tests {
      * position the template asks for. Templates with a second "air" entry per position used to place as a bare
      * hole with only the chests, walls and lanterns left.
      */
+    /** Feet value of a template walked through on several levels (stairs): see {@link #assertClimbable}. */
+    private static final int CLIMB = -2;
+
     static void templatesPlace(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         // name, main wall block, feet height of the ground floor above the template's bottom (-1: not walked through).
@@ -157,6 +160,8 @@ final class Round2Tests {
                 // On 8 blocks of basalt piers.
                 {"ashen_archive", Blocks.POLISHED_BLACKSTONE_BRICKS, 9},
                 {"chronicle_observatory", Blocks.STONE_BRICKS, -1},
+                // Sunk 8 blocks into the turf: the doorway is at ground level and a stair runs down to the hall.
+                {"sunken_archive", ModBlocks.HOLLOWSTONE_BRICKS.get(), CLIMB},
         };
         // High above the test lane so neighbouring tests are not touched; cleared again afterwards.
         BlockPos origin = helper.absolutePos(BlockPos.ZERO).atY(level.getMaxY() - 24);
@@ -177,6 +182,8 @@ final class Round2Tests {
             int feet = (Integer) c[2];
             if (feet >= 0) {
                 assertWalkable(helper, level, name, box, box.minY() + feet);
+            } else if (feet == CLIMB) {
+                assertClimbable(helper, level, name, box);
             }
             int placed = 0;
             for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
@@ -227,6 +234,64 @@ final class Round2Tests {
                 queue.add(next);
             }
         }
+        assertReached(helper, level, name, box, seen);
+    }
+
+    /**
+     * Like {@link #assertWalkable}, over several levels: from the ring around the template at any height, a step is
+     * one block sideways, level or one up or down, onto something to stand on (stairs and slabs included). The
+     * sunken archive is entered at ground level and its chests stand eight blocks lower.
+     */
+    private static void assertClimbable(GameTestHelper helper, ServerLevel level, String name, BoundingBox box) {
+        int minX = box.minX() - 1;
+        int maxX = box.maxX() + 1;
+        int minZ = box.minZ() - 1;
+        int maxZ = box.maxZ() + 1;
+        Set<BlockPos> seen = new HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (int y = box.minY(); y <= box.maxY(); y++) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    if (x == minX || x == maxX || z == minZ || z == maxZ) {
+                        BlockPos start = new BlockPos(x, y, z);
+                        if (fits(level, start) && seen.add(start)) {
+                            queue.add(start);
+                        }
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            BlockPos at = queue.poll();
+            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    BlockPos next = at.relative(direction).above(dy);
+                    if (next.getY() < box.minY() || next.getY() > box.maxY() || next.getX() < minX || next.getX() > maxX
+                            || next.getZ() < minZ || next.getZ() > maxZ || seen.contains(next) || !fits(level, next)
+                            || !standsOn(level, next)) {
+                        continue;
+                    }
+                    // Up: head room over the current spot. Down: walk out level first, then drop.
+                    if (dy == 1 && !low(level, at.above(2))) {
+                        continue;
+                    }
+                    if (dy == -1 && !low(level, next.above(2))) {
+                        continue;
+                    }
+                    seen.add(next);
+                    queue.add(next);
+                }
+            }
+        }
+        assertReached(helper, level, name, box, seen);
+    }
+
+    private static boolean standsOn(ServerLevel level, BlockPos feet) {
+        return !level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
+                || !level.getBlockState(feet.below()).getCollisionShape(level, feet.below()).isEmpty();
+    }
+
+    private static void assertReached(GameTestHelper helper, ServerLevel level, String name, BoundingBox box, Set<BlockPos> seen) {
         int targets = 0;
         for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
             net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);

@@ -41,10 +41,14 @@ public final class MnemonicJigsawStructure extends Structure {
         // The template has 8 blocks of basalt piers under its floor (tools/build_w2_w3_structures.py, ASHEN_FOUNDATION),
         // so it starts at 24 to keep the floor at 32, just over the Nether's lava sea.
         ASHEN_ARCHIVE("ashen_archive", WorldgenTuning::ashenArchiveEnabled, 24, false),
-        MUTE_LIBRARY("mute_library", WorldgenTuning::muteLibraryEnabled, 0, true);
+        MUTE_LIBRARY("mute_library", WorldgenTuning::muteLibraryEnabled, 0, true),
+        // Projected to the surface and then sunk 8 blocks: the hall floor sits under the turf and only the roof and
+        // the belfry show (tools/build_w2_w3_structures.py, sunken_archive). Memory Hollows only, by its biome tag.
+        SUNKEN_ARCHIVE("sunken_archive", WorldgenTuning::sunkenArchiveEnabled, -8, true);
 
         final String id;
         final BooleanSupplier enabled;
+        /** Start Y; for a surface kind, the offset from the surface instead. */
         final int absoluteY;
         final boolean projectToSurface;
 
@@ -60,7 +64,7 @@ public final class MnemonicJigsawStructure extends Structure {
         }
 
         HeightProvider height() {
-            if (this.projectToSurface) {
+            if (this.projectToSurface && this.absoluteY == 0) {
                 return ConstantHeight.ZERO;
             }
             return ConstantHeight.of(VerticalAnchor.absolute(this.absoluteY));
@@ -145,6 +149,7 @@ public final class MnemonicJigsawStructure extends Structure {
             case MEMORY_FIELD -> ModStructureTypes.MEMORY_FIELD.get();
             case ASHEN_ARCHIVE -> ModStructureTypes.ASHEN_ARCHIVE.get();
             case MUTE_LIBRARY -> ModStructureTypes.MUTE_LIBRARY.get();
+            case SUNKEN_ARCHIVE -> ModStructureTypes.SUNKEN_ARCHIVE.get();
         };
     }
 }

@@ -83,6 +83,10 @@ public final class MnemolithJeiPlugin implements IModPlugin {
                 List.of(new ItemStack(ModItems.HOLLOW_TURF.get()), new ItemStack(ModItems.HOLLOWSTONE.get()), new ItemStack(ModItems.FORGET_ME_NOT.get())),
                 VanillaTypes.ITEM_STACK,
                 Component.translatable("mnemolith.jei.hollows.ground"));
+        registration.addIngredientInfo(
+                new ItemStack(ModItems.RECOLLITE_LENS.get()),
+                VanillaTypes.ITEM_STACK,
+                Component.translatable("mnemolith.jei.hollows.lens"));
     }
 
     @Override

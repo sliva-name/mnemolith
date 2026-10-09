@@ -65,6 +65,10 @@ public final class WorldgenTuning {
         return structuresMaster() && CommonConfig.FLOODED_ARCHIVE_ENABLED.get();
     }
 
+    public static boolean sunkenArchiveEnabled() {
+        return structuresMaster() && CommonConfig.SUNKEN_ARCHIVE_ENABLED.get();
+    }
+
     public static boolean hushChapelEnabled() {
         return structuresMaster() && CommonConfig.HUSH_CHAPEL_ENABLED.get();
     }

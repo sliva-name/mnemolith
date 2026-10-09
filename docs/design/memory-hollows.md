@@ -113,7 +113,7 @@ A flicker is a translucent figure that plays a few seconds of something that hap
   recipes on picking up a shard, the flower dye on picking up the flower.
 - JEI shows every crafting, smelting, blasting and stonecutting recipe (vanilla categories) and an information page
   on the ore, shard, turf and flower that says where to find them.
-- Field guide: a new page `hollows` after `places` (37 pages).
+- Field guide: a new page `hollows` after `places` (37 pages; stage 2 adds `sunken` after it, 38).
 
 ## Performance
 
@@ -130,11 +130,11 @@ A flicker is a translucent figure that plays a few seconds of something that hap
   into Memory Hollows and one outside stays, a non-host stays, the ground pass converts turf and stone and seeds ore
   in a test column, the remnant places, the ore loot table drops shards, the turf holds a flower, flicker scene
   selection follows the chunk's imprints, density 0 sends nothing, recipes and advancements load, guide page count.
-- Deferred to stage 2: a live GameTest that a fake player receives the payload. `flickerPick` covers the picker and
-  the in-game run covered delivery and drawing.
+- A live GameTest that real players receive the payload was deferred here; stage 2 added it
+  (`hollows_flicker_delivered_and_caught`, see [memory-hollows-2.md](memory-hollows-2.md)).
 - Manual: a fresh normal world, `/locate biome mnemolith:memory_hollows`, screenshots, MSPT.
 
 ## Next stages
 
-- Stage 2: a biome structure (a sunken "hollow archive"), recollite tools or a recollite lens upgrade, catching a
-  flicker into a slip, biome music.
+- Stage 2 (done, [memory-hollows-2.md](memory-hollows-2.md)): the sunken archive, catching a flicker into a slip, the
+  recollite lens, biome music and ambience. Recollite tools moved to stage 3.

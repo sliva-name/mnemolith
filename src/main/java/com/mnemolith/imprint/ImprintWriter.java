@@ -207,6 +207,37 @@ public final class ImprintWriter {
         return Optional.empty();
     }
 
+    /**
+     * A caught memory flicker: the strongest imprint of {@code tag} in the chunk at {@code pos} becomes a slip, as if
+     * extracted there. Empty when the chunk no longer holds that tag or the player has no room (the player is told).
+     */
+    public static Optional<Imprint> catchFlicker(ServerLevel level, BlockPos pos, ServerPlayer player, ImprintTag tag) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        if (memory == null) {
+            return Optional.empty();
+        }
+        boolean held = false;
+        for (int i = 0; i < memory.imprintCount(); i++) {
+            held |= memory.imprintAt(i).tag() == tag;
+        }
+        if (!held) {
+            return Optional.empty();
+        }
+        if (!com.mnemolith.content.InventorySpace.fits(player.getInventory(), ImprintSlips.of(tag))) {
+            com.mnemolith.content.InventorySpace.refuse(player);
+            return Optional.empty();
+        }
+        Optional<Imprint> removed = memory.removeStrongest(tag);
+        if (removed.isEmpty()) {
+            return Optional.empty();
+        }
+        memory.setArchival(true);
+        MemoryPressure.recompute(chunk, memory);
+        giveSlip(level, pos, player, removed.get());
+        return removed;
+    }
+
     /** Removes the strongest imprint and marks the chunk archival. Empty when nothing could be removed. */
     private static Optional<Imprint> takeHighest(LevelChunk chunk, ChunkMemory memory) {
         Optional<Imprint> removed = memory.removeHighest();

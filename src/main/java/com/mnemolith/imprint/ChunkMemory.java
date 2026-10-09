@@ -318,6 +318,21 @@ public final class ChunkMemory {
         return best < 0 ? Optional.empty() : Optional.of(this.imprints.remove(best));
     }
 
+    /** Removes the strongest imprint of {@code tag}; empty when the chunk holds none (a caught memory flicker). */
+    public Optional<Imprint> removeStrongest(ImprintTag tag) {
+        int best = -1;
+        for (int i = 0; i < this.imprints.size(); i++) {
+            Imprint candidate = this.imprints.get(i);
+            if (candidate.tag() != tag) {
+                continue;
+            }
+            if (best < 0 || !lowerPriority(candidate, this.imprints.get(best))) {
+                best = i;
+            }
+        }
+        return best < 0 ? Optional.empty() : Optional.of(this.imprints.remove(best));
+    }
+
     private int highestIndex() {
         if (this.imprints.isEmpty()) {
             return -1;
