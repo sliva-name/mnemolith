@@ -1,5 +1,25 @@
 {
   "attributes": {
+    "minecraft:audio/ambient_sounds": {
+      "additions": {
+        "sound": "mnemolith:ambient.memory_hollows.additions",
+        "tick_chance": 0.004
+      },
+      "mood": {
+        "block_search_extent": 8,
+        "offset": 2.0,
+        "sound": "mnemolith:ambient.memory_hollows.mood",
+        "tick_delay": 6000
+      }
+    },
+    "minecraft:audio/background_music": {
+      "default": {
+        "max_delay": 12000,
+        "min_delay": 3600,
+        "replace_current_music": false,
+        "sound": "mnemolith:music.memory_hollows"
+      }
+    },
     "minecraft:visual/sky_color": "#a9a8dc",
     "minecraft:visual/fog_color": "#cfc8e6",
     "minecraft:visual/water_fog_color": "#4f5e86",

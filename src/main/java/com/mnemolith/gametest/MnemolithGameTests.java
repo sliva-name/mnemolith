@@ -76,6 +76,8 @@ public final class MnemolithGameTests {
         suite("guardqa", com.mnemolith.command.qa.GuardQa::check, Map.of());
         // Memory Hollows: region hooks on sources built in the test, features on a pad, drops, flickers, data.
         suite("hollowsqa", com.mnemolith.command.qa.HollowsQa::check, Map.of());
+        // Memory Hollows stage 2: sunken archive data, catching flickers, recollite lens, early amethyst path, audio.
+        suite("hollows2qa", com.mnemolith.command.qa.Hollows2Qa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -124,6 +126,9 @@ public final class MnemolithGameTests {
         live("echo_items_are_conserved", ConservationLiveTests::chaos, 600 + ConservationLiveTests.envInt("MNEMOLITH_CHAOS_STEPS", 0));
 
         // The world remembers you: real events recorded, and a scene on return (checks every 40 ticks, 60% a roll).
+        // Memory Hollows stage 2: a flicker reaches the players near it (not one far off), then a needle and lens catch it.
+        live("hollows_flicker_delivered_and_caught", HollowsLiveTests::flickerDeliveredAndCaught, 200);
+
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);
         // Sleep consolidation only after a whole night, not a "Leave Bed" at night. Own batch: it sets the clock to midnight.

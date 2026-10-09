@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:recollite",
+  "display": {
+    "icon": {
+      "id": "mnemolith:recollite_lens"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.recollite_lens.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.recollite_lens.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "lens": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:recollite_lens"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "lens"
+    ]
+  ]
+}

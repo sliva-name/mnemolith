@@ -19,6 +19,7 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 output.accept(ModItems.FIELD_GUIDE.get());
                 output.accept(ModItems.CHRONICLE_LENS.get());
+                output.accept(ModItems.RECOLLITE_LENS.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.REINFORCED_NEEDLE.get());
                 output.accept(ModItems.TWIN_NEEDLE.get());

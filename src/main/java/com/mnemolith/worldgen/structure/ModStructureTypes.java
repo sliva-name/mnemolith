@@ -35,6 +35,10 @@ public final class ModStructureTypes {
             "mute_library",
             () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.MUTE_LIBRARY));
 
+    public static final DeferredHolder<StructureType<?>, StructureType<MnemonicJigsawStructure>> SUNKEN_ARCHIVE = STRUCTURE_TYPES.register(
+            "sunken_archive",
+            () -> () -> MnemonicJigsawStructure.codec(MnemonicJigsawStructure.Kind.SUNKEN_ARCHIVE));
+
     private ModStructureTypes() {}
 
     public static void register(IEventBus modEventBus) {

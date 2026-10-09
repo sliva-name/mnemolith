@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'players', 'reference')
+         'guard', 'world', 'places', 'hollows', 'sunken', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -1029,6 +1029,43 @@ def p_hollows():
     plate = Diorama(70, 70, 30)
     plate.add(block_quads('mnemolith:block/recollite_ore', -0.5, 0, -0.5))
     p.center(plate.render(0, 0.45, 0), 430, 206)
+    return p.image()
+
+
+def p_sunken():
+    """Memory Hollows, stage 2: a sunken archive's roof and belfry in the turf, a flicker beside it, and how to catch it."""
+    p = Page('sunken')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('h_brick', 'hollowstone_bricks')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    hole = {(3, 2), (4, 2)}
+    d.ground(7, 5, 2, top='h_top', side='h_side', under='h_stone', skip=hole)
+    # the roof stands just above the turf, its fallen-in middle open down into the hall
+    for i in range(1, 6):
+        for j in range(1, 4):
+            if (i, j) not in hole:
+                d.add(cube('h_brick', 'h_brick', i - 3.5, 0, j - 2.5, h=0.5))
+    # the belfry over the doorway, broken off at different heights
+    for (i, j, h) in ((0, 0, 3), (1, 0, 2), (0, 1, 2)):
+        for k in range(h):
+            d.add(cube('h_brick', 'h_brick', i - 3.5, k, j - 2.5))
+    d.add(mob_quads('echo', 1.8, 0, 1.6, 230), light='entity', tint=FLICKER_TINT)
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # lens in one hand, needle in the other, and the flicker becomes a slip of its tag
+    p.sprite('chronicle_lens', 320, 58, 2)
+    p.sprite('extraction_needle', 392, 58, 2)
+    p.d.line([351, 58, 361, 58], fill=(*LINE, 255), width=2)
+    p.d.line([356, 53, 356, 63], fill=(*LINE, 255), width=2)
+    p.arrow((356, 96), (356, 122))
+    p.sprite('imprint_slip', 356, 154, 2)
+    p.tag('path', 418, 154)
+    # the recollite lens reaches farther
+    p.sprite('recollite_lens', 452, 206, 1, src=_hollows_tex('item', 'recollite_lens'))
+    p.ring(452, 206, 24, dotted=True)
+    p.ring(452, 206, 34, dotted=True)
+    p.sprite('chronicle_lens', 340, 206, 1)
+    p.ring(340, 206, 24, dotted=True)
     return p.image()
 
 

@@ -37,11 +37,34 @@ public final class FlickerRenderer {
         if (!ClientConfig.HOLLOW_FLICKERS.get()) {
             return;
         }
+        if (payload.scene() == HollowFlickers.CAUGHT) {
+            caught(Vec3.atBottomCenterOf(payload.pos()));
+            return;
+        }
         if (FLICKERS.size() >= CAP) {
             FLICKERS.remove(0);
         }
         int scene = Mth.clamp(payload.scene(), 0, HollowFlickers.SCENES - 1);
         FLICKERS.add(new Flicker(Vec3.atBottomCenterOf(payload.pos()), payload.yaw(), scene, color(payload.tag())));
+    }
+
+    /** Someone caught the flicker standing at {@code origin}: it folds into a burst of shimmer and fades at once. */
+    private static void caught(Vec3 origin) {
+        ClientLevel level = Minecraft.getInstance().level;
+        for (Flicker flicker : FLICKERS) {
+            if (flicker.origin.distanceToSqr(origin) < 0.01D) {
+                Pose pose = pose(flicker, flicker.age);
+                flicker.age = Math.max(flicker.age, DURATION - FADE / 2);
+                if (level != null) {
+                    for (int i = 0; i < 12; i++) {
+                        double y = pose.feet.y + 0.2D + i * 0.15D;
+                        double a = i * 0.9D;
+                        level.addParticle(ModParticles.IMPRINT_SHIMMER.get(), pose.feet.x + Math.cos(a) * 0.35D, y,
+                                pose.feet.z + Math.sin(a) * 0.35D, 0.0D, 0.03D, 0.0D);
+                    }
+                }
+            }
+        }
     }
 
     public static int active() {

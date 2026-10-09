@@ -155,6 +155,17 @@ def recollite_shard():
     return cv.image()
 
 
+def recollite_lens():
+    """The chronicle lens with recollite glass and three recollite chips set into the rim."""
+    from . import items
+    cv = items.chronicle_lens(glass='recollite', seed='recollite_lens', canvas=True)
+    for (x, y) in ((19, 3), (28, 13), (11, 15)):
+        cv.fill(m_ellipse(S, S, x + 0.5, y + 0.5, 1.3, 1.3), RAMPS['recollite'][5])
+        cv.px(x, y, RAMPS['pale'][6])
+    cv.outline(selout=0.55)
+    return cv.image()
+
+
 BLOCK_TEXTURES = {
     'hollow_turf_top': turf_top,
     'hollow_turf_side': turf_side,
@@ -166,4 +177,5 @@ BLOCK_TEXTURES = {
 }
 ITEM_TEXTURES = {
     'recollite_shard': recollite_shard,
+    'recollite_lens': recollite_lens,
 }

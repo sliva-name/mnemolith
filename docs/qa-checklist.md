@@ -20,6 +20,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
 | `mnemolith:suite_guardqa` | `/mnemolith guardqa` (24) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
 | `mnemolith:suite_hollowsqa` | `/mnemolith hollowsqa` (22) | The flat test world has no multi-noise source, so the biome hooks are checked on overworld and nether sources built from the presets; features run on a pad in a cleared chunk |
+| `mnemolith:suite_hollows2qa` | `/mnemolith hollows2qa` (18) | Fake-player catcher; flickers are registered with `HollowFlickers.send` at known spots. The template, loot and recipe checks read the real data |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -68,6 +69,12 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `relay_thread_links_then_hop` | The player right-clicks two of their echoes with a relay thread (`Player.interactOn`): both carry one link and one thread is used. Possessing one end, sneaking and pressing the return key (the same `EchoRelays.returnKey` the unpossess payload calls) puts the player in the other end, and the body left behind stands as the linked echo; the return key without sneaking returns the player | 100 |
 | `relay_mirror_break` | Possessing one end, the player breaks a stone beside them with a pickaxe (`gameMode.destroyBlock`, the real break event): on the next server tick the other end breaks the stone at the same offset beside itself | 100 |
 | `vault_draws_then_spends` | The player places a vault (`gameMode.useItemOn` with the item), switches it on with an empty hand; its own block entity tick draws the death and fire imprints out of the area within two intervals; the second empty-hand click switches it off; the needle (`useItemOn`, the vault passes the click to the item) takes the loudest (death) as a slip; a sneaking empty-hand click discharges the rest into the chunk | 700 |
+
+**Live Memory Hollows test** (`com.mnemolith.gametest.HollowsLiveTests`), in the `mnemolith:live` batch on its own site (the setup turns it into Memory Hollows with `fillbiome`).
+
+| Test | What is proved | Budget |
+| --- | --- | --- |
+| `hollows_flicker_delivered_and_caught` | Three real players: a seer in a hollow with path imprints in the 5×5 chunks around, a friend 6 blocks off, a stranger 144 blocks off. One offer at density 4: the `HollowFlickerPayload` read off the seer's connection is a path (walk) scene 6–20 blocks away; the friend receives the same payload, the stranger none. The seer then uses an extraction needle with a chronicle lens in the off hand (`gameMode.useItem`): one path slip, the `CAUGHT` payload to seer and friend, no active flicker left, the *Hold That Thought* advancement | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -476,7 +483,7 @@ A physical client logs `Mnemolith gui contrast glyph=ffe6dcc8 shadow=ff070b18 pa
 
 ## Memory Hollows QA
 
-`/mnemolith hollowsqa` (gamemaster) checks stage 1 of Memory Hollows ([design note](design/memory-hollows.md)). `/mnemolith hollows survey [radius]` samples the overworld biome source every 64 blocks and prints the share of hollows among all samples and among host land plus the nearest hit; `/mnemolith hollows flicker [scene]` sends one flicker 6 blocks ahead.
+`/mnemolith hollowsqa` (gamemaster) checks stage 1 of Memory Hollows ([design note](design/memory-hollows.md)). `/mnemolith hollows survey [radius]` samples the overworld biome source every 64 blocks and prints the share of hollows among all samples and among host land plus the nearest hit; `/mnemolith hollows flicker [scene]` sends one flicker 6 blocks ahead; it carries an imprint of that chunk (so it can be caught) and, without a scene, shows that imprint's scene.
 
 | Flag | What is proved |
 | --- | --- |
@@ -503,6 +510,33 @@ Manual (fresh normal world, seed 424242, 2026-10-10):
 - [x] JEI: shard from the block, smelting and blasting, the info page for ore and shard; hollowstone works as stone in vanilla recipes; bricks into stairs, slab and wall, plus stonecutting. RU and EN.
 - [x] Field guide page «Лощины памяти» / "Memory Hollows" with its picture, RU and EN. The advancement «Там, где стёрся цвет» is granted on entering the biome.
 - [x] MSPT with density 0, 1 and 4: no difference (see [performance.md](performance.md#memory-hollows)).
+
+## Memory Hollows stage 2 QA
+
+`/mnemolith hollows2qa` (gamemaster) checks stage 2 ([design note](design/memory-hollows-2.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `structure`, `hollowsOnly`, `spacing` | `mnemolith:sunken_archive` is registered, its biome set is exactly Memory Hollows, its set is a random spread 8/3 |
+| `template` | The template is 14 high with two chests, and no block in it is in `#base_stone_overworld` or `#stone_ore_replaceables` (ores would eat it) |
+| `loot` | 30 rolls of `chests/sunken_archive` all give items, most give recollite shards |
+| `needleCatch`, `catchOnce` | The needle's own use with a lens in the off hand catches a path flicker: one path slip, the path imprint leaves the chunk, the trade one stays; the same flicker cannot be caught again |
+| `faint`, `gone` | A tagless flicker is too faint; a flicker whose imprint already left slips away and gives nothing |
+| `reachLens`, `reachRecollite`, `noLens` | At 7 blocks a chronicle lens misses and a recollite lens catches; without a lens nothing is caught |
+| `lensRecipe`, `lensIsLens` | The recollite lens recipe matches and makes the lens; it counts as a held chronicle lens |
+| `earlyAmethyst` | The chronicle lens, extraction needle and field guide take an amethyst shard and none of their slots is recollite-only |
+| `audio` | Four sounds registered; the biome has its music and ambience attributes |
+| `advancements`, `guidePage` | The three advancements load; the `sunken` page sits right after `hollows` |
+
+Manual (fresh normal world, seed 424242, 2026-10-10, screenshots in `playtest-shots/feature-hollows-2/`):
+
+- [x] `/locate structure mnemolith:sunken_archive` from spawn: `[-704, ~, 32]`, 704 blocks away (with the first 12/4 spacing it was 1 152 blocks off and most patches had none).
+- [x] The archive: roof with its hole, broken belfry over the west doorway and clerestory stumps above the turf; inside the stair behind its parapet, shelf rows, the apse with lectern, chest and recollite plinth. Dry, not flooded. The first build lost wall and floor blocks to dirt and andesite ore blobs; fixed by dropping plain hollowstone from the template.
+- [x] Chest loot: an imprint slip, forget-me-nots and an extraction needle.
+- [x] A flicker (`/mnemolith hollows flicker` over 4 path imprints) caught with the needle in the main hand and a chronicle lens in the off hand: it bursts into shimmer, «Вспышка поймана: Путь», a path slip in the hotbar, the *Hold That Thought* goal toast; the chunk's calm reading drops by one.
+- [x] Recollite lens: tooltip with its hollows line, JEI crafting recipe, *Sharper Recollection* on pickup.
+- [x] Field guide page «Погребённые архивы» / "Sunken Archives" (36/38) with its picture, RU and EN; the reference page is still 38/38 and fits.
+- [ ] Music and ambience by ear: the Xvfb client has no audio device (sound engine off). The sounds are registered, the OGGs decode (48 s, 1.8 s, 3 s, 0.9 s) and no missing-sound warnings appear.
 
 ## Debug commands
 

@@ -45,6 +45,11 @@ public final class ModItems {
             "chronicle_lens",
             ChronicleLensItem::new,
             stackToOne());
+    /** Chronicle lens with recollite in the rim: catches memory flickers from farther away (Memory Hollows stage 2). */
+    public static final DeferredItem<com.mnemolith.content.item.RecolliteLensItem> RECOLLITE_LENS = ITEMS.registerItem(
+            "recollite_lens",
+            com.mnemolith.content.item.RecolliteLensItem::new,
+            stackToOne());
     public static final DeferredItem<ExtractionNeedleItem> EXTRACTION_NEEDLE = ITEMS.registerItem(
             "extraction_needle",
             ExtractionNeedleItem::new,

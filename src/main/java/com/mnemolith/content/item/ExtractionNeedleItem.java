@@ -9,9 +9,17 @@ import com.mnemolith.imprint.ImprintWriter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+
+import com.mnemolith.audio.ModSounds;
+import com.mnemolith.worldgen.hollows.HollowFlickers;
 
 public class ExtractionNeedleItem extends Item {
     private final boolean reinforced;
@@ -35,6 +43,73 @@ public class ExtractionNeedleItem extends Item {
         return this.twin;
     }
 
+    /** Right-click in the air: with a lens in the other hand, catch a memory flicker in reach. */
+    @Override
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        if (!ChronicleLensItem.isHeld(player)) {
+            return InteractionResult.PASS;
+        }
+        if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+        ItemStack needle = player.getItemInHand(hand);
+        if (onCooldown(serverPlayer, needle)) {
+            return InteractionResult.FAIL;
+        }
+        InteractionResult caught = catchFlicker(server, serverPlayer, needle);
+        if (caught != null) {
+            return caught;
+        }
+        serverPlayer.sendSystemMessage(Component.translatable("mnemolith.message.flicker_none"));
+        return InteractionResult.FAIL;
+    }
+
+    private static boolean onCooldown(ServerPlayer player, ItemStack needle) {
+        int cooldown = CommonConfig.EXTRACTION_COOLDOWN_TICKS.get();
+        if (cooldown > 0 && player.getCooldowns().isOnCooldown(needle)) {
+            player.sendSystemMessage(Component.translatable("mnemolith.message.extract_cooldown"));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tries to catch a flicker ({@link HollowFlickers#tryCatch}). Null when no flicker was in reach, so the caller
+     * carries on with what it would otherwise do; a result when the attempt was spent on a flicker.
+     */
+    private InteractionResult catchFlicker(ServerLevel level, ServerPlayer player, ItemStack needle) {
+        com.mnemolith.content.InventorySpace.clearRefused();
+        HollowFlickers.CatchResult result = HollowFlickers.tryCatch(level, player);
+        switch (result.kind()) {
+            case NONE:
+                return null;
+            case FAINT:
+                player.sendSystemMessage(Component.translatable("mnemolith.message.flicker_faint"));
+                return InteractionResult.FAIL;
+            case GONE:
+                if (!com.mnemolith.content.InventorySpace.consumeRefused()) {
+                    player.sendSystemMessage(Component.translatable("mnemolith.message.flicker_gone"));
+                }
+                return InteractionResult.FAIL;
+            default:
+                break;
+        }
+        level.playSound(null, player.blockPosition(), ModSounds.FLICKER_CATCH.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
+        player.sendSystemMessage(Component.translatable("mnemolith.message.flicker_caught",
+                Component.translatable(java.util.Objects.requireNonNull(result.tag()).translationKey())));
+        int cooldown = CommonConfig.EXTRACTION_COOLDOWN_TICKS.get();
+        if (cooldown > 0) {
+            player.getCooldowns().addCooldown(needle, cooldown);
+        }
+        if (!this.reinforced) {
+            int cost = CommonConfig.EXTRACTION_DURABILITY_COST.get();
+            if (cost > 0) {
+                needle.hurtAndBreak(cost, level, player, item -> {});
+            }
+        }
+        return InteractionResult.SUCCESS_SERVER;
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         if (context.getLevel().isClientSide() || !(context.getLevel() instanceof ServerLevel level)) {
@@ -44,9 +119,15 @@ public class ExtractionNeedleItem extends Item {
             return InteractionResult.PASS;
         }
         int cooldown = CommonConfig.EXTRACTION_COOLDOWN_TICKS.get();
-        if (cooldown > 0 && player.getCooldowns().isOnCooldown(context.getItemInHand())) {
-            player.sendSystemMessage(Component.translatable("mnemolith.message.extract_cooldown"));
+        if (onCooldown(player, context.getItemInHand())) {
             return InteractionResult.FAIL;
+        }
+        // A flicker is usually standing on the block the player clicks: catch it first, extract only when none is near.
+        if (ChronicleLensItem.isHeld(player)) {
+            InteractionResult caught = this.catchFlicker(level, player, context.getItemInHand());
+            if (caught != null) {
+                return caught;
+            }
         }
         int pulls = this.twin ? 2 : 1;
         int extracted = 0;

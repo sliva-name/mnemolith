@@ -859,5 +859,66 @@
         "stream": true
       }
     ]
+  },
+  "music.memory_hollows": {
+    "sounds": [
+      {
+        "name": "mnemolith:music_memory_hollows",
+        "stream": true
+      }
+    ]
+  },
+  "ambient.memory_hollows.additions": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_chime",
+        "volume": 0.5
+      },
+      {
+        "name": "mnemolith:hollows_chime",
+        "volume": 0.45,
+        "pitch": 0.84
+      },
+      {
+        "name": "mnemolith:hollows_chime",
+        "volume": 0.4,
+        "pitch": 1.12
+      },
+      {
+        "name": "mnemolith:hollows_chime",
+        "volume": 0.4,
+        "pitch": 0.75
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.hollows_chime"
+  },
+  "ambient.memory_hollows.mood": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_mood",
+        "volume": 0.8
+      },
+      {
+        "name": "mnemolith:hollows_mood",
+        "volume": 0.8,
+        "pitch": 0.9
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.hollows_mood"
+  },
+  "flicker_catch": {
+    "sounds": [
+      {
+        "name": "mnemolith:flicker_catch",
+        "stream": false
+      },
+      {
+        "name": "mnemolith:flicker_catch",
+        "stream": false,
+        "volume": 0.95,
+        "pitch": 1.06
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.flicker_catch"
   }
 }

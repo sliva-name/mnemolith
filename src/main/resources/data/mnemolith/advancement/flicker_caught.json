@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:hollows_found",
+  "display": {
+    "icon": {
+      "id": "mnemolith:imprint_slip"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.flicker_caught.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.flicker_caught.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "caught": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "caught"
+    ]
+  ]
+}

@@ -76,6 +76,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_SCAR_FIGHT = register("music_scar_fight");
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_DISC_RECOLLECTION = register("music_disc_recollection");
 
+    /** Memory Hollows (stage 2): biome music and ambience (worldgen/biome/memory_hollows.json), and a caught flicker. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_MEMORY_HOLLOWS = register("music.memory_hollows");
+    public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_HOLLOWS_ADDITIONS = register("ambient.memory_hollows.additions");
+    public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_HOLLOWS_MOOD = register("ambient.memory_hollows.mood");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FLICKER_CATCH = register("flicker_catch");
+
     private ModSounds() {}
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {

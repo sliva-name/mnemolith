@@ -413,12 +413,96 @@ def mute_library() -> None:
     b.write('mute_library.nbt')
 
 
+def sunken_archive() -> None:
+    """Memory Hollows: a reading hall sunk into the turf. The template starts 8 blocks under the surface
+    (MnemonicJigsawStructure.Kind.SUNKEN_ARCHIVE), so y=7 is ground level: the roof and a broken belfry stand above
+    the turf, a doorway at y=8 opens onto a landing and a stair runs down the west wall to the hall floor."""
+    b = Builder(17, 14, 17)
+    bricks = b.state('mnemolith:hollowstone_bricks')
+    wall = b.state('mnemolith:hollowstone_brick_wall', {
+        'east': 'none', 'north': 'none', 'south': 'none', 'west': 'none', 'up': 'true', 'waterlogged': 'false'})
+    slab = b.state('mnemolith:hollowstone_brick_slab', {'type': 'bottom', 'waterlogged': 'false'})
+    recollite = b.state('mnemolith:recollite_block')
+    shelf = b.state('minecraft:bookshelf')
+    web = b.state('minecraft:cobweb')
+    air = b.air
+    stairs_n = b.state('mnemolith:hollowstone_brick_stairs', {
+        'facing': 'north', 'half': 'bottom', 'shape': 'straight', 'waterlogged': 'false'})
+    lectern = b.state('minecraft:lectern', {'facing': 'west', 'has_book': 'false', 'powered': 'false'})
+    chest_w = b.state('minecraft:chest', {'facing': 'west', 'type': 'single', 'waterlogged': 'false'})
+    chest_n = b.state('minecraft:chest', {'facing': 'north', 'type': 'single', 'waterlogged': 'false'})
+    lantern = b.state('minecraft:soul_lantern', {'hanging': 'true', 'waterlogged': 'false'})
+    flower = b.state('mnemolith:forget_me_not')
+    loot = 'mnemolith:chests/sunken_archive'
+
+    # hall: walls y0..10, roof at y10, interior x1..15 z3..13 y1..9
+    b.box(0, 0, 2, 16, 10, 14, bricks, air)
+    # no plain hollowstone anywhere: it is in #base_stone_overworld, so the ore features that run after
+    # surface_structures would eat it (dirt, gravel and andesite blobs turned up in the walls and floor)
+    # doorway in the north wall at ground level, a landing and a stair down the west wall
+    b.fill(1, 8, 0, 2, 10, 1, air)
+    b.opening(1, 8, 2, 2, 9, 2)
+    b.fill(1, 7, 0, 2, 7, 1, bricks)
+    b.fill(0, 7, 0, 0, 9, 1, bricks)
+    b.fill(3, 7, 0, 3, 9, 1, bricks)
+    b.fill(1, 7, 3, 2, 7, 3, bricks)
+    for i in range(7):
+        z, y = 4 + i, 7 - i
+        b.fill(1, y, z, 2, y, z, stairs_n)
+        if y > 1:
+            b.fill(1, 1, z, 2, y - 1, z, bricks)
+    # the stair is walled off from the hall by a low parapet
+    for z in range(4, 11):
+        b.set(3, 8 - (z - 4), z, wall)
+    # two shelf rows with a walk between them
+    for z in (6, 10):
+        for x in range(5, 14):
+            if x == 9:
+                continue
+            for y in (1, 2, 3):
+                b.set(x, y, z, shelf)
+        b.set(4, 1, z, wall)
+        b.set(4, 2, z, wall)
+        b.set(4, 3, z, wall)
+    # east apse: recollite plinth, lectern and the main chest on a raised floor
+    b.fill(13, 1, 7, 15, 1, 9, bricks)
+    b.fill(12, 1, 7, 12, 1, 9, slab)
+    b.set(15, 1, 8, recollite)
+    b.set(14, 2, 8, lectern)
+    b.set(15, 2, 7, chest_w, chest_nbt(loot))
+    # a second chest tucked under the stair landing
+    b.set(4, 1, 12, chest_n, chest_nbt(loot))
+    # the roof fell in over the middle: a hole open to the sky and its rubble on the floor
+    for (x, z) in ((8, 8), (9, 8), (10, 8), (8, 9), (9, 9), (10, 9), (9, 7), (11, 9), (9, 10)):
+        b.set(x, 10, z, air)
+    for (x, z) in ((9, 8), (10, 9), (8, 9)):
+        b.set(x, 1, z, slab)
+    b.set(9, 1, 8, bricks)
+    b.set(9, 2, 8, slab)
+    b.set(9, 1, 9, flower)
+    for (x, y, z) in ((1, 9, 13), (15, 9, 3), (14, 9, 13), (6, 9, 4), (12, 4, 11)):
+        b.set(x, y, z, web)
+    for (x, z) in ((5, 8), (12, 4), (12, 12)):
+        b.set(x, 9, z, lantern)
+    # above the turf: a broken belfry over the doorway and stumps of the old clerestory
+    b.box(0, 10, 0, 3, 13, 3, bricks, air)
+    b.fill(1, 10, 1, 2, 12, 2, air)
+    b.fill(1, 10, 0, 2, 11, 0, air)
+    b.set(3, 13, 3, air)
+    b.set(0, 13, 3, air)
+    b.set(3, 13, 0, air)
+    for (x, z, h) in ((8, 2, 12), (16, 8, 12), (8, 14, 11), (16, 14, 11), (16, 2, 13)):
+        b.fill(x, 11, z, x, h, z, wall)
+    b.write('sunken_archive.nbt')
+
+
 def main() -> None:
     flooded_archive()
     hush_chapel()
     memory_field()
     ashen_archive()
     mute_library()
+    sunken_archive()
 
 
 if __name__ == '__main__':

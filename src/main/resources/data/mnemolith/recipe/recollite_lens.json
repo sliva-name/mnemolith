@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "R": "mnemolith:recollite_shard",
+    "L": "mnemolith:chronicle_lens",
+    "B": "mnemolith:recollite_block"
+  },
+  "pattern": [
+    " R ",
+    "RLR",
+    " B "
+  ],
+  "result": {
+    "id": "mnemolith:recollite_lens"
+  }
+}

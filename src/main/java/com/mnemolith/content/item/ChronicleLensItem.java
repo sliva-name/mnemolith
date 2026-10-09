@@ -31,20 +31,21 @@ public class ChronicleLensItem extends Item {
     }
 
     public static boolean isHeld(LivingEntity entity) {
-        return entity.getMainHandItem().getItem() == ModItems.CHRONICLE_LENS.get()
-                || entity.getOffhandItem().getItem() == ModItems.CHRONICLE_LENS.get();
+        // instanceof: the recollite lens is a chronicle lens too.
+        return entity.getMainHandItem().getItem() instanceof ChronicleLensItem
+                || entity.getOffhandItem().getItem() instanceof ChronicleLensItem;
     }
 
     /** True while {@code entity} holds the lens raised (the thermal echo view). */
     public static boolean isFocusing(LivingEntity entity) {
-        return entity.isUsingItem() && entity.getUseItem().getItem() == ModItems.CHRONICLE_LENS.get();
+        return entity.isUsingItem() && entity.getUseItem().getItem() instanceof ChronicleLensItem;
     }
 
     /** Filter tag on a held lens, if any. */
     public static Optional<ImprintTag> heldFilter(LivingEntity entity) {
         for (InteractionHand hand : InteractionHand.values()) {
             ItemStack stack = entity.getItemInHand(hand);
-            if (stack.getItem() == ModItems.CHRONICLE_LENS.get()) {
+            if (stack.getItem() instanceof ChronicleLensItem) {
                 ImprintTag tag = stack.get(ModDataComponents.FILTER_TAG.get());
                 if (tag != null) {
                     return Optional.of(tag);

@@ -113,6 +113,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("hollowsqa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.HollowsQa::run))
+                .then(Commands.literal("hollows2qa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.Hollows2Qa::run))
                 .then(Commands.literal("hollows")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .then(Commands.literal("survey")
@@ -121,7 +124,7 @@ public final class ModGameEvents {
                                         .executes(context -> com.mnemolith.command.HollowsCommand.survey(context,
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "radius")))))
                         .then(Commands.literal("flicker")
-                                .executes(context -> com.mnemolith.command.HollowsCommand.flicker(context, 0))
+                                .executes(context -> com.mnemolith.command.HollowsCommand.flicker(context, -1))
                                 .then(Commands.argument("scene", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 4))
                                         .executes(context -> com.mnemolith.command.HollowsCommand.flicker(context,
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "scene"))))))

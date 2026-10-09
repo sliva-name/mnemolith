@@ -20,7 +20,10 @@ public final class ItemTooltips {
     @SubscribeEvent
     public static void register(RegisterTooltipAppendersEvent event) {
         event.registerAppender(TooltipLocation.POST_CUSTOM, (stack, context, display, player, flag, builder) -> {
-            if (stack.getItem() == ModItems.CHRONICLE_LENS.get()) {
+            if (stack.getItem() instanceof com.mnemolith.content.item.ChronicleLensItem) {
+                if (stack.getItem() == ModItems.RECOLLITE_LENS.get()) {
+                    builder.accept(Component.translatable("item.mnemolith.recollite_lens.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.hint"));
                 builder.accept(Component.translatable("item.mnemolith.chronicle_lens.echo_hint"));
                 ImprintTag filter = stack.get(ModDataComponents.FILTER_TAG.get());
@@ -32,10 +35,13 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.archivist_bait.hint"));
             } else if (stack.getItem() == ModItems.EXTRACTION_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
+                builder.accept(Component.translatable("item.mnemolith.extraction_needle.catch_hint"));
             } else if (stack.getItem() == ModItems.REINFORCED_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.reinforced_needle.hint"));
+                builder.accept(Component.translatable("item.mnemolith.extraction_needle.catch_hint"));
             } else if (stack.getItem() == ModItems.TWIN_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.twin_needle.hint"));
+                builder.accept(Component.translatable("item.mnemolith.extraction_needle.catch_hint"));
             } else if (stack.getItem() == ModItems.IMPRINT_SEAL.get()) {
                 builder.accept(Component.translatable("item.mnemolith.imprint_seal.hint"));
             } else if (stack.getItem() == ModItems.SELECTIVE_MUTE_STONE.get()) {

@@ -19,8 +19,9 @@ def finish(cv, selout=0.55):
 
 # ------------------------------------------------------------------ instruments
 
-def chronicle_lens():
-    rng = core.rng_for('chronicle_lens')
+def chronicle_lens(glass='amethyst', seed='chronicle_lens', canvas=False):
+    """The lens; ``glass`` is the ramp of the lens glass (the recollite lens reuses this with its own glass)."""
+    rng = core.rng_for(seed)
     cv = new()
     cx, cy = 19.5, 12.5
     # handle first (behind the rim): leather grip, copper collar, brass end cap
@@ -42,16 +43,16 @@ def chronicle_lens():
     # glass: amethyst-tinted, darker toward the lower right, two glints and a faint echo arc
     gm = m_ellipse(S, S, cx, cy, 7.2, 7.2)
     idx = core.shade(gm, 'grad', 4, direction=(1, 1), span=(1.2, -1.8), bevel=0)
-    cv.paint(gm, 'amethyst', idx)
+    cv.paint(gm, glass, idx)
     inner = dilate(~gm) & gm
-    cv.fill(inner & m_rect(S, S, 0, 0, S, int(cy)), RAMPS['amethyst'][2])
-    cv.fill(m_line(S, S, (14, 12), (18, 8)) & gm, RAMPS['amethyst'][6])
-    cv.fill(m_line(S, S, (15, 14), (20, 9)) & gm & erode(gm), RAMPS['amethyst'][5])
+    cv.fill(inner & m_rect(S, S, 0, 0, S, int(cy)), RAMPS[glass][2])
+    cv.fill(m_line(S, S, (14, 12), (18, 8)) & gm, RAMPS[glass][6])
+    cv.fill(m_line(S, S, (15, 14), (20, 9)) & gm & erode(gm), RAMPS[glass][5])
     cv.fill(m_line(S, S, (22, 17), (25, 14)) & gm, RAMPS['echo'][4])
     core.glint(cv, 16, 9, arm=1)
     # rim highlight on the lit shoulder
     cv.fill(m_ring(S, S, cx, cy, 10.5, 9.8) & m_rect(S, S, 0, 0, int(cx) - 2, int(cy) - 2), RAMPS['copper'][6])
-    return finish(cv)
+    return cv if canvas else finish(cv)
 
 
 def extraction_needle():
