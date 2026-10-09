@@ -139,7 +139,7 @@ NeoForge пишет три файла. Правите их при закрыто
 | Файл | Где загружается | Что содержит |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Клиент и выделенный сервер | Сложность, частоты появления, генерация мира, геймплей (включая каталог и подсказки открытия), мобы, отголоски, прививки, осадки, связь отголосков (`relay.*`) и архивные хранилища (`vault.*`) |
-| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), журналирование давления |
+| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), журналирование давления |
 | `config/mnemolith-client.toml` | Только физический клиент | Пользовательские частицы памяти, плотность частиц, потолок частиц за тик, окружающее мерцание без линзы, интервал опроса линзы, оверлей линзы, непрозрачность оверлея, числовое давление, виньетка давления, тряска экрана, бахрома разлома, громкость звона линзы |
 
 `spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна. `spawnRates.imprintNodeWeight` по-прежнему зарезервирован и ни на что не влияет.
@@ -164,7 +164,7 @@ NeoForge пишет три файла. Правите их при закрыто
 
 ## Известные проблемы
 
-- Нет нового биома и нет шахт со зачёркиванием. Разлом пишется в журнал, может породить репликанта момента и является местом, где может собраться буря воспоминаний. Буря без игрока рядом замирает, пока её центр снова не загрузится.
+- Нет нового биома и нет шахт со зачёркиванием. Разлом пишется в журнал, может породить репликанта момента и является местом, где может собраться буря воспоминаний. Буря, которую никто не видит (центр не загружен), рассеивается через `stormUnwatchedTicks` (2 минуты), не поднимая Шрама.
 - Расстояние обсерваторий задаёт набор структур, а не `worldGen.structureSpacing`.
 - Ощущение разлома на стороне клиента и следует синхронизированной полосе. `visuals.pressureVignette` затемняет край в перегруженном или разломанном чанке. `visuals.stormScreenShake` трясёт там камеру. Она трясётся рядом с любым перегруженным чанком, не только во время бури; собственное затемнённое небо и туман бури приходят с её полосой босса. `visuals.fractureFringe` обесцвечивает разломанный чанк под вами одним полноэкранным проходом, тем же путём post-chain, что и термовзгляд линзы. Если эта цепочка не загрузилась, журнал пишет об этом один раз, а виньетка и тряска всё равно работают. Частицы, блеск предметов и свет архивного пласта не меняются.
 - В мире игровых тестов генерация структур выключена (жёстко в `GameTestServer`), поэтому проверка `locate` в `qa` там пропускается; для неё запускайте `/mnemolith qa` в настоящем мире.
@@ -393,7 +393,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | File | Where it loads | What it holds |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs, echoes, grafts, residues, the echo relay (`relay.*`) and archive vaults (`vault.*`) |
-| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), pressure logging |
+| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), pressure logging |
 | `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, screen shake, fracture fringe, lens chime volume |
 
 `spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible. `spawnRates.imprintNodeWeight` is still reserved and has no effect.
@@ -418,7 +418,7 @@ Server options in `mnemolith-server.toml` are authoritative and are synced to co
 
 ## Known issues
 
-- No new biome and no strikethrough shafts. Fracture logs, can spawn a moment replicant, and is where a recollection storm can gather. A storm with no player nearby freezes until its centre loads again.
+- No new biome and no strikethrough shafts. Fracture logs, can spawn a moment replicant, and is where a recollection storm can gather. A storm nobody watches (centre unloaded) fades after `stormUnwatchedTicks` (2 minutes) without raising a Scar.
 - Observatory spacing is the structure set, not `worldGen.structureSpacing`.
 - Fracture feel is client-side and follows the synced band. `visuals.pressureVignette` darkens the edge in an overloaded or fractured chunk. `visuals.stormScreenShake` shakes the camera there. It shakes near any overloaded chunk, not only during a storm; a storm's own darkened sky and fog come with its boss bar. `visuals.fractureFringe` desaturates the fractured chunk under you with one fullscreen pass, the same post-chain path as the lens thermal view. If that chain fails to load, the log says so once and the vignette and shake still run. Particles, item glint, and archival stratum light are unchanged.
 - The game test world has structure generation off (hard-coded in `GameTestServer`), so the `qa` `locate` check is waived there; run `/mnemolith qa` on a real world for it.

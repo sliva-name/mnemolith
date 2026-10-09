@@ -905,7 +905,7 @@ Dev · N м». Пакет `mnemolith:echo_command` (id сущности, при�
 Код: пакет `com.mnemolith.echo.storm` (`Storms` — правила, `RecollectionStorm` — состояние одной бури,
 `StormData` — сохранение `mnemolith:storms`, `ScarSites` — места Шрама), сущность `ScarEntity`, блоки
 `scar_glass` и `scar_heart`, предмет `scar_fragment`. Проверка: `/mnemolith stormqa` (19 проверок) и
-гейм-тесты `suite_stormqa`, `storm_shard_call_merges_into_scar`, `storm_mute_stone_contains`, `scar_read_then_hurt`.
+гейм-тесты `suite_stormqa`, `storm_shard_call_merges_into_scar`, `storm_mute_stone_contains`, `scar_read_then_hurt`, `storm_unwatched_fades`.
 
 ### 14.1. Зачем
 
@@ -990,6 +990,7 @@ Dev · N м». Пакет `mnemolith:echo_command` (id сущности, при�
 | `spawnRates.stormAttemptChance` | 0.02 | шанс в секунду за игрока в разломе |
 | `server.allowRecollectionStorms` | true | бури разрешены; выключение завершает идущие |
 | `server.maxStormsPerDimension` | 1 | активных бурь в измерении |
+| `server.stormUnwatchedTicks` | 2400 | тиков без свидетелей, после которых буря рассеивается (0 — ждёт вечно) |
 | `difficulty.recollectionStormThreshold` | 1.0 | множитель порогов полос (когда наступает разлом) |
 | `spawnRates.imprintNodeWeight` | 4 | по-прежнему зарезервирован: к буре не относится, генерации узлов нет |
 

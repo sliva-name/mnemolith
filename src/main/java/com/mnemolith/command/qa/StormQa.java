@@ -93,7 +93,7 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
 public final class StormQa {
     private static final String[] NAMES = {"gates", "shardCalls", "muteContains", "waveCondenses", "hushSwallows", "chokeStarves", "spent", "passed",
             "scarForms", "griefingOff", "scarNeedsReading", "scarRecall", "graveDecoy", "scarDrops", "fragmentSetsEcho", "wardBlocks", "siteReseeds",
-            "heartHeals", "persistence"};
+            "heartHeals", "persistence", "fadesUnwatched"};
     private static final UUID OWNER = UUID.fromString("99999999-7777-7777-7777-777777777777");
     private static final int PAD = 9;
     private static int salt;
@@ -500,6 +500,62 @@ public final class StormQa {
             discard(residueBack);
             ok[18] = stormOk && memOk && scarOk && residueOk;
             notes.add("persistence storm=" + stormOk + " chunk=" + memOk + " scar=" + scarOk + " residue=" + residueOk);
+            clearStorms(data, level);
+            QaSupport.discardResidues(level, b);
+            resetArea(level, b);
+
+            // ---------- unwatched: a storm whose centre is unloaded fades, frees the cap, and its area settles ----------
+            int limit = 40;
+            Storms.unwatchedOverride = limit;
+            try {
+                ChunkPos lostAt = new ChunkPos(cb.x() + 4000, cb.z() + 4000);
+                boolean farUnloaded = !level.getChunkSource().hasChunk(lostAt.x(), lostAt.z());
+                RecollectionStorm lost = new RecollectionStorm(data.takeId(), level.dimension(), lostAt, "qa");
+                data.add(lost);
+                boolean early = false;
+                for (int i = 1; i < limit; i++) {
+                    early |= Storms.unwatched(level, data, lost);
+                }
+                boolean stillThere = data.byId(lost.id()) != null && lost.unwatched() == limit - 1;
+                boolean faded = Storms.unwatched(level, data, lost);
+                Storms.Ended fadedEnd = Storms.lastEnd();
+                boolean remembered = data.faded().stream().anyMatch(f -> f.stormId() == lost.id() && f.chunkX() == lostAt.x() && f.chunkZ() == lostAt.z());
+                boolean capFree = data.count(level.dimension()) == 0;
+                boolean stillUnloaded = !level.getChunkSource().hasChunk(lostAt.x(), lostAt.z());
+                Storms.settleFaded(level.getServer(), data);
+                boolean waitsForLoad = data.faded().stream().anyMatch(f -> f.stormId() == lost.id());
+                for (StormData.Faded f : data.faded()) {
+                    if (f.stormId() == lost.id()) {
+                        data.removeFaded(f);
+                    }
+                }
+                // A faded storm over a loaded fracture: the settle halves the area's instability and drops the fracture.
+                loud(level, b, PressureBand.FRACTURE);
+                ChunkMemory loudMemory = LoadedChunkMemory.getOrCreate(level.getChunkAt(b));
+                int before = loudMemory.instability();
+                RecollectionStorm near = Storms.start(level, cb, "qa");
+                Storms.fade(level, data, near);
+                Storms.settleFaded(level.getServer(), data);
+                int after = loudMemory.instability();
+                boolean settled = after == before - (before + 1) / 2 && data.faded().stream().noneMatch(f -> f.stormId() == near.id())
+                        && MemoryPressure.band(loudMemory.cachedPressure()) != PressureBand.FRACTURE;
+                RecollectionStorm counted = new RecollectionStorm(78L, level.dimension(), cb, "qa");
+                for (int i = 0; i < 123; i++) {
+                    counted.markUnwatched();
+                }
+                RecollectionStorm countedBack = RecollectionStorm.CODEC.parse(JsonOps.INSTANCE,
+                        RecollectionStorm.CODEC.encodeStart(JsonOps.INSTANCE, counted).getOrThrow()).getOrThrow();
+                StormData.Faded entry = new StormData.Faded(level.dimension(), 5, -7, 9L);
+                StormData.Faded entryBack = StormData.Faded.CODEC.parse(JsonOps.INSTANCE, StormData.Faded.CODEC.encodeStart(JsonOps.INSTANCE, entry).getOrThrow()).getOrThrow();
+                boolean savedOk = countedBack.unwatched() == 123 && entryBack.equals(entry);
+                ok[19] = farUnloaded && !early && stillThere && faded && fadedEnd != null && fadedEnd.id() == lost.id() && fadedEnd.end() == Storms.End.FADED
+                        && remembered && capFree && stillUnloaded && waitsForLoad && settled && savedOk;
+                notes.add("unwatched farUnloaded=" + farUnloaded + " early=" + early + " held=" + stillThere + " faded=" + faded + " end=" + fadedEnd
+                        + " remembered=" + remembered + " capFree=" + capFree + " waits=" + waitsForLoad + " instability " + before + "->" + after
+                        + " settled=" + settled + " saved=" + savedOk);
+            } finally {
+                Storms.unwatchedOverride = 0;
+            }
         } catch (RuntimeException e) {
             Mnemolith.LOGGER.error("Mnemolith stormqa failed", e);
             notes.add("exception " + e);

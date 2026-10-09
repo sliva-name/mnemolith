@@ -106,6 +106,7 @@ Why: condensing takes the loudest graftable imprint out, so a residue is relief 
 | --- | --- | --- |
 | `stormAttemptChance` | 0.02 per second per player in a fracture | a storm usually gathers within a minute or two of standing in a fracture; a fracture you pass through rarely breaks |
 | `maxStormsPerDimension` | 1 | one storm is an event; two at once would be noise and double the tick work |
+| `stormUnwatchedTicks` | 2400 | a storm left behind fades after 2 minutes, a bit longer than a full storm (1400 ticks), so a short walk away does not kill it but a forgotten one frees the cap |
 | Gathering | 10 s | long enough to see the bar, place a mute stone or step away |
 | Area | 3×3 chunks around the centre | the fracture and its neighbours: a base next to a fracture is inside it |
 | Waves | 6, one per 10 s | a minute of pressure: enough time to read and capture a few, not an endless siege |

@@ -82,7 +82,7 @@ public final class Storms {
     public enum Gate { OK, DISABLED, CAP, CALM, MUTED, WARDED, BUSY }
 
     /** How a storm ended. */
-    public enum End { CONTAINED, SPENT, PASSED, SCAR, DISABLED }
+    public enum End { CONTAINED, SPENT, PASSED, SCAR, DISABLED, FADED }
 
     /**
      * Game tests only: while set, standing in a fracture never starts a storm (the residue live tests keep fractures
@@ -205,6 +205,9 @@ public final class Storms {
     /** Server tick (post): advances every active storm. Only the storms themselves are iterated. */
     public static void tick(MinecraftServer server) {
         StormData data = StormData.get(server);
+        if (server.getTickCount() % SETTLE_POLL_TICKS == 0) {
+            settleFaded(server, data);
+        }
         List<RecollectionStorm> storms = data.storms();
         if (storms.isEmpty()) {
             return;
@@ -221,15 +224,122 @@ public final class Storms {
                 continue;
             }
             if (!level.getChunkSource().hasChunk(storm.center().x(), storm.center().z())) {
-                // Nobody near: the storm waits, frozen, until its centre loads again.
+                // Nobody near: the storm waits, frozen, until its centre loads again, or fades unwatched.
                 ServerBossEvent bar = BARS.get(storm.id());
                 if (bar != null) {
                     bar.removeAllPlayers();
                 }
+                unwatched(level, data, storm);
                 continue;
             }
             step(level, data, storm);
+            if (data.byId(storm.id()) != null) {
+                if (storm.phase() == RecollectionStorm.Phase.RAGING && storm.wavesLeft() <= 0) {
+                    // Waves done, still waiting on storm residues in unloaded chunks: nobody is watching those.
+                    unwatched(level, data, storm);
+                } else {
+                    storm.markWatched();
+                }
+            }
         }
+    }
+
+    // ---- unwatched storms fade ----
+
+    /** How often (ticks) faded centres are checked for a loaded chunk to settle. */
+    public static final int SETTLE_POLL_TICKS = 20;
+    /** Players this close to a settling centre hear about it. */
+    public static final double SETTLE_TELL_RANGE = 48.0D;
+
+    /** Game tests only: overrides {@code stormUnwatchedTicks} when positive. */
+    public static int unwatchedOverride;
+
+    public static int unwatchedLimit() {
+        return unwatchedOverride > 0 ? unwatchedOverride : ServerConfig.STORM_UNWATCHED_TICKS.get();
+    }
+
+    /**
+     * One unwatched tick of {@code storm}. At {@link #unwatchedLimit()} (0 = never) it fades: it ends without a Scar
+     * and its centre is remembered so the area settles when it loads again. True when it faded.
+     */
+    public static boolean unwatched(ServerLevel level, StormData data, RecollectionStorm storm) {
+        int limit = unwatchedLimit();
+        if (limit <= 0) {
+            return false;
+        }
+        if (storm.markUnwatched() % 200 == 0) {
+            data.setDirty();
+        }
+        if (storm.unwatched() < limit) {
+            return false;
+        }
+        fade(level, data, storm);
+        return true;
+    }
+
+    /** Ends {@code storm} as faded now (also the QA). */
+    public static void fade(ServerLevel level, StormData data, RecollectionStorm storm) {
+        if (data.byId(storm.id()) == null) {
+            return;
+        }
+        data.addFaded(new StormData.Faded(storm.dimension(), storm.center().x(), storm.center().z(), storm.id()));
+        finish(level, storm, End.FADED);
+    }
+
+    /** Settles every faded centre whose chunk is loaded now. */
+    public static void settleFaded(MinecraftServer server, StormData data) {
+        for (StormData.Faded faded : data.faded()) {
+            ServerLevel level = server.getLevel(faded.dimension());
+            if (level == null) {
+                data.removeFaded(faded);
+                continue;
+            }
+            if (level.getChunkSource().hasChunk(faded.chunkX(), faded.chunkZ())) {
+                settle(level, faded);
+                data.removeFaded(faded);
+            }
+        }
+    }
+
+    /**
+     * A faded storm took the noise with it: every loaded chunk of its 3x3 area loses half its instability, and players
+     * near the centre are told. Returns the instability removed.
+     */
+    public static int settle(ServerLevel level, StormData.Faded faded) {
+        int removed = 0;
+        for (int dx = -AREA; dx <= AREA; dx++) {
+            for (int dz = -AREA; dz <= AREA; dz++) {
+                int x = faded.chunkX() + dx;
+                int z = faded.chunkZ() + dz;
+                if (!level.getChunkSource().hasChunk(x, z)) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(x, z);
+                ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+                if (memory == null || memory.instability() <= 0) {
+                    continue;
+                }
+                int cooled = memory.coolInstability((memory.instability() + 1) / 2);
+                if (cooled > 0) {
+                    removed += cooled;
+                    MemoryPressure.recompute(chunk, memory);
+                    chunk.markUnsaved();
+                    com.mnemolith.network.PressureSync.markDirty();
+                }
+            }
+        }
+        ChunkPos center = new ChunkPos(faded.chunkX(), faded.chunkZ());
+        BlockPos middle = new BlockPos(center.getMiddleBlockX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.getMiddleBlockX(), center.getMiddleBlockZ()), center.getMiddleBlockZ());
+        level.playSound(null, middle, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.AMBIENT, 1.5F, 0.6F);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, middle.getX() + 0.5D, middle.getY() + 1.5D, middle.getZ() + 0.5D,
+                24, 3.0D, 1.5D, 3.0D, 0.02D);
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(middle.getX() + 0.5D, player.getY(), middle.getZ() + 0.5D) <= SETTLE_TELL_RANGE * SETTLE_TELL_RANGE) {
+                player.sendSystemMessage(Component.translatable("mnemolith.storm.faded_here"), false);
+            }
+        }
+        Mnemolith.LOGGER.info("Mnemolith faded storm id={} settled at chunk {} {} cooled={}", faded.stormId(), faded.chunkX(), faded.chunkZ(), removed);
+        return removed;
     }
 
     /** One tick of one storm. Public for the QA, which drives a storm tick by tick. */

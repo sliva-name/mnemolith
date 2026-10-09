@@ -98,6 +98,8 @@ public final class MnemolithGameTests {
         storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);
         storm("storm_mute_stone_contains", StormLiveTests::muteStoneContains, 300);
         storm("scar_read_then_hurt", StormLiveTests::scarReadThenHurt, 400);
+        // Unwatched limit overridden to 60 ticks for the test.
+        storm("storm_unwatched_fades", StormLiveTests::unwatchedStormFades, 200);
 
         // A killed boss takes its bar down and keeps it down (the death tick and any server tick after the removal).
         live("boss_bar_clears_on_death", StormLiveTests::bossBarClearsOnDeath, 300);

@@ -62,7 +62,7 @@ This is one server process. It does not open two Minecraft clients, so it does n
 
 ## Known limits
 
-- No new dimension and no proxy-specific handshake. A storm's centre chunk must be loaded for it to advance; with nobody near, it freezes.
+- No new dimension and no proxy-specific handshake. A storm's centre chunk must be loaded for it to advance; with nobody near, it waits and then fades after `stormUnwatchedTicks`, so one player's abandoned storm does not hold the dimension's storm cap for everyone.
 - Full pressure reads without a lens are allowed only by `gameplay.allowAmbientPressure` on the server. A client that sets the request bit without a lens, and without that config, gets only the band-only snapshot: which nearby chunks are overloaded or fractured, the same thing its screen already shows through fracture feel. The read is still read-only: a client cannot create an imprint by sending a payload.
 - Two players can share one reel. They see the same three slots, the same way they would share a chest. Separate reels do not share slots.
 - Disconnect closes the menu. Slips stay in the reel. A button packet for a menu that is no longer open does not compose.
