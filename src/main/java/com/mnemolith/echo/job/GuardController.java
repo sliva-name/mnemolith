@@ -61,7 +61,6 @@ public final class GuardController {
     /** How far past the post radius a guard follows a foe before it turns back. */
     static final int LEASH_EXTRA = 3;
     /** Reach of a guard's hit, squared, measured between the two bodies' centres (a player reaches about 3). */
-    static final double REACH_SQR = 2.6D * 2.6D;
     static final float GRAFT_BONUS = 1.5F;
     static final Identifier ADVANCEMENT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "echo_guard");
     /** A guard with a melee weapon shoots only foes farther than this (squared: 3.5 blocks). */
@@ -77,6 +76,9 @@ public final class GuardController {
     static final double ESCORT_RANGE = 24.0D;
     /** An escort stays within this distance of its owner (squared: 3 blocks). */
     static final double ESCORT_NEAR_SQR = 9.0D;
+    /** How long (ticks) and how far a shooter out of the leash keeps the guard's shield turned to it. */
+    static final int THREAT_TICKS = 60;
+    static final double THREAT_RANGE = 24.0D;
 
     private final EchoJob job;
     GuardLesson taught = GuardLesson.NONE;
@@ -97,6 +99,12 @@ public final class GuardController {
     boolean drawing;
     /** Escort: false while the owner is away (the post stays where they were last seen). */
     boolean following = true;
+    /**
+     * Stage 3: a mob that hurt the guard (or hit its shield) from outside the leash, such as a skeleton shooting from
+     * afar. The guard stays on post but faces it with its shield up, and shoots back when it can.
+     */
+    @Nullable LivingEntity threat;
+    int threatTicks;
     /** Where the walk back to the post is heading (an escort re-paths when its owner moves). */
     @Nullable BlockPos postGoal;
 
@@ -106,6 +114,8 @@ public final class GuardController {
 
     void resetSearch() {
         this.target = null;
+        this.threat = null;
+        this.threatTicks = 0;
         this.scanTicks = 0;
         this.repathTicks = 0;
         this.lineBlockedTicks = 0;
@@ -168,9 +178,21 @@ public final class GuardController {
             }
         }
         if (foe == null) {
-            this.lower(echo);
             this.lineBlockedTicks = 0;
+            LivingEntity threat = this.currentThreat(echo);
             this.holdPost(level, echo, anchor);
+            if (threat == null) {
+                this.lower(echo);
+                return;
+            }
+            // Under fire from beyond the leash: stay on post, face the shooter, shoot back or shield up.
+            echo.lookAt(threat.getEyePosition());
+            if (bow && echo.distanceToSqr(threat) <= MAX_SHOT * MAX_SHOT && clearShot(level, echo, threat)) {
+                this.ranged(level, echo, threat);
+                return;
+            }
+            this.cancelDraw(echo);
+            this.raise(echo);
             return;
         }
         this.job.setStatus(new JobStatus(JobStatus.Kind.GUARD_FIGHT, BuiltInRegistries.ENTITY_TYPE.getKey(foe.getType()).toString(), this.defeated, 0));
@@ -232,7 +254,8 @@ public final class GuardController {
     private void fight(ServerLevel level, EchoEntity echo, LivingEntity foe, int weapon, boolean bow) {
         echo.lookAt(foe.getEyePosition());
         double distance = echo.distanceToSqr(foe);
-        boolean inReach = distance <= REACH_SQR && Math.abs(foe.getY() - echo.getY()) < 2.0D;
+        double reach = CommonConfig.ECHO_GUARD_REACH.get();
+        boolean inReach = distance <= reach * reach && Math.abs(foe.getY() - echo.getY()) < 2.0D;
         if (weapon >= 0 && inReach) {
             this.cancelDraw(echo);
             if (this.job.mover.active()) {
@@ -536,9 +559,9 @@ public final class GuardController {
         if (!hurt) {
             return;
         }
+        // No extra shove: the hit's own knockback (0.4, like a player's) is enough, and a bigger one kept zombies from
+        // ever reaching the guard.
         this.landed++;
-        // A light shove away from the echo (a player's unsprinted hit is 0.4).
-        foe.push(Vec3.directionFromRotation(0.0F, echo.getYRot()).scale(0.3D).add(0.0D, 0.1D, 0.0D));
         level.playSound(null, foe.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.NEUTRAL, 0.7F, 1.1F);
         if (temper == Temper.VOLATILE || (temper == Temper.HUSHED && unaware)) {
             EchoGrafts.spend(echo, 1);
@@ -618,12 +641,52 @@ public final class GuardController {
     /** A mob hurt the guard: it turns on it, when it is a valid foe near the post. Returns true when it did. */
     boolean onAttacked(ServerLevel level, EchoEntity echo, LivingEntity attacker) {
         BlockPos anchor = this.job.workAnchor == null ? echo.blockPosition() : this.job.workAnchor;
-        if (!canFight(echo, attacker) || !this.inLeash(anchor, attacker.position())) {
+        if (!canFight(echo, attacker)) {
+            return false;
+        }
+        if (!this.inLeash(anchor, attacker.position())) {
+            if (attacker.distanceToSqr(echo) <= THREAT_RANGE * THREAT_RANGE) {
+                this.threat = attacker;
+                this.threatTicks = THREAT_TICKS;
+            }
             return false;
         }
         this.target = attacker;
         this.repathTicks = 10;
         return true;
+    }
+
+    /**
+     * A guard hit or shot {@code mob}: it turns on the guard ({@code echoGuardProvokes}). Vanilla's hurt-by goal does
+     * the same for most mobs; this also covers mobs without one. Runs on the hit, never as a scan.
+     */
+    public static void provoke(EchoEntity echo, LivingEntity victim) {
+        if (!CommonConfig.ECHO_GUARD_PROVOKES.get() || !(victim instanceof Mob mob) || !mob.isAlive() || mob.getTarget() == echo
+                || !echo.attractsMobs() || !canFight(echo, mob)) {
+            return;
+        }
+        mob.setTarget(echo);
+        Mnemolith.LOGGER.debug("Mnemolith echo guard provoked owner={} mob={} at {}", echo.ownerName(),
+                BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()), mob.blockPosition().toShortString());
+    }
+
+    /** An axe (or a warden) knocked the shield out of the guard's hands for {@code ticks}. */
+    void onShieldDisabled(int ticks) {
+        this.raised = false;
+        this.shieldDownTicks = Math.max(this.shieldDownTicks, ticks);
+    }
+
+    /** The shooter out of the leash the guard still turns its shield to, or null once it is gone, quiet or far. */
+    private @Nullable LivingEntity currentThreat(EchoEntity echo) {
+        LivingEntity threat = this.threat;
+        if (threat == null) {
+            return null;
+        }
+        if (--this.threatTicks <= 0 || !canFight(echo, threat) || threat.distanceToSqr(echo) > THREAT_RANGE * THREAT_RANGE) {
+            this.threat = null;
+            return null;
+        }
+        return threat;
     }
 
     private boolean inLeash(BlockPos anchor, Vec3 pos) {

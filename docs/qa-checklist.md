@@ -18,7 +18,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
-| `mnemolith:suite_guardqa` | `/mnemolith guardqa` (19) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
+| `mnemolith:suite_guardqa` | `/mnemolith guardqa` (24) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -55,6 +55,8 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | Test | What is proved | Budget |
 | --- | --- | --- |
 | `guard_archer_holds_fire_then_shoots` | A pure archer (bow, 16 arrows), a husk 7 blocks west with no AI, a villager in the line of fire: no shot in 80 ticks; the villager steps aside and the archer shoots the husk dead; the villager keeps full health and arrows left = 16 − shots | 700 |
+| `guard_husk_fights_back` | A guard with a wooden sword and no shield, a husk with its own AI 6 blocks away: the husk picks the guard before the guard hits it, lands at least one hit (the guard's health drops), and the guard kills it and lives | 400 |
+| `guard_axe_disables_shield` | A guard with a sword and a shield against a 400-health zombie with no AI; once the shield is up, a 4-damage hit from a vindicator holding an iron axe is blocked (no damage) and knocks the shield down for 100 ticks; the shield stays down for 95 ticks, then goes back up | 400 |
 | `guard_shield_blocks_frontal_hit` | A guard with a sword and a shield walks to a zombie; once the shield is up (vanilla `isBlocking`), a 4-damage frontal hit does no damage, is counted as blocked and wears the shield | 200 |
 | `guard_kills_husk_spares_bystanders` | A guarding echo with an iron sword, a husk 4 blocks from its post, a villager and a cow beside it, a creative owner: on the real server tick the echo walks to the husk and kills it; the villager and the cow keep full health, the sword lost durability, the echo is still guarding | 600 |
 
@@ -337,7 +339,7 @@ Manual (client):
 
 ## Echo guard QA
 
-`/mnemolith guardqa` (gamemaster) checks the guard job ([design note](design/echo-guard.md)) on a dedicated server in a cleared chunk next to the command source, with a fake-player owner. The last line must be `guardqa: 19 of 19`. Stage 2 flags are in the second table ([design note](design/echo-guard-2.md)). Mobs in the fight checks have no AI and their hurt cooldown is cleared between steps, because the suite steps the job itself instead of waiting for the server tick.
+`/mnemolith guardqa` (gamemaster) checks the guard job ([design note](design/echo-guard.md)) on a dedicated server in a cleared chunk next to the command source, with a fake-player owner. The last line must be `guardqa: 24 of 24`. Stage 2 and stage 3 flags are in the next tables ([stage 2](design/echo-guard-2.md), [stage 3](design/echo-guard-3.md)). Mobs in the fight checks have no AI and their hurt cooldown is cleared between steps, because the suite steps the job itself instead of waiting for the server tick.
 
 | Flag | What is proved |
 | --- | --- |
@@ -366,6 +368,16 @@ Stage 2 flags:
 | `escort` | "Guard me": the post is the owner's spot, moves when they move, radius 5, status `guard_escort` |
 | `escortWaits` | The owner 40 blocks away: status `guard_waiting`, the post stays where they were last seen |
 
+Stage 3 flags:
+
+| Flag | What is proved |
+| --- | --- |
+| `provoke` | A zombie with no AI that targets a villager turns to the guard once the guard's hit lands (the explicit hook, not vanilla's hurt-by goal) |
+| `underFire` | A skeleton 14 blocks out (outside the leash) hurts the guard: no chase, the guard faces it (yaw −90) with the shield raised and stays on post; with no new hits, after 3 s it lets go and lowers the shield |
+| `armorEquip` | Out of a leather and a diamond chestplate, an iron helmet, iron boots, an elytra and a carved pumpkin, with bound leather boots worn: diamond chest and iron helmet go on, the bound boots stay, legs stay empty, nothing is lost (7 items), a second pass moves nothing |
+| `armorProtects` | 11 armor: a 10-damage zombie hit costs 7.2 health; the chestplate and the helmet both lose durability |
+| `armorDrops` | The echo dies: the diamond chestplate and the iron helmet lie on the ground next to it |
+
 Manual (client):
 
 - [x] `/mnemolith echodemo guard`, then `/summon zombie` and `/summon skeleton` inside the radius: «Охрана: бой — Зомби · 0», the echo walks over and swings the sword; back on post afterwards with the kill count.
@@ -387,8 +399,16 @@ Manual stage 2 (client):
 - [x] A guard with a shield raises it while fighting (visible pose); a 5-damage `/damage … by` a husk in front while it is up does nothing ("invulnerable") and the shield shows wear (damage 6).
 - [x] `/mnemolith echodemo escort`: «Охрана: рядом с вами · 0»; walking 17 blocks the echo stays within about 3 blocks; it kills a husk that comes at you.
 - [x] Echo screen: the ☺ button next to «Охрана» with the "Guard me" tooltip (EN).
-- [ ] An axe hit disables the guard's shield and it stays down for 5 s.
-- [ ] Mobs that do not target the echo rarely hit it, so live shield blocks mostly come from grave guards or ranged mobs aiming at it; check a skeleton shooting a grave guard.
+- [x] An axe hit disables the guard's shield and it stays down for 5 s. A vindicator with an iron axe against the armored guard: the server log shows `echo shield disabled … by=minecraft:vindicator ticks=100` (it was never disabled before stage 3: vanilla does this only for players).
+- [x] A skeleton shooting a grave guard: the guard runs at it while it is inside the leash; from beyond the leash it stays on post with its shield turned to the skeleton (shield worn to 10, arrows stuck around it, health back to 20). Charges dropped from 24 to 16, one for each arrow that got through.
+
+Manual stage 3 (client):
+
+- [x] `/mnemolith echodemo armored`: within 2 s the echo wears the iron set (not the leather chestplate), it renders on the model, and WTHIT shows the armor bar.
+- [x] A husk against the armored guard with a shield: the husk walks up and lands a hit (red flash, every armor piece loses 1 durability), the guard kills it.
+- [x] A vindicator with an iron axe kills the armored guard in about 3 s; the iron set, the shield, the sword and the spare leather chestplate all drop where it fell.
+- [x] The field guide page «Отголосок на охране» shows the stage 3 paragraph (RU).
+- [x] Echo screen: the four armor slots hold the worn iron set with durability bars, the worn shield sits in the off-hand slot, and the spare leather chestplate stays in the bag.
 
 ### Manual stage 3 checks (client)
 

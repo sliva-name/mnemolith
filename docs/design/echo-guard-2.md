@@ -1,6 +1,7 @@
 # Echo guard, stage 2: bows, shields, escort
 
-Status: implemented on `feature/echo-guard-2`. Builds on [echo-guard.md](echo-guard.md).
+Status: shipped in #57. Builds on [echo-guard.md](echo-guard.md). Stage 3 is [echo-guard-3.md](echo-guard-3.md). The axe
+disable below only started working there: vanilla disables the shield in `Player.blockUsingItem` only.
 
 ## Problem
 

@@ -388,6 +388,29 @@ public final class EchoJob {
         this.guard.blocked++;
     }
 
+    /** The guard's shield stopped a hit from {@code attacker}: count it, and turn to the attacker like after a hit. */
+    public void onGuardBlocked(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.@Nullable LivingEntity attacker) {
+        this.guard.blocked++;
+        if (attacker != null && this.guarding() && !this.orders.active()) {
+            this.guard.onAttacked(level, echo, attacker);
+        }
+    }
+
+    /** QA: the shooter beyond the leash the guard faces, or null. */
+    public net.minecraft.world.entity.@Nullable LivingEntity guardThreat() {
+        return this.guard.threat;
+    }
+
+    /** An axe hit knocked the guard's shield down for {@code ticks}. */
+    public void onGuardShieldDisabled(int ticks) {
+        this.guard.onShieldDisabled(ticks);
+    }
+
+    /** QA: ticks the guard's shield stays down. */
+    public int guardShieldDownTicks() {
+        return this.guard.shieldDownTicks;
+    }
+
     /** The shield the guard holds up right now, or null. */
     public net.minecraft.world.item.@Nullable ItemStack guardShield(EchoEntity echo) {
         return this.guarding() && !this.orders.active() ? this.guard.raisedShield(echo) : null;

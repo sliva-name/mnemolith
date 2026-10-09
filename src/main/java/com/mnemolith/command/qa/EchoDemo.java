@@ -36,7 +36,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code overload}: the same in an overloaded chunk; {@code door}, {@code gate}, {@code ladder}: a long wall with that
  * passage and an echo told to return to a point behind it; {@code guard}: an echo with a guard lesson and an iron sword
  * guarding the middle of the square; {@code archer}: a guard with a bow, 12 arrows and a shield; {@code escort}: a guard
- * with a sword and a shield following you ("guard me"); {@code worn}: a guard whose iron sword has one use left.
+ * with a sword and a shield following you ("guard me"); {@code worn}: a guard whose iron sword has one use left; {@code armored}: a guard with a sword, a shield and a full set
+ * of iron armor in its bag (it puts the armor on within two seconds).
  */
 public final class EchoDemo {
     private EchoDemo() {}
@@ -50,7 +51,7 @@ public final class EchoDemo {
         EchoEntity echo = switch (scene) {
             case "farm", "overload" -> farm(level, player, center, scene.equals("overload"));
             case "guard" -> guard(level, player, center);
-            case "archer", "escort", "worn" -> guard2(level, player, center, scene);
+            case "archer", "escort", "worn", "armored" -> guard2(level, player, center, scene);
             default -> passage(level, player, center, scene);
         };
         if (echo == null) {
@@ -117,6 +118,15 @@ public final class EchoDemo {
             case "escort" -> {
                 echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
                 echo.inventory().insert(new ItemStack(Items.SHIELD));
+            }
+            case "armored" -> {
+                echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
+                echo.inventory().insert(new ItemStack(Items.SHIELD));
+                echo.inventory().insert(new ItemStack(Items.LEATHER_CHESTPLATE));
+                echo.inventory().insert(new ItemStack(Items.IRON_HELMET));
+                echo.inventory().insert(new ItemStack(Items.IRON_CHESTPLATE));
+                echo.inventory().insert(new ItemStack(Items.IRON_LEGGINGS));
+                echo.inventory().insert(new ItemStack(Items.IRON_BOOTS));
             }
             default -> {
                 ItemStack sword = new ItemStack(Items.IRON_SWORD);

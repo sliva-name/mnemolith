@@ -63,7 +63,8 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  */
 public final class GuardQa {
     private static final String[] NAMES = {"lesson", "filter", "damage", "refusals", "fight", "bystanders", "durability", "leash", "fightBack",
-            "graveTaunt", "volatileSpends", "persistence", "noArrows", "bowShot", "lineOfFire", "arrowGuard", "shieldRaised", "escort", "escortWaits"};
+            "graveTaunt", "volatileSpends", "persistence", "noArrows", "bowShot", "lineOfFire", "arrowGuard", "shieldRaised", "escort", "escortWaits",
+            "provoke", "underFire", "armorEquip", "armorProtects", "armorDrops"};
     private static final UUID OWNER = UUID.fromString("77777777-6666-6666-6666-666666666666");
     private static final int PAD = 12;
     private static int salt;
@@ -371,6 +372,102 @@ public final class GuardQa {
             ok[18] = waits;
             notes.add("escortWaits status=" + echo.job().status().kind().getSerializedName() + " anchorKept=" + (last != null && last.equals(echo.job().workAnchor())));
             echo.job().stop(echo);
+
+            // ========== stage 3: mobs fight back, armor ==========
+            // ---------- a mob the guard hits turns on it (no AI here, so vanilla's hurt-by goal cannot do it) ----------
+            owner.snapTo(Vec3.atBottomCenterOf(post.offset(-6, 0, -6)), 0.0F, 0.0F);
+            echo.snapTo(Vec3.atBottomCenterOf(post), 0.0F, 0.0F);
+            boolean guardAgain = echo.job().startGuarding(echo);
+            villager.snapTo(Vec3.atBottomCenterOf(post.offset(3, 0, 1)), 0.0F, 0.0F);
+            Mob provoked = mob(level, EntityTypes.ZOMBIE, post.offset(1, 0, 0), extras);
+            provoked.setNoAi(true);
+            provoked.setTarget(villager);
+            boolean wasOnVillager = provoked.getTarget() == villager;
+            int landedBefore = echo.job().guardLanded();
+            for (int i = 0; i < 30 && echo.job().guardLanded() == landedBefore; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean turned = provoked.getTarget() == echo;
+            ok[19] = guardAgain && wasOnVillager && echo.job().guardLanded() > landedBefore && turned;
+            notes.add("provoke started=" + guardAgain + " onVillagerBefore=" + wasOnVillager + " hit=" + (echo.job().guardLanded() > landedBefore)
+                    + " onGuardAfter=" + turned);
+            provoked.discard();
+
+            // ---------- a shooter beyond the leash: stay on post, shield up and turned to it, then let it go ----------
+            Mob sniper = mob(level, EntityTypes.SKELETON, post.offset(14, 0, 0), extras);
+            sniper.setNoAi(true);
+            for (int i = 0; i < 12; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean calmBefore = !echo.isUsingItem();
+            echo.job().onAttacked(level, echo, sniper);
+            for (int i = 0; i < 6; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean facing = echo.job().guardThreat() == sniper && echo.job().guardTarget() == null;
+            boolean shieldUp = echo.isUsingItem() && echo.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND;
+            float yaw = net.minecraft.util.Mth.wrapDegrees(echo.getYRot() + 90.0F);
+            boolean aimed = Math.abs(yaw) < 20.0F;
+            boolean stayed = echo.blockPosition().closerThan(post, 2.0D);
+            for (int i = 0; i < 70; i++) {
+                echo.job().tick(level, echo);
+            }
+            boolean letGo = echo.job().guardThreat() == null && !echo.isUsingItem();
+            ok[20] = calmBefore && facing && shieldUp && aimed && stayed && letGo;
+            notes.add("underFire calmBefore=" + calmBefore + " threat=" + facing + " shieldUp=" + shieldUp + " yaw=" + Math.round(echo.getYRot())
+                    + " stayed=" + stayed + " letGoAfter3s=" + letGo);
+            sniper.discard();
+            echo.job().stop(echo);
+
+            // ---------- the best armor from the inventory goes on; binding stays; no armor value, no wear ----------
+            echo.inventory().clearContent();
+            ItemStack cursedBoots = new ItemStack(Items.LEATHER_BOOTS);
+            cursedBoots.enchant(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                    .getOrThrow(net.minecraft.world.item.enchantment.Enchantments.BINDING_CURSE), 1);
+            echo.inventory().setItem(com.mnemolith.echo.EchoArmor.index(net.minecraft.world.entity.EquipmentSlot.FEET), cursedBoots);
+            echo.inventory().insert(new ItemStack(Items.LEATHER_CHESTPLATE));
+            echo.inventory().insert(new ItemStack(Items.DIAMOND_CHESTPLATE));
+            echo.inventory().insert(new ItemStack(Items.IRON_HELMET));
+            echo.inventory().insert(new ItemStack(Items.IRON_BOOTS));
+            echo.inventory().insert(new ItemStack(Items.ELYTRA));
+            echo.inventory().insert(new ItemStack(Items.CARVED_PUMPKIN));
+            int equipped = com.mnemolith.echo.EchoArmor.equipBest(echo);
+            int equippedAgain = com.mnemolith.echo.EchoArmor.equipBest(echo);
+            boolean chest = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).is(Items.DIAMOND_CHESTPLATE);
+            boolean head = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(Items.IRON_HELMET);
+            boolean feet = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(Items.LEATHER_BOOTS);
+            boolean legs = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.LEGS).isEmpty();
+            boolean kept = echo.inventory().find(Items.LEATHER_CHESTPLATE) >= 0 && echo.inventory().find(Items.ELYTRA) >= 0
+                    && echo.inventory().find(Items.CARVED_PUMPKIN) >= 0 && echo.inventory().find(Items.IRON_BOOTS) >= 0;
+            ok[21] = equipped == 2 && equippedAgain == 0 && chest && head && feet && legs && kept && echo.inventory().totalCount() == 7;
+            notes.add("armorEquip equipped=" + equipped + "/" + equippedAgain + " chest=" + chest + " head=" + head + " bindingKept=" + feet + " legsEmpty=" + legs
+                    + " restInBag=" + kept + " items=" + echo.inventory().totalCount());
+
+            // ---------- worn armor absorbs damage and wears ----------
+            // Armor attributes are applied in the entity's own tick (vanilla equipment change detection).
+            echo.tick();
+            echo.setHealth(echo.getMaxHealth());
+            echo.invulnerableTime = 0;
+            Mob hitter = mob(level, EntityTypes.ZOMBIE, post.offset(2, 0, 0), extras);
+            hitter.setNoAi(true);
+            float hpBefore = echo.getHealth();
+            echo.hurtServer(level, echo.damageSources().mobAttack(hitter), 10.0F);
+            float lost = hpBefore - echo.getHealth();
+            int chestWear = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getDamageValue();
+            int headWear = echo.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getDamageValue();
+            double armorValue = echo.getArmorValue();
+            ok[22] = lost > 0.0F && lost < 8.0F && chestWear > 0 && headWear > 0 && armorValue >= 10.0D;
+            notes.add("armorProtects armor=" + armorValue + " lost=" + lost + " of 10 chestWear=" + chestWear + " headWear=" + headWear);
+            hitter.discard();
+
+            // ---------- the armor drops where the echo dies ----------
+            BlockPos fell = echo.blockPosition();
+            echo.invulnerableTime = 0;
+            echo.hurtServer(level, level.damageSources().genericKill(), 1000.0F);
+            List<ItemEntity> dropped = level.getEntitiesOfClass(ItemEntity.class, new AABB(fell).inflate(4.0D),
+                    item -> item.getItem().is(Items.DIAMOND_CHESTPLATE) || item.getItem().is(Items.IRON_HELMET));
+            ok[23] = !echo.isAlive() && dropped.size() == 2;
+            notes.add("armorDrops dead=" + !echo.isAlive() + " armorOnGround=" + dropped.size());
         } catch (RuntimeException e) {
             notes.add("exception " + e);
             com.mnemolith.Mnemolith.LOGGER.error("guardqa failed", e);

@@ -128,6 +128,15 @@ public final class EchoEvents {
         return direct == cause || direct instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow ? cause : null;
     }
 
+    /** Guard stage 3: a hostile mob a guard hit or shot turns on it (see {@code GuardController.provoke}). */
+    @SubscribeEvent
+    public static void onGuardProvokes(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (event.getInflictedDamage() > 0.0F && event.getSource().getEntity() instanceof com.mnemolith.entity.echo.EchoEntity echo
+                && echo.job().guarding() && !event.getEntity().level().isClientSide()) {
+            com.mnemolith.echo.job.GuardController.provoke(echo, event.getEntity());
+        }
+    }
+
     /** A guard's arrow killed a hostile mob: it counts for the guard's kills and the owner's advancement. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEchoArrowKill(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
@@ -143,7 +152,7 @@ public final class EchoEvents {
     public static void onEchoShieldBlock(net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent event) {
         if (event.getBlocked() && event.getBlockedDamage() > 0.0F && event.getEntity() instanceof com.mnemolith.entity.echo.EchoEntity echo
                 && echo.level() instanceof net.minecraft.server.level.ServerLevel level) {
-            echo.job().onGuardBlocked();
+            echo.job().onGuardBlocked(level, echo, event.getDamageSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker ? attacker : null);
             // Vanilla only wears a player's shield; an echo's shield wears the same way.
             net.minecraft.world.item.ItemStack shield = echo.getUseItem();
             var blocks = shield.get(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS);
