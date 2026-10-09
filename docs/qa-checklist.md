@@ -21,6 +21,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_guardqa` | `/mnemolith guardqa` (24) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
 | `mnemolith:suite_hollowsqa` | `/mnemolith hollowsqa` (22) | The flat test world has no multi-noise source, so the biome hooks are checked on overworld and nether sources built from the presets; features run on a pad in a cleared chunk |
 | `mnemolith:suite_hollows2qa` | `/mnemolith hollows2qa` (18) | Fake-player catcher; flickers are registered with `HollowFlickers.send` at known spots. The template, loot and recipe checks read the real data |
+| `mnemolith:suite_hollows3qa` | `/mnemolith hollows3qa` (19) | Fake-player catcher and attacker; faded are spawned without AI next to a `fillbiome` patch and stepped by direct calls. The loot, recipe and advancement checks read the real data |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -537,6 +538,27 @@ Manual (fresh normal world, seed 424242, 2026-10-10, screenshots in `playtest-sh
 - [x] Recollite lens: tooltip with its hollows line, JEI crafting recipe, *Sharper Recollection* on pickup.
 - [x] Field guide page «Погребённые архивы» / "Sunken Archives" (36/38) with its picture, RU and EN; the reference page is still 38/38 and fits.
 - [ ] Music and ambience by ear: the Xvfb client has no audio device (sound engine off). The sounds are registered, the OGGs decode (48 s, 1.8 s, 3 s, 0.9 s) and no missing-sound warnings appear.
+
+## Memory Hollows stage 3 QA
+
+`/mnemolith hollows3qa` (gamemaster) checks stage 3 ([design note](design/memory-hollows-3.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `fadedType`, `fadedLoot` | `mnemolith:faded` is a registered monster, not allowed in peaceful; `entities/faded` loads |
+| `spawnHollowsOnly`, `spawnCap` | `MobSpawns.fadedSpotOk` refuses a plains spot and accepts it once `fillbiome` makes it Memory Hollows; three faded within 32 blocks close the spot, removing them opens it again |
+| `mimic`, `provoke` | A trade flicker 5 blocks away makes an idle faded copy the tag and the spot; a catch nearby sets the catcher as its target and drops the copy |
+| `damageScale` | A 4-damage player hit takes 2 health unseen and 6 once revealed |
+| `lensReveal` | A raised lens looking at a faded 6 blocks away sees it; lowered, or turned away, it does not |
+| `slipDrop` | 12 player kills of a faded that copied fire: some but not all drop a fire slip, no other slip drops |
+| `lecternPlays`, `lecternCooldown`, `lecternHoldings` | A slip on a lectern plays (replay counted, nothing catchable even with a recollite lens, slip kept); within the cooldown it refuses; a non-lectern or a non-slip does nothing; the chunk reading counts tags ("×2") |
+| `needleUnaided`, `needleReach` | The recollite needle's own use catches a path flicker at 6 blocks with no lens (reach 7); at 8 blocks it misses, and catches with a recollite lens in the off hand; the plain needle without a lens has no reach |
+| `needleRecipe`, `needleItem` | The plus recipe around the extraction needle makes the recollite needle; it catches unaided and has double durability |
+| `audio`, `advancements`, `guidePage` | Four sounds registered; `faded_revealed`, `lectern_replay`, `recollite_needle` and the recipe advancement load; the `faded` page sits right after `sunken` |
+
+Manual (fresh normal world, seed 424242, 2026-10-10, screenshots in `playtest-shots/feature-hollows-3/`):
+
+MANUAL_RESULTS
 
 ## Debug commands
 

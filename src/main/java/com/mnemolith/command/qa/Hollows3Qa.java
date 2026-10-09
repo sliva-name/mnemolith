@@ -103,6 +103,7 @@ public final class Hollows3Qa {
             HollowFlickers.clear();
             LecternReplay.clear();
             player.getInventory().clearContent();
+            player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
 
             // ---------- spawn spot ----------
             boolean wasHollows = Hollows.is(level.getBiome(a));
@@ -120,12 +121,17 @@ public final class Hollows3Qa {
             for (int i = 0; i < MobSpawns.FADED_LOCAL_CAP; i++) {
                 spawned.add(faded(level, a.offset(6 + i, 0, 6)));
             }
-            ok[3] = !MobSpawns.fadedSpotOk(level, a);
+            boolean capped = !MobSpawns.fadedSpotOk(level, a);
+            int present = level.getEntitiesOfClass(Faded.class, new AABB(a).inflate(MobSpawns.FADED_CAP_RADIUS)).size();
             for (Faded f : spawned) {
                 f.discard();
             }
             spawned.clear();
-            ok[3] &= MobSpawns.fadedSpotOk(level, a);
+            boolean reopened = MobSpawns.fadedSpotOk(level, a);
+            ok[3] = capped && reopened;
+            if (!ok[3]) {
+                notes.add(0, "cap capped=" + capped + " present=" + present + " reopened=" + reopened);
+            }
 
             // ---------- mimic and provoke ----------
             Faded mimic = faded(level, a.offset(5, 0, 0));
@@ -136,7 +142,13 @@ public final class Hollows3Qa {
             HollowFlickers.clear();
             player.snapTo(a.getX() + 2.5D, a.getY(), a.getZ() + 0.5D, 0.0F, 0.0F);
             Faded.onCatch(level, a, player);
-            ok[5] = mimic.getTarget() == player && mimic.mimicAt() == null;
+            // a peaceful world (the game test server) refuses player targets in Mob.setTarget; the copy is still dropped
+            boolean canTarget = mimic.canAttack(player);
+            ok[5] = mimic.getTarget() == (canTarget ? player : null) && mimic.mimicAt() == null;
+            notes.add("provoke canTarget=" + canTarget + " difficulty=" + level.getDifficulty());
+            if (!ok[5]) {
+                notes.add(0, "provoke target=" + mimic.getTarget() + " mimicAt=" + mimic.mimicAt() + " creative=" + player.isCreative());
+            }
 
             // ---------- damage, lens ----------
             Faded target = faded(level, a.offset(0, 0, 3));
@@ -161,9 +173,11 @@ public final class Hollows3Qa {
             player.startUsingItem(InteractionHand.MAIN_HAND);
             boolean raised = watched.seenThroughLens(player);
             player.setYRot(180.0F);
+            player.setYHeadRot(180.0F);
             boolean away = watched.seenThroughLens(player);
             player.stopUsingItem();
             player.setYRot(0.0F);
+            player.setYHeadRot(0.0F);
             ok[7] = !idle && raised && !away;
             notes.add("lens idle=" + idle + " raised=" + raised + " away=" + away);
 
@@ -192,6 +206,7 @@ public final class Hollows3Qa {
 
             // ---------- lectern ----------
             LevelChunk chunk = level.getChunkAt(lectern);
+            LoadedChunkMemory.clear(chunk); // the kills above left death imprints here
             ChunkMemory memory = LoadedChunkMemory.getOrCreate(chunk);
             memory.addImprint(new Imprint(ImprintTag.PATH, 3, lectern, Optional.empty(), 31, level.getGameTime()), 8);
             memory.addImprint(new Imprint(ImprintTag.PATH, 3, lectern, Optional.empty(), 32, level.getGameTime()), 8);
@@ -215,7 +230,7 @@ public final class Hollows3Qa {
             notes.add("lectern first=" + first + " second=" + second);
             String holdings = LecternReplay.holdings(memory).getString();
             ok[11] = holdings.contains("×2") && holdings.contains(", ") && !LecternReplay.holdings(null).getString().isEmpty();
-            notes.add("holdings=" + holdings);
+            notes.add(0, "holdings=" + holdings + " nothing=" + LecternReplay.holdings(null).getString());
             LoadedChunkMemory.clear(chunk);
             level.setBlock(lectern, Blocks.AIR.defaultBlockState(), 3);
 

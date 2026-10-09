@@ -493,7 +493,7 @@ public final class CommonConfig {
         SCAR_BRAND_COOLDOWN = SpecValues.integer(builder, "scarBrandCooldown", "Ticks the scar brand rests after a spend.", 40, 5, 200);
         builder.pop();
 
-        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, and fracture stalkers. Eggs and /mnemolith spawn ignore these.");
+        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, fracture stalkers, and faded. Eggs and /mnemolith spawn ignore these.");
         STALKER_SPAWN_WEIGHT = SpecValues.integer(builder, "stalkerSpawnWeight", "Chance, out of 100, that a natural fracture stalker spawn attempt is kept. 0 disables natural spawns.", 10, 0, 100);
         STALKER_MIN_PRESSURE = SpecValues.integer(builder, "stalkerMinPressure", "Minimum cached pressure before a fracture stalker can spawn naturally.", 50, 0, 10_000);
         FADED_SPAWN_WEIGHT = SpecValues.integer(builder, "fadedSpawnWeight", "Chance, out of 100, that a natural faded spawn attempt in Memory Hollows is kept (at most 3 within 32 blocks either way). 0 disables natural spawns.", 25, 0, 100);
