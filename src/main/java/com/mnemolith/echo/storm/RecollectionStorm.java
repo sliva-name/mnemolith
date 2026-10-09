@@ -46,7 +46,8 @@ public final class RecollectionStorm {
             Codec.INT.fieldOf("ticks").forGetter(RecollectionStorm::ticks),
             Codec.INT.fieldOf("waves_left").forGetter(RecollectionStorm::wavesLeft),
             UUIDUtil.CODEC.listOf().optionalFieldOf("residues", List.of()).forGetter(RecollectionStorm::residues),
-            Codec.STRING.optionalFieldOf("cause", "natural").forGetter(RecollectionStorm::cause))
+            Codec.STRING.optionalFieldOf("cause", "natural").forGetter(RecollectionStorm::cause),
+            Codec.INT.optionalFieldOf("unwatched", 0).forGetter(RecollectionStorm::unwatched))
             .apply(instance, RecollectionStorm::new));
 
     private final long id;
@@ -57,13 +58,14 @@ public final class RecollectionStorm {
     private int wavesLeft;
     private final List<UUID> residues = new ArrayList<>();
     private final String cause;
+    private int unwatched;
 
     public RecollectionStorm(long id, ResourceKey<Level> dimension, ChunkPos center, String cause) {
-        this(id, dimension, center.x(), center.z(), Phase.GATHERING, 0, Storms.WAVES, List.of(), cause);
+        this(id, dimension, center.x(), center.z(), Phase.GATHERING, 0, Storms.WAVES, List.of(), cause, 0);
     }
 
     private RecollectionStorm(long id, ResourceKey<Level> dimension, int chunkX, int chunkZ, Phase phase, int ticks, int wavesLeft, List<UUID> residues,
-            String cause) {
+            String cause, int unwatched) {
         this.id = id;
         this.dimension = dimension;
         this.center = new ChunkPos(chunkX, chunkZ);
@@ -72,6 +74,7 @@ public final class RecollectionStorm {
         this.wavesLeft = wavesLeft;
         this.residues.addAll(residues);
         this.cause = cause;
+        this.unwatched = Math.max(0, unwatched);
     }
 
     public long id() {
@@ -123,6 +126,20 @@ public final class RecollectionStorm {
 
     public String cause() {
         return this.cause;
+    }
+
+    /** Ticks in a row nobody has watched this storm (centre unloaded, or a finished storm waiting on unloaded residues). */
+    public int unwatched() {
+        return this.unwatched;
+    }
+
+    /** One more unwatched tick; returns the new count. */
+    public int markUnwatched() {
+        return ++this.unwatched;
+    }
+
+    public void markWatched() {
+        this.unwatched = 0;
     }
 
     /** True when {@code chunk} lies in this storm's 3x3 area. */

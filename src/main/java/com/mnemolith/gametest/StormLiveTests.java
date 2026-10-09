@@ -156,6 +156,41 @@ final class StormLiveTests {
     }
 
     /**
+     * A storm whose centre chunk nobody has loaded fades on the real server tick after the unwatched limit: it ends as
+     * FADED, the dimension's storm cap frees, and its centre is remembered for the settle.
+     */
+    static void unwatchedStormFades(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        ChunkPos far = new ChunkPos((origin.getX() >> 4) + 6000, (origin.getZ() >> 4) + 6000);
+        helper.assertTrue(!level.getChunkSource().hasChunk(far.x(), far.z()), "the far centre is loaded");
+        com.mnemolith.echo.storm.StormData data = com.mnemolith.echo.storm.StormData.get(level.getServer());
+        Storms.unwatchedOverride = 60;
+        RecollectionStorm storm = new RecollectionStorm(data.takeId(), level.dimension(), far, "gametest");
+        data.add(storm);
+        long id = storm.id();
+        helper.startSequence()
+                .thenIdle(20)
+                .thenExecute(() -> helper.assertTrue(Storms.isActive(level, id) && storm.unwatched() > 0 && storm.ticks() == 0,
+                        "the unwatched storm should wait, counting: active=" + Storms.isActive(level, id) + " unwatched=" + storm.unwatched()))
+                .thenWaitUntil(() -> helper.assertTrue(!Storms.isActive(level, id), "still active, unwatched " + storm.unwatched()))
+                .thenExecute(() -> {
+                    Storms.unwatchedOverride = 0;
+                    Storms.Ended end = Storms.lastEnd();
+                    helper.assertTrue(end != null && end.id() == id && end.end() == Storms.End.FADED, "the storm ended " + end);
+                    helper.assertTrue(data.count(level.dimension()) == 0, "the storm cap is still taken");
+                    helper.assertTrue(data.faded().stream().anyMatch(f -> f.stormId() == id), "the faded centre is not remembered");
+                    helper.assertTrue(!level.getChunkSource().hasChunk(far.x(), far.z()), "fading loaded the far centre");
+                    for (com.mnemolith.echo.storm.StormData.Faded f : data.faded()) {
+                        if (f.stormId() == id) {
+                            data.removeFaded(f);
+                        }
+                    }
+                })
+                .thenSucceed();
+    }
+
+    /**
      * A Scar cannot be hurt until it is read: a punch does nothing; after the player holds the lens on it for 3 s it
      * is pinned, and the next punch hurts it.
      */

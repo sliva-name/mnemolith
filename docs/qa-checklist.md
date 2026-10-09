@@ -46,6 +46,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | --- | --- | --- |
 | `storm_shard_call_merges_into_scar` | A player frees a fall residual shard (`gameMode.useItemOn`) in a fractured chunk loaded with death, fire and fall memories: a storm is called and adopts the residue, the server tick gathers it and runs its waves, three or more storm residues are left, and they merge: the chunk is a Scar site with its heart, and one Scar stands over it | 1700 |
 | `storm_mute_stone_contains` | While a called storm gathers, the player places a mute stone in the centre chunk (a real block placement): the storm ends `CONTAINED` before it rages, the freed residue stays as an ordinary residue | 300 |
+| `storm_unwatched_fades` | A storm with a centre 6000 chunks away (never loaded) counts unwatched ticks on the real server tick, then ends `FADED` with the cap free and the centre remembered, without loading it | 200 |
 | `scar_read_then_hurt` | A Scar and a survival player 6 blocks off: a hit before reading does nothing; the player raises the lens (`gameMode.useItem`) and keeps looking: within the read time the Scar is pinned, and `ServerPlayer.attack` then takes health off | 400 |
 
 **Live relay and vault tests** (`com.mnemolith.gametest.RelayLiveTests`), in the `mnemolith:live` batch on their own pads (south of the other sites; the teardown also discards echoes and dropped items there).
@@ -287,7 +288,7 @@ Manual (client):
 
 ## Recollection storm QA
 
-`/mnemolith stormqa` (gamemaster) checks recollection storms and the Scar on a dedicated server, in cleared chunks next to the command source, with a fake-player owner and one echo. The last line must be `Recollection storm QA: 19 of 19`. Storms already running are set aside and put back afterwards; natural rolls are paused for the pass; every storm, site, block and entity the pass makes is removed. Storms are stepped tick by tick (`Storms.step`) instead of waiting in real time. The notes also log `gatherTickNs` (the average gathering tick) and `firstWaveUs` (the tick that breaks the storm and runs its first wave).
+`/mnemolith stormqa` (gamemaster) checks recollection storms and the Scar on a dedicated server, in cleared chunks next to the command source, with a fake-player owner and one echo. The last line must be `Recollection storm QA: 20 of 20`. Storms already running are set aside and put back afterwards; natural rolls are paused for the pass; every storm, site, block and entity the pass makes is removed. Storms are stepped tick by tick (`Storms.step`) instead of waiting in real time. The notes also log `gatherTickNs` (the average gathering tick) and `firstWaveUs` (the tick that breaks the storm and runs its first wave).
 
 | Flag | What is proved |
 | --- | --- |
@@ -310,6 +311,7 @@ Manual (client):
 | `siteReseeds` | A player in a Scar site chunk makes the pulse seed one strength-5 residue of a merged temper; not again the same day; not under a mute stone |
 | `heartHeals` | Breaking the heart heals the site (no longer a scar chunk) |
 | `persistence` | The storm (`StormData` codec), the chunk's scar fields, the Scar entity and a storm residue's flag survive a save and reload |
+| `fadesUnwatched` | A storm whose centre chunk is not loaded holds for the unwatched limit, then ends `FADED` (cap free, centre remembered, nothing loaded); the faded centre waits until its chunk loads; over a loaded fracture the settle halves the area's instability and leaves the fracture band; `unwatched` and the faded entry survive the codecs |
 
 Manual (client):
 
@@ -321,6 +323,7 @@ Manual (client):
 - [ ] Hear the charge before each recall.
 - [x] Kill it: scar fragment(s), shards and xp. Use a fragment on your echo: «закалён Шрамом», the graft line shows 3 slips' worth.
 - [x] Come back the next in-game day: an old residue floats by the heart. Mine scar glass with a pickaxe and place it by a fracture: no storm gathers there.
+- [ ] Start a storm, then go far enough that its centre unloads and stay away for `stormUnwatchedTicks` (2 minutes): the log says `end=FADED`, and a storm can gather in another fracture at once. Come back: «Здесь прошла буря воспоминаний без свидетелей. В округе стало тише.», and the lens pill shows the area out of the fracture band.
 - [x] Field guide pages «Бури воспоминаний» and «Шрам» render with pictures in RU and EN.
 
 ### Manual stage 3 checks (client)
