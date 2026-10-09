@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'world', 'places', 'players', 'reference')
+         'guard', 'world', 'places', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -971,6 +971,25 @@ def p_roles():
     p.sprite('recall_blade', 430, 150, 2, src=_item_tex('recall_blade'))
     return p.image()
 
+
+def p_guard():
+    p = Page('guard')
+    d = Diorama(380, 230, 27)
+    d.ground(8, 6, 1)
+    # the post radius: a ring of pale tiles around the echo's post
+    for x in range(-4, 4):
+        for z in range(-3, 3):
+            r = math.hypot(x + 0.5, z + 0.5)
+            if 2.4 <= r <= 3.3:
+                d.add(overlay(x, z, 0, LINE, 120), light='flat')
+    d.add(echo_quads(0.1, 0.1, 225, {'right_arm': (-2.1, 0, 0.2)}), light='entity', tint=ECHO_TINT)
+    d.add(mob_quads('archivist', 1.9, 0, 0.9, 45))
+    d.add(mob_quads('wanderer', -2.0, 0, -1.2, 225))
+    p.center(d.render(0, 0.15, 0), 210, 132)
+    p.sprite('echo_recording', 440, 60, 2)
+    for k, t in enumerate(('death', 'explosion', 'silence')):
+        p.tag(t, 440, 130 + k * 42)
+    return p.image()
 
 
 BUILDERS = {n: globals()['p_' + n] for n in PAGES}

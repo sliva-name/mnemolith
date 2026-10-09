@@ -122,10 +122,12 @@ public final class ItemTooltips {
             boolean farming = farm != null && farm.teaches();
             boolean lumbering = lumber != null && lumber.teaches();
             boolean caring = care != null && care.teaches();
+            com.mnemolith.echo.GuardLesson guard = stack.get(ModDataComponents.ECHO_GUARD.get());
+            boolean guarding = guard != null && guard.teaches();
             if (lesson != null) {
                 builder.accept(Component.translatable("item.mnemolith.echo_recording.summary", lesson.seconds(), lesson.breaks(), lesson.places(), lesson.uses()));
                 boolean onlyReplay = !lesson.teachesMining() && !lesson.teachesBuilding();
-                if (!(onlyReplay && (farming || lumbering || caring))) {
+                if (!(onlyReplay && (farming || lumbering || caring || guarding))) {
                     for (Component line : lesson.describe()) {
                         builder.accept(line.copy().withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                     }
@@ -138,6 +140,9 @@ public final class ItemTooltips {
                 }
                 if (caring) {
                     builder.accept(Component.translatable("mnemolith.lesson.care", care.describe()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                }
+                if (guarding) {
+                    builder.accept(Component.translatable("mnemolith.lesson.guard", guard.describe()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
                 }
             } else if (recording.length() > 0) {
                 builder.accept(Component.translatable(

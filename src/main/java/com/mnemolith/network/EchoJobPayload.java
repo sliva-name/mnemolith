@@ -26,6 +26,8 @@ public record EchoJobPayload(int entityId, Action action, BlockPos pos, int valu
         /** O1: lumberjack and animal care. Appended before INVALID. */
         MODE_LUMBER,
         MODE_CARE,
+        /** Guard job. */
+        MODE_GUARD,
         /**
          * Must stay last. An id this build does not know decodes as this and is rejected, so a bad packet cannot be
          * read as {@link #STOP}. Add further actions above this constant so their ordinals stay stable.

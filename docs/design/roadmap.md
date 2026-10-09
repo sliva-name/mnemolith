@@ -17,6 +17,7 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Living memory, stage 2 | Done on main (PR #34). Field guide page `traces` | [living-memory.md](living-memory.md), `investigate` config, `/mnemolith investigateqa` |
 | Living memory, stage 3 | Done on main (PR #35): an offer from this play, a silhouette that helps or lies, a cost to mute / take / store / leave. Field guide page `offer` | [living-memory.md](living-memory.md), `use` config, `/mnemolith useqa` |
 | Living memory, stage 4 | Done on main (PR #35): a scar fragment rewrites an imprint's tag, and a lie leaves a pale residue that cannot be kept. Field guide page `rewrite` | [living-memory.md](living-memory.md), `intervene` config, `/mnemolith interveneqa` |
+| Echo guard job | First stage on `feature/echo-guard`: lesson from melee hits, post radius, weapon durability, grave/volatile/hushed grafts, field guide page `guard`, advancement `echo_guard` | [echo-guard.md](echo-guard.md), `guardqa` 12/12, `guard_kills_husk_spares_bystanders`, [echo-design.md](../echo-design.md) §16 |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the

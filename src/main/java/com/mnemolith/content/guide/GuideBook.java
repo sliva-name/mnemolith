@@ -9,14 +9,14 @@ import net.minecraft.resources.Identifier;
  * The screen that draws these pages is client-only.
  * Dedicated QA expects {@link #pageCount()} to be {@link #PAGE_COUNT} (stage 3 added the echo page; memory grafts
  * added the recording and graft pages; residual echoes added the residue page; the recollection storm added the storm and Scar pages;
- * the echo relay and archive vault added the relay and vault pages; living memory added noticed, traces, offer, and rewrite; expansion tails added armory, beasts, and roles; the polish pass added remembers (the world remembers you) and places (the five buildings).
+ * the echo relay and archive vault added the relay and vault pages; living memory added noticed, traces, offer, and rewrite; expansion tails added armory, beasts, and roles; the guard job added guard; the polish pass added remembers (the world remembers you) and places (the five buildings).
  */
 public final class GuideBook {
     public static final String ITEM_ID = "field_guide";
     public static final int ART_WIDTH = 256;
     public static final int ART_HEIGHT = 128;
     /** Pages QA expects. */
-    public static final int PAGE_COUNT = 35;
+    public static final int PAGE_COUNT = 36;
 
     private static final String[] PAGES = {
             "welcome",
@@ -50,6 +50,7 @@ public final class GuideBook {
             "armory",
             "beasts",
             "roles",
+            "guard",
             "world",
             "places",
             "players",

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import com.mnemolith.echo.graft.EchoGraft;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -33,7 +34,16 @@ public record StoredEcho(
         double bonusHealth,
         Optional<EchoGraft> graft,
         boolean scarred,
-        long generation) {
+        long generation,
+        GuardLesson guard) {
+
+    /** Without a guard lesson (older callers and saves). */
+    public StoredEcho(UUID echo, UUID owner, String ownerName, Optional<Component> customName, EchoRole role, List<SlotStack> inventory,
+            Optional<EchoRecording> recording, EchoLesson lesson, FarmLesson farm, LumberLesson lumber, CareLesson care, float health,
+            double bonusHealth, Optional<EchoGraft> graft, boolean scarred, long generation) {
+        this(echo, owner, ownerName, customName, role, inventory, recording, lesson, farm, lumber, care, health, bonusHealth, graft,
+                scarred, generation, GuardLesson.NONE);
+    }
 
     public static final Codec<StoredEcho> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("echo").forGetter(StoredEcho::echo),
@@ -47,19 +57,23 @@ public record StoredEcho(
             EchoLesson.CODEC.optionalFieldOf("lesson", EchoLesson.NONE).forGetter(StoredEcho::lesson),
             FarmLesson.CODEC.optionalFieldOf("farm", FarmLesson.NONE).forGetter(StoredEcho::farm),
             LumberLesson.CODEC.optionalFieldOf("lumber", LumberLesson.NONE).forGetter(StoredEcho::lumber),
-            CareLesson.CODEC.optionalFieldOf("care", CareLesson.NONE).forGetter(StoredEcho::care),
+            // The care and guard lessons share one slot (RecordCodecBuilder takes at most 16); both keys stay flat.
+            Codec.mapPair(CareLesson.CODEC.optionalFieldOf("care", CareLesson.NONE), GuardLesson.CODEC.optionalFieldOf("guard", GuardLesson.NONE))
+                    .forGetter(stored -> Pair.of(stored.care(), stored.guard())),
             Codec.FLOAT.optionalFieldOf("health", 20.0F).forGetter(StoredEcho::health),
             Codec.DOUBLE.optionalFieldOf("bonus_health", 0.0D).forGetter(StoredEcho::bonusHealth),
             EchoGraft.CODEC.optionalFieldOf("graft").forGetter(StoredEcho::graft),
             Codec.BOOL.optionalFieldOf("scarred", false).forGetter(StoredEcho::scarred),
             Codec.LONG.optionalFieldOf("generation", 0L).forGetter(StoredEcho::generation))
-            .apply(instance, StoredEcho::new));
+            .apply(instance, (echo, owner, ownerName, customName, role, inventory, recording, lesson, farm, lumber, careGuard, health,
+                    bonusHealth, graft, scarred, generation) -> new StoredEcho(echo, owner, ownerName, customName, role, inventory, recording,
+                    lesson, farm, lumber, careGuard.getFirst(), health, bonusHealth, graft, scarred, generation, careGuard.getSecond())));
 
     public static final Codec<List<StoredEcho>> LIST_CODEC = CODEC.listOf();
 
     public StoredEcho withRole(EchoRole role) {
         return new StoredEcho(echo, owner, ownerName, customName, role, inventory, recording, lesson, farm, lumber, care,
-                health, bonusHealth, graft, scarred, generation);
+                health, bonusHealth, graft, scarred, generation, guard);
     }
 
     public static StoredEcho capture(com.mnemolith.entity.echo.EchoEntity body) {
@@ -84,6 +98,7 @@ public record StoredEcho(
                 body.bonusHealth(),
                 Optional.ofNullable(body.graft()),
                 body.scarred(),
-                body.generation());
+                body.generation(),
+                body.job().guardLesson());
     }
 }

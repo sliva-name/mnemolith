@@ -74,6 +74,7 @@ public class EchoEntity extends MemoryAvatar {
     /** O1: lumberjack / animal care. */
     public static final int LESSON_LUMBER = 8;
     public static final int LESSON_CARE = 16;
+    public static final int LESSON_GUARD = 32;
     private static final EntityDataAccessor<Component> DATA_FARM = SynchedEntityData.defineId(EchoEntity.class, EntityDataSerializers.COMPONENT);
     private static final int JOB_STOPPED = 0x40;
     /** Memory graft (temper id in bits 0-3, charges in bits 4-17, capacity in bits 18-31); 0 without a graft. */
@@ -545,8 +546,9 @@ public class EchoEntity extends MemoryAvatar {
         boolean farming = this.job.farmLesson().teaches();
         boolean lumbering = this.job.lumberLesson().teaches();
         boolean caring = this.job.careLesson().teaches();
+        boolean guarding = this.job.guardLesson().teaches();
         this.entityData.set(DATA_LESSON, (byte) ((lesson.teachesMining() ? LESSON_MINING : 0) | (lesson.teachesBuilding() ? LESSON_BUILDING : 0)
-                | (farming ? LESSON_FARMING : 0) | (lumbering ? LESSON_LUMBER : 0) | (caring ? LESSON_CARE : 0)));
+                | (farming ? LESSON_FARMING : 0) | (lumbering ? LESSON_LUMBER : 0) | (caring ? LESSON_CARE : 0) | (guarding ? LESSON_GUARD : 0)));
         Component side = Component.empty();
         if (farming) {
             side = this.job.farmLesson().cropNames();
@@ -554,6 +556,8 @@ public class EchoEntity extends MemoryAvatar {
             side = this.job.lumberLesson().logNames();
         } else if (caring) {
             side = this.job.careLesson().describe();
+        } else if (guarding) {
+            side = this.job.guardLesson().describe();
         }
         this.entityData.set(DATA_FARM, side);
     }
@@ -748,6 +752,10 @@ public class EchoEntity extends MemoryAvatar {
             if (com.mnemolith.echo.graft.EchoGrafts.decoy(this)) {
                 // A grave graft stands its ground and pays for each hit instead of running.
                 com.mnemolith.echo.graft.EchoGrafts.onDecoyHit(this);
+                if (this.job.guarding()) {
+                    // A grave guard also hits back.
+                    this.job.onAttacked(level, this, attacker);
+                }
             } else {
                 // Stage 3: a working echo never fights back; it runs and resumes later.
                 this.job.onAttacked(level, this, attacker);

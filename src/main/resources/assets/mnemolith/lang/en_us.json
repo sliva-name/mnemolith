@@ -1245,5 +1245,19 @@
   "mnemolith.debug.shard.failed": "The shard did not take.",
   "mnemolith.debug.imprint": "Wrote %s imprints of %s here.",
   "mnemolith.debug.stranger": "The nearest echo now belongs to %s.",
-  "mnemolith.debug.relay.link": "The two nearest echoes are linked."
+  "mnemolith.debug.relay.link": "The two nearest echoes are linked.",
+  "mnemolith.guard.hostiles": "hostile mobs",
+  "mnemolith.lesson.guard": "Lesson: guard — %s",
+  "mnemolith.gui.echo.lesson.guard": "Guard: %s",
+  "mnemolith.gui.echo.lesson.guard_plain": "Guard: hostile mobs",
+  "mnemolith.gui.echo.mode.guard": "Guard",
+  "mnemolith.gui.echo.mode.guard.tip": "Hold this spot: fight hostile mobs within the radius (8 at most) with the best weapon in the inventory. Never touches players, villagers, animals or pets, and leaves creepers alone.",
+  "mnemolith.gui.echo.no_guard": "The recording does not teach guarding: hit hostile mobs in melee (2+ times). The echo also needs a weapon.",
+  "mnemolith.job.guard_post": "Guard: on post · %s",
+  "mnemolith.job.guard_fight": "Guard: fighting %s · %s",
+  "mnemolith.job.reason.no_tool.weapon": "no weapon",
+  "advancements.mnemolith.echo_guard.title": "Standing watch",
+  "advancements.mnemolith.echo_guard.description": "Have an echo guard defeat a hostile mob for you.",
+  "mnemolith.guide.guard.title": "Echo guard",
+  "mnemolith.guide.guard.body": "Record yourself fighting: two or more melee hits on hostile mobs teach the guard lesson. Give the echo a weapon (sword, axe, trident, mace) and press Guard where it should stand.\n\nThe echo holds that post. It fights hostile mobs within the job radius (8 blocks at most), never chases more than 3 blocks past it, and walks back when the area is clear. It hits back when attacked instead of running.\n\nEach hit costs the weapon durability. A guard hits for three quarters of the weapon's damage, slower than you: it handles a lone zombie, not a wave. It never touches players, villagers, animals, pets or other echoes, and leaves creepers and bosses alone.\n\nGrave: mobs turn from you to the guard. Volatile: hits harder (costs charges). Hushed: mobs do not see it coming; the first hit is stronger (costs charges)."
 }

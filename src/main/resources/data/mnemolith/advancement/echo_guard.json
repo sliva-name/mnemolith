@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:first_echo",
+  "display": {
+    "icon": {
+      "id": "minecraft:iron_sword"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.echo_guard.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.echo_guard.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "guarded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "guarded"
+    ]
+  ]
+}

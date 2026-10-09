@@ -73,6 +73,7 @@ public final class MnemolithGameTests {
         suite("mpsmoke", MultiplayerSmoke::check, Map.of());
         suite("stormqa", StormQa::check, Map.of());
         suite("relayqa", com.mnemolith.command.qa.RelayQa::check, Map.of());
+        suite("guardqa", com.mnemolith.command.qa.GuardQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -93,6 +94,9 @@ public final class MnemolithGameTests {
         live("residue_mute_stone_starves", ResidueLiveTests::muteStoneStarves, 1400);
         // Seeds on the first pulse (within 200 ticks), then two more pulses must not seed again.
         live("residue_observatory_seeds_once", ResidueLiveTests::observatorySeedsOnce, 800);
+
+        // Echo guard: walk four blocks, five hits 15 ticks apart; 600 ticks leaves room for pathing.
+        live("guard_kills_husk_spares_bystanders", GuardLiveTests::guardKillsHuskSparesBystanders, 600);
 
         // Storms: one batch each (storms are capped per dimension). Gathering 200 ticks + six waves of 200 = 1400.
         storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);

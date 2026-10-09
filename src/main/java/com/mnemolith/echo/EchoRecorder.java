@@ -62,6 +62,10 @@ public final class EchoRecorder {
         boolean careBreed;
         net.minecraft.world.item.Item careBreedFood;
         int careActions;
+        /** Guard: hostile mob types hit in melee, hits, and kills. */
+        final java.util.LinkedHashMap<net.minecraft.world.entity.EntityType<?>, Integer> guardFoes = new java.util.LinkedHashMap<>();
+        int guardHits;
+        int guardKills;
         int count;
 
         Session(ResourceKey<Level> dimension, Vec3 origin, int maxFrames) {
@@ -242,6 +246,12 @@ public final class EchoRecorder {
             if (care.teaches()) {
                 result.set(ModDataComponents.ECHO_CARE.get(), care);
             }
+            GuardLesson guard = analyzeGuard(session);
+            if (guard.teaches()) {
+                result.set(ModDataComponents.ECHO_GUARD.get(), guard);
+            }
+            Mnemolith.LOGGER.debug("Mnemolith echo guard lesson player={} foes={} hits={} kills={}", player.getGameProfile().name(),
+                    guard.foes().size(), guard.hits(), guard.kills());
             Mnemolith.LOGGER.debug("Mnemolith echo farm lesson player={} crops={} tilled={} planted={} harvested={}", player.getGameProfile().name(),
                     farm.crops().size(), farm.tilled(), farm.planted(), farm.harvested());
             Mnemolith.LOGGER.debug("Mnemolith echo lumber lesson player={} logs={} saplings={} chopped={} planted={}", player.getGameProfile().name(),
@@ -398,6 +408,26 @@ public final class EchoRecorder {
             }
         }
         session.careActions++;
+    }
+
+    static GuardLesson analyzeGuard(Session session) {
+        List<net.minecraft.world.entity.EntityType<?>> foes = new ArrayList<>(session.guardFoes.keySet());
+        foes.sort((a, b) -> Integer.compare(session.guardFoes.get(b), session.guardFoes.get(a)));
+        return new GuardLesson(foes, session.guardHits, session.guardKills);
+    }
+
+    /** Guard: the recording player landed a melee hit on a hostile mob ({@code killed} when it died of it). */
+    public static void onGuardHit(ServerPlayer player, net.minecraft.world.entity.LivingEntity target, boolean killed) {
+        Session session = SESSIONS.get(player.getUUID());
+        if (session == null || !(target instanceof net.minecraft.world.entity.monster.Enemy)) {
+            return;
+        }
+        if (killed) {
+            session.guardKills++;
+            return;
+        }
+        session.guardFoes.merge(target.getType(), 1, Integer::sum);
+        session.guardHits++;
     }
 
     /** Server stopped: forget unsaved sessions (players were already handed their recordings on logout). */

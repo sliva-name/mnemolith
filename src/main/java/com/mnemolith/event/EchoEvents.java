@@ -99,6 +99,25 @@ public final class EchoEvents {
         }
     }
 
+    /** Guard: teach from melee hits on hostile mobs during a recording. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onGuardHit(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (event.getInflictedDamage() <= 0.0F || !(event.getSource().getDirectEntity() instanceof ServerPlayer player)
+                || event.getSource().getEntity() != player || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
+            return;
+        }
+        EchoRecorder.onGuardHit(player, event.getEntity(), false);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onGuardKill(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (event.isCanceled() || !(event.getSource().getDirectEntity() instanceof ServerPlayer player)
+                || event.getSource().getEntity() != player || !realPlayer(player) || !EchoRecorder.isRecording(player)) {
+            return;
+        }
+        EchoRecorder.onGuardHit(player, event.getEntity(), true);
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         // A replicant ghost also uses a fake player. It is not an echo hand, so it does not become the QA actor.
