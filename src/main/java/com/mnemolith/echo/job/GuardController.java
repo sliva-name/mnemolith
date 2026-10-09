@@ -37,6 +37,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.Tags;
@@ -45,6 +52,10 @@ import net.neoforged.neoforge.common.Tags;
  * Guard job: hold the post (the work anchor) and fight hostile mobs near it with the best melee weapon in the
  * inventory. Never targets players, villagers, animals, tamed or owned mobs, creepers, bosses or neutral mobs that are
  * not angry at the owner or the echo. Each landed hit costs the weapon one durability point.
+ *
+ * <p>Stage 2 ({@code docs/design/echo-guard-2.md}): a bow or crossbow with arrows from the inventory shoots foes out of
+ * reach after a line-of-fire check, a shield in the off hand is raised while there is a foe, and in escort mode
+ * ({@link EchoJob.Mode#ESCORT}) the post follows the owner.
  */
 public final class GuardController {
     /** How far past the post radius a guard follows a foe before it turns back. */
@@ -53,6 +64,19 @@ public final class GuardController {
     static final double REACH_SQR = 2.6D * 2.6D;
     static final float GRAFT_BONUS = 1.5F;
     static final Identifier ADVANCEMENT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "echo_guard");
+    /** A guard with a melee weapon shoots only foes farther than this (squared: 3.5 blocks). */
+    static final double MIN_SHOT_SQR = 3.5D * 3.5D;
+    static final double MAX_SHOT = 16.0D;
+    static final float ARROW_VELOCITY = 1.6F;
+    static final float ARROW_SPREAD = 2.0F;
+    /** Ticks the bow is drawn (and the shield down) before a shot. */
+    static final int DRAW_TICKS = 10;
+    /** A pure archer drops a foe after this many ticks without a clear line of fire. */
+    static final int BLOCKED_GIVE_UP = 40;
+    /** An escort follows its owner only within this distance; farther, it waits at the last spot. */
+    static final double ESCORT_RANGE = 24.0D;
+    /** An escort stays within this distance of its owner (squared: 3 blocks). */
+    static final double ESCORT_NEAR_SQR = 9.0D;
 
     private final EchoJob job;
     GuardLesson taught = GuardLesson.NONE;
@@ -63,6 +87,18 @@ public final class GuardController {
     int repathTicks;
     /** Hits that landed since the job started (QA). */
     int landed;
+    /** Arrows shot and attacks the shield blocked since the job started (QA). */
+    int shots;
+    int blocked;
+    int lineBlockedTicks;
+    /** Ticks the shield stays down after an axe disabled it. */
+    int shieldDownTicks;
+    boolean raised;
+    boolean drawing;
+    /** Escort: false while the owner is away (the post stays where they were last seen). */
+    boolean following = true;
+    /** Where the walk back to the post is heading (an escort re-paths when its owner moves). */
+    @Nullable BlockPos postGoal;
 
     GuardController(EchoJob job) {
         this.job = job;
@@ -72,15 +108,24 @@ public final class GuardController {
         this.target = null;
         this.scanTicks = 0;
         this.repathTicks = 0;
+        this.lineBlockedTicks = 0;
+        this.postGoal = null;
+        this.following = true;
     }
 
     public int radius() {
+        if (this.job.escorting()) {
+            return CommonConfig.ECHO_GUARD_ESCORT_RADIUS.get();
+        }
         return Math.max(2, Math.min(this.job.radius(), CommonConfig.ECHO_GUARD_RADIUS.get()));
     }
 
     // ---- tick ----
 
     void tick(ServerLevel level, EchoEntity echo) {
+        if (this.job.escorting()) {
+            this.following = this.followOwner(level, echo);
+        }
         BlockPos anchor = this.job.workAnchor;
         if (anchor == null) {
             anchor = echo.blockPosition();
@@ -93,9 +138,16 @@ public final class GuardController {
         if (this.cooldown > 0) {
             this.cooldown--;
         }
+        if (this.shieldDownTicks > 0) {
+            this.shieldDownTicks--;
+        }
         int weapon = bestWeapon(echo);
-        if (weapon < 0) {
-            this.job.halt(echo, JobStatus.of(this.landed > 0 ? JobStatus.Kind.TOOL_BROKE : JobStatus.Kind.NO_TOOL, "weapon"));
+        boolean bow = canShoot(echo);
+        if (weapon < 0 && !bow) {
+            boolean used = this.landed > 0 || this.shots > 0;
+            // A bow with no arrows left reads «нет стрел»; nothing at all reads «нет оружия» or «инструмент сломался».
+            String what = bestBow(echo) >= 0 ? "arrows" : "weapon";
+            this.job.halt(echo, JobStatus.of(used && what.equals("weapon") ? JobStatus.Kind.TOOL_BROKE : JobStatus.Kind.NO_TOOL, what));
             return;
         }
         LivingEntity foe = this.target;
@@ -116,27 +168,50 @@ public final class GuardController {
             }
         }
         if (foe == null) {
+            this.lower(echo);
+            this.lineBlockedTicks = 0;
             this.holdPost(level, echo, anchor);
             return;
         }
         this.job.setStatus(new JobStatus(JobStatus.Kind.GUARD_FIGHT, BuiltInRegistries.ENTITY_TYPE.getKey(foe.getType()).toString(), this.defeated, 0));
-        this.fight(level, echo, foe, weapon);
+        this.fight(level, echo, foe, weapon, bow);
+    }
+
+    /** Escort: the post is the owner's spot while they are near. Returns false when the owner is away. */
+    private boolean followOwner(ServerLevel level, EchoEntity echo) {
+        ServerPlayer owner = echo.onlineOwner();
+        if (owner == null || owner.level() != level || owner.isSpectator() || !owner.isAlive()
+                || owner.distanceToSqr(echo) > ESCORT_RANGE * ESCORT_RANGE) {
+            return false;
+        }
+        this.job.workAnchor = owner.blockPosition();
+        return true;
     }
 
     private void holdPost(ServerLevel level, EchoEntity echo, BlockPos anchor) {
-        this.job.setStatus(JobStatus.of(JobStatus.Kind.GUARD_POST, this.defeated, 0));
-        if (echo.blockPosition().distSqr(anchor) <= 2.0D) {
+        boolean escort = this.job.escorting();
+        JobStatus.Kind kind = !escort ? JobStatus.Kind.GUARD_POST : this.following ? JobStatus.Kind.GUARD_ESCORT : JobStatus.Kind.GUARD_WAITING;
+        this.job.setStatus(JobStatus.of(kind, this.defeated, 0));
+        double near = escort ? ESCORT_NEAR_SQR : 2.0D;
+        double arrive = escort ? 4.0D : 1.0D;
+        if (echo.blockPosition().distSqr(anchor) <= near) {
             if (this.job.mover.active()) {
                 this.job.mover.stop(level, echo);
             }
             echo.setMoveTarget(null);
+            this.postGoal = null;
             return;
         }
+        if (this.job.mover.active() && this.postGoal != null && this.postGoal.distSqr(anchor) > 4.0D) {
+            // The owner moved on: head for where they are now.
+            this.job.mover.stop(level, echo);
+        }
         if (!this.job.mover.active()) {
+            this.postGoal = anchor;
             this.job.mover.start(level, echo, new EchoNav.Goal() {
                 @Override
                 public boolean reached(BlockPos feet) {
-                    return feet.distSqr(anchor) <= 1.0D;
+                    return feet.distSqr(anchor) <= arrive;
                 }
 
                 @Override
@@ -146,23 +221,64 @@ public final class GuardController {
             });
         }
         if (this.job.mover.tick(level, echo) == EchoMover.Result.FAILED) {
-            // The post is out of reach (blocked in): stand where it is and keep watching.
-            this.job.workAnchor = echo.blockPosition();
+            this.postGoal = null;
+            if (!escort) {
+                // The post is out of reach (blocked in): stand where it is and keep watching.
+                this.job.workAnchor = echo.blockPosition();
+            }
         }
     }
 
-    private void fight(ServerLevel level, EchoEntity echo, LivingEntity foe, int weapon) {
+    private void fight(ServerLevel level, EchoEntity echo, LivingEntity foe, int weapon, boolean bow) {
         echo.lookAt(foe.getEyePosition());
-        if (echo.distanceToSqr(foe) <= REACH_SQR && Math.abs(foe.getY() - echo.getY()) < 2.0D) {
+        double distance = echo.distanceToSqr(foe);
+        boolean inReach = distance <= REACH_SQR && Math.abs(foe.getY() - echo.getY()) < 2.0D;
+        if (weapon >= 0 && inReach) {
+            this.cancelDraw(echo);
             if (this.job.mover.active()) {
                 this.job.mover.stop(level, echo);
             }
             echo.setMoveTarget(null);
+            // The shield comes down just before the swing and goes back up after it.
+            if (this.cooldown <= 3) {
+                this.lowerShield(echo);
+            } else {
+                this.raise(echo);
+            }
             if (this.cooldown <= 0) {
                 this.strike(level, echo, foe, weapon);
             }
             return;
         }
+        boolean wantsShot = bow && distance <= MAX_SHOT * MAX_SHOT && (weapon < 0 || distance > MIN_SHOT_SQR);
+        if (wantsShot) {
+            if (clearShot(level, echo, foe)) {
+                this.lineBlockedTicks = 0;
+                if (this.job.mover.active()) {
+                    this.job.mover.stop(level, echo);
+                }
+                echo.setMoveTarget(null);
+                this.ranged(level, echo, foe);
+                return;
+            }
+            this.cancelDraw(echo);
+            if (weapon < 0 && echo.hasLineOfSight(foe)) {
+                // A pure archer with someone in the way: hold fire and wait, then let the foe go.
+                this.raise(echo);
+                if (this.job.mover.active()) {
+                    this.job.mover.stop(level, echo);
+                }
+                echo.setMoveTarget(null);
+                if (++this.lineBlockedTicks >= BLOCKED_GIVE_UP) {
+                    this.target = null;
+                    this.lineBlockedTicks = 0;
+                }
+                return;
+            }
+        } else {
+            this.cancelDraw(echo);
+        }
+        this.raise(echo);
         if (!this.job.mover.active() || ++this.repathTicks >= 10) {
             this.repathTicks = 0;
             BlockPos at = foe.blockPosition();
@@ -182,6 +298,224 @@ public final class GuardController {
             // Out of reach (across water, up a wall): leave it and look for another.
             this.target = null;
         }
+    }
+
+    // ---- shooting ----
+
+    /** Draws for {@link #DRAW_TICKS}, then shoots one arrow from the inventory. */
+    private void ranged(ServerLevel level, EchoEntity echo, LivingEntity foe) {
+        int bowSlot = bestBow(echo);
+        if (bowSlot < 0 || arrowSlot(echo) < 0) {
+            this.cancelDraw(echo);
+            return;
+        }
+        if (!this.drawing) {
+            if (this.cooldown > DRAW_TICKS) {
+                this.raise(echo);
+                return;
+            }
+            this.lowerShield(echo);
+            this.wield(echo, bowSlot);
+            echo.startUsingItem(InteractionHand.MAIN_HAND);
+            this.drawing = true;
+        }
+        if (this.cooldown > 0) {
+            return;
+        }
+        this.shoot(level, echo, foe);
+        this.cancelDraw(echo);
+    }
+
+    private void shoot(ServerLevel level, EchoEntity echo, LivingEntity foe) {
+        ItemStack bow = echo.getItemBySlot(EquipmentSlot.MAINHAND);
+        int ammoSlot = arrowSlot(echo);
+        if (!isBow(bow) || ammoSlot < 0) {
+            return;
+        }
+        EchoInventory inventory = echo.inventory();
+        ItemStack ammo = inventory.getItem(ammoSlot);
+        ItemStack one = ammo.copyWithCount(1);
+        boolean unaware = !(foe instanceof Mob mob) || mob.getTarget() != echo;
+        Temper temper = EchoGrafts.active(echo);
+        AbstractArrow arrow = ProjectileUtil.getMobArrow(echo, one, 1.0F, bow);
+        if (bow.getItem() instanceof ProjectileWeaponItem weaponItem) {
+            arrow = weaponItem.customArrow(arrow, one, bow);
+        }
+        arrow.setBaseDamage(arrowDamage(echo, unaware));
+        arrow.pickup = AbstractArrow.Pickup.ALLOWED;
+        double xd = foe.getX() - echo.getX();
+        double yd = foe.getY(1.0D / 3.0D) - arrow.getY();
+        double zd = foe.getZ() - echo.getZ();
+        double flat = Math.sqrt(xd * xd + zd * zd);
+        Projectile.spawnProjectileUsingShoot(arrow, level, one, xd, yd + flat * 0.2D, zd, ARROW_VELOCITY, ARROW_SPREAD);
+        // No burning arrows from echo work (Flame would light TNT or a mob near the post).
+        arrow.clearFire();
+        ammo.shrink(1);
+        inventory.setItem(ammoSlot, ammo.isEmpty() ? ItemStack.EMPTY : ammo);
+        this.cooldown = shotTicks(bow);
+        this.shots++;
+        level.playSound(null, echo.blockPosition(), bow.getItem() instanceof CrossbowItem ? SoundEvents.CROSSBOW_SHOOT : SoundEvents.ARROW_SHOOT,
+                SoundSource.NEUTRAL, 0.8F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+        if (temper == Temper.VOLATILE || (temper == Temper.HUSHED && unaware)) {
+            EchoGrafts.spend(echo, 1);
+        }
+        if (bow.isDamageableItem()) {
+            bow.hurtAndBreak(1, level, echo, item -> level.playSound(null, echo.blockPosition(), SoundEvents.ITEM_BREAK.value(), SoundSource.NEUTRAL, 0.8F, 1.0F));
+        }
+    }
+
+    /** Base damage of a guard's arrow: 2 × scale, ×1.5 when volatile or a hushed shot at an unaware mob. */
+    public static double arrowDamage(EchoEntity echo, boolean unaware) {
+        double damage = 2.0D * CommonConfig.ECHO_GUARD_ARROW_DAMAGE_SCALE.get();
+        Temper temper = EchoGrafts.active(echo);
+        if (temper == Temper.VOLATILE || (temper == Temper.HUSHED && unaware)) {
+            damage *= GRAFT_BONUS;
+        }
+        return damage;
+    }
+
+    /** Ticks between shots with {@code bow}: a crossbow takes 1.4 times as long. */
+    public static int shotTicks(ItemStack bow) {
+        int ticks = CommonConfig.ECHO_GUARD_SHOT_TICKS.get();
+        return bow.getItem() instanceof CrossbowItem ? Math.round(ticks * 1.4F) : ticks;
+    }
+
+    /**
+     * The friendly-fire rule: blocks must not stand between the guard's eyes and the foe, and no protected living
+     * entity (anything {@link #canFight} refuses: the owner, players, villagers, animals, pets, creepers, armor stands,
+     * other echoes) may touch the line of fire, with 0.4 blocks of margin.
+     */
+    public static boolean clearShot(ServerLevel level, EchoEntity echo, LivingEntity foe) {
+        if (!echo.hasLineOfSight(foe)) {
+            return false;
+        }
+        Vec3 from = echo.getEyePosition();
+        Vec3 to = foe.position().add(0.0D, foe.getBbHeight() * 0.5D, 0.0D);
+        AABB sweep = new AABB(from, to).inflate(1.0D);
+        for (Entity entity : level.getEntities(echo, sweep, entity -> entity != foe && entity instanceof LivingEntity && !canFight(echo, entity))) {
+            AABB box = entity.getBoundingBox().inflate(0.4D);
+            if (box.contains(from) || box.clip(from, to).isPresent()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isBow(ItemStack stack) {
+        return stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem;
+    }
+
+    /** The main inventory slot of a bow or crossbow (a bow first), or -1. */
+    public static int bestBow(EchoEntity echo) {
+        EchoInventory inventory = echo.inventory();
+        int crossbow = -1;
+        for (int i = 0; i < EchoInventory.MAIN; i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.getItem() instanceof BowItem) {
+                return i;
+            }
+            if (crossbow < 0 && stack.getItem() instanceof CrossbowItem) {
+                crossbow = i;
+            }
+        }
+        return crossbow;
+    }
+
+    /** The main inventory slot of the first arrows (plain, tipped or spectral), or -1. */
+    public static int arrowSlot(EchoEntity echo) {
+        EchoInventory inventory = echo.inventory();
+        for (int i = 0; i < EchoInventory.MAIN; i++) {
+            if (inventory.getItem(i).getItem() instanceof ArrowItem) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** It has a bow or crossbow and at least one arrow. */
+    public static boolean canShoot(EchoEntity echo) {
+        return bestBow(echo) >= 0 && arrowSlot(echo) >= 0;
+    }
+
+    /** One of this guard's arrows killed a mob: it counts like a melee kill. */
+    void onArrowKill(ServerLevel level, EchoEntity echo, LivingEntity victim) {
+        this.defeated++;
+        if (this.target == victim) {
+            this.target = null;
+        }
+        awardOwner(level, echo);
+        Mnemolith.LOGGER.debug("Mnemolith echo guard shot down owner={} foe={} total={}", echo.ownerName(),
+                BuiltInRegistries.ENTITY_TYPE.getKey(victim.getType()), this.defeated);
+    }
+
+    // ---- shield ----
+
+    private static boolean isShield(ItemStack stack) {
+        return !stack.isEmpty() && stack.has(DataComponents.BLOCKS_ATTACKS);
+    }
+
+    /** Raises the shield (vanilla blocking: the echo uses it from the off hand). Moves one there first if needed. */
+    private void raise(EchoEntity echo) {
+        if (!CommonConfig.ECHO_GUARD_SHIELDS.get() || this.shieldDownTicks > 0 || this.drawing) {
+            return;
+        }
+        if (this.raised && !echo.isUsingItem()) {
+            // Someone else lowered it: an axe disabled it, or it broke.
+            this.raised = false;
+            this.shieldDownTicks = CommonConfig.ECHO_GUARD_SHIELD_COOLDOWN.get();
+            return;
+        }
+        if (this.raised) {
+            return;
+        }
+        EchoInventory inventory = echo.inventory();
+        if (!isShield(inventory.getItem(EchoInventory.OFFHAND))) {
+            int slot = -1;
+            for (int i = 0; i < EchoInventory.MAIN; i++) {
+                if (isShield(inventory.getItem(i))) {
+                    slot = i;
+                    break;
+                }
+            }
+            if (slot < 0 || slot == echo.selectedSlot()) {
+                return;
+            }
+            ItemStack off = inventory.getItem(EchoInventory.OFFHAND);
+            inventory.setItem(EchoInventory.OFFHAND, inventory.getItem(slot));
+            inventory.setItem(slot, off);
+        }
+        echo.startUsingItem(InteractionHand.OFF_HAND);
+        this.raised = echo.isUsingItem();
+    }
+
+    private void lowerShield(EchoEntity echo) {
+        if (this.raised) {
+            if (echo.isUsingItem() && echo.getUsedItemHand() == InteractionHand.OFF_HAND) {
+                echo.stopUsingItem();
+            }
+            this.raised = false;
+        }
+    }
+
+    private void cancelDraw(EchoEntity echo) {
+        if (this.drawing) {
+            if (echo.isUsingItem() && echo.getUsedItemHand() == InteractionHand.MAIN_HAND) {
+                echo.stopUsingItem();
+            }
+            this.drawing = false;
+        }
+    }
+
+    /** Shield down and bow undrawn (the job stopped, an order took over, or nothing to fight). */
+    void lower(EchoEntity echo) {
+        this.lowerShield(echo);
+        this.cancelDraw(echo);
+    }
+
+    /** The shield the guard holds up, or null. */
+    @Nullable ItemStack raisedShield(EchoEntity echo) {
+        ItemStack off = echo.getItemBySlot(EquipmentSlot.OFFHAND);
+        return this.raised && echo.isUsingItem() && isShield(off) ? off : null;
     }
 
     // ---- hitting ----

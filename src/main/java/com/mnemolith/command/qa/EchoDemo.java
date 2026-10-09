@@ -35,7 +35,8 @@ import net.minecraft.world.phys.Vec3;
  * own echo, for manual checks and screenshots. {@code farm}: a wheat field, a chest and a farming echo;
  * {@code overload}: the same in an overloaded chunk; {@code door}, {@code gate}, {@code ladder}: a long wall with that
  * passage and an echo told to return to a point behind it; {@code guard}: an echo with a guard lesson and an iron sword
- * guarding the middle of the square.
+ * guarding the middle of the square; {@code archer}: a guard with a bow, 12 arrows and a shield; {@code escort}: a guard
+ * with a sword and a shield following you ("guard me"); {@code worn}: a guard whose iron sword has one use left.
  */
 public final class EchoDemo {
     private EchoDemo() {}
@@ -49,6 +50,7 @@ public final class EchoDemo {
         EchoEntity echo = switch (scene) {
             case "farm", "overload" -> farm(level, player, center, scene.equals("overload"));
             case "guard" -> guard(level, player, center);
+            case "archer", "escort", "worn" -> guard2(level, player, center, scene);
             default -> passage(level, player, center, scene);
         };
         if (echo == null) {
@@ -96,6 +98,34 @@ public final class EchoDemo {
         echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
         echo.job().setRadius(8);
         echo.job().startGuarding(echo);
+        return echo;
+    }
+
+    /** Guard stage 2 scenes: an archer with a shield, an escort beside you, and a guard with a nearly broken sword. */
+    private static EchoEntity guard2(ServerLevel level, ServerPlayer player, BlockPos center, String scene) {
+        EchoEntity echo = spawn(level, player, scene.equals("escort") ? player.blockPosition().offset(2, 0, 0) : center, FarmLesson.NONE);
+        if (echo == null) {
+            return null;
+        }
+        echo.job().setGuardLesson(new com.mnemolith.echo.GuardLesson(List.of(net.minecraft.world.entity.EntityTypes.ZOMBIE), 3, 1));
+        switch (scene) {
+            case "archer" -> {
+                echo.inventory().insert(new ItemStack(Items.BOW));
+                echo.inventory().insert(new ItemStack(Items.ARROW, 12));
+                echo.inventory().insert(new ItemStack(Items.SHIELD));
+            }
+            case "escort" -> {
+                echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
+                echo.inventory().insert(new ItemStack(Items.SHIELD));
+            }
+            default -> {
+                ItemStack sword = new ItemStack(Items.IRON_SWORD);
+                sword.setDamageValue(sword.getMaxDamage() - 1);
+                echo.inventory().insert(sword);
+            }
+        }
+        echo.job().setRadius(8);
+        echo.job().startGuarding(echo, scene.equals("escort"));
         return echo;
     }
 

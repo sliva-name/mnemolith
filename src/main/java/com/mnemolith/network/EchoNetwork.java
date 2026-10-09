@@ -189,6 +189,12 @@ public final class EchoNetwork {
                     return false;
                 }
             }
+            case MODE_ESCORT -> {
+                echo.stopReplayIfRunning();
+                if (!job.startGuarding(echo, true)) {
+                    return false;
+                }
+            }
             case INVALID -> {
                 return false;
             }

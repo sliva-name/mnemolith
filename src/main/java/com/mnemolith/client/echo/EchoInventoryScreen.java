@@ -50,6 +50,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
     private @Nullable Button lumber;
     private @Nullable Button care;
     private @Nullable Button guard;
+    private @Nullable Button escort;
     private @Nullable Button stop;
     private @Nullable Button radiusDown;
     private @Nullable Button radiusUp;
@@ -92,7 +93,9 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         this.care = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.care"), b -> this.send(EchoJobPayload.Action.MODE_CARE))
                 .bounds(right, y + 80, BUTTON_W, 16).build());
         this.guard = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.guard"), b -> this.send(EchoJobPayload.Action.MODE_GUARD))
-                .bounds(x, y + 97, BUTTON_W, 16).build());
+                .bounds(x, y + 97, BUTTON_W - 19, 16).build());
+        this.escort = this.addRenderableWidget(Button.builder(Component.literal("☺"), b -> this.send(EchoJobPayload.Action.MODE_ESCORT))
+                .bounds(x + BUTTON_W - 17, y + 97, 17, 16).build());
         this.stop = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.stop"), b -> this.send(EchoJobPayload.Action.STOP))
                 .bounds(right, y + 97, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.stop.tip"))).build());
         this.radiusDown = this.addRenderableWidget(Button.builder(Component.literal("−"), b -> this.changeRadius(-1))
@@ -173,6 +176,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         boolean guarding = alive && (echo.lessonFlags() & EchoEntity.LESSON_GUARD) != 0;
         set(this.replay, alive);
         set(this.guard, guarding);
+        set(this.escort, guarding);
         set(this.mine, mining);
         set(this.build, building);
         set(this.farm, farming);
@@ -198,6 +202,9 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         }
         if (this.guard != null) {
             this.guard.setTooltip(Tooltip.create(Component.translatable(guarding ? "mnemolith.gui.echo.mode.guard.tip" : "mnemolith.gui.echo.no_guard")));
+        }
+        if (this.escort != null) {
+            this.escort.setTooltip(Tooltip.create(Component.translatable(guarding ? "mnemolith.gui.echo.mode.escort.tip" : "mnemolith.gui.echo.no_guard")));
         }
         if (this.build != null) {
             this.build.setTooltip(Tooltip.create(Component.translatable(building ? "mnemolith.gui.echo.mode.build.tip" : "mnemolith.gui.echo.no_building")));
@@ -272,6 +279,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             case LUMBER -> this.lumber;
             case CARE -> this.care;
             case GUARD -> this.guard;
+            case ESCORT -> this.escort;
             default -> null;
         };
         if (active != null) {

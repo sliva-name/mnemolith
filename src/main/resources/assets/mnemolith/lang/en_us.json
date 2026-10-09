@@ -1251,7 +1251,11 @@
   "mnemolith.gui.echo.lesson.guard": "Guard: %s",
   "mnemolith.gui.echo.lesson.guard_plain": "Guard: hostile mobs",
   "mnemolith.gui.echo.mode.guard": "Guard",
-  "mnemolith.gui.echo.mode.guard.tip": "Hold this spot: fight hostile mobs within the radius (8 at most) with the best weapon in the inventory. Never touches players, villagers, animals or pets, and leaves creepers alone.",
+  "mnemolith.gui.echo.mode.guard.tip": "Hold this spot: fight hostile mobs within the radius (8 at most) with the best weapon in the inventory, or shoot them with a bow or crossbow and arrows from it. A shield is raised while it fights. Never touches players, villagers, animals or pets, and leaves creepers alone.",
+  "mnemolith.gui.echo.mode.escort.tip": "Guard me: the echo follows you (within 24 blocks) and fights hostile mobs within 5 blocks of you. Farther away it waits where it last saw you.",
+  "mnemolith.job.guard_escort": "Guard: by your side · %s",
+  "mnemolith.job.guard_waiting": "Guard: waiting for you · %s",
+  "mnemolith.job.reason.no_tool.arrows": "no arrows",
   "mnemolith.gui.echo.no_guard": "The recording does not teach guarding: hit hostile mobs in melee (2+ times). The echo also needs a weapon.",
   "mnemolith.job.guard_post": "Guard: on post · %s",
   "mnemolith.job.guard_fight": "Guard: fighting %s · %s",
@@ -1259,5 +1263,5 @@
   "advancements.mnemolith.echo_guard.title": "Standing watch",
   "advancements.mnemolith.echo_guard.description": "Have an echo guard defeat a hostile mob for you.",
   "mnemolith.guide.guard.title": "Echo guard",
-  "mnemolith.guide.guard.body": "Record yourself fighting: two or more melee hits on hostile mobs teach the guard lesson. Give the echo a weapon (sword, axe, trident, mace) and press Guard where it should stand.\n\nThe echo holds that post. It fights hostile mobs within the job radius (8 blocks at most), never chases more than 3 blocks past it, and walks back when the area is clear. It hits back when attacked instead of running.\n\nEach hit costs the weapon durability. A guard hits for three quarters of the weapon's damage, slower than you: it handles a lone zombie, not a wave. It never touches players, villagers, animals, pets or other echoes, and leaves creepers and bosses alone.\n\nGrave: mobs turn from you to the guard. Volatile: hits harder (costs charges). Hushed: mobs do not see it coming; the first hit is stronger (costs charges)."
+  "mnemolith.guide.guard.body": "Record yourself fighting: two or more hits on hostile mobs (melee or bow) teach the guard lesson. Give the echo a weapon (sword, axe, trident, mace) and press Guard where it should stand.\n\nThe echo holds that post. It fights hostile mobs within the job radius (8 blocks at most), never chases more than 3 blocks past it, and walks back when the area is clear. It hits back when attacked instead of running.\n\nEach hit costs the weapon durability. A guard hits for three quarters of the weapon's damage, slower than you: it handles a lone zombie, not a wave. It never touches players, villagers, animals, pets or other echoes, and leaves creepers and bosses alone.\n\nGrave: mobs turn from you to the guard. Volatile: hits harder (costs charges). Hushed: mobs do not see it coming; the first hit is stronger (costs charges).\n\nBow or crossbow: with arrows in its inventory the guard shoots mobs out of reach. Every shot spends an arrow, and it never shoots while you, a villager, a pet or an animal stands in the line; its arrows fly through them. Shield: it raises it while it fights and lowers it to strike. The ☺ button next to Guard is guard me: the echo walks with you and fights within 5 blocks of you."
 }

@@ -66,7 +66,10 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
         ROUTINE(false),
         // Guard job
         GUARD_POST(false),
-        GUARD_FIGHT(false);
+        GUARD_FIGHT(false),
+        /** Stage 2: escorting the owner, and waiting for an owner who is away. */
+        GUARD_ESCORT(false),
+        GUARD_WAITING(false);
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         private final boolean stop;
@@ -147,6 +150,8 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             case CARE_WAIT -> Component.translatable("mnemolith.job.care_wait", this.a);
             case GUARD_POST -> Component.translatable("mnemolith.job.guard_post", this.a);
             case GUARD_FIGHT -> Component.translatable("mnemolith.job.guard_fight", entityName(this.detail), this.a);
+            case GUARD_ESCORT -> Component.translatable("mnemolith.job.guard_escort", this.a);
+            case GUARD_WAITING -> Component.translatable("mnemolith.job.guard_waiting", this.a);
             case ROUTINE -> Component.translatable("mnemolith.job.routine");
             default -> stop(Component.translatable("mnemolith.job.reason." + this.kind.getSerializedName()));
         };
