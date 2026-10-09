@@ -18,6 +18,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_graftqa` | `/mnemolith graftqa` (12) | |
 | `mnemolith:suite_residueqa` | `/mnemolith residueqa` (18) | |
 | `mnemolith:suite_stormqa` | `/mnemolith stormqa` (19) | Pauses natural storms for the pass (the `mnemolith:live` setup does the same) |
+| `mnemolith:suite_guardqa` | `/mnemolith guardqa` (12) | Fake-player owner; the fight is stepped through `EchoJob.tick` with mobs that have no AI |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -48,6 +49,12 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `storm_mute_stone_contains` | While a called storm gathers, the player places a mute stone in the centre chunk (a real block placement): the storm ends `CONTAINED` before it rages, the freed residue stays as an ordinary residue | 300 |
 | `storm_unwatched_fades` | A storm with a centre 6000 chunks away (never loaded) counts unwatched ticks on the real server tick, then ends `FADED` with the cap free and the centre remembered, without loading it | 200 |
 | `scar_read_then_hurt` | A Scar and a survival player 6 blocks off: a hit before reading does nothing; the player raises the lens (`gameMode.useItem`) and keeps looking: within the read time the Scar is pinned, and `ServerPlayer.attack` then takes health off | 400 |
+
+**Live echo guard test** (`com.mnemolith.gametest.GuardLiveTests`), in the `mnemolith:live` batch.
+
+| Test | What is proved | Budget |
+| --- | --- | --- |
+| `guard_kills_husk_spares_bystanders` | A guarding echo with an iron sword, a husk 4 blocks from its post, a villager and a cow beside it, a creative owner: on the real server tick the echo walks to the husk and kills it; the villager and the cow keep full health, the sword lost durability, the echo is still guarding | 600 |
 
 **Live relay and vault tests** (`com.mnemolith.gametest.RelayLiveTests`), in the `mnemolith:live` batch on their own pads (south of the other sites; the teardown also discards echoes and dropped items there).
 
@@ -325,6 +332,38 @@ Manual (client):
 - [x] Come back the next in-game day: an old residue floats by the heart. Mine scar glass with a pickaxe and place it by a fracture: no storm gathers there.
 - [ ] Start a storm, then go far enough that its centre unloads and stay away for `stormUnwatchedTicks` (2 minutes): the log says `end=FADED`, and a storm can gather in another fracture at once. Come back: «Здесь прошла буря воспоминаний без свидетелей. В округе стало тише.», and the lens pill shows the area out of the fracture band.
 - [x] Field guide pages «Бури воспоминаний» and «Шрам» render with pictures in RU and EN.
+
+## Echo guard QA
+
+`/mnemolith guardqa` (gamemaster) checks the guard job ([design note](design/echo-guard.md)) on a dedicated server in a cleared chunk next to the command source, with a fake-player owner. The last line must be `guardqa: 12 of 12`. Mobs in the fight checks have no AI and their hurt cooldown is cleared between steps, because the suite steps the job itself instead of waiting for the server tick.
+
+| Flag | What is proved |
+| --- | --- |
+| `lesson` | A real recorder session with two hits on a zombie, one on a cow and a kill teaches a guard lesson (2 hits, 1 kill, foes = zombie); one zombie hit plus cow hits teaches nothing |
+| `filter` | Zombies and skeletons are foes; a villager, a cow, a tamed wolf, a creeper, the owner, another echo and a calm zombified piglin are not; the piglin becomes one once it targets the echo |
+| `damage` | Iron sword 4.5 (6 × 0.75); volatile 6.75; hushed 6.75 on an unaware mob, 4.5 on one that targets the echo; diamond more than iron; a stick or dirt is no weapon |
+| `refusals` | No lesson: `NO_LESSON`; lesson but only sticks: stop «нет оружия» (`NO_TOOL`, detail `weapon`) |
+| `fight` | A zombie two blocks from the post dies by the guard; `defeated` is 1 and the job is still `GUARD` |
+| `bystanders` | The villager, the cow, the tamed wolf and the owner nearby keep full health |
+| `durability` | The sword lost exactly one point per landed hit |
+| `leash` | Post radius 8; a zombie 13 blocks out is ignored, and hitting the echo from there does not pull it off its post; a zombie 6 blocks out is picked |
+| `fightBack` | A zombie hits the guard: no alarm (no flight), the zombie becomes its target |
+| `graveTaunt` | A grave guard striking a zombie that chases a villager turns the zombie onto the echo |
+| `volatileSpends` | A volatile guard spends one charge per landed hit |
+| `persistence` | The job save (mode, lesson, kills) and an echo-home snapshot keep the guard lesson through the codecs |
+
+Manual (client):
+
+- [x] `/mnemolith echodemo guard`, then `/summon zombie` and `/summon skeleton` inside the radius: «Охрана: бой — Зомби · 0», the echo walks over and swings the sword; back on post afterwards with the kill count.
+- [x] A mob outside the radius (12 blocks) is left alone; teleported to 6 blocks it is attacked.
+- [ ] A mob that runs out of the leash is let go and the echo walks back (server side: guardqa `leash`).
+- [x] The sword loses durability (`minecraft:damage` on the echo's sword grows with each hit).
+- [ ] The echo screen shows the worn sword; with no weapon left the job stops with «нет оружия» / «инструмент сломался» (server side: guardqa `refusals`).
+- [x] Grave: a zombie turns to the echo and charges drop. Volatile: harder hits (6.53 vs 4.43 on a helmeted zombie), one charge per hit. Hushed: the first strike on an unaware zombie is 1.5× and spends a charge; later hits are normal.
+- [x] Villagers, cows and a tamed wolf inside the radius are never hit; creepers are left alone.
+- [x] The guard dies to a zombie hit (`/damage … by` a zombie): the usual echo death, its sword drops where it fell.
+- [x] Echo screen: the «Охрана» button, its tooltips, the lesson line; the field guide page «Отголосок на охране» renders in RU.
+- [ ] The field guide page renders in EN.
 
 ### Manual stage 3 checks (client)
 

@@ -11,6 +11,7 @@ import com.mnemolith.Mnemolith;
 import com.mnemolith.config.CommonConfig;
 import com.mnemolith.echo.EchoLesson;
 import com.mnemolith.echo.CareLesson;
+import com.mnemolith.echo.GuardLesson;
 import com.mnemolith.echo.FarmLesson;
 import com.mnemolith.echo.LumberLesson;
 import com.mnemolith.entity.echo.EchoEntity;
@@ -50,7 +51,9 @@ public final class EchoJob {
         /** O1: chop taught logs and replant saplings. */
         LUMBER,
         /** O1: shear, milk, breed nearby animals. */
-        CARE;
+        CARE,
+        /** Hold a post and fight hostile mobs near it. */
+        GUARD;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -92,8 +95,13 @@ public final class EchoJob {
 
     /** Stage 3 job state, saved in one optional field so older saves load unchanged. */
     public record Stage3(List<Misfire> misfired, int workActions, FarmLesson farm, int harvested, Order order,
-            LumberLesson lumber, int chopped, CareLesson care, int tended) {
+            LumberLesson lumber, int chopped, CareLesson care, int tended, GuardLesson guard, int defeated) {
         public static final Stage3 EMPTY = new Stage3(List.of(), 0, FarmLesson.NONE, 0, Order.NONE, LumberLesson.NONE, 0, CareLesson.NONE, 0);
+
+        public Stage3(List<Misfire> misfired, int workActions, FarmLesson farm, int harvested, Order order, LumberLesson lumber, int chopped,
+                CareLesson care, int tended) {
+            this(misfired, workActions, farm, harvested, order, lumber, chopped, care, tended, GuardLesson.NONE, 0);
+        }
         public static final Codec<Stage3> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Misfire.CODEC.listOf().optionalFieldOf("misfired", List.of()).forGetter(Stage3::misfired),
                 Codec.INT.optionalFieldOf("work_actions", 0).forGetter(Stage3::workActions),
@@ -103,7 +111,9 @@ public final class EchoJob {
                 LumberLesson.CODEC.optionalFieldOf("lumber", LumberLesson.NONE).forGetter(Stage3::lumber),
                 Codec.INT.optionalFieldOf("chopped", 0).forGetter(Stage3::chopped),
                 CareLesson.CODEC.optionalFieldOf("care", CareLesson.NONE).forGetter(Stage3::care),
-                Codec.INT.optionalFieldOf("tended", 0).forGetter(Stage3::tended))
+                Codec.INT.optionalFieldOf("tended", 0).forGetter(Stage3::tended),
+                GuardLesson.CODEC.optionalFieldOf("guard", GuardLesson.NONE).forGetter(Stage3::guard),
+                Codec.INT.optionalFieldOf("defeated", 0).forGetter(Stage3::defeated))
                 .apply(instance, Stage3::new));
     }
 
@@ -151,6 +161,7 @@ public final class EchoJob {
     final FarmController farm = new FarmController(this);
     final LumberController lumber = new LumberController(this);
     final CareController care = new CareController(this);
+    final GuardController guard = new GuardController(this);
     final JobMotion motion = new JobMotion(this);
     final JobChest chests = new JobChest(this);
     final JobOrders orders = new JobOrders(this);
@@ -280,7 +291,8 @@ public final class EchoJob {
 
     /** MINE, BUILD or FARM, also while a lens order pauses it. */
     public boolean hasWorkMode() {
-        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM || this.mode == Mode.LUMBER || this.mode == Mode.CARE;
+        return this.mode == Mode.MINE || this.mode == Mode.BUILD || this.mode == Mode.FARM || this.mode == Mode.LUMBER || this.mode == Mode.CARE
+                || this.mode == Mode.GUARD;
     }
 
     public Order order() {
@@ -313,6 +325,38 @@ public final class EchoJob {
     public void setCareLesson(CareLesson care) {
         this.care.taught = care;
         this.dirty = true;
+    }
+
+    public GuardLesson guardLesson() {
+        return this.guard.taught;
+    }
+
+    public void setGuardLesson(GuardLesson guard) {
+        this.guard.taught = guard;
+        this.dirty = true;
+    }
+
+    /** Hostile mobs this guard has killed since its job started. */
+    public int defeated() {
+        return this.guard.defeated;
+    }
+
+    /** QA: the guard's current foe, hits landed, and its post radius. */
+    public net.minecraft.world.entity.@Nullable LivingEntity guardTarget() {
+        return this.guard.target;
+    }
+
+    public int guardLanded() {
+        return this.guard.landed;
+    }
+
+    public int guardRadius() {
+        return this.guard.radius();
+    }
+
+    /** True while guarding (also under a lens order): the attack alarm does not make it flee. */
+    public boolean guarding() {
+        return this.mode == Mode.GUARD;
     }
 
     public int harvested() {
@@ -511,6 +555,31 @@ public final class EchoJob {
         return true;
     }
 
+    /** Hold the post where the echo stands and fight hostile mobs near it. */
+    public boolean startGuarding(EchoEntity echo) {
+        this.clearInterruptions(echo);
+        this.release(echo);
+        if (!this.guard.taught.teaches()) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_LESSON));
+            return false;
+        }
+        if (GuardController.bestWeapon(echo) < 0) {
+            this.mode = Mode.IDLE;
+            this.setStatus(JobStatus.of(JobStatus.Kind.NO_TOOL, "weapon"));
+            return false;
+        }
+        this.mode = Mode.GUARD;
+        this.workAnchor = echo.blockPosition();
+        this.guard.defeated = 0;
+        this.guard.landed = 0;
+        this.guard.cooldown = 0;
+        this.restartPhase();
+        this.setStatus(JobStatus.of(JobStatus.Kind.GUARD_POST, 0, 0));
+        this.dirty = true;
+        return true;
+    }
+
     /** World positions and states the build places (rotated, bottom-up). Empty when no blueprint is placed. */
     public List<EchoLesson.Entry> plan(LevelAccessor level) {
         if (this.buildAnchor == null || this.lesson.blueprint().isEmpty()) {
@@ -526,6 +595,7 @@ public final class EchoJob {
         this.farm.resetSearch();
         this.lumber.resetSearch();
         this.care.resetSearch();
+        this.guard.resetSearch();
     }
 
     /** Stops moving and clears a crack overlay. */
@@ -566,7 +636,8 @@ public final class EchoJob {
         for (Map.Entry<Long, BlockState> entry : this.strain.misfired.entrySet()) {
             list.add(new Misfire(BlockPos.of(entry.getKey()), entry.getValue()));
         }
-        return new Stage3(list, this.strain.workActions, this.farm.taught, this.farm.harvested, this.orders.order, this.lumber.taught, this.lumber.chopped, this.care.taught, this.care.tended);
+        return new Stage3(list, this.strain.workActions, this.farm.taught, this.farm.harvested, this.orders.order, this.lumber.taught, this.lumber.chopped, this.care.taught, this.care.tended,
+                this.guard.taught, this.guard.defeated);
     }
 
     public void load(Saved saved) {
@@ -595,6 +666,8 @@ public final class EchoJob {
         this.lumber.chopped = saved.stage3().chopped();
         this.care.taught = saved.stage3().care();
         this.care.tended = saved.stage3().tended();
+        this.guard.taught = saved.stage3().guard();
+        this.guard.defeated = saved.stage3().defeated();
         this.restartPhase();
         this.dirty = true;
     }
@@ -655,6 +728,7 @@ public final class EchoJob {
             case FARM -> this.farm.tick(level, echo);
             case LUMBER -> this.lumber.tick(level, echo);
             case CARE -> this.care.tick(level, echo);
+            case GUARD -> this.guard.tick(level, echo);
             case REPLAY -> {
                 if (!echo.isReplaying()) {
                     // O2: REPEAT order keeps looping via JobOrders; otherwise the replay ends idle.
@@ -670,6 +744,11 @@ public final class EchoJob {
     }
 
     public void onAttacked(ServerLevel level, EchoEntity echo, net.minecraft.world.entity.LivingEntity attacker) {
+        if (this.mode == Mode.GUARD && !this.orders.active()) {
+            // The guard is the one job that hits back instead of running.
+            this.guard.onAttacked(level, echo, attacker);
+            return;
+        }
         this.alarm.onAttacked(level, echo, attacker);
     }
 
@@ -696,6 +775,7 @@ public final class EchoJob {
             case FARM -> new JobStatus(JobStatus.Kind.FARMING, this.farm.cropKey(), this.farm.harvested, 0);
             case LUMBER -> new JobStatus(JobStatus.Kind.LUMBER, this.lumber.logKey(), this.lumber.chopped, 0);
             case CARE -> new JobStatus(JobStatus.Kind.CARE, "", this.care.tended, 0);
+            case GUARD -> JobStatus.of(JobStatus.Kind.GUARD_POST, this.guard.defeated, 0);
             default -> JobStatus.IDLE;
         };
     }
@@ -726,7 +806,9 @@ public final class EchoJob {
         return "mode=" + this.mode.getSerializedName() + " phase=" + this.motion.phase + " status=" + this.status.kind().getSerializedName()
                 + " shown=" + this.shownStatus().kind().getSerializedName() + (this.alarm.alarmed ? " alarmed" : "") + " mined=" + this.mined
                 + " harvested=" + this.farm.harvested + " built=" + this.build.builtCount + "/" + this.build.plan.size() + " candidates=" + this.mine.candidates.size()
-                + " refused=" + this.mine.refused.size();
+                + " refused=" + this.mine.refused.size()
+                + (this.mode == Mode.GUARD ? " guardLanded=" + this.guard.landed + " guardCooldown=" + this.guard.cooldown + " defeated=" + this.guard.defeated
+                        + " moverActive=" + this.mover.active() : "");
     }
 
     /** Direction the job looks for a build anchor preview; kept here so client and server share the rule. */

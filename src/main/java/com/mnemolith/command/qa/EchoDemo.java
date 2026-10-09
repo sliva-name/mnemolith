@@ -34,7 +34,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code /mnemolith echodemo <scene>} (operators): builds a small stage 3 scene south of the player with the player's
  * own echo, for manual checks and screenshots. {@code farm}: a wheat field, a chest and a farming echo;
  * {@code overload}: the same in an overloaded chunk; {@code door}, {@code gate}, {@code ladder}: a long wall with that
- * passage and an echo told to return to a point behind it.
+ * passage and an echo told to return to a point behind it; {@code guard}: an echo with a guard lesson and an iron sword
+ * guarding the middle of the square.
  */
 public final class EchoDemo {
     private EchoDemo() {}
@@ -47,6 +48,7 @@ public final class EchoDemo {
         flatten(level, center, 9, 7);
         EchoEntity echo = switch (scene) {
             case "farm", "overload" -> farm(level, player, center, scene.equals("overload"));
+            case "guard" -> guard(level, player, center);
             default -> passage(level, player, center, scene);
         };
         if (echo == null) {
@@ -81,6 +83,19 @@ public final class EchoDemo {
             ImprintWriter.spike(level, echo.blockPosition(), 55);
         }
         echo.job().startFarming(echo);
+        return echo;
+    }
+
+    /** An echo with a guard lesson and an iron sword, guarding the middle of the cleared square. */
+    private static EchoEntity guard(ServerLevel level, ServerPlayer player, BlockPos center) {
+        EchoEntity echo = spawn(level, player, center, FarmLesson.NONE);
+        if (echo == null) {
+            return null;
+        }
+        echo.job().setGuardLesson(new com.mnemolith.echo.GuardLesson(List.of(net.minecraft.world.entity.EntityTypes.ZOMBIE), 3, 1));
+        echo.inventory().insert(new ItemStack(Items.IRON_SWORD));
+        echo.job().setRadius(8);
+        echo.job().startGuarding(echo);
         return echo;
     }
 

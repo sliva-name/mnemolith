@@ -49,6 +49,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
     private @Nullable Button farm;
     private @Nullable Button lumber;
     private @Nullable Button care;
+    private @Nullable Button guard;
     private @Nullable Button stop;
     private @Nullable Button radiusDown;
     private @Nullable Button radiusUp;
@@ -90,8 +91,10 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
                 .bounds(x, y + 80, BUTTON_W, 16).build());
         this.care = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.care"), b -> this.send(EchoJobPayload.Action.MODE_CARE))
                 .bounds(right, y + 80, BUTTON_W, 16).build());
+        this.guard = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.guard"), b -> this.send(EchoJobPayload.Action.MODE_GUARD))
+                .bounds(x, y + 97, BUTTON_W, 16).build());
         this.stop = this.addRenderableWidget(Button.builder(Component.translatable("mnemolith.gui.echo.mode.stop"), b -> this.send(EchoJobPayload.Action.STOP))
-                .bounds(x, y + 97, BUTTON_W * 2 + 4, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.stop.tip"))).build());
+                .bounds(right, y + 97, BUTTON_W, 16).tooltip(Tooltip.create(Component.translatable("mnemolith.gui.echo.mode.stop.tip"))).build());
         this.radiusDown = this.addRenderableWidget(Button.builder(Component.literal("−"), b -> this.changeRadius(-1))
                 .bounds(x + 96, y + 116, 18, 16).build());
         this.radiusUp = this.addRenderableWidget(Button.builder(Component.literal("+"), b -> this.changeRadius(1))
@@ -167,7 +170,9 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         boolean farming = alive && (echo.lessonFlags() & EchoEntity.LESSON_FARMING) != 0;
         boolean lumbering = alive && (echo.lessonFlags() & EchoEntity.LESSON_LUMBER) != 0;
         boolean caring = alive && (echo.lessonFlags() & EchoEntity.LESSON_CARE) != 0;
+        boolean guarding = alive && (echo.lessonFlags() & EchoEntity.LESSON_GUARD) != 0;
         set(this.replay, alive);
+        set(this.guard, guarding);
         set(this.mine, mining);
         set(this.build, building);
         set(this.farm, farming);
@@ -190,6 +195,9 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         }
         if (this.care != null) {
             this.care.setTooltip(Tooltip.create(Component.translatable(caring ? "mnemolith.gui.echo.mode.care.tip" : "mnemolith.gui.echo.no_care")));
+        }
+        if (this.guard != null) {
+            this.guard.setTooltip(Tooltip.create(Component.translatable(guarding ? "mnemolith.gui.echo.mode.guard.tip" : "mnemolith.gui.echo.no_guard")));
         }
         if (this.build != null) {
             this.build.setTooltip(Tooltip.create(Component.translatable(building ? "mnemolith.gui.echo.mode.build.tip" : "mnemolith.gui.echo.no_building")));
@@ -229,7 +237,8 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
         boolean farming = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_FARMING) != 0;
         boolean lumbering = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_LUMBER) != 0;
         boolean caring = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_CARE) != 0;
-        if (farming || lumbering || caring) {
+        boolean guarding = echo != null && (echo.lessonFlags() & EchoEntity.LESSON_GUARD) != 0;
+        if (farming || lumbering || caring || guarding) {
             if (!this.lesson().teachesMining() && !this.lesson().teachesBuilding()) {
                 lesson.clear();
             }
@@ -241,6 +250,11 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             }
             if (caring) {
                 lesson.add(Component.translatable("mnemolith.gui.echo.lesson.care", echo.farmCrops()));
+            }
+            if (guarding) {
+                // The synced side line names one lesson only: the guard's foes when it is the only animal/field lesson.
+                lesson.add(farming || lumbering || caring ? Component.translatable("mnemolith.gui.echo.lesson.guard_plain")
+                        : Component.translatable("mnemolith.gui.echo.lesson.guard", echo.farmCrops()));
             }
         }
         for (int i = 0; i < Math.min(3, lesson.size()); i++) {
@@ -257,6 +271,7 @@ public class EchoInventoryScreen extends AbstractContainerScreen<EchoMenu> {
             case FARM -> this.farm;
             case LUMBER -> this.lumber;
             case CARE -> this.care;
+            case GUARD -> this.guard;
             default -> null;
         };
         if (active != null) {

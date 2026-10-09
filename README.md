@@ -100,6 +100,10 @@
 
 ПКМ по своему отголоску **бланком отпечатка** прививает эту память как **нрав**: тишина делает его *безмолвным* (его работа и работа ваших отголосков в 8 блоках не оставляют отпечатков, мобы его не замечают), смерть — *могильным* (приманка, которую мобы бьют вместо ваших работников), огонь — *тлеющим* (не горит, копает у лавы, руда, добытая им или соседними отголосками, выходит переплавленной), падение — *ныряющим* (переносит падения с 12 блоков без урона и выкапывает пол под собой), взрыв — *гремучим* (копает почти вдвое быстрее, но его работа пишет взрывы, а тело взрывается при смерти). У прививки есть заряды, которые тратятся ровно на эти действия; второй бланк того же вида подпитывает её. Игла извлечения вынимает прививку обратно в бланк, разлом под отголоском отторгает её в чанк, архивариусы крадут её первой. Пока вы вселены в привитого отголоска, его нрав действует на вас. Новых предметов нет: прививки дают бланкам отпечатков и игле вторую работу. `/mnemolith graftqa` проверяет всю систему; заметки по дизайну — в [docs/echo-design.md](docs/echo-design.md) §12 и [docs/design/roadmap.md](docs/design/roadmap.md).
 
+### Охрана
+
+Запишите себя в бою: два и больше ударов по враждебным мобам в ближнем бою дают урок **охраны**. Дайте отголоску оружие (меч, топор, трезубец, булаву) и нажмите «Охрана» в его окне: он держит пост в радиусе работы (не больше 8 блоков), бьёт враждебных мобов на три четверти урона оружия, тратит его прочность и не убегает, когда его бьют. Игроков, жителей, животных, питомцев и другие отголоски он не трогает никогда, криперов и боссов обходит. Могильная прививка переключает мобов с вас на него, гремучая бьёт сильнее, безмолвная подходит незамеченной. Он слабее железного голема: один зомби ему по силам, волна — нет. `/mnemolith guardqa` проверяет работу; заметки — в [docs/design/echo-guard.md](docs/design/echo-guard.md).
+
 ### Осадки памяти
 
 Перегруженный чанк иногда сгущает свою самую громкую память о теле (тишина, смерть, огонь, падение, взрыв) в **осадок памяти**: бледный обрывок цвета нрава, который плавает по чанку. Отпечаток уходит из чанка, давление падает, но раз в минуту осадок бродит и пишет его обратно; в разломе он ещё и разыгрывает (зомби, огонь, малый взрыв, подъём, тьма) и бьёт тех, кто подходит слишком близко. Подержите на нём поднятую **линзу** 3 секунды, чтобы прочитать его (метка отмечена, скован на 10 секунд); затем **игла извлечения** ловит его в **осколок осадка** (не крафтится; архивариусы тоже архивируют непрочитанные осадки и роняют осколок при смерти). Осколок прививает вашему отголоску сразу два бланка или выпускает осадок там, где вы его применили. Подходящий привитый отголосок рядом пьёт осадок, тело во вселении впитывает его пустой рукой, глушащий камень или спокойный чанк его морят, а в каждой обсерватории ждёт один старый осадок. `/mnemolith residueqa` проверяет систему; заметки по дизайну — в [docs/echo-design.md](docs/echo-design.md) §13.
@@ -225,7 +229,7 @@ com.mnemolith
   content/               blocks, items, creative tabs
   imprint/  pressure/    chunk memory and pressure bands
   recall/                living memory: gestures, traces, offers, rewrite (see docs/design/living-memory.md)
-  echo/  echo/job/       recording, replay, possession, mine/build/farm jobs
+  echo/  echo/job/       recording, replay, possession, mine/build/farm/guard jobs
   echo/graft|residue|storm|relay   grafts, residual echoes, storms and the Scar, the echo relay
   vault/                 archive vaults (bank, bleed, spill, leak)
   entity/  entity/mob/  entity/ai/  entity/echo/
@@ -354,6 +358,10 @@ Craft **blank echo slips** (paper + amethyst shard + redstone, shapeless, gives 
 
 Right-click your own echo with an **imprint slip** to graft that memory into it as a **temper**: silence makes it *hushed* (its work, and the work of your echoes within 8 blocks, leaves no imprints, and mobs ignore it), death makes it *grave* (a decoy mobs attack instead of your workers), fire makes it *kindled* (fireproof, mines beside lava, ore it or nearby echoes mine comes out smelted), fall makes it *plunging* (takes 12-block drops without damage and digs out its own floor), explosion makes it *volatile* (digs almost twice as fast, but its work writes explosions and its body bursts when it dies). A graft has charges spent on exactly those actions; a second slip of the same kind tops it up. The extraction needle unpicks a graft back into a slip, a fracture under the echo rejects it into the chunk, archivists steal it first. While you possess a grafted echo its temper works on you. No new items: grafts give imprint slips and the needle a second job. `/mnemolith graftqa` checks the whole system; design notes are in [docs/echo-design.md](docs/echo-design.md) §12 and [docs/design/roadmap.md](docs/design/roadmap.md).
 
+### Echo guard
+
+Record yourself fighting: two or more melee hits on hostile mobs teach the **guard** lesson. Give the echo a weapon (sword, axe, trident, mace) and press Guard in its screen: it holds its post within the job radius (8 blocks at most), hits hostile mobs for three quarters of the weapon's damage, wears the weapon down, and fights back instead of running. It never touches players, villagers, animals, pets or other echoes, and leaves creepers and bosses alone. A grave graft turns mobs from you to it, a volatile one hits harder, a hushed one approaches unseen. It is weaker than an iron golem: a lone zombie, not a wave. `/mnemolith guardqa` checks the job; notes are in [docs/design/echo-guard.md](docs/design/echo-guard.md).
+
 ### Residual echoes
 
 An overloaded chunk sometimes condenses its loudest memory of a body (silence, death, fire, fall, explosion) into a **residual echo**: a faint fragment in that temper's color that drifts in the chunk. The imprint leaves the chunk, so pressure drops, but every minute the residue festers and writes it back; in a fracture it also acts it out (a zombie, a fire, a small blast, a lift, darkness), and it lashes anyone who walks too close. Raise the **lens** on it for 3 seconds to read it (tag noted, pinned for 10 seconds); then the **extraction needle** captures it as a **residual shard** (not craftable; archivists also archive unread residues and drop the shard when killed). A shard grafts your echo at full two slips' worth, or releases the residue wherever you use it. A matching grafted echo nearby drinks a residue, a possessed body absorbs one with an empty hand, a mute stone or a calm chunk starves it, and every observatory holds one old residue. `/mnemolith residueqa` checks the system; design notes are in [docs/echo-design.md](docs/echo-design.md) §13.
@@ -479,7 +487,7 @@ com.mnemolith
   content/               blocks, items, creative tabs
   imprint/  pressure/    chunk memory and pressure bands
   recall/                living memory: gestures, traces, offers, rewrite (see docs/design/living-memory.md)
-  echo/  echo/job/       recording, replay, possession, mine/build/farm jobs
+  echo/  echo/job/       recording, replay, possession, mine/build/farm/guard jobs
   echo/graft|residue|storm|relay   grafts, residual echoes, storms and the Scar, the echo relay
   vault/                 archive vaults (bank, bleed, spill, leak)
   entity/  entity/mob/  entity/ai/  entity/echo/

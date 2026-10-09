@@ -63,7 +63,10 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
         LUMBER_WAIT(false),
         CARE(false),
         CARE_WAIT(false),
-        ROUTINE(false);
+        ROUTINE(false),
+        // Guard job
+        GUARD_POST(false),
+        GUARD_FIGHT(false);
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         private final boolean stop;
@@ -142,6 +145,8 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             case LUMBER_WAIT -> Component.translatable("mnemolith.job.lumber_wait", blockName(this.detail), this.a);
             case CARE -> Component.translatable("mnemolith.job.care", this.a);
             case CARE_WAIT -> Component.translatable("mnemolith.job.care_wait", this.a);
+            case GUARD_POST -> Component.translatable("mnemolith.job.guard_post", this.a);
+            case GUARD_FIGHT -> Component.translatable("mnemolith.job.guard_fight", entityName(this.detail), this.a);
             case ROUTINE -> Component.translatable("mnemolith.job.routine");
             default -> stop(Component.translatable("mnemolith.job.reason." + this.kind.getSerializedName()));
         };
@@ -157,6 +162,14 @@ public record JobStatus(Kind kind, String detail, int a, int b) {
             return Component.literal(id);
         }
         return BuiltInRegistries.BLOCK.getOptional(key).map(com.mnemolith.echo.FarmLesson::cropName).orElse(Component.literal(id));
+    }
+
+    private static Component entityName(String id) {
+        Identifier key = Identifier.tryParse(id);
+        if (key == null) {
+            return Component.literal(id);
+        }
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(key).map(type -> (Component) type.getDescription()).orElse(Component.literal(id));
     }
 
     private static Component blockName(String id) {

@@ -42,6 +42,11 @@ public final class ModDataComponents {
             "echo_care",
             builder -> builder.persistent(com.mnemolith.echo.CareLesson.CODEC).networkSynchronized(com.mnemolith.echo.CareLesson.STREAM_CODEC));
 
+    /** Guard lesson (melee hits on hostile mobs). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.GuardLesson>> ECHO_GUARD = DATA_COMPONENTS.registerComponentType(
+            "echo_guard",
+            builder -> builder.persistent(com.mnemolith.echo.GuardLesson.CODEC).networkSynchronized(com.mnemolith.echo.GuardLesson.STREAM_CODEC));
+
     /** Echo relay: the first echo a relay thread was used on, until the second end is tied. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<java.util.UUID>> RELAY_FIRST = DATA_COMPONENTS.registerComponentType(
             "relay_first",
