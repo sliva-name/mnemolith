@@ -130,6 +130,8 @@ def build_hollows(o):
         o.png('textures/block/%s.png' % n, fn())
     for n, fn in hollows.ITEM_TEXTURES.items():
         o.png('textures/item/%s.png' % n, fn())
+    for n, fn in hollows.ENTITY_TEXTURES.items():
+        o.png('textures/entity/%s.png' % n, fn())
 
 
 def build_guide(o):

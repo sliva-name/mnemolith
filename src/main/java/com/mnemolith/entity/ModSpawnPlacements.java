@@ -48,5 +48,13 @@ public final class ModSpawnPlacements {
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> MobSpawns.forced(reason) || MobSpawns.allowNatural(level, pos, random, true, com.mnemolith.config.CommonConfig.STALKER_SPAWN_WEIGHT.get(), com.mnemolith.config.CommonConfig.STALKER_MIN_PRESSURE.get()),
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(
+                ModEntities.FADED.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason)
+                        || (net.minecraft.world.entity.monster.Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)
+                        && MobSpawns.allowFaded(level, pos, random)),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

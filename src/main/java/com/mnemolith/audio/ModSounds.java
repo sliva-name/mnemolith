@@ -81,6 +81,10 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_HOLLOWS_ADDITIONS = register("ambient.memory_hollows.additions");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_HOLLOWS_MOOD = register("ambient.memory_hollows.mood");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLICKER_CATCH = register("flicker_catch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FADED_AMBIENT = register("faded_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FADED_HURT = register("faded_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FADED_DEATH = register("faded_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LECTERN_REPLAY = register("lectern_replay");
 
     private ModSounds() {}
 

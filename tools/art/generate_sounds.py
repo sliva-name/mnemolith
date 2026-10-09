@@ -3,6 +3,7 @@
 
 Everything here is synthesised from sine/saw/noise math: no samples, no third-party audio.
 ``--hollows`` writes only the Memory Hollows sounds (stage 2), leaving the older files untouched.
+``--faded`` writes only the stage 3 sounds (the faded and the lectern reading).
 """
 import math, os, struct, subprocess, sys, wave
 
@@ -131,9 +132,29 @@ def hollows_sounds():
     hollows_music('music_memory_hollows')
 
 
+def faded_sounds():
+    # hurt: a cracked glass tap, a bell knocked off pitch with a burst of noise
+    hurt = mix(bell(740.0, 0.35, 0.22, 9.0), at(bell(784.0, 0.3, 0.12, 10.0), 0.01, int(0.35 * SR)),
+               tone(1500, 0.06, 0.12, 0.002, 0.04, 'noise'))
+    save_ogg('faded_hurt', hurt)
+    # death: three falling bells that thin out into a breath
+    total = int(1.6 * SR)
+    death = mix(at(bell(987.8, 1.2, 0.2, 3.5), 0.0, total), at(bell(740.0, 1.1, 0.17, 3.5), 0.18, total),
+                at(bell(493.9, 1.0, 0.15, 3.0), 0.36, total), at(tone(220, 1.0, 0.06, 0.3, 0.6), 0.5, total))
+    save_ogg('faded_death', death)
+    # lectern reading: a soft page-turn noise and two low bells, like reading aloud in an empty hall
+    total = int(1.4 * SR)
+    read = mix(at(tone(3000, 0.12, 0.05, 0.01, 0.1, 'noise'), 0.0, total), at(bell(587.3, 1.1, 0.16, 3.0), 0.08, total),
+               at(bell(440.0, 1.1, 0.13, 3.0), 0.3, total))
+    save_ogg('lectern_replay', read)
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--hollows':
         hollows_sounds()
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == '--faded':
+        faded_sounds()
         return
     save_ogg('mite_ambient', mix(tone(1800, 0.08, 0.35, 0.005, 0.03, 'square'),
         pad(tone(2400, 0.05, 0.25, 0.002, 0.02, 'sine'), int(0.18*SR)) + tone(2100, 0.06, 0.3, 0.002, 0.02, 'square')))

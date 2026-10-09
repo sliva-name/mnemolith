@@ -66,6 +66,29 @@ public final class MobSpawns {
         return pressure >= minPressure;
     }
 
+    /**
+     * Faded keep to Memory Hollows, day or night, at most {@link #FADED_LOCAL_CAP} within {@link #FADED_CAP_RADIUS}
+     * blocks; {@code fadedSpawnWeight} out of 100 attempts are kept.
+     */
+    public static boolean allowFaded(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
+        int weight = com.mnemolith.config.CommonConfig.FADED_SPAWN_WEIGHT.get();
+        if (weight <= 0 || random.nextInt(100) >= weight || !(level instanceof ServerLevel server)) {
+            return false;
+        }
+        return fadedSpotOk(server, pos);
+    }
+
+    public static final int FADED_LOCAL_CAP = 3;
+    public static final double FADED_CAP_RADIUS = 32.0D;
+
+    /** The biome and local-cap half of {@link #allowFaded}, without the random gate (QA). */
+    public static boolean fadedSpotOk(ServerLevel level, BlockPos pos) {
+        if (!com.mnemolith.worldgen.hollows.Hollows.is(level.getBiome(pos))) {
+            return false;
+        }
+        return level.getEntitiesOfClass(com.mnemolith.entity.mob.Faded.class, new AABB(pos).inflate(FADED_CAP_RADIUS)).size() < FADED_LOCAL_CAP;
+    }
+
     /** A calm chunk: mites keep to quiet ground. */
     public static boolean allowCalm(ServerLevelAccessor level, BlockPos pos, RandomSource random, int weight) {
         return allowBelow(level, pos, random, weight, 20);
@@ -150,6 +173,7 @@ public final class MobSpawns {
             case "ledger_mite" -> summon(ModEntities.LEDGER_MITE.get(), level, pos);
             case "kin_witness" -> summon(ModEntities.KIN_WITNESS.get(), level, pos);
             case "fracture_stalker" -> summon(ModEntities.FRACTURE_STALKER.get(), level, pos);
+            case "faded" -> summon(ModEntities.FADED.get(), level, pos);
             case "pleading_chair" -> com.mnemolith.entity.PleadingChair.summon(level, pos);
             case "silence_mirror" -> summonSilenceMirror(level, pos);
             case "archive_guardian" -> com.mnemolith.echo.storm.ArchiveShrines.summon(level, pos);

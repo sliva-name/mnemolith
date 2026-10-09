@@ -51,6 +51,11 @@ public final class ModEntities {
             FractureStalker::new,
             MobCategory.MONSTER,
             builder -> builder.sized(1.1F, 0.9F).eyeHeight(0.7F).clientTrackingRange(8).notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.mob.Faded>> FADED = ENTITY_TYPES.registerEntityType(
+            "faded",
+            com.mnemolith.entity.mob.Faded::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(8).notInPeaceful());
     public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.armory.MemoryBolt>> MEMORY_BOLT = ENTITY_TYPES.registerEntityType(
             "memory_bolt",
             com.mnemolith.entity.armory.MemoryBolt::new,

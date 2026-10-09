@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:recollite",
+  "display": {
+    "icon": {
+      "id": "mnemolith:recollite_needle"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.recollite_needle.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.recollite_needle.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "needle": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:recollite_needle"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "needle"
+    ]
+  ]
+}
