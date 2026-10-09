@@ -918,14 +918,23 @@ def p_players():
 
 def p_reference():
     p = Page('reference')
-    names = [n for n in items.ITEMS if not n.endswith('spawn_egg')]
+    # The thirteen tag variants of the imprint slip are one family: they sit on their own strip under the grid instead
+    # of taking a slot each (two rows of nine slots is all the page holds above the block plates).
+    variants = [n for n in items.ITEMS if n.startswith('imprint_slip_')]
+    names = [n for n in items.ITEMS if not n.endswith('spawn_egg') and n not in variants]
     s = gui.slot()
     cols = 9
+    assert len(names) <= 2 * cols, 'reference grid overflows: %d items' % len(names)
     for k, n in enumerate(names):
         x = 48 + (k % cols) * 52
-        y = 58 + (k // cols) * 56
+        y = 52 + (k // cols) * 50
         p.center(s, x, y, shadow=False)
         p.sprite(n, x, y, 1, shadow=False)
+    step = 32
+    x0 = W // 2 - (len(variants) - 1) * step // 2
+    p.plate(x0 - 22, 128, x0 + (len(variants) - 1) * step + 22, 166)
+    for k, n in enumerate(variants):
+        p.sprite(n, x0 + k * step, 147, 1, shadow=False)
     plates = ('mute_stone', 'composition_reel', 'resonator_trap', 'archive_vault', 'archival_stratum',
               'scar_glass', 'scar_heart')
     for k, n in enumerate(plates):
