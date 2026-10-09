@@ -30,14 +30,20 @@ recollite upgrade for the needle.
 
 ## Spawning: Memory Hollows only
 
-- A `neoforge:add_spawns` biome modifier (`faded_spawns`) adds the faded to `mnemolith:memory_hollows` only (weight
-  30, groups of 1–2). No other biome lists it, so it cannot spawn elsewhere naturally.
-- Spawn placement `ON_GROUND`, `MOTION_BLOCKING_NO_LEAVES`, and a predicate `checkAnyLightMonsterSpawnRules` **and**
-  `MobSpawns.allowFaded`: the biome is Memory Hollows, fewer than 3 faded within 32 blocks, and a random gate of
-  `armoryMobs.fadedSpawnWeight` out of 100 (default 25; 0 turns natural spawns off). Any light, so they are there by
-  day too (the hollows are a dim place, not a dark one), but never many.
-- Faded count against the monster cap like any monster; the local cap keeps a patch from filling up and keeps other
-  monsters spawning around it. Not in peaceful.
+- **Own spawner, not the biome spawn list.** `FadedSpawner` runs every 100 ticks. For each player (not spectators),
+  `armoryMobs.fadedSpawnWeight` out of 100 rolls (default 25; 0 turns it off) pick one spot 20 to 40 blocks away at
+  the surface (`MOTION_BLOCKING_NO_LEAVES`). A faded spawns there only if `MobSpawns.fadedSpotOk` holds (the biome
+  is Memory Hollows, the spot is at the open surface, fewer than 3 faded within 32 blocks), the ground takes an
+  `ON_GROUND` spawn, the box is free and no player is within 16 blocks. Peaceful, `spawn_mobs` and `spawn_monsters`
+  turn it off. Any light, so they are there by day too (the hollows are a dim place, not a dark one), but never many.
+- **Why not `neoforge:add_spawns`.** The first build used a biome modifier on `memory_hollows` (weight 30) and the
+  vanilla natural spawner. On the normal test world it gave no faded on the turf in 4 minutes at the heart of a
+  patch, and the one faded found was at y = -38: biomes are 3D, so the caves under a hollow are Memory Hollows too,
+  and the natural spawner picks a random height in the column (the caves win almost every roll) and stops at the
+  monster cap, which the zombies and skeletons in those caves fill (30 to 50 undead within 128 blocks at the time).
+  The modifier is gone; the spawn placement (`ON_GROUND`, any light, `MobSpawns.allowFaded`) stays registered, so a
+  datapack that adds faded to a spawn list still gets the hollows, surface and cap rules.
+- Spawned faded are ordinary monsters: they despawn when no player is near, as monsters do. Not in peaceful.
 - Spawn egg (pale lilac with a recollite band) and `/mnemolith spawn faded`.
 
 ## Lectern replay

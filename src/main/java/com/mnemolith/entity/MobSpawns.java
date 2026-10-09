@@ -81,9 +81,14 @@ public final class MobSpawns {
     public static final int FADED_LOCAL_CAP = 3;
     public static final double FADED_CAP_RADIUS = 32.0D;
 
-    /** The biome and local-cap half of {@link #allowFaded}, without the random gate (QA). */
+    /**
+     * The biome, surface and local-cap half of {@link #allowFaded}, without the random gate (QA). Biomes are 3D, so
+     * the caves under a hollow are Memory Hollows too; faded walk the turf, not the caves, so the spot must be at the
+     * open surface (no solid block above it, leaves aside).
+     */
     public static boolean fadedSpotOk(ServerLevel level, BlockPos pos) {
-        if (!com.mnemolith.worldgen.hollows.Hollows.is(level.getBiome(pos))) {
+        if (pos.getY() < level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ())
+                || !com.mnemolith.worldgen.hollows.Hollows.is(level.getBiome(pos))) {
             return false;
         }
         return level.getEntitiesOfClass(com.mnemolith.entity.mob.Faded.class, new AABB(pos).inflate(FADED_CAP_RADIUS)).size() < FADED_LOCAL_CAP;

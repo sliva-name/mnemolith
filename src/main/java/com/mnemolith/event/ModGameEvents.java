@@ -58,6 +58,7 @@ public final class ModGameEvents {
         com.mnemolith.echo.storm.Storms.tick(event.getServer());
         com.mnemolith.echo.relay.EchoRelays.serverTick(event.getServer());
         com.mnemolith.worldgen.hollows.HollowFlickers.tick(event.getServer());
+        com.mnemolith.worldgen.hollows.FadedSpawner.tick(event.getServer());
     }
 
     @SubscribeEvent

@@ -546,7 +546,7 @@ Manual (fresh normal world, seed 424242, 2026-10-10, screenshots in `playtest-sh
 | Flag | What is proved |
 | --- | --- |
 | `fadedType`, `fadedLoot` | `mnemolith:faded` is a registered monster, not allowed in peaceful; `entities/faded` loads |
-| `spawnHollowsOnly`, `spawnCap` | `MobSpawns.fadedSpotOk` refuses a plains spot and accepts it once `fillbiome` makes it Memory Hollows; three faded within 32 blocks close the spot, removing them opens it again |
+| `spawnHollowsOnly`, `spawnCap` | `MobSpawns.fadedSpotOk` refuses a plains spot and accepts it once `fillbiome` makes it Memory Hollows, but not 2 blocks under the ground (still the biome); `FadedSpawner.trySpawnAt` places three faded at surface spots and refuses a fourth (the spot is closed), removing them opens it again |
 | `mimic`, `provoke` | A trade flicker 5 blocks away makes an idle faded copy the tag and the spot; a catch nearby sets the catcher as its target and drops the copy |
 | `damageScale` | A 4-damage player hit takes 2 health unseen and 6 once revealed |
 | `lensReveal` | A raised lens looking at a faded 6 blocks away sees it; lowered, or turned away, it does not |

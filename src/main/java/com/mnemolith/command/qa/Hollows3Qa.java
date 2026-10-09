@@ -26,6 +26,7 @@ import com.mnemolith.imprint.Imprint;
 import com.mnemolith.imprint.ImprintTag;
 import com.mnemolith.network.HollowFlickerPayload;
 import com.mnemolith.world.LoadedChunkMemory;
+import com.mnemolith.worldgen.hollows.FadedSpawner;
 import com.mnemolith.worldgen.hollows.HollowFlickers;
 import com.mnemolith.worldgen.hollows.Hollows;
 import com.mnemolith.worldgen.hollows.LecternReplay;
@@ -111,17 +112,33 @@ public final class Hollows3Qa {
             CommandSourceStack console = server.createCommandSourceStack().withLevel(level).withSuppressedOutput();
             try {
                 server.getCommands().getDispatcher().execute(String.format("fillbiome %d %d %d %d %d %d mnemolith:memory_hollows",
-                        a.getX() - 20, a.getY() - 2, a.getZ() - 20, a.getX() + 20, a.getY() + 6, a.getZ() + 20), console);
+                        a.getX() - 20, a.getY() - 8, a.getZ() - 20, a.getX() + 20, a.getY() + 8, a.getZ() + 20), console);
             } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
                 notes.add("fillbiome failed: " + e.getMessage());
             }
             boolean after = MobSpawns.fadedSpotOk(level, a);
-            ok[2] = (wasHollows || !before) && after;
-            notes.add("spot plain=" + before + " hollows=" + after);
-            for (int i = 0; i < MobSpawns.FADED_LOCAL_CAP; i++) {
-                spawned.add(faded(level, a.offset(6 + i, 0, 6)));
+            // the fill reaches 8 below the surface: still Memory Hollows there, but under the ground
+            boolean buried = MobSpawns.fadedSpotOk(level, a.below(2));
+            ok[2] = (wasHollows || !before) && after && Hollows.is(level.getBiome(a.below(2))) && !buried;
+            notes.add("spot plain=" + before + " hollows=" + after + " buried=" + buried);
+            // the hollows spawner itself, at surface spots inside a's chunk (neighbours may not be entity-ticking yet)
+            int placed = 0;
+            boolean fourth = false;
+            // trees, water or a ledge can spoil a spot on a real world: walk the chunk until three are placed
+            for (int dz : new int[] {5, -6, 1}) {
+                for (int dx = -6; dx <= 6; dx += 3) {
+                    Faded f = FadedSpawner.trySpawnAt(level, surface(level, a.offset(dx, 0, dz)));
+                    if (f == null) {
+                        continue;
+                    }
+                    f.setNoAi(true);
+                    spawned.add(f);
+                    if (++placed > MobSpawns.FADED_LOCAL_CAP) {
+                        fourth = true;
+                    }
+                }
             }
-            boolean capped = !MobSpawns.fadedSpotOk(level, a);
+            boolean capped = !MobSpawns.fadedSpotOk(level, a) && placed == MobSpawns.FADED_LOCAL_CAP && !fourth;
             int present = level.getEntitiesOfClass(Faded.class, new AABB(a).inflate(MobSpawns.FADED_CAP_RADIUS)).size();
             for (Faded f : spawned) {
                 f.discard();
@@ -130,7 +147,7 @@ public final class Hollows3Qa {
             boolean reopened = MobSpawns.fadedSpotOk(level, a);
             ok[3] = capped && reopened;
             if (!ok[3]) {
-                notes.add(0, "cap capped=" + capped + " present=" + present + " reopened=" + reopened);
+                notes.add(0, "cap capped=" + capped + " placed=" + placed + " fourth=" + fourth + " present=" + present + " reopened=" + reopened);
             }
 
             // ---------- mimic and provoke ----------
@@ -242,6 +259,8 @@ public final class Hollows3Qa {
             player.getInventory().clearContent();
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.RECOLLITE_NEEDLE.get()));
             player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            // the fake player is reused: a run moments ago left the needle cooling down
+            player.getCooldowns().removeCooldown(player.getCooldowns().getCooldownGroup(player.getMainHandItem()));
             player.snapTo(a.getX() + 6.5D, a.getY(), a.getZ() + 0.5D, 0.0F, 0.0F);
             HollowFlickers.send(level, new HollowFlickerPayload(a, 0.0F, HollowFlickers.WALK, ImprintTag.PATH.ordinal()));
             InteractionResult used = player.getMainHandItem().use(level, player, InteractionHand.MAIN_HAND);
@@ -317,6 +336,11 @@ public final class Hollows3Qa {
         }
         ok[18] = sunkenPage >= 0 && fadedPage == sunkenPage + 1 && GuideBook.pageCount() == GuideBook.PAGE_COUNT;
         return new QaReport("hollows3qa", NAMES, ok, notes);
+    }
+
+    private static BlockPos surface(ServerLevel level, BlockPos pos) {
+        return new BlockPos(pos.getX(), level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()),
+                pos.getZ());
     }
 
     private static Faded faded(ServerLevel level, BlockPos pos) {
