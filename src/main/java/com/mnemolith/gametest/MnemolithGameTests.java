@@ -100,6 +100,9 @@ public final class MnemolithGameTests {
         // Guard stage 2: 80 ticks of held fire, then about five shots 35 ticks apart.
         live("guard_archer_holds_fire_then_shoots", GuardLiveTests::guardArcherHoldsFireThenShoots, 700);
         live("guard_shield_blocks_frontal_hit", GuardLiveTests::guardShieldBlocksFrontalHit, 200);
+        // Guard stage 3: a husk with AI against a guard with a wooden sword; an axe hit on a raised shield.
+        live("guard_husk_fights_back", GuardLiveTests::guardHuskFightsBack, 400);
+        live("guard_axe_disables_shield", GuardLiveTests::guardAxeDisablesShield, 400);
 
         // Storms: one batch each (storms are capped per dimension). Gathering 200 ticks + six waves of 200 = 1400.
         storm("storm_shard_call_merges_into_scar", StormLiveTests::shardCallsStormIntoScar, 1700);

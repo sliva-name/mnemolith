@@ -111,6 +111,10 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue ECHO_GUARD_SHIELDS;
     public static final ModConfigSpec.IntValue ECHO_GUARD_SHIELD_COOLDOWN;
     public static final ModConfigSpec.IntValue ECHO_GUARD_ESCORT_RADIUS;
+    public static final ModConfigSpec.DoubleValue ECHO_GUARD_REACH;
+    public static final ModConfigSpec.BooleanValue ECHO_GUARD_PROVOKES;
+    public static final ModConfigSpec.BooleanValue ECHO_ARMOR_AUTO_EQUIP;
+    public static final ModConfigSpec.BooleanValue ECHO_ARMOR_WEAR;
     public static final ModConfigSpec.IntValue ECHO_WORK_IMPRINT_EVERY;
     public static final ModConfigSpec.IntValue ECHO_WORK_INSTABILITY;
     public static final ModConfigSpec.DoubleValue ECHO_MISFIRE_CHANCE;
@@ -355,6 +359,10 @@ public final class CommonConfig {
         ECHO_GUARD_SHIELDS = SpecValues.bool(builder, "echoGuardShields", "A guarding echo with a shield raises it while it has a foe (vanilla blocking, the shield wears down).", true);
         ECHO_GUARD_SHIELD_COOLDOWN = SpecValues.integer(builder, "echoGuardShieldCooldown", "Ticks a guard's shield stays down after an axe disables it.", 100, 20, 400);
         ECHO_GUARD_ESCORT_RADIUS = SpecValues.integer(builder, "echoGuardEscortRadius", "Radius around its owner an escorting guard (\"guard me\") fights in.", 5, 2, 10);
+        ECHO_GUARD_REACH = SpecValues.decimal(builder, "echoGuardReach", "How far (blocks, center to center) a guarding echo strikes with a melee weapon. Close to a zombie's own reach, so mobs can hit back.", 2.0D, 1.5D, 3.0D);
+        ECHO_GUARD_PROVOKES = SpecValues.bool(builder, "echoGuardProvokes", "A hostile mob that a guarding echo hits or shoots turns on that guard.", true);
+        ECHO_ARMOR_AUTO_EQUIP = SpecValues.bool(builder, "echoArmorAutoEquip", "Echoes put on the best armor from their own inventory (checked every 2 seconds).", true);
+        ECHO_ARMOR_WEAR = SpecValues.bool(builder, "echoArmorWear", "Armor an echo wears loses durability when it is hit, the same way a player's does.", true);
         ECHO_WORK_IMPRINT_EVERY = SpecValues.integer(builder, "echoWorkImprintEvery", "Blocks an echo mines, places or harvests in one chunk before the work leaves a build imprint there (by the owner). 0 turns work imprints off.", 20, 0, 1000);
         ECHO_WORK_INSTABILITY = SpecValues.integer(builder, "echoWorkInstability", "Instability added with each work imprint (on top of the imprint itself).", 3, 0, 50);
         ECHO_MISFIRE_CHANCE = SpecValues.decimal(builder, "echoMisfireChance", "Chance per action that an echo working in an overloaded chunk misfires: a skipped or wrong block (taken back and fixed later), never lost or duplicated items.", 0.15D, 0.0D, 1.0D);

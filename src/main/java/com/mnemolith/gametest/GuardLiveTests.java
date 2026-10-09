@@ -157,6 +157,103 @@ final class GuardLiveTests {
         });
     }
 
+    /**
+     * Guard stage 3: a husk with its own AI notices a guard on its post (before the guard hits it), walks up and lands
+     * at least one hit (the guard has a wooden sword and no shield, and strikes from about a zombie's own reach), and
+     * the guard still wins.
+     */
+    static void guardHuskFightsBack(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = site(helper, -20);
+        ServerPlayer owner = LivePlayers.join(helper, "LiveBrawlOwner", Vec3.atBottomCenterOf(site.offset(-6, 0, -6)));
+        owner.setGameMode(GameType.CREATIVE);
+        EchoEntity echo = guard(helper, level, owner, site);
+        echo.inventory().insert(new ItemStack(Items.WOODEN_SWORD));
+        helper.assertTrue(echo.job().startGuarding(echo), "guard did not start");
+        Mob husk = mob(level, EntityTypes.HUSK, site.offset(6, 0, 0));
+        boolean[] noticed = {false};
+        float[] lowest = {echo.getHealth()};
+        for (int t = 1; t < 380; t++) {
+            helper.runAfterDelay(t, () -> {
+                if (husk.isAlive() && husk.getTarget() == echo && echo.job().guardLanded() == 0) {
+                    noticed[0] = true;
+                }
+                lowest[0] = Math.min(lowest[0], echo.getHealth());
+            });
+        }
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!husk.isAlive(), "husk still alive, health " + husk.getHealth() + " target " + husk.getTarget() + " " + echo.job().describe());
+            helper.assertTrue(noticed[0], "the husk never picked the guard before being hit");
+            helper.assertTrue(lowest[0] < echo.getMaxHealth(), "the husk never landed a hit");
+            helper.assertTrue(echo.isAlive() && echo.job().defeated() >= 1, "the guard did not win: alive " + echo.isAlive() + " " + echo.job().describe());
+            echo.discardSilently();
+        });
+    }
+
+    /**
+     * Guard stage 3: a blocked hit from a mob holding an axe knocks the guard's shield down for 5 s (100 ticks), as it
+     * does for a player; the guard keeps it down that long, then raises it again while it still has a foe.
+     */
+    static void guardAxeDisablesShield(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = site(helper, -24);
+        ServerPlayer owner = LivePlayers.join(helper, "LiveAxeOwner", Vec3.atBottomCenterOf(site.offset(-6, 0, -6)));
+        owner.setGameMode(GameType.CREATIVE);
+        EchoEntity echo = guard(helper, level, owner, site);
+        echo.inventory().insert(new ItemStack(Items.WOODEN_SWORD));
+        echo.inventory().insert(new ItemStack(Items.SHIELD));
+        helper.assertTrue(echo.job().startGuarding(echo), "guard did not start");
+        // A tough foe that does not move, so the fight (and the wish to raise the shield) lasts.
+        Mob zombie = mob(level, EntityTypes.ZOMBIE, site.offset(4, 0, 0));
+        zombie.setNoAi(true);
+        java.util.Objects.requireNonNull(zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)).setBaseValue(400.0D);
+        zombie.setHealth(400.0F);
+        // The axe swing comes from the same side (far outside the leash, so the guard ignores the vindicator).
+        Mob vindicator = mob(level, EntityTypes.VINDICATOR, site.offset(20, 0, 0));
+        vindicator.setNoAi(true);
+        vindicator.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
+        int[] hitAt = {-1};
+        int[] downTicks = {-1};
+        float[] healthDelta = {1.0F};
+        boolean[] raisedWhileDown = {false};
+        int[] raisedAgainAt = {-1};
+        int[] tick = {0};
+        for (int t = 1; t < 380; t++) {
+            helper.runAfterDelay(t, () -> {
+                tick[0]++;
+                boolean up = echo.isUsingItem() && echo.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND;
+                if (hitAt[0] < 0) {
+                    if (echo.isBlocking()) {
+                        echo.invulnerableTime = 0;
+                        float before = echo.getHealth();
+                        echo.hurtServer(level, echo.damageSources().mobAttack(vindicator), 4.0F);
+                        healthDelta[0] = echo.getHealth() - before;
+                        hitAt[0] = tick[0];
+                        downTicks[0] = echo.job().guardShieldDownTicks();
+                    }
+                    return;
+                }
+                int since = tick[0] - hitAt[0];
+                if (since > 0 && since < 95 && up) {
+                    raisedWhileDown[0] = true;
+                }
+                if (since >= 95 && raisedAgainAt[0] < 0 && up) {
+                    raisedAgainAt[0] = since;
+                }
+            });
+        }
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hitAt[0] > 0, "the shield never went up: " + echo.job().describe());
+            helper.assertTrue(healthDelta[0] == 0.0F, "the axe hit was not blocked: delta " + healthDelta[0]);
+            helper.assertTrue(downTicks[0] >= 99, "the shield was not disabled: down " + downTicks[0]);
+            helper.assertTrue(!raisedWhileDown[0], "the shield came back up within 5 s");
+            helper.assertTrue(raisedAgainAt[0] > 0, "the shield never came back up");
+            zombie.discard();
+            vindicator.discard();
+            echo.discardSilently();
+        });
+    }
+
     private static BlockPos site(GameTestHelper helper, int chunkOffsetX) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);

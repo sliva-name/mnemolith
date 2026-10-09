@@ -366,6 +366,10 @@ public class EchoEntity extends MemoryAvatar {
             if (this.tickCount % 40 == 7 && !this.attractsMobs() && !this.job.alarmed()) {
                 this.releaseHunters(level);
             }
+            if (this.tickCount % 40 == 17 && !this.isReplaying() && this.isAlive()) {
+                // Guard stage 3: put on the best armor the echo carries.
+                com.mnemolith.echo.EchoArmor.equipBest(this);
+            }
             if (!this.isReplaying() && this.tickCount % 100 == 0 && this.getHealth() < this.getMaxHealth() && this.isAlive()) {
                 this.heal(1.0F);
             }
@@ -763,6 +767,43 @@ public class EchoEntity extends MemoryAvatar {
             }
         }
         return hurt;
+    }
+
+    /** Worn armor loses durability like a player's (vanilla only wears a player's or a mob's armor). */
+    @Override
+    protected void hurtArmor(DamageSource source, float damage) {
+        if (CommonConfig.ECHO_ARMOR_WEAR.get()) {
+            this.doHurtEquipment(source, damage, net.minecraft.world.entity.EquipmentSlot.FEET, net.minecraft.world.entity.EquipmentSlot.LEGS,
+                    net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.HEAD);
+        }
+    }
+
+    @Override
+    protected void hurtHelmet(DamageSource source, float damage) {
+        if (CommonConfig.ECHO_ARMOR_WEAR.get()) {
+            this.doHurtEquipment(source, damage, net.minecraft.world.entity.EquipmentSlot.HEAD);
+        }
+    }
+
+    /**
+     * A blocked hit from an axe (or a warden) knocks the shield down, as it does for a player: vanilla only does this
+     * in {@code Player.blockUsingItem}. A guard then keeps it down for the same time.
+     */
+    @Override
+    protected void blockUsingItem(ServerLevel level, net.minecraft.world.entity.LivingEntity attacker, DamageSource source, float damage) {
+        super.blockUsingItem(level, attacker, source, damage);
+        ItemStack blocking = this.getItemBlockingWith();
+        net.minecraft.world.item.component.BlocksAttacks blocks = blocking == null ? null : blocking.get(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS);
+        float seconds = attacker.getSecondsToDisableBlocking();
+        if (seconds > 0.0F && blocks != null) {
+            int ticks = Math.round(seconds * blocks.disableCooldownScale() * 20.0F);
+            blocks.disable(level, this, seconds, blocking);
+            if (ticks > 0) {
+                this.job.onGuardShieldDisabled(ticks);
+                Mnemolith.LOGGER.debug("Mnemolith echo shield disabled owner={} by={} ticks={} at {}", this.ownerName(),
+                        net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(attacker.getType()), ticks, this.blockPosition().toShortString());
+            }
+        }
     }
 
     @Override
