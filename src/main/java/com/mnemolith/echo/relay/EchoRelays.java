@@ -337,6 +337,7 @@ public final class EchoRelays {
             ServerPlayer player = server.getPlayerList().getPlayer(pending.player());
             if (player != null) {
                 lastMirror = mirror(player, pending.target(), pending.placed());
+                Mnemolith.LOGGER.debug("Mnemolith relay mirror result {} for {} at {}", lastMirror, player.getGameProfile().name(), pending.target().toShortString());
             }
         }
     }

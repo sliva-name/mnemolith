@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.mnemolith.content.ModBlocks;
 import com.mnemolith.content.ModItems;
@@ -12,6 +13,7 @@ import com.mnemolith.content.block.ArchiveVaultBlockEntity;
 import com.mnemolith.data.ImprintSlips;
 import com.mnemolith.data.ModDataComponents;
 import com.mnemolith.echo.EchoPossession;
+import com.mnemolith.echo.EchoRegistry;
 import com.mnemolith.echo.graft.EchoGrafts;
 import com.mnemolith.echo.graft.Temper;
 import com.mnemolith.echo.job.JobStatus;
@@ -32,6 +34,7 @@ import com.mnemolith.vault.ArchiveVaults;
 import com.mnemolith.vault.VaultContents;
 import com.mnemolith.world.LoadedChunkMemory;
 import com.mnemolith.config.CommonConfig;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -42,6 +45,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
@@ -521,6 +525,46 @@ public final class DebugCommands {
                 Storms.adopt(storm, residue);
             }
         }
+    }
+
+
+    /** Writes {@code count} imprints of one tag where the source stands, so a storm has those memories to condense. */
+    public static int imprint(CommandContext<CommandSourceStack> context) {
+        ServerLevel level = context.getSource().getLevel();
+        String name = context.getArgument("tag", String.class);
+        ImprintTag tag = tag(name);
+        if (tag == null) {
+            context.getSource().sendFailure(Component.translatable("mnemolith.debug.residue.bad", name));
+            return 0;
+        }
+        int count = context.getArgument("count", Integer.class);
+        BlockPos pos = BlockPos.containing(context.getSource().getPosition());
+        int written = 0;
+        for (int i = 0; i < count; i++) {
+            if (ImprintWriter.write(level, pos, List.of(tag), null, false)) {
+                written++;
+            }
+        }
+        int done = written;
+        context.getSource().sendSuccess(() -> Component.translatable("mnemolith.debug.imprint", done, tag.getSerializedName()), true);
+        return done;
+    }
+
+    /** Hands the nearest echo to an offline player so order keys and the needle can be checked against a stranger. */
+    public static int stranger(CommandContext<CommandSourceStack> context) {
+        EchoEntity echo = nearestEcho(context);
+        if (echo == null) {
+            return 0;
+        }
+        ServerLevel level = context.getSource().getLevel();
+        UUID id = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
+        if (echo.ownerId() != null) {
+            EchoRegistry.get(level.getServer()).remove(echo.ownerId(), echo.getUUID());
+        }
+        echo.setOwner(id, "Stranger", ResolvableProfile.createResolved(new GameProfile(id, "Stranger")));
+        echo.setGeneration(EchoRegistry.get(level.getServer()).put(id, echo.getUUID()));
+        context.getSource().sendSuccess(() -> Component.translatable("mnemolith.debug.stranger", echo.getDisplayName()), true);
+        return 1;
     }
 
     private static BlockPos vaultAt(ServerLevel level, BlockPos origin) {

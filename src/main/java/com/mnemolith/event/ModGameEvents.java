@@ -178,7 +178,11 @@ public final class ModGameEvents {
                         .then(Commands.literal("lava").executes(DebugCommands::lava))
                         .then(Commands.literal("shard")
                                 .then(Commands.literal("graft").executes(DebugCommands::shardGraft))
-                                .then(Commands.literal("release").executes(DebugCommands::shardRelease))))
+                                .then(Commands.literal("release").executes(DebugCommands::shardRelease)))
+                        .then(Commands.literal("imprint")
+                                .then(Commands.argument("tag", StringArgumentType.word())
+                                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 64)).executes(DebugCommands::imprint))))
+                        .then(Commands.literal("stranger").executes(DebugCommands::stranger)))
                 .then(Commands.literal("qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(MnemolithQa::run)));

@@ -1242,5 +1242,7 @@
   "mnemolith.debug.shard.graft": "Shard grafted: %s.",
   "mnemolith.debug.shard.release": "Shard released onto the ground.",
   "mnemolith.debug.shard.failed": "The shard did not take.",
+  "mnemolith.debug.imprint": "Wrote %s imprints of %s here.",
+  "mnemolith.debug.stranger": "The nearest echo now belongs to %s.",
   "mnemolith.debug.relay.link": "The two nearest echoes are linked."
 }

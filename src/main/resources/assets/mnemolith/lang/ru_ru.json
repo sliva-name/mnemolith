@@ -1242,5 +1242,7 @@
   "mnemolith.debug.shard.graft": "Осколок привит: %s.",
   "mnemolith.debug.shard.release": "Осколок выпущен на землю.",
   "mnemolith.debug.shard.failed": "Осколок не привился.",
+  "mnemolith.debug.imprint": "Записано отпечатков: %s (%s).",
+  "mnemolith.debug.stranger": "Ближайший отголосок теперь принадлежит %s.",
   "mnemolith.debug.relay.link": "Два ближайших отголоска связаны."
 }
