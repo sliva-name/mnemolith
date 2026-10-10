@@ -55,8 +55,9 @@ def chronicle_lens(glass='amethyst', seed='chronicle_lens', canvas=False):
     return cv if canvas else finish(cv)
 
 
-def extraction_needle():
-    rng = core.rng_for('extraction_needle')
+def extraction_needle(tip='amethyst', seed='extraction_needle', canvas=False):
+    """The needle; ``tip`` is the crystal ramp (the recollite needle reuses this with its own tip)."""
+    rng = core.rng_for(seed)
     cv = new()
     # wooden handle with a leather wrap, brass pommel
     shapes.rod(cv, (4, 28), (12, 20), 4, 'wood', 3, rng=rng, noise=0.3)
@@ -74,9 +75,11 @@ def extraction_needle():
     shapes.rod(cv, (20, 12), (25, 7), 1.8, 'iron', 4)
     core.scratches(cv, shapes.rod_mask(S, S, (13, 19), (21, 11), 2.6), rng, n=1)
     # amethyst tip crystal, glowing
-    shapes.gem(cv, [(24, 7), (27, 2.5), (29.5, 3), (29, 5.5), (25.5, 8.5)], 'amethyst', 4)
+    shapes.gem(cv, [(24, 7), (27, 2.5), (29.5, 3), (29, 5.5), (25.5, 8.5)], tip, 4)
     core.glint(cv, 27, 4, arm=0)
-    shapes.glow(cv, 27, 4.5, 5, RAMPS['amethyst'][6], 0.35)
+    shapes.glow(cv, 27, 4.5, 5, RAMPS[tip][6], 0.35)
+    if canvas:
+        return cv
     return finish(cv)
 
 

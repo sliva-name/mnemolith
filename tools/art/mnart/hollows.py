@@ -166,6 +166,96 @@ def recollite_lens():
     return cv.image()
 
 
+def recollite_needle():
+    """The extraction needle with a recollite tip and a recollite-wound grip band."""
+    from . import items
+    cv = items.extraction_needle(tip='recollite', seed='recollite_needle', canvas=True)
+    for (x, y) in ((8, 24), (9, 23)):
+        cv.px(x, y, RAMPS['recollite'][4])
+    cv.fill(m_ellipse(S, S, 22.5, 9.5, 1.2, 1.2), RAMPS['recollite'][5])
+    cv.px(22, 9, RAMPS['pale'][6])
+    cv.outline(selout=0.55)
+    return cv.image()
+
+
+def faded_spawn_egg():
+    from .items import _egg
+    return _egg('faded_spawn_egg', 'pale', 'lilac', 3, band='recollite')
+
+
+def faded():
+    """The faded's 64×64 layout (FadedModel): pale worn cloth over a body that frays into a veil, a hollow face,
+    a recollite splinter at the heart. Painted mostly opaque; the renderer makes the whole figure translucent."""
+    import numpy as np
+    from .entities import Sheet
+    from .materials import surface
+    s = Sheet('faded')
+
+    def fray(cv, rng, rows):
+        h, w = cv.alpha.shape
+        for x in range(w):
+            cut = rng.randrange(0, rows + 1)
+            if cut:
+                cv.alpha[h - cut:, x] = 0
+
+    def head(f, w, h, rng):
+        cv = surface('pale', w, h, rng, face='top' if f == 'up' else 'side', wear=0.45, base_shift=0.3)
+        if f == 'north':
+            # a hollow face: two soft dark sockets and a faint mouth line, no features
+            for x0 in (w // 4 - 1, w - w // 4 - 3):
+                cv.fill(m_rect(w, h, x0, h // 2 - 3, x0 + 3, h // 2 + 1), RAMPS['ink'][1])
+                cv.px(x0 + 1, h // 2 - 2, RAMPS['recollite'][5])
+                # the face runs: a pale streak under each socket
+                cv.fill(m_rect(w, h, x0 + 1, h // 2 + 2, x0 + 2, h - 3), RAMPS['lilac'][3])
+            cv.fill(m_rect(w, h, w // 2 - 2, h - 3, w // 2 + 1, h - 3), RAMPS['lilac'][2])
+        if f in ('up', 'north', 'left', 'right', 'south'):
+            # a pale hood edge
+            cv.fill(m_rect(w, h, 0, 0, w - 1, 1), RAMPS['lilac'][4])
+        return cv
+
+    def body(f, w, h, rng):
+        cv = surface('lilac', w, h, rng, face='side', wear=0.55, base_shift=0.6)
+        if f in ('north', 'south', 'left', 'right'):
+            for x in range(1, w, 3):
+                cv.shade_px(m_rect(w, h, x, 0, x, h - 1), 0.22)
+            cv.fill(m_rect(w, h, 0, 4, w - 1, 4), RAMPS['pale'][5])
+        return cv
+
+    def veil(f, w, h, rng):
+        if f in ('up', 'down'):
+            return None
+        cv = surface('lilac', w, h, rng, face='side', wear=0.6, base_shift=0.9)
+        for x in range(0, w, 2):
+            cv.shade_px(m_rect(w, h, x, 0, x, h - 1), 0.18)
+        fray(cv, rng, h // 2)
+        return cv
+
+    def arm(f, w, h, rng):
+        cv = surface('pale', w, h, rng, face='side', wear=0.5, base_shift=0.1)
+        if f in ('north', 'south', 'left', 'right'):
+            cv.fill(m_rect(w, h, 0, 0, w - 1, 9), RAMPS['lilac'][3])
+            fray(cv, rng, 3)
+        return cv
+
+    def leg(f, w, h, rng):
+        cv = surface('pale', w, h, rng, face='side', wear=0.55, base_shift=-0.2)
+        fray(cv, rng, 6)
+        return cv
+
+    def splinter(f, w, h, rng):
+        cv = surface('recollite', w, h, rng, wear=0.0, base_shift=0.8)
+        cv.px(0, 0, RAMPS['pale'][6])
+        return cv
+
+    s.box(0, 0, 8, 8, 8, head)
+    s.box(16, 16, 8, 12, 4, body)
+    s.box(0, 32, 9, 9, 5, veil)
+    s.box(40, 16, 3, 12, 3, arm)
+    s.box(0, 16, 3, 12, 3, leg)
+    s.box(56, 0, 2, 3, 1, splinter)
+    return s.image()
+
+
 BLOCK_TEXTURES = {
     'hollow_turf_top': turf_top,
     'hollow_turf_side': turf_side,
@@ -178,4 +268,9 @@ BLOCK_TEXTURES = {
 ITEM_TEXTURES = {
     'recollite_shard': recollite_shard,
     'recollite_lens': recollite_lens,
+    'recollite_needle': recollite_needle,
+    'faded_spawn_egg': faded_spawn_egg,
+}
+ENTITY_TEXTURES = {
+    'faded': faded,
 }

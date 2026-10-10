@@ -81,6 +81,21 @@ def player():
     ]
 
 
+def faded(kneel=False):
+    """FadedModel; ``kneel`` is its KNEEL scene pose."""
+    by = 17 if kneel else 12
+    return [
+        part('body', (0, by, 0), [(16, 16, -4, -12, -2, 8, 12, 4), (56, 0, -1, -9, -2.6, 2, 3, 1)], [
+            part('head', (0, -12, 0), [(0, 0, -4, -8, -4, 8, 8, 8)], rot=(0.6 if kneel else 0.1, 0, 0)),
+            part('veil', (0, -1, 0), [(0, 32, -4.5, 0, -2.5, 9, 9, 5)], rot=(0.1, 0, 0)),
+            part('arm_left', (4, -11, 0), [(40, 16, 0, -1, -1.5, 3, 12, 3)], rot=(-0.5 if kneel else 0.2, 0, -0.08)),
+            part('arm_right', (-4, -11, 0), [(40, 16, -3, -1, -1.5, 3, 12, 3)], rot=(-0.5 if kneel else -0.25, 0, 0.08)),
+        ], rot=(0.35 if kneel else 0, 0, 0)),
+        part('leg_left', (2, by, 0), [(0, 16, -1.5, 0, -1.5, 3, 12, 3)], rot=(-1.5 if kneel else 0.2, 0, 0)),
+        part('leg_right', (-2, by, 0), [(0, 16, -1.5, 0, -1.5, 3, 12, 3)], rot=(-0.2, 0, 0)),
+    ]
+
+
 def quads(parts, tex_id, poses=None, scale_k=1.0):
     """World-space quads (block units, feet at y=0, facing -z) for a part list."""
     out = []
@@ -109,4 +124,6 @@ MODELS = {
     'echo_strider': (echo_strider, 'mnemolith:entity/echo_strider'),
     'moment_replicant': (moment_replicant, 'mnemolith:entity/moment_replicant'),
     'residue': (residue, 'mnemolith:entity/residue'),
+    'faded': (faded, 'mnemolith:entity/faded'),
+    'faded_kneel': (lambda: faded(True), 'mnemolith:entity/faded'),
 }

@@ -36,6 +36,9 @@ public final class ItemTooltips {
             } else if (stack.getItem() == ModItems.EXTRACTION_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.catch_hint"));
+            } else if (stack.getItem() == ModItems.RECOLLITE_NEEDLE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.recollite_needle.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+                builder.accept(Component.translatable("item.mnemolith.extraction_needle.hint"));
             } else if (stack.getItem() == ModItems.REINFORCED_NEEDLE.get()) {
                 builder.accept(Component.translatable("item.mnemolith.reinforced_needle.hint"));
                 builder.accept(Component.translatable("item.mnemolith.extraction_needle.catch_hint"));

@@ -38,8 +38,8 @@ Python 3.10+ with the pinned Pillow and numpy in `tools/art/requirements.txt` (`
 | `mnart/entities.py` | Entity skins (128×128) and the preview-only wanderer skin |
 | `mnart/entity_models.py` | Part trees transcribed from the Java `LayerDefinition`s, for offline renders only; keep in sync by hand |
 | `mnart/particles.py`, `mnart/gui.py` | Particle sprites; panel, slot and tag icons |
-| `mnart/hollows.py` | Memory Hollows cube faces (faded turf, hollowstone, bricks, recollite ore and block), the forget-me-not, the recollite shard and the recollite lens (stage `hollows`) |
-| `mnart/guide.py` | The 38 field-guide pages |
+| `mnart/hollows.py` | Memory Hollows cube faces (faded turf, hollowstone, bricks, recollite ore and block), the forget-me-not, the recollite shard, the recollite lens, the recollite needle, the faded spawn egg and the faded entity sheet (stage `hollows`, entity texture under `textures/entity/`) |
+| `mnart/guide.py` | The 39 field-guide pages |
 | `mnart/render3d.py` | Small software renderer for JSON models and entity boxes (guide dioramas and previews) |
 | `build.py`, `validate_assets.py`, `preview.py` | Entry points |
 
@@ -203,7 +203,7 @@ Sprites in `textures/particle/` are 32×32 white shapes with a soft alpha halo: 
 
 ## Field guide
 
-38 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The reference page holds two rows of nine slots; the thirteen imprint slip tag variants sit together on a strip under them, and the build fails if the slot grid would overflow. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
+39 pages, `textures/gui/guide/<page>.png`, 512×256. `GuideScreen` blits them into a 256×128 art box with the image size passed in, so the double density needs no code change. Every page shares one plate: ink-dyed paper with fibre and a faint diagonal ruling, a navy and verdigris frame with brass corner studs. Each page has one isometric in-world diorama rendered by `render3d` from the real block models and entity layouts (turf and stone ground drawn by the pipeline, never vanilla textures), the item sprites at 2× or more, and simple diagram marks (arrows, gauges, tag icons, dotted pips). Pages carry no text; the words come from the lang file. The reference page holds two rows of nine slots; the thirteen imprint slip tag variants sit together on a strip under them, and the build fails if the slot grid would overflow. The echo in the pictures is the pink silhouette layer (`EchoRenderer.SILHOUETTE_TINT`), grafted echoes use the temper colours.
 
 ## Validation
 

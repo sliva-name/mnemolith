@@ -214,6 +214,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.IntValue SCAR_BRAND_COOLDOWN;
     public static final ModConfigSpec.IntValue STALKER_SPAWN_WEIGHT;
     public static final ModConfigSpec.IntValue STALKER_MIN_PRESSURE;
+    public static final ModConfigSpec.IntValue FADED_SPAWN_WEIGHT;
     public static final ModConfigSpec.BooleanValue SLEEP_CONSOLIDATION;
     public static final ModConfigSpec.IntValue SLEEP_COOL_AMOUNT;
     public static final ModConfigSpec.IntValue SLEEP_FADE_PASSES;
@@ -492,9 +493,10 @@ public final class CommonConfig {
         SCAR_BRAND_COOLDOWN = SpecValues.integer(builder, "scarBrandCooldown", "Ticks the scar brand rests after a spend.", 40, 5, 200);
         builder.pop();
 
-        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, and fracture stalkers. Eggs and /mnemolith spawn ignore these.");
+        SpecValues.section(builder, "armoryMobs", "Spawn gates for ledger mites, kin witnesses, fracture stalkers, and faded. Eggs and /mnemolith spawn ignore these.");
         STALKER_SPAWN_WEIGHT = SpecValues.integer(builder, "stalkerSpawnWeight", "Chance, out of 100, that a natural fracture stalker spawn attempt is kept. 0 disables natural spawns.", 10, 0, 100);
         STALKER_MIN_PRESSURE = SpecValues.integer(builder, "stalkerMinPressure", "Minimum cached pressure before a fracture stalker can spawn naturally.", 50, 0, 10_000);
+        FADED_SPAWN_WEIGHT = SpecValues.integer(builder, "fadedSpawnWeight", "Chance, out of 100, that each player gets one faded spawn attempt every 5 seconds (surface of Memory Hollows only, at most 3 within 32 blocks). 0 disables natural spawns.", 25, 0, 100);
         builder.pop();
 
         SpecValues.section(builder, "sleep", "After a full sleep the house cools. An overloaded chunk can dream a nightmare.");
