@@ -43,6 +43,10 @@ recollite upgrade for the needle.
   monster cap, which the zombies and skeletons in those caves fill (30 to 50 undead within 128 blocks at the time).
   The modifier is gone; the spawn placement (`ON_GROUND`, any light, `MobSpawns.allowFaded`) stays registered, so a
   datapack that adds faded to a spawn list still gets the hollows, surface and cap rules.
+- **Measured** (normal world, Easy, one player standing in a hollow, 30 s samples over 4 min, 40 to 48 undead loaded
+  nearby): weight 25 gave the first faded after about 90 s and then 1 to 3 in sight at a time, all on the turf;
+  weight 0 gave none. Server tick 2.0 to 2.5 ms average (P95 at most 3.4 ms) either way, so the spawner costs
+  nothing measurable.
 - Spawned faded are ordinary monsters: they despawn when no player is near, as monsters do. Not in peaceful.
 - Spawn egg (pale lilac with a recollite band) and `/mnemolith spawn faded`.
 
