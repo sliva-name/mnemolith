@@ -23,7 +23,7 @@ before it can rise in a storm.
 
 A residual shard freed in a lulled chunk does not call a storm, and the player reads `mnemolith.storm.lulled` over the
 hotbar: how many minutes are left (rounded up, at least 1; 20 for a full day). The storms page of the field guide
-explains the lull in RU and EN. Added in `feature/lens-lull`.
+explains the lull in RU and EN. Added in PR #70.
 
 ## Balance
 

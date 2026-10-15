@@ -19,6 +19,21 @@ public record Transcript(int tags, int formulas, String author) {
             ByteBufCodecs.STRING_UTF8, Transcript::author,
             Transcript::new);
 
+    /** The author of the sheets chronicler villagers sell; no player name starts with {@code #}. */
+    public static final String CHRONICLER = "#chronicler";
+    /** The five body tags (fire, fall, death, explosion, silence): what a chronicler's copied notes hold. */
+    public static final int CHRONICLER_TAGS = 55;
+
+    public boolean byChronicler() {
+        return CHRONICLER.equals(this.author);
+    }
+
+    /** The author as shown: the chronicler profession name for a bought sheet, else the player's name. */
+    public net.minecraft.network.chat.Component authorName() {
+        return byChronicler() ? net.minecraft.network.chat.Component.translatable("entity.mnemolith.villager.chronicler")
+                : net.minecraft.network.chat.Component.literal(this.author);
+    }
+
     public int tagCount() {
         return Integer.bitCount(this.tags);
     }

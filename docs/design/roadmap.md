@@ -29,7 +29,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Remembrance posy | Done on main (PR #67): three forget-me-nots and a string; used on a faded it lays it to rest (gone without dying, its copied memory written back, a recollite shard left), an archive keeper is only calmed; guide page `posy` | [remembrance-posy.md](remembrance-posy.md), `posyqa` 10/10, live `posy_lays_faded_to_rest` |
 | Chronicle transcript | Done on main (PR #68): paper, ink and a feather; copies your discovered tags and formulas onto a signed sheet that another player reads to learn the new ones (knowledge only); guide page `transcript` | [chronicle-transcript.md](chronicle-transcript.md), `transcriptqa` 12/12, live `transcript_shared_between_players` |
 | Storm lull | Done on main (PR #69): a spent or contained storm leaves a one-day lull in its spacing range; the storm gate answers `LULL` (no natural storm, no shard call) | [storm-lull.md](storm-lull.md), `lullqa` 10/10, live `storm_lull_refuses_shard` |
-| Lull feedback | `feature/lens-lull`: a shard freed during a lull tells the player how many minutes are left; the storms guide page explains the lull | [storm-lull.md](storm-lull.md#feedback), `lullqa` 12/12 |
+| Lull feedback | Done on main (PR #70): a shard freed during a lull tells the player how many minutes are left; the storms guide page explains the lull | [storm-lull.md](storm-lull.md#feedback), `lullqa` 12/12 |
+| Chronicler's copied notes | `feature/chronicler-transcript`: a journeyman chronicler sells a written transcript of the five body tags (10 emeralds and a paper, 2 uses), signed by the chronicler | [chronicler-notes.md](chronicler-notes.md), `chroniclerqa` 9/9, live `chronicler_sells_notes` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -208,5 +209,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 13. The remembrance posy (done, PR #67): lay a faded to rest; see [remembrance-posy.md](remembrance-posy.md).
 14. The chronicle transcript (done, PR #68): share discovery between players; see [chronicle-transcript.md](chronicle-transcript.md).
 15. The storm lull (done, PR #69): a day of quiet after a storm is cleared; see [storm-lull.md](storm-lull.md).
-16. Lull feedback (`feature/lens-lull`): the shard says how long the lull lasts.
-17. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+16. Lull feedback (done, PR #70): the shard says how long the lull lasts.
+17. The chronicler's copied notes (`feature/chronicler-transcript`): a transcript for sale; see [chronicler-notes.md](chronicler-notes.md).
+18. Next: pick from [expansion-ideas.md](expansion-ideas.md).

@@ -144,6 +144,8 @@
 
 **Затишье после бури**: если буря выдохлась (все её осадки собраны) или сдержана, в её округе на один игровой день не соберётся новая буря — ни сама, ни от освобождённого осколка. Прошедшая буря, Шрам и угасшая без свидетелей затишья не оставляют. Освобождённый в затишье осколок подскажет, сколько минут осталось. `/mnemolith lullqa` проверяет затишье; заметка — [docs/design/storm-lull.md](docs/design/storm-lull.md).
 
+**Записи хрониста**: хронист-подмастерье иногда продаёт готовую выписку о пяти телесных тегах (10 изумрудов и бумага, два листа до пополнения) за подписью хрониста. `/mnemolith chroniclerqa` проверяет сделку; заметка — [docs/design/chronicler-notes.md](docs/design/chronicler-notes.md).
+
 ### Живая память
 
 Мир хранит это прохождение и молчит об этом.
@@ -428,6 +430,8 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 The **chronicle transcript** (paper, an ink sac and a feather): use a blank one to copy the tags and formulas you have discovered onto a signed sheet. Another player who reads it learns the ones they did not know (the sheet is used up). Knowledge only: catalog entries and reel hints, no slips or grafts. `/mnemolith transcriptqa` checks it; design note: [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 
 The **storm lull**: a storm that ends spent (all its residues dealt with) or contained leaves its surroundings quiet for one Minecraft day; no new storm gathers there, naturally or from a freed shard. A storm that passed, became the Scar or faded unwatched leaves no lull. A shard freed during the lull tells you how many minutes are left. `/mnemolith lullqa` checks it; design note: [docs/design/storm-lull.md](docs/design/storm-lull.md).
+
+The **chronicler's copied notes**: a journeyman chronicler sometimes sells a ready transcript of the five body tags (10 emeralds and a paper, two per restock), signed by the chronicler. `/mnemolith chroniclerqa` checks the trade; design note: [docs/design/chronicler-notes.md](docs/design/chronicler-notes.md).
 
 ### Living memory
 

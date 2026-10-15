@@ -28,6 +28,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_posyqa` | `/mnemolith posyqa` (10) | Fake-player giver; faded spawned with no AI on a plains column (the write-back is checked, not the biome); one keeper made with `makeKeeper` and provoked |
 | `mnemolith:suite_transcriptqa` | `/mnemolith transcriptqa` (12) | Two fake players with discovery set by hand; no world blocks touched |
 | `mnemolith:suite_lullqa` | `/mnemolith lullqa` (12) | Parks active storms and puts them back; removes only its own lulls |
+| `mnemolith:suite_chroniclerqa` | `/mnemolith chroniclerqa` (9) | Villagers created off-world (not added); one fake reader |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -90,6 +91,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `posy_lays_faded_to_rest` | A real player in a hollow right-clicks a faded that copied a fall with two posies (`Player.interactOn`): the faded is removed without dying, the fall stays and nothing is forgotten, one recollite shard drops, one posy is left | 200 |
 | `transcript_shared_between_players` | Two real players: the author (death, sculk, formula 1) uses a blank transcript (`gameMode.useItem`) and it is written; the reader uses the sheet and ends with exactly the author's tags and formulas; the sheet is spent | 200 |
 | `storm_lull_refuses_shard` | A real player in a fracture (live site 8): the gate is open; a storm there is spent and the gate answers `LULL`; a residual shard freed through the real item use calls no storm | 200 |
+| `chronicler_sells_notes` | A real player (live site 9) and a real level 3 chronicler (respawned until it offers the sheet, at most 30): the offer counts a use, the player reads the sheet (`gameMode.useItem`), learns exactly the five body tags and no formula; the sheet is spent | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -723,3 +725,22 @@ Manual (to do on a normal world):
 - [ ] Clearing a storm shows the lull message in RU and EN.
 - [ ] Freeing a shard in the lulled area shows the minutes left in RU and EN; the storms guide page mentions the lull and fits its pages.
 - [ ] Standing in the same fracture afterwards gathers no storm until the next day; a storm two chunks further away still can.
+
+## Chronicler's copied notes QA
+
+`/mnemolith chroniclerqa` (gamemaster) checks the chronicler's sheet ([design note](design/chronicler-notes.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `tradePooled` | The trade loads and sits in the `chronicler/level_3` pool |
+| `offered` | A level 3 chronicler offers it within 30 villagers: 10 emeralds, a paper, 2 uses |
+| `sheetNotes` | The sheet holds tags 55 (five body tags), no formula, author `#chronicler` |
+| `authorName` | The author shows as the translated profession; a player's sheet shows their name |
+| `readFull`, `readPartial`, `knowsAllKeeps` | A new reader learns 5 and the sheet is spent; one who knew fire and death learns 3; one who knows all keeps it |
+| `notNovice` | A level 1 chronicler never offers it (10 villagers) |
+| `guideText` | The transcript page mentions the trade |
+
+Manual (to do on a normal world):
+
+- [ ] A journeyman chronicler's trading screen shows the sheet; buying it works.
+- [ ] The tooltip shows "Chronicler" in EN and "Хронист" in RU as the author.
