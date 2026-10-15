@@ -359,6 +359,11 @@ final class HollowsLiveTests {
                     // Break the second stone from where the miner stands: walking or teleporting into that chunk can write a
                     // path imprint first, and its write pause would then hold back the build imprint this checks.
                     var loudMemory = LoadedChunkMemory.existing(loudChunk);
+                    // A fresh chunk memory counts its last write as game time 0, so early in a run the write pause would
+                    // still hold; the seeded path imprint is not a write, so open the pause explicitly.
+                    if (loudMemory != null) {
+                        loudMemory.markWritten(level.getGameTime() - com.mnemolith.config.CommonConfig.WRITE_DEBOUNCE_TICKS.get());
+                    }
                     boolean accepts = com.mnemolith.imprint.ImprintWriter.acceptsThrottled(level, loudStone);
                     helper.assertTrue(miner.gameMode.destroyBlock(loudStone), "the pickaxe did not break the stone in the path chunk");
                     helper.assertTrue(count(loudChunk, ImprintTag.BUILD) == 1, "mining in the path chunk wrote " + count(loudChunk, ImprintTag.BUILD)

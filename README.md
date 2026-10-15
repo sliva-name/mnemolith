@@ -142,7 +142,7 @@
 
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 
-**Затишье после бури**: если буря выдохлась (все её осадки собраны) или сдержана, в её округе на один игровой день не соберётся новая буря — ни сама, ни от освобождённого осколка. Прошедшая буря, Шрам и угасшая без свидетелей затишья не оставляют. `/mnemolith lullqa` проверяет затишье; заметка — [docs/design/storm-lull.md](docs/design/storm-lull.md).
+**Затишье после бури**: если буря выдохлась (все её осадки собраны) или сдержана, в её округе на один игровой день не соберётся новая буря — ни сама, ни от освобождённого осколка. Прошедшая буря, Шрам и угасшая без свидетелей затишья не оставляют. Освобождённый в затишье осколок подскажет, сколько минут осталось. `/mnemolith lullqa` проверяет затишье; заметка — [docs/design/storm-lull.md](docs/design/storm-lull.md).
 
 ### Живая память
 
@@ -427,7 +427,7 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 
 The **chronicle transcript** (paper, an ink sac and a feather): use a blank one to copy the tags and formulas you have discovered onto a signed sheet. Another player who reads it learns the ones they did not know (the sheet is used up). Knowledge only: catalog entries and reel hints, no slips or grafts. `/mnemolith transcriptqa` checks it; design note: [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 
-The **storm lull**: a storm that ends spent (all its residues dealt with) or contained leaves its surroundings quiet for one Minecraft day; no new storm gathers there, naturally or from a freed shard. A storm that passed, became the Scar or faded unwatched leaves no lull. `/mnemolith lullqa` checks it; design note: [docs/design/storm-lull.md](docs/design/storm-lull.md).
+The **storm lull**: a storm that ends spent (all its residues dealt with) or contained leaves its surroundings quiet for one Minecraft day; no new storm gathers there, naturally or from a freed shard. A storm that passed, became the Scar or faded unwatched leaves no lull. A shard freed during the lull tells you how many minutes are left. `/mnemolith lullqa` checks it; design note: [docs/design/storm-lull.md](docs/design/storm-lull.md).
 
 ### Living memory
 
