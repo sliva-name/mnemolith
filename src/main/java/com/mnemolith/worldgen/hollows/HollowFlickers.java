@@ -42,7 +42,9 @@ public final class HollowFlickers {
     public static final int FALL = 2;
     public static final int KNEEL = 3;
     public static final int FLARE = 4;
-    public static final int SCENES = 5;
+    /** A forgotten memory: the figure stands, then sinks into the turf and is gone (Memory Hollows stage 4). */
+    public static final int FADE = 5;
+    public static final int SCENES = 6;
     /** Not a scene: sent in place of one to tell clients the flicker at {@code pos} was caught and should dissolve. */
     public static final int CAUGHT = -1;
 
@@ -110,6 +112,7 @@ public final class HollowFlickers {
             return;
         }
         long now = level.getGameTime();
+        expire(level, now, HollowForgetting.FORGET_CHANCE);
         for (ServerPlayer player : level.players()) {
             offer(level, player, density, now);
         }
@@ -147,7 +150,7 @@ public final class HollowFlickers {
             return;
         }
         long now = level.getGameTime();
-        ACTIVE.removeIf(active -> active.until() < now);
+        expire(level, now, HollowForgetting.FORGET_CHANCE);
         if (ACTIVE.size() >= MAX_ACTIVE) {
             ACTIVE.remove(0);
         }
@@ -156,6 +159,30 @@ public final class HollowFlickers {
         com.mnemolith.entity.mob.Faded.onFlicker(level, at, payload.tag() >= 0 && payload.tag() < ImprintTag.values().length
                 ? ImprintTag.values()[payload.tag()] : null);
         Mnemolith.LOGGER.debug("Mnemolith hollow flicker at {} scene={} tag={}", at.toShortString(), payload.scene(), payload.tag());
+    }
+
+    /**
+     * Drops the flickers whose catch window closed before {@code now}. A flicker that replayed an imprint and was left
+     * uncaught may be forgotten: with {@code chance} its chunk lets that memory go and keeps a forgotten imprint in
+     * its place ({@link HollowForgetting#forget}). Returns how many were forgotten.
+     */
+    public static int expire(ServerLevel level, long now, double chance) {
+        int forgotten = 0;
+        for (Iterator<Active> it = ACTIVE.iterator(); it.hasNext();) {
+            Active active = it.next();
+            if (active.until() >= now) {
+                continue;
+            }
+            it.remove();
+            if (active.tag() < 0 || active.tag() >= ImprintTag.values().length || active.tag() == ImprintTag.FORGOTTEN.ordinal()) {
+                continue;
+            }
+            if (chance > 0.0D && level.getRandom().nextDouble() < chance
+                    && HollowForgetting.forget(level, active.pos(), ImprintTag.values()[active.tag()])) {
+                forgotten++;
+            }
+        }
+        return forgotten;
     }
 
     /** A spot 6 to 20 blocks from {@code around}, on loaded ground inside the biome, and its scene; null when none. */
@@ -209,6 +236,7 @@ public final class HollowFlickers {
             case FIRE, LIGHTNING -> FLARE;
             case BUILD, REDSTONE, TRADE -> WORK;
             case PATH, PLAYER, PORTAL -> WALK;
+            case FORGOTTEN -> FADE;
         };
     }
 

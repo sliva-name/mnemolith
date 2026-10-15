@@ -116,9 +116,7 @@ final class HollowsLiveTests {
                     seer.getInventory().clearContent();
                     seer.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.EXTRACTION_NEEDLE.get()));
                     seer.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModItems.CHRONICLE_LENS.get()));
-                })
-                .thenIdle(2)
-                .thenExecute(() -> {
+                    // Catch in the same tick: QA suites that run beside this test clear the shared flicker list.
                     drain(seer);
                     drain(friend);
                     ItemStack needle = seer.getMainHandItem();
@@ -144,6 +142,140 @@ final class HollowsLiveTests {
                             net.minecraft.resources.Identifier.fromNamespaceAndPath(com.mnemolith.Mnemolith.MOD_ID, "flicker_caught"));
                     helper.assertTrue(advancement != null && seer.getAdvancements().getOrStartProgress(advancement).isDone(),
                             "catching a flicker did not award flicker_caught");
+                    HollowFlickers.clear();
+                })
+                .thenSucceed();
+    }
+
+    /** A patch of Memory Hollows around {@code site}: chunks held, biome filled in slabs (fillbiome caps volume). */
+    private static boolean hollowSite(GameTestHelper helper, BlockPos site) {
+        ServerLevel level = helper.getLevel();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                LivePlayers.force(level, site.offset(dx * 16, 0, dz * 16));
+            }
+        }
+        CommandSourceStack console = level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput();
+        for (int y0 = site.getY() - 12; y0 <= site.getY() + 12; y0 += 8) {
+            String fill = String.format("fillbiome %d %d %d %d %d %d mnemolith:memory_hollows", site.getX() - 16, y0, site.getZ() - 16,
+                    site.getX() + 16, Math.min(y0 + 7, site.getY() + 12), site.getZ() + 16);
+            try {
+                level.getServer().getCommands().getDispatcher().execute(fill, console);
+            } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                helper.fail("fillbiome failed: " + e.getMessage());
+                return false;
+            }
+        }
+        return Hollows.is(level.getBiome(site));
+    }
+
+    /**
+     * Memory Hollows stage 4: a real player opens a sunken archive chest (the real block use, through the interaction
+     * event); its keeper rises beside it, bound to that chest; the opened chest wakes nothing more; the player kills the
+     * keeper and it drops a forgotten slip, and its death leaves a forgotten imprint in the hollow.
+     */
+    static void keeperRisesAtArchiveChest(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 60, (origin.getZ() >> 4) + 120);
+        helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
+        BlockPos chest = site.offset(0, 0, 3);
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -1; dz <= 7; dz++) {
+                level.setBlockAndUpdate(site.offset(dx, -1, dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+                for (int dy = 0; dy <= 3; dy++) {
+                    level.setBlockAndUpdate(site.offset(dx, dy, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+        level.setBlockAndUpdate(chest, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+        if (level.getBlockEntity(chest) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity box) {
+            box.setLootTable(com.mnemolith.worldgen.hollows.ArchiveKeepers.ARCHIVE_LOOT, 7L);
+        }
+        LoadedChunkMemory.clear(level.getChunkAt(chest));
+        ServerPlayer opener = LivePlayers.join(helper, "LiveKeeperOpener", Vec3.atBottomCenterOf(site));
+        net.minecraft.world.phys.BlockHitResult face = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(chest).add(0.0D, 0.0D, -0.5D),
+                net.minecraft.core.Direction.NORTH, chest, false);
+        com.mnemolith.entity.mob.Faded[] keeper = new com.mnemolith.entity.mob.Faded[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    opener.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    opener.gameMode.useItemOn(opener, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, face);
+                    List<com.mnemolith.entity.mob.Faded> keepers = level.getEntitiesOfClass(com.mnemolith.entity.mob.Faded.class,
+                            new net.minecraft.world.phys.AABB(chest).inflate(8.0D), f -> f.isAlive() && f.keeper());
+                    helper.assertTrue(keepers.size() == 1, "opening the archive chest woke " + keepers.size() + " keepers");
+                    keeper[0] = keepers.get(0);
+                    helper.assertTrue(keeper[0].hasHome() && keeper[0].getHomePosition().equals(chest), "the keeper is not bound to its chest");
+                    helper.assertTrue(level.getBlockEntity(chest) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity box
+                            && box.getLootTable() == null, "the chest's loot was not rolled on opening");
+                    opener.closeContainer();
+                    opener.gameMode.useItemOn(opener, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, face);
+                    opener.closeContainer();
+                    int after = level.getEntitiesOfClass(com.mnemolith.entity.mob.Faded.class, new net.minecraft.world.phys.AABB(chest).inflate(16.0D),
+                            f -> f.isAlive() && f.keeper()).size();
+                    helper.assertTrue(after == 1, "opening the chest again woke another keeper: " + after);
+                    keeper[0].hurtServer(level, level.damageSources().playerAttack(opener), 1000.0F);
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    helper.assertTrue(!keeper[0].isAlive(), "the keeper survived");
+                    int slips = 0;
+                    for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(chest).inflate(8.0D))) {
+                        ImprintCast cast = item.getItem().get(ModDataComponents.IMPRINT_CAST.get());
+                        if (cast != null && cast.tag() == ImprintTag.FORGOTTEN) {
+                            slips += item.getItem().getCount();
+                        }
+                        item.discard();
+                    }
+                    helper.assertTrue(slips >= 1, "the keeper dropped no forgotten slip");
+                    ChunkMemory memory = LoadedChunkMemory.existing(level.getChunkAt(keeper[0].blockPosition()));
+                    boolean forgotten = false;
+                    for (int i = 0; memory != null && i < memory.imprintCount(); i++) {
+                        forgotten |= memory.imprintAt(i).tag() == ImprintTag.FORGOTTEN;
+                    }
+                    helper.assertTrue(forgotten, "the keeper's death left no forgotten imprint in the hollow");
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Memory Hollows stage 4: a forgotten flicker reaches a real player in the hollow as the fade scene, and needle and
+     * lens catch it into a forgotten slip through the real item use.
+     */
+    static void forgottenFlickerCaught(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 80, (origin.getZ() >> 4) + 120);
+        helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
+        BlockPos spot = site.offset(3, 0, 0);
+        var chunk = level.getChunkAt(spot);
+        LoadedChunkMemory.clear(chunk);
+        LoadedChunkMemory.getOrCreate(chunk).addImprint(new Imprint(ImprintTag.FORGOTTEN, 3, spot, Optional.empty(), 4242, level.getGameTime()), 8);
+        ServerPlayer seer = LivePlayers.join(helper, "LiveForgottenSeer", Vec3.atBottomCenterOf(site));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    drain(seer);
+                    HollowFlickers.send(level, new HollowFlickerPayload(spot, 0.0F, HollowFlickers.scene(ImprintTag.FORGOTTEN), ImprintTag.FORGOTTEN.ordinal()));
+                    List<HollowFlickerPayload> seen = flickers(seer);
+                    helper.assertTrue(seen.size() == 1 && seen.get(0).scene() == HollowFlickers.FADE && seen.get(0).tag() == ImprintTag.FORGOTTEN.ordinal(),
+                            "the player did not see a forgotten flicker fade: " + seen);
+                    seer.teleportTo(level, spot.getX() + 2.5D, spot.getY(), spot.getZ() + 0.5D, java.util.Set.of(), 0.0F, 0.0F, true);
+                    seer.getInventory().clearContent();
+                    seer.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.EXTRACTION_NEEDLE.get()));
+                    seer.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModItems.CHRONICLE_LENS.get()));
+                    // catch in the same tick: QA suites running beside this test clear the shared flicker list
+                    seer.gameMode.useItem(seer, level, seer.getMainHandItem(), InteractionHand.MAIN_HAND);
+                    int slips = 0;
+                    for (int i = 0; i < seer.getInventory().getContainerSize(); i++) {
+                        ImprintCast cast = seer.getInventory().getItem(i).get(ModDataComponents.IMPRINT_CAST.get());
+                        if (cast != null && cast.tag() == ImprintTag.FORGOTTEN) {
+                            slips += seer.getInventory().getItem(i).getCount();
+                        }
+                    }
+                    helper.assertTrue(slips == 1, "catching the forgotten flicker gave " + slips + " forgotten slips");
                     HollowFlickers.clear();
                 })
                 .thenSucceed();

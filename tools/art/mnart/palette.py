@@ -53,6 +53,7 @@ RAMPS = {
 # Accent colours shared with gameplay code (tempers are the Temper.rgb() values; tags follow the tag icons).
 TEMPER = {
     'silence': hx('#B8C6DC'), 'death': hx('#B6A2E8'), 'fire': hx('#FF9A5C'), 'fall': hx('#7FE0CF'), 'explosion': hx('#FF5E4E'),
+    'forgotten': hx('#CFCBDD'),
 }
 
 

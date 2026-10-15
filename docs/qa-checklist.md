@@ -22,6 +22,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_hollowsqa` | `/mnemolith hollowsqa` (22) | The flat test world has no multi-noise source, so the biome hooks are checked on overworld and nether sources built from the presets; features run on a pad in a cleared chunk |
 | `mnemolith:suite_hollows2qa` | `/mnemolith hollows2qa` (18) | Fake-player catcher; flickers are registered with `HollowFlickers.send` at known spots. The template, loot and recipe checks read the real data |
 | `mnemolith:suite_hollows3qa` | `/mnemolith hollows3qa` (19) | Fake-player catcher and attacker; faded are spawned without AI next to a `fillbiome` patch and stepped by direct calls. The loot, recipe and advancement checks read the real data |
+| `mnemolith:suite_hollows4qa` | `/mnemolith hollows4qa` (18) | Fake-player owner, opener and attacker; a `fillbiome` patch and a plain spot 48 blocks off; flickers are expired with a forced chance; the keeper's chest is placed with the archive loot table |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -76,6 +77,8 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | Test | What is proved | Budget |
 | --- | --- | --- |
 | `hollows_flicker_delivered_and_caught` | Three real players: a seer in a hollow with path imprints in the 5×5 chunks around, a friend 6 blocks off, a stranger 144 blocks off. One offer at density 4: the `HollowFlickerPayload` read off the seer's connection is a path (walk) scene 6–20 blocks away; the friend receives the same payload, the stranger none. The seer then uses an extraction needle with a chronicle lens in the off hand (`gameMode.useItem`): one path slip, the `CAUGHT` payload to seer and friend, no active flicker left, the *Hold That Thought* advancement | 200 |
+| `hollows_keeper_rises_at_archive_chest` | A real player opens a chest holding the `chests/sunken_archive` loot table in a hollow, through the real block use: one keeper rises bound to that chest and the loot is rolled; a second open wakes nothing; the player's kill drops a forgotten slip and the death leaves a forgotten imprint | 200 |
+| `hollows_forgotten_flicker_caught` | A real player in a hollow is sent a forgotten flicker: the payload read off the connection is the fade scene; needle and lens catch it into one forgotten slip (in the same tick, since suites beside it clear the shared flicker list) | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -590,3 +593,26 @@ MANUAL_RESULTS
 | `/mnemolith debug stranger` | Hands the nearest echo to an offline player named Stranger, so `Z`/`R`/`B` and the needle can be checked against someone else's echo (both must refuse it). |
 | `/mnemolith debug imprint <tag> <count>` | Writes that many imprints of one tag where you stand (`ImprintWriter.write`), so a storm there has fire, fall or silence memories to condense. |
 
+## Memory Hollows stage 4 QA
+
+`/mnemolith hollows4qa` (gamemaster) checks stage 4 ([design note](design/memory-hollows-4.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `tagData` | `forgotten` is ordinal 14, weight 1, intensity 3, and plays the fade scene (scene 5 of 6) |
+| `hollowsOnly` | On a plains spot neither `ImprintWriter.write` nor `HollowForgetting.forget` writes a forgotten imprint |
+| `forgetsInHollows` | In a `fillbiome` hollow, `forget` removes the path imprint and writes one forgotten imprint |
+| `flickerExpiry`, `noChanceNoForget`, `forgottenStays` | An expired trade flicker at chance 1 is forgotten (trade gone, forgotten written); at chance 0 the window closes and the path stays; an expired forgotten flicker is not forgotten again |
+| `fadedDeathForgets` | A faded that copied a fall dies in the hollow: the fall imprint becomes forgotten |
+| `temperData`, `temperForgets`, `temperIdle` | `Temper.of(FORGOTTEN)` is the hollows-only forgotten temper with no residue; a forgotten echo's work on a plains chunk removes its death imprint, writes nothing, costs one charge; in an empty chunk it costs nothing |
+| `formula` | `forgetting` seals forgotten + silence into a forgotten shard |
+| `keeperWakes`, `keeperOnce`, `keeperCreative` | Opening the archive chest wakes one keeper (32 health, home on the chest, persistent, targeting the opener where the world allows it); waking again returns the same keeper; a creative player wakes nothing |
+| `keeperDrop`, `keeperSaves` | A player kill drops a forgotten slip; the keeper flag and post survive a save and load |
+| `particle`, `guidePage` | `graft_forgotten` is registered and used for the temper; the `forgotten` page sits right after `faded` |
+
+Manual (to do on a normal world):
+
+- [ ] A forgotten flicker stands, then sinks into the turf; a faded copying it bows its head.
+- [ ] Opening a chest in a real sunken archive wakes a taller, slate-blue Archive Keeper that stays near the chest.
+- [ ] An echo with a forgotten graft working in a loud chunk brings its pressure down over time.
+- [ ] The forgotten slip, tag icon and guide page read well in RU and EN.

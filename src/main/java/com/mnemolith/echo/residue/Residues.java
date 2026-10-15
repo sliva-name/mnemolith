@@ -212,7 +212,7 @@ public final class Residues {
             int z = pos.getMiddleBlockZ();
             at = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) + 1, z);
         }
-        Temper[] tempers = Temper.values();
+        Temper[] tempers = java.util.Arrays.stream(Temper.values()).filter(t -> !t.hollowsOnly()).toArray(Temper[]::new);
         ImprintTag tag = tempers[level.getRandom().nextInt(tempers.length)].tag();
         ResidueEntity residue = spawn(level, at, tag, OLD_STRENGTH, true);
         if (residue == null) {

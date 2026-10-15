@@ -412,8 +412,33 @@ public final class EchoGrafts {
             return null;
         }
         Temper temper = active(echo);
+        if (temper == Temper.FORGOTTEN) {
+            forgetAt(level, echo, pos);
+            return null;
+        }
         ImprintTag residue = temper == null ? null : temper.residue();
         return residue == null ? ImprintTag.BUILD : residue;
+    }
+
+    /**
+     * A forgotten echo's work: no imprint, and the loudest memory of the chunk at {@code pos} is let go (one charge).
+     * Returns the imprint let go, or null when the chunk held none (then no charge is spent).
+     */
+    public static com.mnemolith.imprint.@Nullable Imprint forgetAt(ServerLevel level, EchoEntity echo, BlockPos pos) {
+        var chunk = level.getChunkAt(pos);
+        com.mnemolith.imprint.ChunkMemory memory = com.mnemolith.world.LoadedChunkMemory.existing(chunk);
+        if (memory == null || memory.imprintCount() == 0) {
+            return null;
+        }
+        java.util.Optional<com.mnemolith.imprint.Imprint> removed = memory.removeHighest();
+        if (removed.isEmpty()) {
+            return null;
+        }
+        com.mnemolith.pressure.MemoryPressure.recompute(chunk, memory);
+        spend(echo, 1);
+        burst(level, echo, Temper.FORGOTTEN, 6);
+        Mnemolith.LOGGER.debug("Mnemolith graft forgotten let go of {} at {} owner={}", removed.get().tag(), pos.toShortString(), echo.ownerName());
+        return removed.get();
     }
 
     /** Dig time multiplier: hushed digs slower, volatile faster. */
@@ -667,6 +692,7 @@ public final class EchoGrafts {
             case CHARGED -> MobEffects.SPEED;
             case WANDERING -> MobEffects.SLOW_FALLING;
             case DEEP -> MobEffects.NIGHT_VISION;
+            case FORGOTTEN -> MobEffects.INVISIBILITY;
         };
         if (effect == null) {
             return;
@@ -713,6 +739,7 @@ public final class EchoGrafts {
             case CHARGED -> MobEffects.SPEED;
             case WANDERING -> MobEffects.SLOW_FALLING;
             case DEEP -> MobEffects.NIGHT_VISION;
+            case FORGOTTEN -> MobEffects.INVISIBILITY;
         };
     }
 
@@ -728,6 +755,7 @@ public final class EchoGrafts {
             case CHARGED -> ModParticles.GRAFT_CHARGED.get();
             case WANDERING -> ModParticles.GRAFT_WANDERING.get();
             case DEEP -> ModParticles.GRAFT_DEEP.get();
+            case FORGOTTEN -> ModParticles.GRAFT_FORGOTTEN.get();
         };
     }
 
