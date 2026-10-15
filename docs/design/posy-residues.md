@@ -1,6 +1,6 @@
 # The posy and residual echoes
 
-Status: implemented on `feature/posy-residues`. A missing interaction between two systems: the remembrance posy (PR #67)
+Status: implemented (PR #73). A missing interaction between two systems: the remembrance posy (PR #67)
 laid only faded to rest, while residual echoes, the other half-forgotten memories, could only be read and captured,
 fed or starved.
 

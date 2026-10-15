@@ -142,6 +142,8 @@
 
 **Букетик и осадки**: букетик памяти упокаивает и осадок, обычный или бури, без чтения линзой. Ничего не остаётся — ни осколка, ни бланка, — зато в буре на один осадок меньше. Свои живые воспоминания букетик не принимают. `/mnemolith posy2qa` проверяет это; заметка — [docs/design/posy-residues.md](docs/design/posy-residues.md).
 
+**Как залечить Шрам** (этап 1): букетиком памяти можно раз в игровой день ухаживать за сердцем Шрама — в этот день место не посеет старый осадок. После трёх уходов сердце становится памятным камнем: место всё так же отгоняет бури, но осадков больше не сеет. `/mnemolith mendqa` проверяет это; заметка — [docs/design/mending.md](docs/design/mending.md).
+
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 
 **Затишье после бури**: если буря выдохлась (все её осадки собраны) или сдержана, в её округе на один игровой день не соберётся новая буря — ни сама, ни от освобождённого осколка. Прошедшая буря, Шрам и угасшая без свидетелей затишья не оставляют. Освобождённый в затишье осколок подскажет, сколько минут осталось. `/mnemolith lullqa` проверяет затишье; заметка — [docs/design/storm-lull.md](docs/design/storm-lull.md).
@@ -430,6 +432,8 @@ The **recollite lantern** (hollowstone bricks at the corners, recollite shards a
 The **remembrance posy** (three forget-me-nots and a string): use it on a faded and it is **laid to rest**. It fades out without dying, the memory it was copying goes back into the chunk (nothing is forgotten), and it leaves a recollite shard. An archive keeper is only calmed: it stops fighting but still keeps its chest. `/mnemolith posyqa` checks it; design note: [docs/design/remembrance-posy.md](docs/design/remembrance-posy.md).
 
 **The posy and residues**: a remembrance posy also lays a residual echo, ordinary or storm, to rest without a lens read. It leaves nothing, no shard and no slip, but a storm has one fewer residue. Your own living memories refuse it. `/mnemolith posy2qa` checks it; design note: [docs/design/posy-residues.md](docs/design/posy-residues.md).
+
+**Mending the Scar** (stage 1): once per in-game day you can tend a Scar's heart with a remembrance posy; that day the site seeds no old residue. After three tendings the heart becomes a memorial stone: the site still keeps storms away but never seeds again. `/mnemolith mendqa` checks it; design note: [docs/design/mending.md](docs/design/mending.md).
 
 The **chronicle transcript** (paper, an ink sac and a feather): use a blank one to copy the tags and formulas you have discovered onto a signed sheet. Another player who reads it learns the ones they did not know (the sheet is used up). Knowledge only: catalog entries and reel hints, no slips or grafts. `/mnemolith transcriptqa` checks it; design note: [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 

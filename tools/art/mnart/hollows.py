@@ -123,6 +123,43 @@ def lantern_top():
     return cv.image()
 
 
+def _memorial_base(seed):
+    rng = core.rng_for(seed)
+    cv = surface('pale', S, S, rng, face='side', bevel=0, wear=0.25, tile=False, base_shift=0.2)
+    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(255, 255, 255))
+    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
+    return cv, rng
+
+
+def memorial_side():
+    """Pale stone over the old Scar: a healed crack, its violet sealed by a seam of forget-me-not blue."""
+    cv, rng = _memorial_base('memorial_stone_side')
+    pts = [(9, 0), (13, 7), (11, 13), (17, 19), (14, 25), (19, 31)]
+    cv.fill(core.m_lines(S, S, pts, 3), RAMPS['scar'][3])
+    cv.fill(core.m_lines(S, S, pts, 1), RAMPS['recollite'][6])
+    # a carved band near the top, like a name line
+    cv.shade_px(m_rect(S, S, 4, 5, S - 5, 6), 0.35)
+    cv.shade_px(m_rect(S, S, 4, 7, S - 5, 7), 0.2, toward=(255, 255, 255))
+    for (x, y) in ((6, 22), (25, 10)):
+        cv.fill(m_ellipse(S, S, x + 0.5, y + 0.5, 1.4, 1.4), RAMPS['recollite'][5])
+        cv.px(x, y, RAMPS['pale'][6])
+    return cv.image()
+
+
+def memorial_top():
+    """The memorial's cap: a ring of carved stone around a small forget-me-not inlay."""
+    cv, rng = _memorial_base('memorial_stone_top')
+    ring = m_ellipse(S, S, 15.5, 15.5, 9, 9) & ~m_ellipse(S, S, 15.5, 15.5, 7.5, 7.5)
+    cv.shade_px(ring, 0.35)
+    for k in range(5):
+        a = k * 2 * math.pi / 5
+        x, y = 15.5 + math.cos(a) * 3, 15.5 + math.sin(a) * 3
+        cv.fill(m_ellipse(S, S, x, y, 1.8, 1.8), RAMPS['recollite'][5])
+    cv.fill(m_ellipse(S, S, 15.5, 15.5, 1.2, 1.2), RAMPS['pale'][6])
+    shapes.glow(cv, 15.5, 15.5, 6, RAMPS['pale'][6], 0.35)
+    return cv.image()
+
+
 def turf_top():
     rng = core.rng_for('hollow_turf_top')
     cv = surface('lilac', S, S, rng, face='top', bevel=0, wear=0, tile=True)
@@ -339,6 +376,8 @@ BLOCK_TEXTURES = {
     'recollite_block': recollite_block,
     'recollite_lantern_side': lantern_side,
     'recollite_lantern_top': lantern_top,
+    'memorial_stone_side': memorial_side,
+    'memorial_stone_top': memorial_top,
     'forget_me_not': forget_me_not,
 }
 ITEM_TEXTURES = {

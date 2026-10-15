@@ -14,7 +14,7 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
-         'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
+         'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
          'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'players',
          'reference')
 
@@ -727,6 +727,26 @@ def p_scar():
     d.add(block_quads('mnemolith:block/scar_glass', -0.5, 0, -0.5) if _has('mnemolith:block/scar_glass') else [])
     p.center(d.render(0, 0.5, 0), 420, 70)
     p.sprite('scar_fragment', 420, 180, 3)
+    return p.image()
+
+
+def p_mending():
+    """Mending the Scar: the heart, a posy given once a day three times, and the memorial stone it becomes."""
+    p = Page('mending')
+    d = Diorama(170, 200, 34)
+    d.ground(3, 3, 1, bands=lambda i, j: BAND['fracture'] if (i + j) % 2 else None)
+    d.add(block_quads('mnemolith:block/scar_heart', -0.5, 0, -0.5))
+    p.center(d.render(0, 0.6, 0), 110, 120)
+    p.sprite('remembrance_posy', 250, 56, 2, src=_hollows_tex('item', 'remembrance_posy'))
+    for k in range(3):
+        p.ring(214 + k * 36, 128, 12, dotted=k > 0)
+    p.arrow((190, 170), (300, 170))
+    d = Diorama(170, 200, 34)
+    d.ground(3, 3, 1)
+    for alias, tex in (('m_side', 'memorial_stone_side'), ('m_top', 'memorial_stone_top')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d.add(cube('m_top', 'm_side', -0.5, 0, -0.5))
+    p.center(d.render(0, 0.6, 0), 400, 120)
     return p.image()
 
 

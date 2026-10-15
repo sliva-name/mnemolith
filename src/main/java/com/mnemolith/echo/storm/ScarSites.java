@@ -45,7 +45,58 @@ public final class ScarSites {
     public static final int GLASS_MIN_RADIUS = 3;
     public static final int GLASS_MAX_RADIUS = 7;
 
+    /** Tendings with a remembrance posy that mend a site into a memorial. */
+    public static final int TENDINGS = 3;
+
+    public enum Tend { NONE, TOO_SOON, TENDED, MENDED }
+
     private ScarSites() {}
+
+    /**
+     * {@code player} tends the heart at {@code heart} with {@code posy}: at most once per in-game day; each tending
+     * spends a posy (not in creative) and gives up that day's old residue; the {@link #TENDINGS}th mends the site (the
+     * heart becomes a memorial stone, the site a memorial). Public for QA.
+     */
+    public static Tend tend(ServerLevel level, ServerPlayer player, BlockPos heart, net.minecraft.world.item.ItemStack posy) {
+        LevelChunk chunk = level.getChunkAt(heart);
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        ScarSite site = memory == null ? null : memory.scar();
+        if (site == null || site.memorial() || !level.getBlockState(heart).is(ModBlocks.SCAR_HEART.get())
+                || !posy.is(com.mnemolith.content.ModItems.REMEMBRANCE_POSY.get())) {
+            return Tend.NONE;
+        }
+        long now = level.getGameTime();
+        long left = site.tendedAt() + RESEED_TICKS - now;
+        if (left > 0L) {
+            player.sendOverlayMessage(Component.translatable("mnemolith.mending.too_soon", Math.max(1L, (left + 1199L) / 1200L)));
+            return Tend.TOO_SOON;
+        }
+        ScarSite tended = site.tend(now);
+        if (!player.isCreative()) {
+            posy.shrink(1);
+        }
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL, heart.getX() + 0.5D, heart.getY() + 1.0D, heart.getZ() + 0.5D,
+                16, 0.4D, 0.6D, 0.4D, 0.01D);
+        level.playSound(null, heart, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.2F, 0.6F);
+        if (tended.tended() < TENDINGS) {
+            memory.setScar(tended);
+            chunk.markUnsaved();
+            player.sendOverlayMessage(Component.translatable("mnemolith.mending.tended", tended.tended(), TENDINGS));
+            return Tend.TENDED;
+        }
+        memory.setScar(tended.asMemorial());
+        chunk.markUnsaved();
+        level.setBlock(heart, ModBlocks.MEMORIAL_STONE.get().defaultBlockState(), Block.UPDATE_ALL);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, heart.getX() + 0.5D, heart.getY() + 1.0D, heart.getZ() + 0.5D,
+                40, 1.0D, 1.0D, 1.0D, 0.05D);
+        for (ServerPlayer near : level.players()) {
+            if (near.distanceToSqr(heart.getX() + 0.5D, heart.getY() + 0.5D, heart.getZ() + 0.5D) <= 32.0D * 32.0D) {
+                near.sendSystemMessage(Component.translatable("mnemolith.mending.mended"), false);
+            }
+        }
+        Mnemolith.LOGGER.info("Mnemolith scar site mended into a memorial at {}", heart.toShortString());
+        return Tend.MENDED;
+    }
 
     /** Forms the site at the middle of {@code center}. Returns the heart position (placed or not). */
     public static BlockPos form(ServerLevel level, ChunkPos center, int tempers) {
@@ -106,18 +157,22 @@ public final class ScarSites {
 
     /** The heart was broken: the chunk forgets its site (storms may gather again; no more seeding). */
     public static void heal(ServerLevel level, BlockPos pos) {
+        if (level.getBlockState(pos).is(ModBlocks.MEMORIAL_STONE.get())) {
+            return; // the heart was just mended in place, not broken
+        }
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         if (memory == null || memory.scar() == null) {
             return;
         }
+        boolean memorial = memory.scar().memorial();
         memory.setScar(null);
         chunk.markUnsaved();
         PressureSync.markDirty();
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.5F, 0.6F);
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 32.0D * 32.0D) {
-                player.sendSystemMessage(Component.translatable("mnemolith.scar.healed"), true);
+                player.sendSystemMessage(Component.translatable(memorial ? "mnemolith.mending.forgotten" : "mnemolith.scar.healed"), true);
             }
         }
         Mnemolith.LOGGER.info("Mnemolith scar site healed at {}", pos.toShortString());
@@ -129,7 +184,7 @@ public final class ScarSites {
      */
     public static @Nullable ResidueEntity reseed(ServerLevel level, LevelChunk chunk, ChunkMemory memory) {
         ScarSite site = memory.scar();
-        if (site == null || !Residues.enabled() || level.getGameTime() - site.seededAt() < RESEED_TICKS) {
+        if (site == null || site.memorial() || !Residues.enabled() || level.getGameTime() - site.seededAt() < RESEED_TICKS) {
             return null;
         }
         return seed(level, chunk, memory, site);

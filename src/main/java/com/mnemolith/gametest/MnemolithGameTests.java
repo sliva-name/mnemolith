@@ -93,6 +93,7 @@ public final class MnemolithGameTests {
         suite("lullqa", com.mnemolith.command.qa.LullQa::check, Map.of());
         suite("chroniclerqa", com.mnemolith.command.qa.ChroniclerQa::check, Map.of());
         suite("posy2qa", com.mnemolith.command.qa.PosyResidueQa::check, Map.of());
+        suite("mendqa", com.mnemolith.command.qa.MendQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -154,6 +155,7 @@ public final class MnemolithGameTests {
         live("storm_lull_refuses_shard", LullLiveTests::stormLullRefusesShard, 200);
         live("chronicler_sells_notes", ChroniclerLiveTests::chroniclerSellsNotes, 200);
         live("posy_rests_residue", PosyResidueLiveTests::posyRestsResidue, 200);
+        live("mending_tends_heart", MendingLiveTests::mendingTendsHeart, 200);
 
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);
