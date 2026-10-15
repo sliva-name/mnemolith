@@ -26,7 +26,8 @@ public final class StormData extends SavedData {
     public static final Codec<StormData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RecollectionStorm.CODEC.listOf().optionalFieldOf("storms", List.of()).forGetter(data -> data.storms),
             Codec.LONG.optionalFieldOf("next_id", 1L).forGetter(data -> data.nextId),
-            Faded.CODEC.listOf().optionalFieldOf("faded", List.of()).forGetter(data -> data.faded))
+            Faded.CODEC.listOf().optionalFieldOf("faded", List.of()).forGetter(data -> data.faded),
+            Lull.CODEC.listOf().optionalFieldOf("lulls", List.of()).forGetter(data -> data.lulls))
             .apply(instance, StormData::new));
 
     /** Where a storm faded unwatched: its area settles the next time the centre chunk loads. */
@@ -38,16 +39,27 @@ public final class StormData extends SavedData {
                 Codec.LONG.optionalFieldOf("storm", 0L).forGetter(Faded::stormId))
                 .apply(instance, Faded::new));
     }
+    /** Where a storm was spent or contained: no new storm gathers near it until {@code until} (game time). */
+    public record Lull(ResourceKey<Level> dimension, int chunkX, int chunkZ, long until) {
+        public static final Codec<Lull> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                ResourceKey.codec(net.minecraft.core.registries.Registries.DIMENSION).fieldOf("dimension").forGetter(Lull::dimension),
+                Codec.INT.fieldOf("chunk_x").forGetter(Lull::chunkX),
+                Codec.INT.fieldOf("chunk_z").forGetter(Lull::chunkZ),
+                Codec.LONG.fieldOf("until").forGetter(Lull::until))
+                .apply(instance, Lull::new));
+    }
     public static final SavedDataType<StormData> TYPE = new SavedDataType<>(
             Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "storms"), StormData::new, CODEC);
 
     private final List<RecollectionStorm> storms = new ArrayList<>();
     private long nextId = 1L;
     private final List<Faded> faded = new ArrayList<>();
+    private final List<Lull> lulls = new ArrayList<>();
 
     public StormData() {}
 
-    private StormData(List<RecollectionStorm> saved, long nextId, List<Faded> faded) {
+    private StormData(List<RecollectionStorm> saved, long nextId, List<Faded> faded, List<Lull> lulls) {
+        this.lulls.addAll(lulls);
         this.storms.addAll(saved);
         this.nextId = Math.max(1L, nextId);
         this.faded.addAll(faded);
@@ -73,6 +85,33 @@ public final class StormData extends SavedData {
             this.setDirty();
         }
         return removed;
+    }
+
+    public List<Lull> lulls() {
+        return List.copyOf(this.lulls);
+    }
+
+    /** Adds a lull, dropping any that ended before {@code now}; at most 64 are kept. */
+    public void addLull(Lull lull, long now) {
+        this.lulls.removeIf(old -> old.until() <= now);
+        this.lulls.add(lull);
+        while (this.lulls.size() > 64) {
+            this.lulls.remove(0);
+        }
+        this.setDirty();
+    }
+
+    public void removeLulls(java.util.function.Predicate<Lull> which) {
+        if (this.lulls.removeIf(which)) {
+            this.setDirty();
+        }
+    }
+
+    public void clearLulls() {
+        if (!this.lulls.isEmpty()) {
+            this.lulls.clear();
+            this.setDirty();
+        }
     }
 
     public static StormData get(MinecraftServer server) {

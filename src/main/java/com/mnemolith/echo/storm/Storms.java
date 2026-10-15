@@ -79,7 +79,7 @@ public final class Storms {
     private static final Map<Long, ServerBossEvent> BARS = new HashMap<>();
 
     /** Why a storm may or may not gather in a chunk. */
-    public enum Gate { OK, DISABLED, CAP, CALM, MUTED, WARDED, BUSY }
+    public enum Gate { OK, DISABLED, CAP, CALM, MUTED, WARDED, LULL, BUSY }
 
     /** How a storm ended. */
     public enum End { CONTAINED, SPENT, PASSED, SCAR, DISABLED, FADED }
@@ -128,6 +128,9 @@ public final class Storms {
         }
         if (LoadedChunkMemory.stormProof(level, middle)) {
             return Gate.WARDED;
+        }
+        if (lullLeft(level, chunk) > 0L) {
+            return Gate.LULL;
         }
         for (RecollectionStorm storm : data.storms()) {
             if (storm.dimension().equals(level.dimension()) && Math.abs(storm.center().x() - chunk.x()) <= 2 * AREA
@@ -588,12 +591,37 @@ public final class Storms {
             case PASSED -> tell(level, storm, "mnemolith.storm.passed", true);
             default -> {}
         }
+        if (end == End.SPENT || end == End.CONTAINED) {
+            ServerLevel home = level.getServer().getLevel(storm.dimension());
+            long now = (home != null ? home : level).getGameTime();
+            data.addLull(new StormData.Lull(storm.dimension(), storm.center().x(), storm.center().z(), now + LULL_TICKS), now);
+            tell(level, storm, "mnemolith.storm.lull", false);
+        }
         dropBar(storm);
         lastEnd = new Ended(storm.id(), end);
         Mnemolith.LOGGER.info("Mnemolith storm ended id={} end={}", storm.id(), end);
     }
 
     // ---- queries ----
+
+    /** Game ticks a spent or contained storm leaves its surroundings quiet: one Minecraft day. */
+    public static final long LULL_TICKS = 24000L;
+
+    /**
+     * Ticks of lull left at {@code chunk}: the most of any lull whose centre is within the storm-spacing range
+     * ({@code 2 * AREA} chunks). 0 when none.
+     */
+    public static long lullLeft(ServerLevel level, ChunkPos chunk) {
+        long now = level.getGameTime();
+        long best = 0L;
+        for (StormData.Lull lull : StormData.get(level.getServer()).lulls()) {
+            if (lull.dimension().equals(level.dimension()) && Math.abs(lull.chunkX() - chunk.x()) <= 2 * AREA
+                    && Math.abs(lull.chunkZ() - chunk.z()) <= 2 * AREA) {
+                best = Math.max(best, lull.until() - now);
+            }
+        }
+        return Math.max(0L, best);
+    }
 
     public static @Nullable RecollectionStorm at(ServerLevel level, ChunkPos chunk) {
         for (RecollectionStorm storm : StormData.get(level.getServer()).storms()) {

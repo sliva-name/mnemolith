@@ -90,6 +90,7 @@ public final class MnemolithGameTests {
         suite("posyqa", com.mnemolith.command.qa.PosyQa::check, Map.of());
         // Chronicle transcript: discovery copied onto a sheet and read by another player.
         suite("transcriptqa", com.mnemolith.command.qa.TranscriptQa::check, Map.of());
+        suite("lullqa", com.mnemolith.command.qa.LullQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -148,6 +149,7 @@ public final class MnemolithGameTests {
         live("lantern_keeps_hollow_memory", HollowsLiveTests::lanternKeepsHollowMemory, 200);
         live("posy_lays_faded_to_rest", HollowsLiveTests::posyLaysFadedToRest, 200);
         live("transcript_shared_between_players", TranscriptLiveTests::transcriptSharedBetweenPlayers, 200);
+        live("storm_lull_refuses_shard", LullLiveTests::stormLullRefusesShard, 200);
 
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);

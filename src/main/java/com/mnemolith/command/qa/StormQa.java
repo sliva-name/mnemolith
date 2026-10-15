@@ -124,6 +124,7 @@ public final class StormQa {
         for (RecollectionStorm storm : parked) {
             data.remove(storm);
         }
+        data.clearLulls();
         boolean griefing = level.getGameRules().get(GameRules.MOB_GRIEFING);
         FakePlayer owner = FakePlayerFactory.get(level, new GameProfile(OWNER, "StormQaOwner"));
         owner.setGameMode(GameType.SURVIVAL);
@@ -620,7 +621,7 @@ public final class StormQa {
         return memory == null ? null : memory.scar();
     }
 
-    private static PressureBand loud(ServerLevel level, BlockPos pos, PressureBand target) {
+    static PressureBand loud(ServerLevel level, BlockPos pos, PressureBand target) {
         LevelChunk chunk = level.getChunkAt(pos);
         for (int i = 0; i < 80; i++) {
             PressureBand band = MemoryPressure.band(LoadedChunkMemory.getOrCreate(chunk).cachedPressure());
@@ -633,7 +634,7 @@ public final class StormQa {
     }
 
     /** Clears the memory of the 3x3 chunks around {@code pos} (a storm's area). */
-    private static void resetArea(ServerLevel level, BlockPos pos) {
+    static void resetArea(ServerLevel level, BlockPos pos) {
         ChunkPos center = ChunkPos.containing(pos);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
