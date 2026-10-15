@@ -13,7 +13,7 @@ from .palette import RAMPS, TEMPER, OUTLINE, c, mix
 
 W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
-         'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
+         'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
          'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'players',
          'reference')
@@ -570,6 +570,29 @@ def p_catalog():
     return p.image()
 
 
+def p_transcript():
+    """The chronicle transcript: one catalog copied onto a sheet, read by a second player whose catalog fills in."""
+    p = Page('transcript')
+    p.sprite('catalog_fragment', 80, 80, 3)
+    p.arrow((120, 80), (170, 80))
+    p.sprite('chronicle_transcript_written', 210, 80, 3)
+    p.arrow((250, 80), (300, 80))
+    p.sprite('catalog_fragment', 340, 80, 3)
+    # two catalogs side by side: before and after reading
+    for x0, known in ((60, (0, 2, 5)), (300, (0, 1, 2, 3, 5))):
+        p.plate(x0, 140, x0 + 180, 222, 'navy')
+        for k in range(6):
+            i = gui.TAG_ORDER.index(gui.TAG_ORDER[k])
+            ic = tags_img().crop((i * 32, 0, i * 32 + 32, 32)).resize((16, 16), Image.NEAREST)
+            x, y = x0 + 12 + (k % 3) * 56, 152 + (k // 3) * 32
+            if k in known:
+                p.paste(ic, x, y, shadow=False)
+            else:
+                p.d.rectangle([x, y, x + 15, y + 15], outline=(*c('navy', 5), 255))
+    p.arrow((246, 181), (292, 181))
+    return p.image()
+
+
 def _mob_page(name, mob, extra):
     p = Page(name)
     d = Diorama(280, 236, 40)
@@ -922,7 +945,9 @@ def p_reference():
     # The thirteen tag variants of the imprint slip are one family: they sit on their own strip under the grid instead
     # of taking a slot each (two rows of nine slots is all the page holds above the block plates).
     variants = [n for n in items.ITEMS if n.startswith('imprint_slip_')]
-    names = [n for n in items.ITEMS if not n.endswith('spawn_egg') and n not in variants]
+    # the chronicle transcript has its own page next to the catalog, so it is left off the full grid
+    names = [n for n in items.ITEMS if not n.endswith('spawn_egg') and n not in variants
+             and not n.startswith('chronicle_transcript')]
     # the recollite lens is drawn by the hollows stage; it takes the last slot of the second row
     names.append('recollite_lens')
     s = gui.slot()

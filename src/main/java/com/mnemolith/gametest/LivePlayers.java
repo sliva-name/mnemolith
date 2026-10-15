@@ -69,6 +69,44 @@ public final class LivePlayers {
     }
 
     /** Standing position on the surface of chunk ({@code chunkX}, {@code chunkZ}) at its centre. */
+    /**
+     * A live test site of its own, at a fixed place far from the test structures: site {@code k} is chunk
+     * (-600 - 24k, 600). Sites taken relative to each test's origin could land on another test's site (origins move
+     * with the test layout), so one test's setup could clear or mute another's chunk.
+     */
+    public static BlockPos liveSite(ServerLevel level, int k) {
+        return liveSite(level, k, 0);
+    }
+
+    /** {@link #liveSite(ServerLevel, int)} moved {@code dx} chunks along X (a second spot belonging to the same site). */
+    public static BlockPos liveSite(ServerLevel level, int k, int dx) {
+        return surface(level, -600 - 24 * k + dx, 600);
+    }
+
+    /**
+     * Lifts every mute (full or selective) registered in the chunks within the mute radius of {@code pos}. A live site
+     * is often generated fresh during the run, while a config test briefly forces mute pockets to 100%; a pocket in a
+     * neighbouring chunk then mutes the site and refuses the writes the test checks.
+     */
+    public static void unmute(ServerLevel level, BlockPos pos) {
+        int radius = com.mnemolith.config.CommonConfig.MUTE_RADIUS_CHUNKS.get();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                var chunk = level.getChunk((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz);
+                com.mnemolith.imprint.ChunkMemory memory = com.mnemolith.world.LoadedChunkMemory.existing(chunk);
+                if (memory == null) {
+                    continue;
+                }
+                for (BlockPos stone : memory.muteStonesCopy()) {
+                    memory.removeMuteStone(stone);
+                }
+                for (var mark : memory.selectiveMutesCopy()) {
+                    memory.removeSelectiveMute(mark.pos());
+                }
+            }
+        }
+    }
+
     public static BlockPos surface(ServerLevel level, int chunkX, int chunkZ) {
         return QaSupport.column(level, chunkX, chunkZ);
     }

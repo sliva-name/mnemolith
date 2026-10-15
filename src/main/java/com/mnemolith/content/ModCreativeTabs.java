@@ -65,6 +65,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RESONATOR_TRAP.get());
                 output.accept(ModItems.ARCHIVIST_BAIT.get());
                 output.accept(ModItems.CATALOG_FRAGMENT.get());
+                output.accept(ModItems.CHRONICLE_TRANSCRIPT.get());
                 output.accept(ModItems.ARCHIVIST_HUSK.get());
                 output.accept(ModItems.UNSTABLE_SLIP.get());
                 for (com.mnemolith.echo.graft.Temper temper : com.mnemolith.echo.graft.Temper.values()) {

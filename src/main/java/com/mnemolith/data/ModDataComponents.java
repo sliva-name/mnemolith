@@ -17,6 +17,11 @@ public final class ModDataComponents {
             "imprint_cast",
             builder -> builder.persistent(ImprintCast.CODEC).networkSynchronized(ImprintCast.STREAM_CODEC));
 
+    /** A written chronicle transcript: discovered tags and formulas to share with another player. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Transcript>> TRANSCRIPT = DATA_COMPONENTS.registerComponentType(
+            "transcript",
+            builder -> builder.persistent(Transcript.CODEC).networkSynchronized(Transcript.STREAM_CODEC));
+
     /** A filled echo recording: frames and world actions of one self-recording. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.mnemolith.echo.EchoRecording>> ECHO_RECORDING = DATA_COMPONENTS.registerComponentType(
             "echo_recording",

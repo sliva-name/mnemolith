@@ -268,6 +268,36 @@ def catalog_fragment():
     return finish(cv)
 
 
+def _transcript(seed, written):
+    """A loose sheet curling at the top, held by an indigo band; written: ruled ink rows and a brass seal."""
+    rng = core.rng_for(seed)
+    cv = new()
+    sheet = m_poly(S, S, [(9, 6), (23, 3), (26, 6), (24, 27), (8, 29), (7, 9)])
+    cv.part(sheet, 'paper', 'grad', 4, rng=rng, noise=0.2, direction=(1, 0.4), span=(0.6, -0.9))
+    curl = m_poly(S, S, [(9, 6), (23, 3), (26, 6), (12, 9)])
+    cv.part(curl, 'paper', 'flat', 2)
+    if written:
+        for i, y in enumerate(range(11, 25, 3)):
+            cv.fill(m_rect(S, S, 10, y, 10 + (11 if i % 2 else 8), y) & sheet, RAMPS['ink'][4])
+        cv.part(m_ellipse(S, S, 20.5, 24.5, 2.6, 2.6), 'brass', 'sphere', 3)
+        cv.px(20, 24, RAMPS['indigo'][5])
+    else:
+        for y in range(12, 25, 3):
+            cv.fill(m_rect(S, S, 10, y, 21, y) & sheet, RAMPS['paper'][2])
+    band = m_rect(S, S, 6, 17, 27, 19) & dilate(sheet)
+    cv.part(band, 'indigo', 'flat', 3)
+    core.grime(cv, sheet, rng, amount=0.12, t=0.12)
+    return finish(cv)
+
+
+def chronicle_transcript():
+    return _transcript('chronicle_transcript', False)
+
+
+def chronicle_transcript_written():
+    return _transcript('chronicle_transcript_written', True)
+
+
 def field_guide():
     rng = core.rng_for('field_guide')
     cv = new()
@@ -454,6 +484,8 @@ ITEMS = {
     'echo_sturdy_slip': echo_sturdy_slip,
     'unstable_slip': unstable_slip,
     'catalog_fragment': catalog_fragment,
+    'chronicle_transcript': chronicle_transcript,
+    'chronicle_transcript_written': chronicle_transcript_written,
     'field_guide': field_guide,
     'archival_tablet': archival_tablet,
     'archivist_bait': archivist_bait,

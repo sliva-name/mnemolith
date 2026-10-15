@@ -74,6 +74,14 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("block.mnemolith.archive_shrine.hint"));
             } else if (stack.getItem() == ModItems.ARCHIVE_SCHEMATIC.get()) {
                 builder.accept(Component.translatable("item.mnemolith.archive_schematic.hint"));
+            } else if (stack.getItem() == ModItems.CHRONICLE_TRANSCRIPT.get()) {
+                com.mnemolith.data.Transcript notes = stack.get(com.mnemolith.data.ModDataComponents.TRANSCRIPT.get());
+                if (notes == null) {
+                    builder.accept(Component.translatable("item.mnemolith.chronicle_transcript.hint"));
+                } else {
+                    builder.accept(Component.translatable("item.mnemolith.chronicle_transcript.notes", notes.author(), notes.tagCount(), notes.formulaCount())
+                            .withStyle(net.minecraft.ChatFormatting.AQUA));
+                }
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {
                 builder.accept(Component.translatable("item.mnemolith.catalog_fragment.hint"));
             } else if (stack.getItem() == ModItems.ECHO_SLIP.get()) {
