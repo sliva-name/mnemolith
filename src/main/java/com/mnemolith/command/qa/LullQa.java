@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
  */
 public final class LullQa {
     private static final String[] NAMES = {"lullDay", "spentLulls", "containedLulls", "othersDont", "range", "dimension",
-            "expires", "gate", "saved", "lang"};
+            "expires", "gate", "saved", "lang", "lineMinutes", "shardRefused"};
     private static int salt;
 
     private LullQa() {}
@@ -99,6 +99,12 @@ public final class LullQa {
 
             String en = Component.translatable("mnemolith.storm.lull").getString();
             ok[9] = !en.equals("mnemolith.storm.lull") && langHas("ru_ru", "mnemolith.storm.lull");
+
+            ok[10] = minutes(Storms.lullLine(Storms.LULL_TICKS)) == 20L && minutes(Storms.lullLine(1L)) == 1L
+                    && minutes(Storms.lullLine(1201L)) == 2L && minutes(Storms.lullLine(0L)) == 1L
+                    && langHas("ru_ru", "mnemolith.storm.lulled") && langHas("en_us", "mnemolith.storm.lulled");
+            ok[11] = !Storms.enabled() || Storms.maxPerDimension() <= 0 || after != Storms.Gate.LULL
+                    ? true : !Storms.callByShard(level, residue(level, a), null) && Storms.at(level, ca) == null;
         } finally {
             int x0 = bx - 64;
             data.removeLulls(lull -> lull.chunkX() >= x0 && lull.chunkX() <= bx + 8 && Math.abs(lull.chunkZ() - bz) <= 26);
@@ -111,6 +117,20 @@ public final class LullQa {
             }
         }
         return new QaReport("lullqa", NAMES, ok, notes);
+    }
+
+    private static long minutes(Component line) {
+        return line.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t && t.getArgs().length == 1
+                && t.getArgs()[0] instanceof Long n ? n : -1L;
+    }
+
+    private static com.mnemolith.entity.echo.ResidueEntity residue(ServerLevel level, BlockPos pos) {
+        var residue = com.mnemolith.entity.ModEntities.RESIDUE.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        if (residue == null) {
+            throw new IllegalStateException("residue did not create");
+        }
+        residue.snapTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, 0.0F, 0.0F);
+        return residue;
     }
 
     private static boolean langHas(String lang, String key) {

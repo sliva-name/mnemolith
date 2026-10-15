@@ -170,6 +170,9 @@ public final class Storms {
     public static boolean callByShard(ServerLevel level, ResidueEntity residue, @Nullable ServerPlayer player) {
         ChunkPos chunk = ChunkPos.containing(residue.blockPosition());
         Gate gate = gate(level, chunk);
+        if (gate == Gate.LULL && player != null) {
+            player.sendSystemMessage(lullLine(lullLeft(level, chunk)), true);
+        }
         if (gate != Gate.OK) {
             return false;
         }
@@ -603,6 +606,11 @@ public final class Storms {
     }
 
     // ---- queries ----
+
+    /** The line a player reads when a lull refuses their shard: minutes left (at least 1). */
+    public static Component lullLine(long ticksLeft) {
+        return Component.translatable("mnemolith.storm.lulled", Math.max(1L, (ticksLeft + 1199L) / 1200L));
+    }
 
     /** Game ticks a spent or contained storm leaves its surroundings quiet: one Minecraft day. */
     public static final long LULL_TICKS = 24000L;

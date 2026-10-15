@@ -19,6 +19,12 @@ before it can rise in a storm.
 - Saved in `mnemolith_storms.dat` (`lulls`: dimension, chunk, end time); expired lulls are dropped when a new one is
   added; at most 64 are kept.
 
+## Feedback
+
+A residual shard freed in a lulled chunk does not call a storm, and the player reads `mnemolith.storm.lulled` over the
+hotbar: how many minutes are left (rounded up, at least 1; 20 for a full day). The storms page of the field guide
+explains the lull in RU and EN. Added in `feature/lens-lull`.
+
 ## Balance
 
 It rewards clearing a storm properly with a day of quiet, so a base in a loud area is not hit by storm after storm,
@@ -27,7 +33,7 @@ unchanged and still the permanent answers.
 
 ## QA
 
-- `/mnemolith lullqa` and `mnemolith:suite_lullqa` (10 checks).
+- `/mnemolith lullqa` and `mnemolith:suite_lullqa` (12 checks).
 - Live `storm_lull_refuses_shard`: a real player in a fracture; a storm there is spent; the residual shard the player
   then frees through the real item use calls no storm.
 - Manual: the lull message in RU and EN after clearing a storm, and no new storm in that area until the next day.
