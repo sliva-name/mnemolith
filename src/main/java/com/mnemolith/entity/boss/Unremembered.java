@@ -88,6 +88,9 @@ public class Unremembered extends Monster {
     /** What the last feeding did ("fed", "kept", "empty"); the QA reads it. */
     private String lastFeed = "none";
     private int remembered = -1;
+    /** Players who hurt it: each one near at its death gets a Lethe tear (stage 3). */
+    private final java.util.Set<java.util.UUID> fighters = new java.util.LinkedHashSet<>();
+    private int scaledFor = 1;
 
     public Unremembered(EntityType<? extends Unremembered> type, Level level) {
         super(type, level);
@@ -122,6 +125,40 @@ public class Unremembered extends Monster {
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+    }
+
+    /** Survival and adventure players within {@link #BAR_RANGE} of {@code pos}, at least 1. */
+    public static int participants(ServerLevel level, BlockPos pos) {
+        int n = 0;
+        for (ServerPlayer player : level.players()) {
+            if (!player.isSpectator() && !player.isCreative()
+                    && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= BAR_RANGE * BAR_RANGE) {
+                n++;
+            }
+        }
+        return Math.max(1, n);
+    }
+
+    /** Health for {@code players} taking part, from the server config. */
+    public static double healthFor(int players) {
+        double base = com.mnemolith.config.ServerConfig.UNREMEMBERED_HEALTH.get();
+        double per = com.mnemolith.config.ServerConfig.UNREMEMBERED_HEALTH_PER_PLAYER.get();
+        return base * (1.0D + per * Math.max(0, players - 1));
+    }
+
+    /** Sets its health for {@code players} taking part, at full. */
+    public void scaleFor(int players) {
+        this.scaledFor = Math.max(1, players);
+        java.util.Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(healthFor(this.scaledFor));
+        this.setHealth(this.getMaxHealth());
+    }
+
+    public int scaledFor() {
+        return this.scaledFor;
+    }
+
+    public java.util.Set<java.util.UUID> fighters() {
+        return java.util.Collections.unmodifiableSet(this.fighters);
     }
 
     public boolean revealed() {
@@ -175,8 +212,11 @@ public class Unremembered extends Monster {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
-        if (source.getEntity() instanceof Player) {
+        if (source.getEntity() instanceof Player player) {
             amount *= this.playerDamageScale();
+            if (!player.isCreative() && !player.isSpectator()) {
+                this.fighters.add(player.getUUID());
+            }
         }
         return super.hurtServer(level, source, amount);
     }
@@ -187,6 +227,9 @@ public class Unremembered extends Monster {
             return false;
         }
         // the posy is not a blow: no lens scaling, straight to the base hurt
+        if (!player.isCreative()) {
+            this.fighters.add(player.getUUID());
+        }
         super.hurtServer(level, this.damageSources().playerAttack(player), POSY_DAMAGE);
         level.sendParticles(ParticleTypes.SOUL, this.getX(), this.getY() + 2.0D, this.getZ(), 20, 0.5D, 0.9D, 0.5D, 0.02D);
         level.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 2.4D, this.getZ(), 10, 0.4D, 0.6D, 0.4D, 0.01D);
@@ -403,8 +446,20 @@ public class Unremembered extends Monster {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
         this.spawnAtLocation(level, ImprintSlips.of(ImprintTag.FORGOTTEN, this.blockPosition()));
         if (killedByPlayer) {
-            this.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.LETHE_TEAR.get()));
+            this.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.LETHE_TEAR.get(), tearsFor(level)));
         }
+    }
+
+    /** One tear for each player who hurt it and is still within {@link #TELL_RANGE}; at least one. */
+    public int tearsFor(ServerLevel level) {
+        int n = 0;
+        for (java.util.UUID id : this.fighters) {
+            Player player = level.getPlayerByUUID(id);
+            if (player != null && player.isAlive() && player.distanceToSqr(this) <= TELL_RANGE * TELL_RANGE) {
+                n++;
+            }
+        }
+        return Math.max(1, n);
     }
 
     @Override
@@ -441,12 +496,25 @@ public class Unremembered extends Monster {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("unremembered_alone", this.aloneTicks);
+        output.putInt("unremembered_scaled", this.scaledFor);
+        output.putString("unremembered_fighters", String.join(",", this.fighters.stream().map(java.util.UUID::toString).toList()));
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         this.aloneTicks = input.getIntOr("unremembered_alone", 0);
+        this.scaledFor = Math.max(1, input.getIntOr("unremembered_scaled", 1));
+        this.fighters.clear();
+        for (String id : input.getStringOr("unremembered_fighters", "").split(",")) {
+            if (!id.isEmpty()) {
+                try {
+                    this.fighters.add(java.util.UUID.fromString(id));
+                } catch (IllegalArgumentException ignored) {
+                    // a damaged save loses that fighter, nothing else
+                }
+            }
+        }
         if (this.hasCustomName()) {
             this.bossEvent.setName(this.getDisplayName());
         }

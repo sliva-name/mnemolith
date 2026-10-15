@@ -148,6 +148,8 @@
 
 **Венец памяти** (Беспамятный, этап 2): одолевший Беспамятного игрок получает слезу Леты. Из неё, золота и реколлита делают венец памяти — шлем, который показывает блёклых и Беспамятного рядом без линзы, защищает от волны забвения и не даёт лощине забывать в 8 блоках от вас. `/mnemolith unremembered2qa` проверяет это.
 
+**Беспамятный в мультиплеере** (этап 3): здоровье растёт с числом игроков рядом с призывом (по умолчанию +50% за каждого следующего), а каждый, кто его ранил, получает свою слезу Леты. Настройки сервера: `unrememberedEnabled`, `unrememberedHealth`, `unrememberedHealthPerPlayer`, `unrememberedCallForgotten`. `/mnemolith unremembered3qa` проверяет это.
+
 **Бюджеты производительности**: `/mnemolith perfqa` замеряет горячие серверные пути (ворота бурь, затишье, покой у памятника, охрана фонарей) и падает, если среднее время вызова выходит за бюджет. Проверка фонарей теперь пропускает секции чанка без фонарей. Заметка: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
@@ -179,7 +181,7 @@ NeoForge пишет три файла. Правите их при закрыто
 | Файл | Где загружается | Что содержит |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Клиент и выделенный сервер | Сложность, частоты появления, генерация мира, геймплей (включая каталог и подсказки открытия), мобы, отголоски, прививки, осадки, связь отголосков (`relay.*`) и архивные хранилища (`vault.*`) |
-| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), сколько длится затишье после бури (`stormLullTicks`, 0 выключает), журналирование давления |
+| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), сколько длится затишье после бури (`stormLullTicks`, 0 выключает), журналирование давления, Беспамятный (`unremembered.*`: можно ли призвать, здоровье, добавка за игрока, сколько забытого нужно) |
 | `config/mnemolith-client.toml` | Только физический клиент | Пользовательские частицы памяти, плотность частиц, потолок частиц за тик, окружающее мерцание без линзы, интервал опроса линзы, оверлей линзы, непрозрачность оверлея, числовое давление, виньетка давления, тряска экрана, бахрома разлома, громкость звона линзы |
 
 `spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна.
@@ -446,6 +448,8 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 
 **Remembering circlet** (the Unremembered, stage 2): a player who brings the Unremembered down gets a Lethe tear. With gold and recollite it makes the remembering circlet, a helmet that reveals faded and the Unremembered nearby without a lens, wards off the forgetting pulse, and keeps a hollow from forgetting within 8 blocks of you. `/mnemolith unremembered2qa` checks it.
 
+**The Unremembered in multiplayer** (stage 3): its health grows with the players near the call (+50% per further player by default), and everyone who hurt it gets their own Lethe tear. Server options: `unrememberedEnabled`, `unrememberedHealth`, `unrememberedHealthPerPlayer`, `unrememberedCallForgotten`. `/mnemolith unremembered3qa` checks it.
+
 **Performance budgets**: `/mnemolith perfqa` times the hot server paths (storm gate, lull, memorial calm, lantern guard) and fails if a per-call mean goes over budget. The lantern check now skips chunk sections that hold no lantern. Design note: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
 The **chronicle transcript** (paper, an ink sac and a feather): use a blank one to copy the tags and formulas you have discovered onto a signed sheet. Another player who reads it learns the ones they did not know (the sheet is used up). Knowledge only: catalog entries and reel hints, no slips or grafts. `/mnemolith transcriptqa` checks it; design note: [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
@@ -477,7 +481,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | File | Where it loads | What it holds |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs, echoes, grafts, residues, the echo relay (`relay.*`) and archive vaults (`vault.*`) |
-| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), how long the lull after a cleared storm lasts (`stormLullTicks`, 0 turns it off), pressure logging |
+| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), how long the lull after a cleared storm lasts (`stormLullTicks`, 0 turns it off), pressure logging, the Unremembered (`unremembered.*`: whether it can be called, health, extra per player, forgetting needed) |
 | `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, screen shake, fracture fringe, lens chime volume |
 
 `spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible.

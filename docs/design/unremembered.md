@@ -1,6 +1,6 @@
 # The Unremembered
 
-Status: stage 1 done (PR #79); stage 2 implemented on `feature/unremembered-2`; stage 3 planned.
+Status: stage 1 done (PR #79); stage 2 done (PR #80); stage 3 implemented on `feature/unremembered-3`.
 
 ## Why
 
@@ -22,12 +22,12 @@ hurts it. Every tool the hollows taught you then gets a job in one fight:
 1. **Stage 1, the calling and the fight** (done, PR #79). The hollow effigy calls the boss. The Unremembered is a new boss
    entity with a lens-gated weakness, memory feeding that a lantern blocks, a forgetting pulse, faded called in its
    second half, and posy strikes. On death the hollow remembers: forgotten imprints around it clear.
-2. **Stage 2, the reward line** (`feature/unremembered-2`). It drops a *Lethe tear*. The tear crafts the *remembering circlet*, a helmet:
+2. **Stage 2, the reward line** (done, PR #80). It drops a *Lethe tear*. The tear crafts the *remembering circlet*, a helmet:
    - it reveals faded and the Unremembered without a lens;
    - it wards off the forgetting pulse;
    - the chunk you stand in does not forget.
    Stage 2 also adds advancements.
-3. **Stage 3, multiplayer and servers.** Health scales with the players taking part, and each of them gets a tear.
+3. **Stage 3, multiplayer and servers** (`feature/unremembered-3`). Health scales with the players taking part, and each of them gets a tear.
    Server config covers whether it can be called, its health, and how many forgotten imprints a call needs. A
    dedicated-server live test with two players covers the boss bar and the loot.
 
@@ -94,6 +94,24 @@ No tear, circlet, advancements, player scaling or config (stages 2–3). Debug s
   dies. *Nothing Unseen*: the circlet reveals something for you.
 - **Guide.** The Unremembered page gains a paragraph on the tear and the circlet.
 
+## Stage 3 rules
+
+- **Scaling.** When the effigy calls it, the survival and adventure players within 32 blocks of the spot take part
+  (at least one). Its health is `unrememberedHealth × (1 + unrememberedHealthPerPlayer × (players − 1))`: 160, 240,
+  320 … with the defaults. It is set once at the call, at full health, and saved with the entity. Players who come
+  later do not raise it.
+- **Shared reward.** Every survival or adventure player who hurts it (a blow, an arrow, a posy) is recorded as a
+  fighter (saved with the entity). Creative players are not recorded. When a player brings it down, it drops one
+  Lethe tear per fighter still alive within 32 blocks, and at least one.
+- **Server options** (`mnemolith-server.toml`, section `unremembered`, synced to clients):
+
+  | Key | Default | Range | What |
+  | --- | --- | --- | --- |
+  | `unrememberedEnabled` | true | | Whether an effigy can call it (refusal line `mnemolith.effigy.disabled`). One already risen stays. |
+  | `unrememberedHealth` | 160 | 40–1024 | Health with one player. |
+  | `unrememberedHealthPerPlayer` | 0.5 | 0–2 | Extra share per further player; 0 turns scaling off. |
+  | `unrememberedCallForgotten` | 3 | 1–32 | Forgotten imprints a chunk needs for a call. The refusal line names the number. |
+
 ## QA
 
 - `/mnemolith unrememberedqa` checks every rule above on a flat test world painted with `fillbiome`.
@@ -103,3 +121,15 @@ No tear, circlet, advancements, player scaling or config (stages 2–3). Debug s
   and revealing near but not far.
 - Live test `circlet_wards_and_keeps`: two real players. The pulse darkens only the bare-headed one, and a hollow
   keeps its memory beside the wearer but still forgets 20 blocks away.
+- `/mnemolith unremembered3qa` checks stage 3: the four options (defaults, ranges, RU/EN strings), the health
+  formula, scaling at full health, fighters (creative not counted) and at least one tear.
+- Live test `unremembered_scales_and_shares`: two real players. A call with both near gives two-player health, both
+  strike it with real attacks, and the kill leaves two tears.
+
+## By hand
+
+- Fight it in survival on a dedicated server with two clients: the boss bar shows on both, it is readable, and it
+  goes away for a player who walks off past 32 blocks.
+- Check the pulse's darkness on screen and the size and translucency of its body; the circlet on the player model
+  (first person and F5).
+- The faded voice at half pitch: does it still read as the faded, louder and deeper?

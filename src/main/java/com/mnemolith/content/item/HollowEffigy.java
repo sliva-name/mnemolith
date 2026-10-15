@@ -29,7 +29,12 @@ public class HollowEffigy extends Item {
     public static final int CALL_FORGOTTEN = 3;
     public static final double OTHER_RANGE = 64.0D;
 
-    public enum Result { CALLED, NOT_HOLLOW, TOO_FEW, KEPT, ANOTHER, FAILED }
+    public enum Result { CALLED, DISABLED, NOT_HOLLOW, TOO_FEW, KEPT, ANOTHER, FAILED }
+
+    /** Forgotten imprints a call needs ({@code unremembered.unrememberedCallForgotten}, default {@link #CALL_FORGOTTEN}). */
+    public static int callForgotten() {
+        return com.mnemolith.config.ServerConfig.UNREMEMBERED_CALL_FORGOTTEN.get();
+    }
 
     public HollowEffigy(Properties properties) {
         super(properties);
@@ -42,7 +47,7 @@ public class HollowEffigy extends Item {
         }
         Result result = call(level, player, context.getClickedPos().above(), context.getItemInHand());
         if (result != Result.CALLED) {
-            player.sendOverlayMessage(Component.translatable("mnemolith.effigy." + result.name().toLowerCase(java.util.Locale.ROOT)));
+            player.sendOverlayMessage(Component.translatable("mnemolith.effigy." + result.name().toLowerCase(java.util.Locale.ROOT), callForgotten()));
             return InteractionResult.FAIL;
         }
         return InteractionResult.SUCCESS_SERVER;
@@ -50,11 +55,14 @@ public class HollowEffigy extends Item {
 
     /** Tries to call the Unremembered standing at {@code at}. Spends {@code stack} on success (not in creative). Public for QA. */
     public static Result call(ServerLevel level, ServerPlayer player, BlockPos at, ItemStack stack) {
+        if (!com.mnemolith.config.ServerConfig.UNREMEMBERED_ENABLED.get()) {
+            return Result.DISABLED;
+        }
         if (!Hollows.is(level.getBiome(at))) {
             return Result.NOT_HOLLOW;
         }
         LevelChunk chunk = level.getChunkAt(at);
-        if (Unremembered.countForgotten(chunk) < CALL_FORGOTTEN) {
+        if (Unremembered.countForgotten(chunk) < callForgotten()) {
             return Result.TOO_FEW;
         }
         if (HollowLanterns.guarded(level, at)) {
@@ -70,6 +78,7 @@ public class HollowEffigy extends Item {
         Unremembered.clearForgotten(chunk);
         boss.snapTo(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D, player.getYRot() + 180.0F, 0.0F);
         boss.setTarget(player);
+        boss.scaleFor(Unremembered.participants(level, at));
         level.addFreshEntity(boss);
         level.sendParticles(ParticleTypes.SOUL, at.getX() + 0.5D, at.getY() + 1.0D, at.getZ() + 0.5D, 40, 0.8D, 1.4D, 0.8D, 0.02D);
         level.sendParticles(ParticleTypes.SCULK_SOUL, at.getX() + 0.5D, at.getY() + 0.2D, at.getZ() + 0.5D, 20, 1.2D, 0.1D, 1.2D, 0.01D);

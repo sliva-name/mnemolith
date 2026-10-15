@@ -1386,7 +1386,7 @@
   "item.mnemolith.hollow_effigy": "Образ лощины",
   "item.mnemolith.hollow_effigy.hint": "Используйте в чанке лощины памяти, который забыл не меньше 3 раз: забвение соберётся в Беспамятного. Место не должен охранять фонарь.",
   "mnemolith.effigy.not_hollow": "Отозваться может только лощина памяти: лишь она забывает так много.",
-  "mnemolith.effigy.too_few": "Это место ещё мало забыло (нужно 3 забытых воспоминания).",
+  "mnemolith.effigy.too_few": "Это место ещё мало забыло (нужно забытых воспоминаний: %s).",
   "mnemolith.effigy.kept": "Это место хранит реколлитовый фонарь: здесь ничего не собирается.",
   "mnemolith.effigy.another": "Рядом уже бродит что-то беспамятное.",
   "mnemolith.effigy.failed": "Никто не отзывается.",
@@ -1402,5 +1402,17 @@
   "advancements.mnemolith.unremembered_rest.title": "Лощина вспоминает",
   "advancements.mnemolith.unremembered_rest.description": "Одолейте Беспамятного.",
   "advancements.mnemolith.remembering_circlet.title": "Ничего невидимого",
-  "advancements.mnemolith.remembering_circlet.description": "Наденьте венец памяти и увидьте блёклого без линзы."
+  "advancements.mnemolith.remembering_circlet.description": "Наденьте венец памяти и увидьте блёклого без линзы.",
+  "mnemolith.effigy.disabled": "На этом сервере Беспамятного призвать нельзя.",
+  "mnemolith.configuration.unremembered": "Беспамятный",
+  "mnemolith.configuration.unremembered.tooltip": "Босс лощин памяти, которого призывает образ лощины.",
+  "mnemolith.configuration.unrememberedEnabled": "Можно призвать Беспамятного",
+  "mnemolith.configuration.unrememberedEnabled.tooltip": "Может ли образ лощины призвать Беспамятного. Уже вставший остаётся.",
+  "mnemolith.configuration.unrememberedHealth": "Здоровье Беспамятного",
+  "mnemolith.configuration.unrememberedHealth.tooltip": "Здоровье Беспамятного, когда в бою один игрок.",
+  "mnemolith.configuration.unrememberedHealthPerPlayer": "Доп. здоровье за игрока",
+  "mnemolith.configuration.unrememberedHealthPerPlayer.tooltip": "Добавка здоровья за каждого следующего игрока в 32 блоках при призыве, в долях базового (0.5: двое игроков — в 1,5 раза больше). 0 выключает.",
+  "mnemolith.configuration.unrememberedCallForgotten": "Забытых воспоминаний для призыва",
+  "mnemolith.configuration.unrememberedCallForgotten.tooltip": "Сколько забытых отпечатков должно быть в чанке лощины, чтобы образ мог призвать Беспамятного.",
+  "mnemolith.configuration.unremembered.button": "Беспамятный"
 }

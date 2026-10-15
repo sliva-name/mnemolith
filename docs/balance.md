@@ -164,3 +164,11 @@ Defaults live in the `recall` section. The player-facing plan is [design/living-
 | `distortionChance` | 0.15 | a few local flashes are slightly wrong |
 | `idleTicks` / `matchTicks` / `vanishTicks` | 50 / 12 / 30 | stand, turn, one gesture, gone |
 | `localRadius` | 12 | the flash is where you are standing, not across the map |
+
+## The Unremembered
+
+| Number | Default | Why |
+| --- | --- | --- |
+| `unrememberedHealth` | 160 | about two minutes of fighting for one player with a revealed iron sword, longer if it feeds; a lantern decides the pace |
+| `unrememberedHealthPerPlayer` | 0.5 | a second player adds half again, not double: two players still finish faster, and each gets a tear |
+| `unrememberedCallForgotten` | 3 | three uncaught flickers or slain faded in one chunk: a calling site you grow on purpose in an evening, not by accident |
