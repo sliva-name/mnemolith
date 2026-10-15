@@ -14,7 +14,7 @@ import com.mnemolith.worldgen.hollows.HollowFlickers;
 
 /**
  * A worn-out person: head, a narrow body that frays into a veil instead of a waist, thin arms, short legs under the
- * veil, and a recollite splinter where the heart would be. Replays the five flicker scenes. Texture is 64×64.
+ * veil, and a recollite splinter where the heart would be. Replays the six flicker scenes. Texture is 64×64.
  */
 public class FadedModel extends EntityModel<FadedModel.State> {
     private final ModelPart head;
@@ -117,6 +117,14 @@ public class FadedModel extends EntityModel<FadedModel.State> {
                 this.armRight.zRot = 0.3F - sway * 0.2F;
                 this.head.xRot = -0.6F;
             }
+            case HollowFlickers.FADE -> {
+                // a forgotten memory: arms hang, head bowed, and the figure slowly sinks
+                this.head.xRot = 0.7F;
+                this.armLeft.xRot = 0.0F;
+                this.armRight.xRot = 0.0F;
+                this.armLeft.zRot = -0.02F;
+                this.armRight.zRot = 0.02F;
+            }
             default -> {
             }
         }
@@ -126,5 +134,6 @@ public class FadedModel extends EntityModel<FadedModel.State> {
         public float attack;
         public int scene = -1;
         public boolean revealed;
+        public boolean keeper;
     }
 }

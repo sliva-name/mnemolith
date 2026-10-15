@@ -26,7 +26,12 @@ public enum Temper {
     /** Portal: when told to follow, crosses with its owner into another dimension (costs a charge). */
     WANDERING(ImprintTag.PORTAL, 20, 0xC77DFF, ImprintTag.PORTAL),
     /** Sculk: work writes sculk; shrugs off darkness; possessed body sees in the deep. */
-    DEEP(ImprintTag.SCULK, 16, 0x1A8A8A, ImprintTag.SCULK);
+    DEEP(ImprintTag.SCULK, 16, 0x1A8A8A, ImprintTag.SCULK),
+    /**
+     * Forgotten (Memory Hollows stage 4): its work leaves no imprint and instead lets go of the loudest memory in the
+     * chunk it works in (one charge each); possessed body is invisible.
+     */
+    FORGOTTEN(ImprintTag.FORGOTTEN, 16, 0xCFCBDD, null);
 
     private final ImprintTag tag;
     private final int baseCharge;
@@ -76,6 +81,11 @@ public enum Temper {
     public static @Nullable Temper byId(int id) {
         Temper[] values = values();
         return id <= 0 || id > values.length ? null : values[id - 1];
+    }
+
+    /** Only Memory Hollows hold this temper's memory: it is never seeded elsewhere (observatory residues). */
+    public boolean hollowsOnly() {
+        return this == FORGOTTEN;
     }
 
     public int id() {

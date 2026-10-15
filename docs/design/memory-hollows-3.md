@@ -103,5 +103,5 @@ recollite upgrade for the needle.
 
 ## Next stages
 
-- Hollows-specific imprint tags (a "forgotten" tag only the hollows record), a faded variant in sunken archives that
-  guards the chest, a recollite pickaxe that reads the chunk while mining.
+- Stage 4 is [memory-hollows-4.md](memory-hollows-4.md): the forgotten imprint and its temper, the archive keeper.
+  Still open: a recollite pickaxe that reads the chunk while mining.

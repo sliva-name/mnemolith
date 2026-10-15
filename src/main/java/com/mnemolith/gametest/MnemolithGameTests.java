@@ -80,6 +80,8 @@ public final class MnemolithGameTests {
         suite("hollows2qa", com.mnemolith.command.qa.Hollows2Qa::check, Map.of());
         // Memory Hollows stage 3: the faded, lectern replay, recollite needle.
         suite("hollows3qa", com.mnemolith.command.qa.Hollows3Qa::check, Map.of());
+        // Memory Hollows stage 4: the forgotten imprint, its temper and formula, the archive keeper.
+        suite("hollows4qa", com.mnemolith.command.qa.Hollows4Qa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -130,6 +132,9 @@ public final class MnemolithGameTests {
         // The world remembers you: real events recorded, and a scene on return (checks every 40 ticks, 60% a roll).
         // Memory Hollows stage 2: a flicker reaches the players near it (not one far off), then a needle and lens catch it.
         live("hollows_flicker_delivered_and_caught", HollowsLiveTests::flickerDeliveredAndCaught, 200);
+        // Memory Hollows stage 4: opening an archive chest wakes its keeper; a forgotten flicker fades and is caught.
+        live("hollows_keeper_rises_at_archive_chest", HollowsLiveTests::keeperRisesAtArchiveChest, 200);
+        live("hollows_forgotten_flicker_caught", HollowsLiveTests::forgottenFlickerCaught, 200);
 
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);

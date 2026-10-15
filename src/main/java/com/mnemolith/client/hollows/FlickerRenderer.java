@@ -127,6 +127,9 @@ public final class FlickerRenderer {
         if (flicker.scene == HollowFlickers.FLARE) {
             // A flaring memory gutters like a flame.
             a *= 0.55F + 0.45F * Mth.abs(Mth.sin(age * 0.9F) * Mth.cos(age * 0.37F));
+        } else if (flicker.scene == HollowFlickers.FADE) {
+            // A forgotten memory thins out as it sinks.
+            a *= 1.0F - 0.8F * Mth.clamp(age / DURATION, 0.0F, 1.0F);
         }
         return (int) a;
     }
@@ -148,6 +151,11 @@ public final class FlickerRenderer {
                 yield new Pose(flicker.origin, flicker.yaw, 0.0F, down, down * 12.0F, 0.0F);
             }
             case HollowFlickers.FLARE -> new Pose(flicker.origin, flicker.yaw, 1.0F, 0.0F, 0.0F, 1.0F);
+            case HollowFlickers.FADE -> {
+                // stands still for a moment, then sinks into the turf
+                float sink = Mth.clamp((t - 0.25F) / 0.75F, 0.0F, 1.0F);
+                yield new Pose(flicker.origin.add(0.0D, -1.6D * sink, 0.0D), flicker.yaw, 0.0F, 0.0F, 0.0F, 0.0F);
+            }
             default -> {
                 float step = Mth.sin(age * 0.4F);
                 yield new Pose(flicker.origin.add(forward.scale(t * 3.0D)), flicker.yaw, 0.25F + 0.2F * step, 0.0F, 0.0F, 0.25F - 0.2F * step);
@@ -166,6 +174,7 @@ public final class FlickerRenderer {
             case FALL, EXPLOSION -> 0xA6E6D8;
             case SILENCE -> 0xC8D4E8;
             case BUILD, REDSTONE, TRADE -> 0xF0E2B8;
+            case FORGOTTEN -> 0xA9ADBC;
             default -> 0xDCE0F6;
         };
     }

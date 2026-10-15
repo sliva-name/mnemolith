@@ -79,12 +79,19 @@ def _glyph(name):
         return m_poly(S, S, [(6, 20), (6, 12), (11, 16), (16, 6), (21, 16), (26, 12), (26, 20)])
     if name == 'trade':
         return m_rect(S, S, 6, 10, 14, 18) | m_rect(S, S, 18, 14, 26, 22) | m_line(S, S, (14, 14), (18, 18), 2)
+    if name == 'forgotten':
+        # a figure's outline breaking up from the feet: a ring head and a body of fewer and fewer dashes
+        m = m_ring(S, S, 16, 8, 4.5, 2.2)
+        for k, (y, w) in enumerate(((14, 6), (18, 5), (22, 3), (26, 1))):
+            for x in range(16 - w, 16 + w + 1, 2 + k):
+                m |= m_rect(S, S, x, y, x + 1, y + 1)
+        return m
     raise KeyError(name)
 
 
 TAG_ORDER = (
     'fire', 'fall', 'death', 'build', 'explosion', 'silence', 'player', 'redstone', 'path',
-    'lightning', 'portal', 'sculk', 'boss', 'trade',
+    'lightning', 'portal', 'sculk', 'boss', 'trade', 'forgotten',
 )   # ImprintTag order — append only
 
 

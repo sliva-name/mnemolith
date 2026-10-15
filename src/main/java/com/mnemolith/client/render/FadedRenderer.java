@@ -18,6 +18,9 @@ public class FadedRenderer extends MobRenderer<Faded, FadedModel.State, FadedMod
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/entity/faded.png");
     public static final int UNSEEN_ALPHA = 0x78;
     public static final int REVEALED_ALPHA = 0xE0;
+    /** Archive keeper: slate-blue and a little larger. */
+    public static final int KEEPER_TINT = 0xA8B4E0;
+    public static final float KEEPER_SCALE = 1.2F;
 
     public FadedRenderer(EntityRendererProvider.Context context) {
         super(context, new FadedModel(context.bakeLayer(ModEntityRenderers.FADED)), 0.3F);
@@ -34,6 +37,15 @@ public class FadedRenderer extends MobRenderer<Faded, FadedModel.State, FadedMod
         state.attack = entity.getAttackAnim(partialTick);
         state.scene = entity.scene();
         state.revealed = entity.revealed();
+        state.keeper = entity.keeper();
+    }
+
+    /** An archive keeper stands a head taller than the others. */
+    @Override
+    protected void scale(FadedModel.State state, com.mojang.blaze3d.vertex.PoseStack poseStack) {
+        if (state.keeper) {
+            poseStack.scale(KEEPER_SCALE, KEEPER_SCALE, KEEPER_SCALE);
+        }
     }
 
     @Override
@@ -45,7 +57,7 @@ public class FadedRenderer extends MobRenderer<Faded, FadedModel.State, FadedMod
     protected int getModelTint(FadedModel.State state) {
         int base = state.revealed ? REVEALED_ALPHA : UNSEEN_ALPHA;
         int alpha = Mth.clamp(base + (int) (Mth.sin(state.ageInTicks * 0.09F) * 0x14), 0x20, 0xFF);
-        return alpha << 24 | 0xFFFFFF;
+        return alpha << 24 | (state.keeper ? KEEPER_TINT : 0xFFFFFF);
     }
 
     @Override

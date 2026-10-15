@@ -117,7 +117,7 @@ def imprint_slip():
 SLIP_SEALS = {
     'fire': 'ember', 'fall': 'verdigris', 'death': 'red', 'build': 'wood', 'explosion': 'brass', 'silence': 'mute',
     'player': 'echo', 'redstone': 'redstone', 'path': 'leather', 'lightning': 'gold', 'portal': 'magenta',
-    'sculk': 'deep', 'boss': 'amethyst', 'trade': 'copper',
+    'sculk': 'deep', 'boss': 'amethyst', 'trade': 'copper', 'forgotten': 'pale',
 }
 
 

@@ -55,6 +55,10 @@ public final class ImprintWriter {
         }
         List<ImprintTag> accepted = new ArrayList<>();
         for (ImprintTag tag : tags) {
+            // The forgotten tag exists only in Memory Hollows: nothing writes it anywhere else.
+            if (tag == ImprintTag.FORGOTTEN && !com.mnemolith.worldgen.hollows.Hollows.is(level.getBiome(pos))) {
+                continue;
+            }
             if (!LoadedChunkMemory.isMutedExcept(level, pos, tag)) {
                 accepted.add(tag);
             }
@@ -100,6 +104,9 @@ public final class ImprintWriter {
      */
     public static boolean restore(ServerLevel level, BlockPos pos, Imprint banked) {
         if (!CommonConfig.WRITE_IMPRINTS.get() || LoadedChunkMemory.isMutedExcept(level, pos, banked.tag())) {
+            return false;
+        }
+        if (banked.tag() == ImprintTag.FORGOTTEN && !com.mnemolith.worldgen.hollows.Hollows.is(level.getBiome(pos))) {
             return false;
         }
         LevelChunk chunk = level.getChunkAt(pos);
@@ -286,6 +293,7 @@ public final class ImprintWriter {
             case SCULK -> ImprintConstants.SCULK_INTENSITY;
             case BOSS -> ImprintConstants.BOSS_INTENSITY;
             case TRADE -> ImprintConstants.TRADE_INTENSITY;
+            case FORGOTTEN -> ImprintConstants.FORGOTTEN_INTENSITY;
         };
         return Math.max(ImprintConstants.INTENSITY_MIN, Math.min(ImprintConstants.INTENSITY_MAX, intensity));
     }

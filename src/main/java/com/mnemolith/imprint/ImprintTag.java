@@ -24,7 +24,9 @@ public enum ImprintTag implements StringRepresentable {
     PORTAL("portal", 5),
     SCULK("sculk", 4),
     BOSS("boss", 10),
-    TRADE("trade", 2);
+    TRADE("trade", 2),
+    /** Memory Hollows only: what a place keeps of a memory it let go (see {@code HollowForgetting}). */
+    FORGOTTEN("forgotten", 1);
 
     public static final Codec<ImprintTag> CODEC = StringRepresentable.fromEnum(ImprintTag::values);
     public static final StreamCodec<ByteBuf, ImprintTag> STREAM_CODEC = ByteBufCodecs.idMapper(ImprintTag::byOrdinal, ImprintTag::ordinal);

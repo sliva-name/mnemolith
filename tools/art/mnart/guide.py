@@ -15,7 +15,8 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'players', 'reference')
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'players',
+         'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -1108,6 +1109,46 @@ def p_faded():
     p.sprite('recollite_needle', 360, 210, 2, src=_hollows_tex('item', 'recollite_needle'))
     p.ring(440, 210, 28, dotted=True)
     p.tag('path', 440, 210)
+    return p.image()
+
+
+KEEPER_TINT = (168, 180, 224, 200)       # FadedRenderer.KEEPER_TINT
+
+
+def p_forgotten():
+    """Memory Hollows, stage 4: a forgotten flicker sinking into the turf, the archive keeper risen beside a sunken
+    archive chest, and the forgotten slip: a graft that quiets an echo's chunk, sealed with silence on the reel."""
+    p = Page('forgotten')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('h_brick', 'hollowstone_bricks')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
+    # the forgotten flicker: grey, half gone into the ground
+    d.add(mob_quads('echo', -1.8, -0.9, 1.0, 200), light='entity', tint=(169, 173, 188, 90))
+    # a brick plinth standing in for the archive shelf, and the keeper risen beside it, a head taller
+    d.add(cube('h_brick', 'h_brick', 0.6, 0, -1.6))
+    d.add(mob_quads('faded', 1.4, 0, -0.2, 220, k=1.2), light='entity', tint=KEEPER_TINT)
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # a chest drawn flat in wood beside the keeper
+    wood = RAMPS['wood']
+    p.d.rectangle([236, 168, 270, 192], fill=(*wood[3], 255), outline=(*wood[0], 255))
+    p.d.rectangle([236, 164, 270, 174], fill=(*wood[4], 255), outline=(*wood[0], 255))
+    p.d.rectangle([250, 172, 256, 180], fill=(*RAMPS['iron'][5], 255), outline=(*wood[0], 255))
+    # the forgotten slip, and the forgotten graft on an echo
+    p.sprite('imprint_slip_forgotten', 330, 52, 2)
+    p.arrow((362, 52), (392, 52))
+    p.tag('forgotten', 420, 52)
+    # forgotten + silence on the reel: a full forgotten graft
+    p.tag('forgotten', 330, 134)
+    p.d.line([351, 134, 361, 134], fill=(*LINE, 255), width=2)
+    p.d.line([356, 129, 356, 139], fill=(*LINE, 255), width=2)
+    p.tag('silence', 382, 134)
+    p.arrow((402, 134), (428, 134))
+    p.spark(452, 134, 18, TEMPER['forgotten'])
+    # an echo's loud chunk going quiet
+    p.ring(400, 210, 30, dotted=True)
+    p.arrow((370, 210), (340, 210))
     return p.image()
 
 

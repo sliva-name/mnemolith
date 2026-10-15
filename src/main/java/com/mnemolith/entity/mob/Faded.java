@@ -57,11 +57,17 @@ public class Faded extends Monster {
     public static final float UNSEEN_DAMAGE = 0.5F;
     public static final float REVEALED_DAMAGE = 1.5F;
     public static final float SLIP_DROP_CHANCE = 0.5F;
+    /** Archive keeper (Memory Hollows stage 4): health, hit, how far from its chest it goes, how long it stays angry. */
+    public static final double KEEPER_HEALTH = 32.0D;
+    public static final double KEEPER_ATTACK = 4.5D;
+    public static final int KEEPER_RADIUS = 12;
+    public static final int KEEPER_ANGER_TICKS = 600;
     public static final Identifier REVEALED_ADVANCEMENT = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "faded_revealed");
 
     /** Scene being replayed ({@link HollowFlickers#WALK} etc.), -1 when idle. */
     private static final EntityDataAccessor<Integer> DATA_SCENE = SynchedEntityData.defineId(Faded.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_REVEALED = SynchedEntityData.defineId(Faded.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_KEEPER = SynchedEntityData.defineId(Faded.class, EntityDataSerializers.BOOLEAN);
 
     private @Nullable ImprintTag copied;
     private @Nullable BlockPos mimicAt;
@@ -87,6 +93,7 @@ public class Faded extends Monster {
         super.defineSynchedData(builder);
         builder.define(DATA_SCENE, -1);
         builder.define(DATA_REVEALED, false);
+        builder.define(DATA_KEEPER, false);
     }
 
     @Override
@@ -94,6 +101,8 @@ public class Faded extends Monster {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.15D, false));
         this.goalSelector.addGoal(2, new MimicGoal(this));
+        // only a keeper has a home (its chest); the goal does nothing for the others
+        this.goalSelector.addGoal(3, new net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal(this, 1.0D));
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 0.7D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
@@ -106,6 +115,27 @@ public class Faded extends Monster {
 
     public boolean revealed() {
         return this.entityData.get(DATA_REVEALED);
+    }
+
+    /** An archive keeper: woken by opening a sunken archive chest, stays near it (see {@code ArchiveKeepers}). */
+    public boolean keeper() {
+        return this.entityData.get(DATA_KEEPER);
+    }
+
+    /** Turns this faded into the keeper of the chest at {@code chest}: tougher, harder hitting, bound to the chest. */
+    public void makeKeeper(BlockPos chest) {
+        this.entityData.set(DATA_KEEPER, true);
+        this.setHomeTo(chest.immutable(), KEEPER_RADIUS);
+        java.util.Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(KEEPER_HEALTH);
+        java.util.Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(KEEPER_ATTACK);
+        this.setHealth(this.getMaxHealth());
+        this.setPersistenceRequired();
+        this.copied = ImprintTag.FORGOTTEN;
+    }
+
+    @Override
+    protected net.minecraft.network.chat.Component getTypeName() {
+        return this.keeper() ? net.minecraft.network.chat.Component.translatable("entity.mnemolith.faded_keeper") : super.getTypeName();
     }
 
     public @Nullable ImprintTag copied() {
@@ -121,7 +151,8 @@ public class Faded extends Monster {
     /** A flicker was shown at {@code pos}: idle faded in range walk over to copy it. Server side. */
     public static void onFlicker(ServerLevel level, BlockPos pos, @Nullable ImprintTag tag) {
         for (Faded faded : level.getEntitiesOfClass(Faded.class, new AABB(pos).inflate(MIMIC_RANGE))) {
-            if (faded.getTarget() == null) {
+            // a keeper keeps to its chest
+            if (faded.getTarget() == null && !faded.keeper()) {
                 faded.copy(pos, tag);
             }
         }
@@ -147,7 +178,7 @@ public class Faded extends Monster {
 
     public void provoke(LivingEntity target) {
         this.setTarget(target);
-        this.angerTicks = ANGER_TICKS;
+        this.angerTicks = this.keeper() ? KEEPER_ANGER_TICKS : ANGER_TICKS;
         this.mimicAt = null;
         this.setScene(-1);
     }
@@ -230,6 +261,11 @@ public class Faded extends Monster {
                 }
             }
         }
+        if (this.keeper() && this.getTarget() != null && this.hasHome() && this.getTarget().isAlive()
+                && this.getTarget().blockPosition().closerThan(this.getHomePosition(), KEEPER_RADIUS + 4)) {
+            // a keeper stays angry while the thief is still by its chest
+            this.angerTicks = Math.max(this.angerTicks, 40);
+        }
         if (this.angerTicks > 0) {
             this.angerTicks--;
         } else if (this.getTarget() != null && this.tickCount % 20 == 0) {
@@ -255,8 +291,21 @@ public class Faded extends Monster {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        if (killedByPlayer && this.copied != null && this.random.nextFloat() < SLIP_DROP_CHANCE) {
+        if (killedByPlayer && this.keeper()) {
+            // a keeper always leaves what it keeps: a forgotten slip
+            this.spawnAtLocation(level, ImprintSlips.of(ImprintTag.FORGOTTEN, this.blockPosition()));
+        } else if (killedByPlayer && this.copied != null && this.random.nextFloat() < SLIP_DROP_CHANCE) {
             this.spawnAtLocation(level, ImprintSlips.of(this.copied, this.blockPosition()));
+        }
+    }
+
+    /** A faded that dies in a hollow takes its memory with it: the chunk forgets what it copied. */
+    @Override
+    public void die(DamageSource source) {
+        boolean wasDead = this.dead || this.isRemoved();
+        super.die(source);
+        if (!wasDead && this.level() instanceof ServerLevel level) {
+            com.mnemolith.worldgen.hollows.HollowForgetting.forget(level, this.blockPosition(), this.copied);
         }
     }
 
@@ -284,6 +333,10 @@ public class Faded extends Monster {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("faded_copied", this.copied == null ? -1 : this.copied.ordinal());
+        output.putBoolean("faded_keeper", this.keeper());
+        if (this.keeper() && this.hasHome()) {
+            output.putLong("faded_keeper_home", this.getHomePosition().asLong());
+        }
     }
 
     @Override
@@ -291,6 +344,10 @@ public class Faded extends Monster {
         super.readAdditionalSaveData(input);
         int copied = input.getIntOr("faded_copied", -1);
         this.copied = copied >= 0 && copied < ImprintTag.values().length ? ImprintTag.values()[copied] : null;
+        if (input.getBooleanOr("faded_keeper", false)) {
+            this.entityData.set(DATA_KEEPER, true);
+            input.getLong("faded_keeper_home").ifPresent(home -> this.setHomeTo(BlockPos.of(home), KEEPER_RADIUS));
+        }
     }
 
     /** Walk to the last flicker's spot, then stand and replay its scene. */
