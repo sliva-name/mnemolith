@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:recollite",
+  "display": {
+    "icon": {
+      "id": "mnemolith:recollite_pickaxe"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.recollite_pickaxe.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.recollite_pickaxe.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "pickaxe": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:recollite_pickaxe"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "pickaxe"
+    ]
+  ]
+}

@@ -78,4 +78,4 @@ sunken archive's chests. The recollite pickaxe from the stage 3 list is left for
 
 ## Next stages
 
-- The recollite pickaxe that reads the chunk while mining.
+- The recollite pickaxe that reads the chunk while mining: [recollite-pickaxe.md](recollite-pickaxe.md).

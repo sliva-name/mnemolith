@@ -82,6 +82,8 @@ public final class MnemolithGameTests {
         suite("hollows3qa", com.mnemolith.command.qa.Hollows3Qa::check, Map.of());
         // Memory Hollows stage 4: the forgotten imprint, its temper and formula, the archive keeper.
         suite("hollows4qa", com.mnemolith.command.qa.Hollows4Qa::check, Map.of());
+        // Recollite pickaxe: reading the chunk while mining (smelt, pull, experience, quiet, effects, hollow flicker).
+        suite("pickaxeqa", com.mnemolith.command.qa.PickaxeQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());
@@ -135,6 +137,8 @@ public final class MnemolithGameTests {
         // Memory Hollows stage 4: opening an archive chest wakes its keeper; a forgotten flicker fades and is caught.
         live("hollows_keeper_rises_at_archive_chest", HollowsLiveTests::keeperRisesAtArchiveChest, 200);
         live("hollows_forgotten_flicker_caught", HollowsLiveTests::forgottenFlickerCaught, 200);
+        live("pickaxe_reads_fire_in_hollow", HollowsLiveTests::pickaxeReadsFireInHollow, 200);
+        live("pickaxe_quiet_in_silent_chunk", HollowsLiveTests::pickaxeQuietInSilentChunk, 200);
 
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);
         live("remember_scene_on_return", RememberLiveTests::sceneOnReturn, 1200);

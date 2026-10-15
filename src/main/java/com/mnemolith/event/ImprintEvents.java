@@ -139,7 +139,9 @@ public final class ImprintEvents {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
-        writeBuild(level, event.getPos(), event.getState(), event.getPlayer());
+        if (!com.mnemolith.content.item.PickaxeReading.quiet(level, event.getPos(), event.getPlayer())) {
+            writeBuild(level, event.getPos(), event.getState(), event.getPlayer());
+        }
         if (event.getPlayer() instanceof ServerPlayer player) {
             com.mnemolith.echo.relay.EchoRelays.onPlayerBreak(player, event.getPos());
         }

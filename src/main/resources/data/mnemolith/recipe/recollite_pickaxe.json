@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "R": "mnemolith:recollite_shard",
+    "I": "minecraft:iron_ingot",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "RIR",
+    " S ",
+    " S "
+  ],
+  "result": {
+    "id": "mnemolith:recollite_pickaxe"
+  }
+}

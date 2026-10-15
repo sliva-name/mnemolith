@@ -58,6 +58,11 @@ public final class ModItems {
             "recollite_needle",
             com.mnemolith.content.item.RecolliteNeedleItem::new,
             properties -> properties.durability(ImprintConstants.NEEDLE_DURABILITY * 2));
+    /** Recollite head on an iron-tier pickaxe: reads the chunk while it mines (see {@code PickaxeReading}). */
+    public static final DeferredItem<com.mnemolith.content.item.RecollitePickaxeItem> RECOLLITE_PICKAXE = ITEMS.registerItem(
+            "recollite_pickaxe",
+            com.mnemolith.content.item.RecollitePickaxeItem::new,
+            properties -> properties.pickaxe(com.mnemolith.content.item.RecollitePickaxeItem.MATERIAL, 1.0F, -2.8F));
     public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> FADED_SPAWN_EGG = ITEMS.registerItem(
             "faded_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.FADED.get()));
     public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(
