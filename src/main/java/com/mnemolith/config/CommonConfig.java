@@ -8,7 +8,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue RECOLLECTION_STORM_THRESHOLD;
     public static final ModConfigSpec.IntValue PRESSURE_SOFT_CAP;
-    public static final ModConfigSpec.IntValue IMPRINT_NODE_WEIGHT;
     public static final ModConfigSpec.DoubleValue STORM_ATTEMPT_CHANCE;
     public static final ModConfigSpec.BooleanValue STRUCTURES_ENABLED;
     public static final ModConfigSpec.IntValue STRUCTURE_SPACING;
@@ -247,8 +246,7 @@ public final class CommonConfig {
         PRESSURE_SOFT_CAP = SpecValues.integer(builder, "pressureSoftCap", "Soft cap for memory pressure accumulated from imprints in loaded chunks.", 100, 1, 10_000);
         builder.pop();
 
-        SpecValues.section(builder, "spawnRates", "How often recollection storms are attempted, and a reserved imprint node weight that worldgen does not use yet.");
-        IMPRINT_NODE_WEIGHT = SpecValues.integer(builder, "imprintNodeWeight", "Reserved, not used yet: no worldgen feature places imprint-bearing nodes. Relative weight of such nodes when structures are placed.", 4, 0, 100);
+        SpecValues.section(builder, "spawnRates", "How often recollection storms are attempted.");
         STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Chance, from 0.0 to 1.0, rolled once a second for each player standing in a fractured chunk, that a recollection storm starts gathering there (if allowRecollectionStorms, maxStormsPerDimension, mute stones and scar wards allow it). 0.02 means a storm usually gathers within a minute or two. 0 turns natural storms off; a freed residual shard can still call one.", 0.02D, 0.0D, 1.0D);
         builder.pop();
 

@@ -22,8 +22,6 @@
   "mnemolith.configuration.recollectionStormThreshold.tooltip": "Множитель порогов насыщения, перегрузки и разлома. Каждый порог после умножения ограничен мягким пределом давления, так что разлом остаётся достижимым. Буря воспоминаний собирается только в чанке-разломе, поэтому это же число решает, насколько громким должно стать место, чтобы буря стала возможной: больше — позже и реже.",
   "mnemolith.configuration.pressureSoftCap": "Мягкий предел давления",
   "mnemolith.configuration.pressureSoftCap.tooltip": "Мягкий предел давления памяти, накопленного отпечатками в загруженных чанках.",
-  "mnemolith.configuration.imprintNodeWeight": "Вес узлов отпечатков",
-  "mnemolith.configuration.imprintNodeWeight.tooltip": "Зарезервировано, пока не используется: генерация мира ещё не ставит узлы с отпечатками. Относительный вес таких узлов при размещении структур.",
   "mnemolith.configuration.stormAttemptChance": "Шанс попытки бури",
   "mnemolith.configuration.stormAttemptChance.tooltip": "Шанс от 0.0 до 1.0, который раз в секунду бросается за каждого игрока, стоящего в чанке-разломе: начнёт ли там собираться буря воспоминаний (если позволяют allowRecollectionStorms, maxStormsPerDimension, глушащие камни и шрамовое стекло). 0.02 — буря обычно собирается за минуту-две. 0 выключает естественные бури; выпущенный осколок осадка всё равно может призвать бурю.",
   "mnemolith.configuration.structuresEnabled": "Структуры включены",

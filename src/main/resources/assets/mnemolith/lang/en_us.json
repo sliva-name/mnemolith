@@ -22,8 +22,6 @@
   "mnemolith.configuration.recollectionStormThreshold.tooltip": "Multiplier on the saturated, overloaded, and fracture thresholds. Each scaled threshold is capped at pressureSoftCap, so fracture stays reachable. Recollection storms can only gather in a fractured chunk, so this also sets how loud a place must get before a storm is possible: higher means later and rarer storms.",
   "mnemolith.configuration.pressureSoftCap": "Pressure Soft Cap",
   "mnemolith.configuration.pressureSoftCap.tooltip": "Soft cap for memory pressure accumulated from imprints in loaded chunks.",
-  "mnemolith.configuration.imprintNodeWeight": "Imprint Node Weight",
-  "mnemolith.configuration.imprintNodeWeight.tooltip": "Reserved, not used yet: no worldgen feature places imprint-bearing nodes. Relative weight of such nodes when structures are placed.",
   "mnemolith.configuration.stormAttemptChance": "Storm Attempt Chance",
   "mnemolith.configuration.stormAttemptChance.tooltip": "Chance, from 0.0 to 1.0, rolled once a second for each player standing in a fractured chunk, that a recollection storm starts gathering there (if allowRecollectionStorms, maxStormsPerDimension, mute stones and scar wards allow it). 0.02 means a storm usually gathers within a minute or two. 0 turns natural storms off; a freed residual shard can still call one.",
   "mnemolith.configuration.structuresEnabled": "Structures Enabled",
