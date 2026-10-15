@@ -23,6 +23,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RECOLLITE_NEEDLE.get());
                 output.accept(ModItems.RECOLLITE_PICKAXE.get());
                 output.accept(ModItems.REMEMBRANCE_POSY.get());
+                output.accept(ModItems.HOLLOW_EFFIGY.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.REINFORCED_NEEDLE.get());
                 output.accept(ModItems.TWIN_NEEDLE.get());

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "mnemolith:hollowstone_bricks",
+    "R": "mnemolith:recollite_shard",
+    "B": "mnemolith:recollite_block"
+  },
+  "pattern": [
+    " H ",
+    "RBR",
+    " H "
+  ],
+  "result": {
+    "id": "mnemolith:hollow_effigy"
+  }
+}
