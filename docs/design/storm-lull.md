@@ -28,7 +28,7 @@ explains the lull in RU and EN. Added in PR #70.
 ## Config
 
 `server.stormLullTicks` (`mnemolith-server.toml`, default 24000, 0 to 168000) sets the lull length. 0 turns lulls off:
-no lull is recorded and no lull message is sent; lulls already recorded keep their end time. Added in `feature/lull-config`.
+no lull is recorded and no lull message is sent; lulls already recorded keep their end time. Added in PR #72.
 
 ## Balance
 

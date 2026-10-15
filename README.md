@@ -140,6 +140,8 @@
 
 **Букетик памяти** (три незабудки и нить): используйте его на блёклом, и тот **упокоится**. Он растает без смерти, воспоминание, которое он копировал, вернётся в чанк (ничего не забудется), а сам он оставит осколок реколлита. Хранителя архива букетик только успокаивает: он перестаёт драться, но стережёт сундук. `/mnemolith posyqa` проверяет букетик; заметка — [docs/design/remembrance-posy.md](docs/design/remembrance-posy.md).
 
+**Букетик и осадки**: букетик памяти упокаивает и осадок, обычный или бури, без чтения линзой. Ничего не остаётся — ни осколка, ни бланка, — зато в буре на один осадок меньше. Свои живые воспоминания букетик не принимают. `/mnemolith posy2qa` проверяет это; заметка — [docs/design/posy-residues.md](docs/design/posy-residues.md).
+
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 
 **Затишье после бури**: если буря выдохлась (все её осадки собраны) или сдержана, в её округе на один игровой день не соберётся новая буря — ни сама, ни от освобождённого осколка. Прошедшая буря, Шрам и угасшая без свидетелей затишья не оставляют. Освобождённый в затишье осколок подскажет, сколько минут осталось. `/mnemolith lullqa` проверяет затишье; заметка — [docs/design/storm-lull.md](docs/design/storm-lull.md).
@@ -426,6 +428,8 @@ The **recollite pickaxe** (two recollite shards and an iron ingot over two stick
 The **recollite lantern** (hollowstone bricks at the corners, recollite shards at the sides, a forget-me-not in the middle) gives a cold light and **keeps a hollow**: within 8 blocks of it (4 up or down) nothing is forgotten. An uncaught flicker or a dying faded leaves no forgotten imprint, and flickers nearby stay catchable twice as long. Take the lantern away and the hollow forgets again. `/mnemolith lanternqa` checks it; design note: [docs/design/recollite-lantern.md](docs/design/recollite-lantern.md).
 
 The **remembrance posy** (three forget-me-nots and a string): use it on a faded and it is **laid to rest**. It fades out without dying, the memory it was copying goes back into the chunk (nothing is forgotten), and it leaves a recollite shard. An archive keeper is only calmed: it stops fighting but still keeps its chest. `/mnemolith posyqa` checks it; design note: [docs/design/remembrance-posy.md](docs/design/remembrance-posy.md).
+
+**The posy and residues**: a remembrance posy also lays a residual echo, ordinary or storm, to rest without a lens read. It leaves nothing, no shard and no slip, but a storm has one fewer residue. Your own living memories refuse it. `/mnemolith posy2qa` checks it; design note: [docs/design/posy-residues.md](docs/design/posy-residues.md).
 
 The **chronicle transcript** (paper, an ink sac and a feather): use a blank one to copy the tags and formulas you have discovered onto a signed sheet. Another player who reads it learns the ones they did not know (the sheet is used up). Knowledge only: catalog entries and reel hints, no slips or grafts. `/mnemolith transcriptqa` checks it; design note: [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
 

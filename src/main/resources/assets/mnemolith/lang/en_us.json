@@ -679,6 +679,9 @@
   "mnemolith.storm.faded_here": "A recollection storm passed here with no one to witness it. The area is quieter now.",
   "mnemolith.storm.passed": "The recollection storm passes. Its residues stay.",
   "mnemolith.storm.lull": "The storm's passing leaves a lull: no new storm gathers here for a day.",
+  "mnemolith.posy.residue_rest": "The residue is laid to rest.",
+  "mnemolith.posy.storm_residue_rest": "The storm residue is laid to rest; the storm has one fewer.",
+  "mnemolith.posy.residue_refuses": "This memory is yours to keep; it will not be laid to rest.",
   "mnemolith.storm.lulled": "The air here is still spent: no storm will rise for %s more min.",
   "mnemolith.storm.scar": "The storm's residues merge. The Scar rises.",
   "mnemolith.storm.scar_site": "The storm's residues merge into the ground. A Scar site remains.",
@@ -1367,5 +1370,5 @@
   "mnemolith.guide.lantern.title": "The Recollite Lantern",
   "mnemolith.guide.lantern.body": "Hollowstone bricks at the corners, recollite shards at the sides and a forget-me-not in the middle make a recollite lantern. It gives a bright, cold light.\n\nA hollow lets its memories go: a flicker nobody catches, a faded that dies. Within 8 blocks of a lantern (4 up or down), nothing is forgotten. The memory stays in the chunk and no forgotten imprint is written.\n\nFlickers that appear near a lantern stay catchable twice as long, so you have time to reach them with the needle.\n\nSet lanterns around a sunken archive or a place you want to keep as it is. Take them away when you want the hollow to forget again.",
   "mnemolith.guide.posy.title": "The Remembrance Posy",
-  "mnemolith.guide.posy.body": "Three forget-me-nots and a string make a remembrance posy.\n\nA faded is a figure its place half forgot. Someone remembering it is enough. Use a posy on a faded and it is laid to rest: it fades out without a fight, the memory it was copying goes back into the chunk instead of being forgotten, and it leaves a recollite shard.\n\nAn archive keeper is too bound to its chest to rest. A posy only calms it: it stops fighting you, but it still keeps its chest and will wake again if you open it.\n\nEach use spends one posy."
+  "mnemolith.guide.posy.body": "Three forget-me-nots and a string make a remembrance posy.\n\nA faded is a figure its place half forgot. Someone remembering it is enough. Use a posy on a faded and it is laid to rest: it fades out without a fight, the memory it was copying goes back into the chunk instead of being forgotten, and it leaves a recollite shard.\n\nAn archive keeper is too bound to its chest to rest. A posy only calms it: it stops fighting you, but it still keeps its chest and will wake again if you open it.\n\nEach use spends one posy.\n\nA posy also lays a residual echo to rest, ordinary or storm, without reading it first. It leaves nothing behind, no shard and no slip, and writes nothing back; in a storm, it is one fewer residue toward the Scar. Your own living memories refuse it."
 }
