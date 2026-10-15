@@ -281,6 +281,103 @@ final class HollowsLiveTests {
                 .thenSucceed();
     }
 
+    /**
+     * The recollite pickaxe: a real player in Memory Hollows mines iron ore in a chunk whose loudest memory is fire,
+     * through the real block break. The raw iron comes out smelted, the pickaxe wears, and the fire memory surfaces as a
+     * flicker sent to the player.
+     */
+    static void pickaxeReadsFireInHollow(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 100, (origin.getZ() >> 4) + 120);
+        helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
+        BlockPos ore = site.offset(2, 0, 0);
+        level.setBlockAndUpdate(ore.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(ore, net.minecraft.world.level.block.Blocks.IRON_ORE.defaultBlockState());
+        var chunk = level.getChunkAt(ore);
+        LoadedChunkMemory.clear(chunk);
+        LoadedChunkMemory.getOrCreate(chunk).addImprint(new Imprint(ImprintTag.FIRE, 3, ore, Optional.empty(), 5151, level.getGameTime()), 8);
+        ServerPlayer miner = LivePlayers.join(helper, "LivePickaxeMiner", Vec3.atBottomCenterOf(site));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    com.mnemolith.content.item.PickaxeReading.resetCooldown(miner.getUUID());
+                    miner.getInventory().clearContent();
+                    miner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.RECOLLITE_PICKAXE.get()));
+                    drain(miner);
+                    // break and read in the same tick: QA suites running beside this test clear the shared flicker list
+                    boolean broke = miner.gameMode.destroyBlock(ore);
+                    helper.assertTrue(broke && level.getBlockState(ore).isAir(), "the pickaxe did not break the ore");
+                    int ingots = 0;
+                    int raw = 0;
+                    for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(ore).inflate(3.0D))) {
+                        ingots += item.getItem().is(net.minecraft.world.item.Items.IRON_INGOT) ? item.getItem().getCount() : 0;
+                        raw += item.getItem().is(net.minecraft.world.item.Items.RAW_IRON) ? item.getItem().getCount() : 0;
+                        item.discard();
+                    }
+                    helper.assertTrue(ingots >= 1 && raw == 0, "fire did not smelt the drop: ingots=" + ingots + " raw=" + raw);
+                    helper.assertTrue(miner.getMainHandItem().getDamageValue() == 1, "the pickaxe did not wear: " + miner.getMainHandItem().getDamageValue());
+                    List<HollowFlickerPayload> seen = flickers(miner);
+                    helper.assertTrue(seen.stream().anyMatch(f -> f.pos().equals(ore) && f.tag() == ImprintTag.FIRE.ordinal()
+                            && f.scene() == HollowFlickers.scene(ImprintTag.FIRE)), "the fire memory did not surface as a flicker: " + seen);
+                    HollowFlickers.clear();
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * The recollite pickaxe in a chunk whose loudest memory is silence: breaking stone there (the real block break)
+     * writes no build imprint, while the same pickaxe in a chunk that remembers a path writes one as usual.
+     */
+    static void pickaxeQuietInSilentChunk(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos quietSite = LivePlayers.surface(level, (origin.getX() >> 4) - 120, (origin.getZ() >> 4) + 120);
+        BlockPos loudSite = LivePlayers.surface(level, (origin.getX() >> 4) - 118, (origin.getZ() >> 4) + 120);
+        LivePlayers.force(level, quietSite);
+        LivePlayers.force(level, loudSite);
+        BlockPos quietStone = quietSite.offset(1, 0, 0);
+        BlockPos loudStone = loudSite.offset(1, 0, 0);
+        for (BlockPos stone : List.of(quietStone, loudStone)) {
+            level.setBlockAndUpdate(stone.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(stone, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        }
+        var quietChunk = level.getChunkAt(quietStone);
+        var loudChunk = level.getChunkAt(loudStone);
+        LoadedChunkMemory.clear(quietChunk);
+        LoadedChunkMemory.clear(loudChunk);
+        LoadedChunkMemory.getOrCreate(quietChunk).addImprint(new Imprint(ImprintTag.SILENCE, 4, quietStone, Optional.empty(), 6161, level.getGameTime()), 8);
+        LoadedChunkMemory.getOrCreate(loudChunk).addImprint(new Imprint(ImprintTag.PATH, 3, loudStone, Optional.empty(), 6162, level.getGameTime()), 8);
+        ServerPlayer miner = LivePlayers.join(helper, "LivePickaxeQuiet", Vec3.atBottomCenterOf(quietSite));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    miner.getInventory().clearContent();
+                    miner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.RECOLLITE_PICKAXE.get()));
+                    helper.assertTrue(miner.gameMode.destroyBlock(quietStone), "the pickaxe did not break the stone in the silent chunk");
+                    helper.assertTrue(count(quietChunk, ImprintTag.BUILD) == 0, "mining in the silent chunk wrote a build imprint");
+                    miner.teleportTo(level, loudSite.getX() + 0.5D, loudSite.getY(), loudSite.getZ() + 0.5D, java.util.Set.of(), 0.0F, 0.0F, true);
+                    helper.assertTrue(miner.gameMode.destroyBlock(loudStone), "the pickaxe did not break the stone in the path chunk");
+                    helper.assertTrue(count(loudChunk, ImprintTag.BUILD) == 1, "mining in the path chunk wrote " + count(loudChunk, ImprintTag.BUILD)
+                            + " build imprints, not 1");
+                    for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(quietStone).inflate(40.0D))) {
+                        item.discard();
+                    }
+                })
+                .thenSucceed();
+    }
+
+    private static int count(net.minecraft.world.level.chunk.LevelChunk chunk, ImprintTag tag) {
+        ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+        int n = 0;
+        for (int i = 0; memory != null && i < memory.imprintCount(); i++) {
+            n += memory.imprintAt(i).tag() == tag ? 1 : 0;
+        }
+        return n;
+    }
+
     private static EmbeddedChannel channel(ServerPlayer player) {
         return (EmbeddedChannel) player.connection.getConnection().channel();
     }

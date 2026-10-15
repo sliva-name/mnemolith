@@ -178,6 +178,23 @@ def recollite_needle():
     return cv.image()
 
 
+def recollite_pickaxe():
+    """An iron-tier pickaxe: a wooden haft, an iron collar and a curved recollite head with a pale seam along its edge."""
+    rng = core.rng_for('recollite_pickaxe')
+    cv = Canvas(S, S)
+    shapes.rod(cv, (4, 29), (19, 14), 3, 'wood', 3, rng=rng, noise=0.3)
+    head = shapes.gem(cv, [(4, 9), (9, 4.5), (16, 3), (23, 5), (27.5, 9), (29.5, 15), (28, 23), (25, 17), (22.5, 12.5),
+                           (18, 9.5), (12, 8.5), (7, 10.5)], 'recollite', 4)
+    seam = core.m_lines(S, S, [(6, 8), (11, 5.5), (17, 4.5), (23, 6.5), (27, 10)], 1) & head
+    cv.fill(seam, RAMPS['pale'][6])
+    shapes.rod(cv, (16, 13), (20, 9), 4.5, 'iron', 3)
+    cv.px(18, 10, RAMPS['iron'][6])
+    shapes.glow(cv, 17, 7, 8, RAMPS['recollite'][6], 0.25)
+    core.glint(cv, 26, 10, arm=0)
+    cv.outline(selout=0.55)
+    return cv.image()
+
+
 def faded_spawn_egg():
     from .items import _egg
     return _egg('faded_spawn_egg', 'pale', 'lilac', 3, band='recollite')
@@ -269,6 +286,7 @@ ITEM_TEXTURES = {
     'recollite_shard': recollite_shard,
     'recollite_lens': recollite_lens,
     'recollite_needle': recollite_needle,
+    'recollite_pickaxe': recollite_pickaxe,
     'faded_spawn_egg': faded_spawn_egg,
 }
 ENTITY_TEXTURES = {

@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1149,6 +1149,35 @@ def p_forgotten():
     # an echo's loud chunk going quiet
     p.ring(400, 210, 30, dotted=True)
     p.arrow((370, 210), (340, 210))
+    return p.image()
+
+
+def p_pickaxe():
+    """The recollite pickaxe: a miner's pick in hollowstone with recollite ore, and what the stone's loudest memory does
+    to each block: fire smelts, portal pulls the drops home, silence leaves no trace; in a hollow a flicker rises."""
+    p = Page('pickaxe')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('h_ore', 'recollite_ore')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(5, 4, 2, top='h_top', side='h_side', under='h_stone')
+    d.add(cube('h_ore', 'h_ore', 0.4, 0, -0.6))
+    # the memory surfacing beside the block as a flicker
+    d.add(mob_quads('echo', -1.4, 0, 0.6, 200), light='entity', tint=(188, 200, 236, 120))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    p.sprite('recollite_pickaxe', 236, 64, 2, src=_hollows_tex('item', 'recollite_pickaxe'))
+    # fire: the drop comes out smelted
+    p.tag('fire', 330, 52)
+    p.arrow((352, 52), (392, 52))
+    p.spark(420, 52, 16, TEMPER['fire'])
+    # portal: the drops come home
+    p.tag('portal', 330, 134)
+    p.arrow((392, 134), (352, 134), bend=0.3)
+    p.ring(420, 134, 16, dotted=True)
+    # silence: no trace
+    p.tag('silence', 330, 210)
+    p.arrow((352, 210), (392, 210), dotted=True)
+    p.ring(420, 210, 22, dotted=True)
     return p.image()
 
 

@@ -104,4 +104,4 @@ recollite upgrade for the needle.
 ## Next stages
 
 - Stage 4 is [memory-hollows-4.md](memory-hollows-4.md): the forgotten imprint and its temper, the archive keeper.
-  Still open: a recollite pickaxe that reads the chunk while mining.
+  The recollite pickaxe that reads the chunk while mining is [recollite-pickaxe.md](recollite-pickaxe.md).

@@ -23,6 +23,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_hollows2qa` | `/mnemolith hollows2qa` (18) | Fake-player catcher; flickers are registered with `HollowFlickers.send` at known spots. The template, loot and recipe checks read the real data |
 | `mnemolith:suite_hollows3qa` | `/mnemolith hollows3qa` (19) | Fake-player catcher and attacker; faded are spawned without AI next to a `fillbiome` patch and stepped by direct calls. The loot, recipe and advancement checks read the real data |
 | `mnemolith:suite_hollows4qa` | `/mnemolith hollows4qa` (18) | Fake-player owner, opener and attacker; a `fillbiome` patch and a plain spot 48 blocks off; flickers are expired with a forced chance; the keeper's chest is placed with the archive loot table |
+| `mnemolith:suite_pickaxeqa` | `/mnemolith pickaxeqa` (14) | Fake-player miner; plain and `fillbiome` hollow columns; drops are built item entities passed to `PickaxeReading.surface`; the reading cooldown is reset between checks |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -79,6 +80,8 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `hollows_flicker_delivered_and_caught` | Three real players: a seer in a hollow with path imprints in the 5×5 chunks around, a friend 6 blocks off, a stranger 144 blocks off. One offer at density 4: the `HollowFlickerPayload` read off the seer's connection is a path (walk) scene 6–20 blocks away; the friend receives the same payload, the stranger none. The seer then uses an extraction needle with a chronicle lens in the off hand (`gameMode.useItem`): one path slip, the `CAUGHT` payload to seer and friend, no active flicker left, the *Hold That Thought* advancement | 200 |
 | `hollows_keeper_rises_at_archive_chest` | A real player opens a chest holding the `chests/sunken_archive` loot table in a hollow, through the real block use: one keeper rises bound to that chest and the loot is rolled; a second open wakes nothing; the player's kill drops a forgotten slip and the death leaves a forgotten imprint | 200 |
 | `hollows_forgotten_flicker_caught` | A real player in a hollow is sent a forgotten flicker: the payload read off the connection is the fade scene; needle and lens catch it into one forgotten slip (in the same tick, since suites beside it clear the shared flicker list) | 200 |
+| `pickaxe_reads_fire_in_hollow` | A real player in a hollow breaks iron ore with a recollite pickaxe (`gameMode.destroyBlock`) in a chunk whose loudest memory is fire: the drop is an iron ingot (no raw iron), the pickaxe took one damage, and a fire flicker at the ore is read off the connection (same tick) | 200 |
+| `pickaxe_quiet_in_silent_chunk` | A real player breaks stone with the pickaxe in a chunk that remembers silence: no build imprint; then in a path chunk next to it: one build imprint | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -616,3 +619,24 @@ Manual (to do on a normal world):
 - [ ] Opening a chest in a real sunken archive wakes a taller, slate-blue Archive Keeper that stays near the chest.
 - [ ] An echo with a forgotten graft working in a loud chunk brings its pressure down over time.
 - [ ] The forgotten slip, tag icon and guide page read well in RU and EN.
+
+## Recollite pickaxe QA
+
+`/mnemolith pickaxeqa` (gamemaster) checks the recollite pickaxe ([design note](design/recollite-pickaxe.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `itemData` | 500 uses, mines iron and diamond ore but not obsidian, faster than a hand on stone, in `minecraft:pickaxes`, repaired by a recollite shard |
+| `recipe` | Shard, iron, shard over two sticks crafts it; the item and recipe advancements load |
+| `readNone`, `readLoudest`, `muteHushes` | An empty chunk reads nothing (the "nothing" line); with path and death it reads death (the "remembers" line); a mute stone hushes it |
+| `fireSmelts`, `portalPulls`, `deathXp` | Fire: raw iron ×2 becomes iron ingots ×2 and cobblestone becomes stone; portal: a drop 3 blocks off lands at the miner; death: 2 experience becomes 5, 0 stays 0 |
+| `silenceQuiet` | Silence and forgotten make a break quiet with the pickaxe, not with an iron pickaxe and not in a path chunk |
+| `effects`, `cooldown` | Build gives haste I, boss haste II, fall slow falling; a second reading within 60 ticks shows nothing new and gives no effect, the next one after the cooldown does |
+| `hollowFlicker`, `plainNoFlicker` | In a hollow a trade reading leaves a catchable trade flicker at the block; on plains none |
+| `guidePage` | The `pickaxe` page sits right after `forgotten` |
+
+Manual (to do on a normal world):
+
+- [ ] The hotbar line shows once per few seconds while mining and reads well in RU and EN.
+- [ ] The pickaxe looks right in hand and in the inventory; the guide page reads well.
+- [ ] In a real hollow a flicker rises from a dug block and can be caught with the needle.
