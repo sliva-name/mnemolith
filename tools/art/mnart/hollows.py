@@ -173,6 +173,28 @@ def forget_me_not():
     return cv.image()
 
 
+def remembrance_posy():
+    """A small bunch of forget-me-nots, stems gathered and tied with a pale string bow."""
+    cv = Canvas(S, S)
+    for a, b in (((13, 30), (12, 15)), ((15, 30), (19, 10)), ((14, 30), (7, 11)), ((16, 30), (24, 15)), ((14, 30), (15, 8))):
+        cv.fill(core.m_line(S, S, a, b, 1), RAMPS['verdigris'][2])
+    for (x, y, w) in ((9, 17, 2.2), (21, 19, 2.0)):
+        cv.fill(m_ellipse(S, S, x + 0.5, y + 0.5, w, 1.1), RAMPS['verdigris'][4])
+    # the string: a band and a small bow
+    cv.fill(m_rect(S, S, 12, 23, 17, 24), RAMPS['white'][4])
+    cv.fill(m_ellipse(S, S, 11.5, 22.5, 1.6, 1.2) | m_ellipse(S, S, 18.5, 22.5, 1.6, 1.2), RAMPS['white'][5])
+    cv.fill(core.m_line(S, S, (14, 25), (12, 28), 1) | core.m_line(S, S, (16, 25), (18, 28), 1), RAMPS['white'][3])
+    for cx, cy in ((12, 14), (19, 9), (7, 10), (24, 14), (15, 7), (10, 6), (21, 4)):
+        for k in range(5):
+            ang = k * 2 * math.pi / 5 - math.pi / 2
+            px, py = cx + math.cos(ang) * 1.8, cy + math.sin(ang) * 1.8
+            petal = m_ellipse(S, S, px + 0.5, py + 0.5, 1.4, 1.4)
+            cv.fill(petal, mix(RAMPS['indigo'][6], RAMPS['glass'][5], 0.35) if k in (0, 4) else mix(RAMPS['indigo'][5], RAMPS['glass'][4], 0.3))
+        cv.px(cx, cy, RAMPS['brass'][5])
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
 def recollite_shard():
     rng = core.rng_for('recollite_shard')
     cv = Canvas(S, S)
@@ -324,6 +346,7 @@ ITEM_TEXTURES = {
     'recollite_lens': recollite_lens,
     'recollite_needle': recollite_needle,
     'recollite_pickaxe': recollite_pickaxe,
+    'remembrance_posy': remembrance_posy,
     'faded_spawn_egg': faded_spawn_egg,
 }
 ENTITY_TEXTURES = {

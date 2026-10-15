@@ -183,6 +183,19 @@ public class Faded extends Monster {
         this.setScene(-1);
     }
 
+    /** A remembrance posy calms it: no target, no anger, no scene in progress (it may be provoked again). */
+    public void calm() {
+        this.setTarget(null);
+        this.angerTicks = 0;
+        this.mimicAt = null;
+        this.setScene(-1);
+    }
+
+    /** Ticks of anger left (QA). */
+    public int angerTicks() {
+        return this.angerTicks;
+    }
+
     private void setScene(int scene) {
         if (this.scene() != scene) {
             this.entityData.set(DATA_SCENE, scene);

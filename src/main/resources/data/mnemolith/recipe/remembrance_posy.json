@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mnemolith:forget_me_not",
+    "mnemolith:forget_me_not",
+    "mnemolith:forget_me_not",
+    "minecraft:string"
+  ],
+  "result": {
+    "id": "mnemolith:remembrance_posy"
+  }
+}

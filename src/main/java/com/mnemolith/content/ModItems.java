@@ -58,6 +58,9 @@ public final class ModItems {
             "recollite_needle",
             com.mnemolith.content.item.RecolliteNeedleItem::new,
             properties -> properties.durability(ImprintConstants.NEEDLE_DURABILITY * 2));
+    /** Forget-me-nots tied with string: lays a faded to rest, calms an archive keeper (see {@code RemembrancePosy}). */
+    public static final DeferredItem<net.minecraft.world.item.Item> REMEMBRANCE_POSY = ITEMS.registerSimpleItem(
+            "remembrance_posy", properties -> properties.stacksTo(16));
     /** Recollite head on an iron-tier pickaxe: reads the chunk while it mines (see {@code PickaxeReading}). */
     public static final DeferredItem<com.mnemolith.content.item.RecollitePickaxeItem> RECOLLITE_PICKAXE = ITEMS.registerItem(
             "recollite_pickaxe",
