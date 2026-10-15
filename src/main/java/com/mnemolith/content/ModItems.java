@@ -69,6 +69,14 @@ public final class ModItems {
     /** Hollowstone and recollite: calls the Unremembered where a hollow has forgotten enough (see {@code HollowEffigy}). */
     public static final DeferredItem<com.mnemolith.content.item.HollowEffigy> HOLLOW_EFFIGY = ITEMS.registerItem(
             "hollow_effigy", com.mnemolith.content.item.HollowEffigy::new, properties -> properties.stacksTo(1));
+    /** What the Unremembered leaves when a player brings it down; crafts the remembering circlet. */
+    public static final DeferredItem<net.minecraft.world.item.Item> LETHE_TEAR = ITEMS.registerSimpleItem(
+            "lethe_tear", properties -> properties.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    /** Gold, recollite and a Lethe tear: reveals faded near you, wards the forgetting pulse, keeps hollows from forgetting near you. */
+    public static final DeferredItem<net.minecraft.world.item.Item> REMEMBERING_CIRCLET = ITEMS.registerItem(
+            "remembering_circlet", net.minecraft.world.item.Item::new,
+            properties -> properties.humanoidArmor(com.mnemolith.armory.ArmoryMaterials.CIRCLET, net.minecraft.world.item.equipment.ArmorType.HELMET)
+                    .rarity(net.minecraft.world.item.Rarity.RARE));
     public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> FADED_SPAWN_EGG = ITEMS.registerItem(
             "faded_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.FADED.get()));
     public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(

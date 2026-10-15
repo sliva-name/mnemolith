@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "T": "mnemolith:lethe_tear",
+    "R": "mnemolith:recollite_shard"
+  },
+  "pattern": [
+    "GTG",
+    "R R"
+  ],
+  "result": {
+    "id": "mnemolith:remembering_circlet"
+  }
+}

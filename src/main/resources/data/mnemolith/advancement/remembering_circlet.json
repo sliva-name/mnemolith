@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:unremembered_rest",
+  "display": {
+    "icon": {
+      "id": "mnemolith:remembering_circlet"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.remembering_circlet.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.remembering_circlet.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "revealed": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "revealed"
+    ]
+  ]
+}

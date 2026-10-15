@@ -327,6 +327,75 @@ def hollow_effigy():
     return cv.image()
 
 
+def lethe_tear():
+    """A single tear of pale recollite glass, a darker memory curled inside it, a bright glint at the shoulder."""
+    cv = Canvas(S, S)
+    drop = m_ellipse(S, S, 16.0, 20.0, 7.5, 8.0) | m_poly(S, S, [(16, 3), (22.5, 17), (9.5, 17)])
+    shapes.glow(cv, 16, 19, 12, RAMPS['recollite'][4], 0.25)
+    cv.fill(drop, RAMPS['recollite'][4])
+    cv.fill(drop & m_ellipse(S, S, 18.0, 22.0, 6.0, 6.0), RAMPS['recollite'][3])
+    cv.fill(drop & m_ellipse(S, S, 19.0, 24.0, 4.0, 3.5), RAMPS['recollite'][2])
+    # a curl of forgetting inside: a small dark spiral
+    cv.fill(core.m_lines(S, S, [(14, 22), (16, 19), (19, 20), (18, 24), (14, 25)], 1) & drop, RAMPS['indigo'][2])
+    # light on the left shoulder
+    cv.fill(drop & m_ellipse(S, S, 12.5, 16.5, 2.0, 3.5), RAMPS['pale'][5])
+    core.glint(cv, 12, 14, arm=1)
+    cv.outline(selout=0.55)
+    return cv.image()
+
+
+def remembering_circlet():
+    """A thin gold circlet seen from the front: the band in an ellipse, three recollite stones, a forget-me-not at the brow."""
+    cv = Canvas(S, S)
+    outer = m_ellipse(S, S, 16.0, 17.0, 13.0, 7.0)
+    inner = m_ellipse(S, S, 16.0, 16.0, 10.5, 4.6)
+    band = outer & ~inner
+    cv.fill(band, RAMPS['gold'][4])
+    # back of the band darker, front lit
+    cv.fill(band & m_rect(S, S, 0, 0, S - 1, 15), RAMPS['gold'][2])
+    cv.fill(band & m_rect(S, S, 0, 21, S - 1, S - 1), RAMPS['gold'][5])
+    for x, y in ((8, 20), (24, 20)):
+        cv.fill(m_ellipse(S, S, x + 0.5, y + 0.5, 1.6, 1.6), RAMPS['recollite'][4])
+        cv.px(x, y, RAMPS['pale'][6])
+    # the brow stone: a forget-me-not over a recollite drop
+    shapes.glow(cv, 16, 22, 5, RAMPS['recollite'][5], 0.35)
+    for k in range(5):
+        ang = k * 2 * math.pi / 5 - math.pi / 2
+        cv.fill(m_ellipse(S, S, 16.5 + math.cos(ang) * 2.0, 22.5 + math.sin(ang) * 2.0, 1.4, 1.4),
+                mix(RAMPS['indigo'][5], RAMPS['glass'][4], 0.3))
+    cv.px(16, 22, RAMPS['brass'][5])
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
+def circlet_worn():
+    """The circlet on the player's head (64x32 armor UV, stored 128x64): a gold band round the brow, recollite stones
+    at the sides and a forget-me-not stone at the front; everything else stays clear."""
+    from .armory import ArmorSheet
+    sheet = ArmorSheet('remembering_circlet_worn')
+
+    def head(f, w, h, rng):
+        if f in ('up', 'down'):
+            return None
+        cv = Canvas(w, h)
+        y0 = h // 2 - 3
+        cv.fill(m_rect(w, h, 0, y0, w - 1, y0 + 2), RAMPS['gold'][4])
+        cv.fill(m_rect(w, h, 0, y0, w - 1, y0), RAMPS['gold'][5])
+        cv.fill(m_rect(w, h, 0, y0 + 2, w - 1, y0 + 2), RAMPS['gold'][2])
+        if f == 'north':
+            cx = w // 2
+            cv.fill(m_rect(w, h, cx - 2, y0 - 2, cx + 1, y0 + 3), RAMPS['indigo'][5])
+            cv.fill(m_rect(w, h, cx - 1, y0 - 1, cx, y0 + 2), RAMPS['glass'][5])
+            cv.px(cx - 1, y0, RAMPS['brass'][5])
+        elif f in ('left', 'right'):
+            cx = w // 2
+            cv.fill(m_rect(w, h, cx - 1, y0, cx, y0 + 2), RAMPS['recollite'][4])
+            cv.px(cx - 1, y0, RAMPS['pale'][6])
+        return cv
+    sheet.box(0, 0, 8, 8, 8, head)
+    return sheet.image()
+
+
 def faded_spawn_egg():
     from .items import _egg
     return _egg('faded_spawn_egg', 'pale', 'lilac', 3, band='recollite')
@@ -448,7 +517,12 @@ ITEM_TEXTURES = {
     'recollite_pickaxe': recollite_pickaxe,
     'remembrance_posy': remembrance_posy,
     'hollow_effigy': hollow_effigy,
+    'lethe_tear': lethe_tear,
+    'remembering_circlet': remembering_circlet,
     'faded_spawn_egg': faded_spawn_egg,
+}
+EQUIPMENT_TEXTURES = {
+    'remembering_circlet': circlet_worn,
 }
 ENTITY_TEXTURES = {
     'faded': faded,

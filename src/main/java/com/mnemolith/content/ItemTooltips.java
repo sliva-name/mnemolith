@@ -40,6 +40,10 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.remembrance_posy.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
             } else if (stack.getItem() == ModItems.HOLLOW_EFFIGY.get()) {
                 builder.accept(Component.translatable("item.mnemolith.hollow_effigy.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+            } else if (stack.getItem() == ModItems.LETHE_TEAR.get()) {
+                builder.accept(Component.translatable("item.mnemolith.lethe_tear.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+            } else if (stack.getItem() == ModItems.REMEMBERING_CIRCLET.get()) {
+                builder.accept(Component.translatable("item.mnemolith.remembering_circlet.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
             } else if (stack.getItem() == ModItems.RECOLLITE_LANTERN.get()) {
                 builder.accept(Component.translatable("block.mnemolith.recollite_lantern.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
             } else if (stack.getItem() == ModItems.RECOLLITE_PICKAXE.get()) {

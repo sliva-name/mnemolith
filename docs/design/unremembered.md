@@ -1,6 +1,6 @@
 # The Unremembered
 
-Status: stage 1 implemented on `feature/unremembered-1`; stages 2 and 3 planned.
+Status: stage 1 done (PR #79); stage 2 implemented on `feature/unremembered-2`; stage 3 planned.
 
 ## Why
 
@@ -19,10 +19,10 @@ hurts it. Every tool the hollows taught you then gets a job in one fight:
 
 ## The line, in three stages
 
-1. **Stage 1, the calling and the fight** (this PR). The hollow effigy calls the boss. The Unremembered is a new boss
+1. **Stage 1, the calling and the fight** (done, PR #79). The hollow effigy calls the boss. The Unremembered is a new boss
    entity with a lens-gated weakness, memory feeding that a lantern blocks, a forgetting pulse, faded called in its
    second half, and posy strikes. On death the hollow remembers: forgotten imprints around it clear.
-2. **Stage 2, the reward line.** It drops a *Lethe tear*. The tear crafts the *remembering circlet*, a helmet:
+2. **Stage 2, the reward line** (`feature/unremembered-2`). It drops a *Lethe tear*. The tear crafts the *remembering circlet*, a helmet:
    - it reveals faded and the Unremembered without a lens;
    - it wards off the forgetting pulse;
    - the chunk you stand in does not forget.
@@ -75,8 +75,31 @@ hurts it. Every tool the hollows taught you then gets a job in one fight:
 
 No tear, circlet, advancements, player scaling or config (stages 2–3). Debug summon: `/mnemolith spawn unremembered`.
 
+## Stage 2 rules
+
+- **Lethe tear** (`lethe_tear`, stacks to 16, rare). The Unremembered drops one when a player brings it down (killed
+  by player), on top of its stage 1 loot. Nothing else drops it.
+- **Remembering circlet** (`remembering_circlet`). A helmet:
+  - Recipe (shaped): gold ingot, tear, gold ingot over recollite shard, gap, recollite shard.
+  - Armour 2, durability multiplier 20, enchantability 18, repaired with recollite shards. It has its own worn
+    texture: a gold band with recollite side stones and a forget-me-not stone at the brow.
+- **What wearing it does:**
+  - *Seeing.* Every second it reveals every living faded within 8 blocks, and the Unremembered within 10 (its body is
+    larger), as a raised lens would: glowing, and they take more damage. The lens still reaches further (12 and 16).
+  - *Ward.* The Unremembered's forgetting pulse passes over the wearer.
+  - *Keeping.* A hollow does not forget within 8 blocks of a wearer: `HollowForgetting.forget` treats a wearer like a
+    recollite lantern. It does not stop the boss feeding (only a lantern does), so a fight is still fought by a
+    lantern.
+- **Advancements.** *The Hollow Remembers* (challenge): every non-spectator within 32 blocks when the Unremembered
+  dies. *Nothing Unseen*: the circlet reveals something for you.
+- **Guide.** The Unremembered page gains a paragraph on the tear and the circlet.
+
 ## QA
 
 - `/mnemolith unrememberedqa` checks every rule above on a flat test world painted with `fillbiome`.
 - Live test `unremembered_called_and_seen`: two real players. One uses the effigy on a prepared hollow
   (`gameMode.useItemOn`), and both players are on the boss bar.
+- `/mnemolith unremembered2qa` checks stage 2: items, recipe, head slot, repair, the tear only from a player kill,
+  and revealing near but not far.
+- Live test `circlet_wards_and_keeps`: two real players. The pulse darkens only the bare-headed one, and a hollow
+  keeps its memory beside the wearer but still forgets 20 blocks away.
