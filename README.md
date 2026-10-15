@@ -21,7 +21,7 @@
 
 ## Скачать и установить
 
-Последний релиз: **[Mnemolith 0.3.0 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.3.0)**  
+Последний релиз: **[Mnemolith 0.4.0 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.4.0)**  
 Все релизы: [github.com/sliva-name/mnemolith/releases](https://github.com/sliva-name/mnemolith/releases)
 
 ### Что нужно
@@ -30,7 +30,7 @@
 | --- | --- |
 | Игра | Minecraft **Java Edition 26.2** |
 | Загрузчик | **NeoForge 26.2.x** (собрано против 26.2.0.88) |
-| Файл мода | `mnemolith-0.3.0.jar` (или новее из Releases) |
+| Файл мода | `mnemolith-0.4.0.jar` (или новее из Releases) |
 | Куда | Один и тот же jar на **клиенте и выделенном сервере** |
 
 Других модов не требуется. Дополнительные оверлеи (JEI / WTHIT) работают, если вы ими уже пользуетесь.
@@ -39,7 +39,7 @@
 
 1. Установите Minecraft Java Edition **26.2**.
 2. Установите NeoForge для 26.2 с [projects.neoforged.net/neoforged/neoforge](https://projects.neoforged.net/neoforged/neoforge) (берите сборку **26.2.x**, например 26.2.0.88). Запустите установщик и выберите созданный им профиль лаунчера Minecraft.
-3. Откройте страницу [Releases](https://github.com/sliva-name/mnemolith/releases). В разделе **Mnemolith 0.3.0 (бета)** (или новейшей беты) скачайте ассет **`mnemolith-0.3.0.jar`**. Не скачивайте zip с исходниками.
+3. Откройте страницу [Releases](https://github.com/sliva-name/mnemolith/releases). В разделе **Mnemolith 0.4.0 (бета)** (или новейшей беты) скачайте ассет **`mnemolith-0.4.0.jar`**. Не скачивайте zip с исходниками.
 4. В лаунчере Minecraft один раз выберите профиль NeoForge 26.2, чтобы он создал папку игры, затем откройте эту папку (или «Open game directory» в лаунчере).
 5. Положите jar в папку `mods`. Создайте `mods`, если её нет. Не распаковывайте jar.
 6. Запустите этот профиль NeoForge. В списке модов должен появиться **Mnemolith**.
@@ -50,7 +50,7 @@
 2. Положите **тот же** `mnemolith-*.jar` в папку `mods` сервера.
 3. Запустите сервер, затем зайдите клиентом, у которого тоже есть этот jar.
 
-Клиент и сервер должны работать на **одной версии Mnemolith**. Миры 0.1.3, 0.2.0 и 0.2.1 открываются на 0.3.0; разные jar на клиенте и сервере ломают игру.
+Клиент и сервер должны работать на **одной версии Mnemolith**. Миры 0.1.3, 0.2.0, 0.2.1 и 0.3.0 открываются на 0.4.0; разные jar на клиенте и сервере ломают игру.
 
 ### Сборка из исходников (по желанию)
 
@@ -158,7 +158,7 @@ NeoForge пишет три файла. Правите их при закрыто
 | `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), журналирование давления |
 | `config/mnemolith-client.toml` | Только физический клиент | Пользовательские частицы памяти, плотность частиц, потолок частиц за тик, окружающее мерцание без линзы, интервал опроса линзы, оверлей линзы, непрозрачность оверлея, числовое давление, виньетка давления, тряска экрана, бахрома разлома, громкость звона линзы |
 
-`spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна. `spawnRates.imprintNodeWeight` по-прежнему зарезервирован и ни на что не влияет.
+`spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна.
 
 `relay.relayEnabled` (true), `relay.relayLinkRange` (16 блоков для связи), `relay.relayHopCooldownSeconds` (5) и `relay.relayMirror` (true) задают связь отголосков. `vault.vaultsEnabled` (true), `vault.vaultCapacity` (12), `vault.vaultDrawSeconds` (10), `vault.vaultBleed` (0.15 хранимого давления на чанк хранилища) и `vault.vaultLeakSeconds` (60; 0 выключает протечку) задают архивные хранилища. Все применяются при следующем таком действии; связи и сохранённые отпечатки остаются, пока функция выключена.
 
@@ -182,8 +182,9 @@ NeoForge пишет три файла. Правите их при закрыто
 
 ## Известные проблемы
 
-- Нет нового биома и нет шахт со зачёркиванием. Разлом пишется в журнал, может породить репликанта момента и является местом, где может собраться буря воспоминаний. Буря, которую никто не видит (центр не загружен), рассеивается через `stormUnwatchedTicks` (2 минуты), не поднимая Шрама.
+- Нет шахт со зачёркиванием (новый биом теперь есть: лощины памяти). Разлом пишется в журнал, может породить репликанта момента и является местом, где может собраться буря воспоминаний. Буря, которую никто не видит (центр не загружен), рассеивается через `stormUnwatchedTicks` (2 минуты), не поднимая Шрама.
 - Расстояние обсерваторий задаёт набор структур, а не `worldGen.structureSpacing`.
+- Звуки лощин памяти и блёклых синтезированы и пока не проверены на слух в плейтесте.
 - Ощущение разлома на стороне клиента и следует синхронизированной полосе. `visuals.pressureVignette` затемняет край в перегруженном или разломанном чанке. `visuals.stormScreenShake` трясёт там камеру. Она трясётся рядом с любым перегруженным чанком, не только во время бури; собственное затемнённое небо и туман бури приходят с её полосой босса. `visuals.fractureFringe` обесцвечивает разломанный чанк под вами одним полноэкранным проходом, тем же путём post-chain, что и термовзгляд линзы. Если эта цепочка не загрузилась, журнал пишет об этом один раз, а виньетка и тряска всё равно работают. Частицы, блеск предметов и свет архивного пласта не меняются.
 - В мире игровых тестов генерация структур выключена (жёстко в `GameTestServer`), поэтому проверка `locate` в `qa` там пропускается; для неё запускайте `/mnemolith qa` в настоящем мире. Радиус поиска 4 в этой проверке считается в ячейках размещения по 32 чанка (около 128 чанков во все стороны), а не в чанках, так что обсерваторию он находит.
 - Выделенный сервер, который останавливается до загрузки мира, может ждать `eula.txt`. Поставьте `eula=true` и запустите снова.
@@ -293,7 +294,7 @@ Mappings are Mojang's official names. The Gradle project is the [ModDevGradle 26
 
 ## Download and install
 
-Latest release: **[Mnemolith 0.3.0 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.3.0)**  
+Latest release: **[Mnemolith 0.4.0 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.4.0)**  
 All releases: [github.com/sliva-name/mnemolith/releases](https://github.com/sliva-name/mnemolith/releases)
 
 ### What you need
@@ -302,7 +303,7 @@ All releases: [github.com/sliva-name/mnemolith/releases](https://github.com/sliv
 | --- | --- |
 | Game | Minecraft **Java Edition 26.2** |
 | Loader | **NeoForge 26.2.x** (built against 26.2.0.88) |
-| Mod file | `mnemolith-0.3.0.jar` (or newer from Releases) |
+| Mod file | `mnemolith-0.4.0.jar` (or newer from Releases) |
 | Where | The same jar on **client and dedicated server** |
 
 No other mods are required. Optional overlays (JEI / WTHIT) work if you already use them.
@@ -311,7 +312,7 @@ No other mods are required. Optional overlays (JEI / WTHIT) work if you already 
 
 1. Install Minecraft Java Edition **26.2**.
 2. Install NeoForge for 26.2 from [projects.neoforged.net/neoforged/neoforge](https://projects.neoforged.net/neoforged/neoforge) (pick a **26.2.x** build, e.g. 26.2.0.88). Run the installer and choose the Minecraft launcher profile it creates.
-3. Open the [Releases](https://github.com/sliva-name/mnemolith/releases) page. Under **Mnemolith 0.3.0 (бета)** (or the newest beta), download the asset **`mnemolith-0.3.0.jar`**. Do not download the source zip.
+3. Open the [Releases](https://github.com/sliva-name/mnemolith/releases) page. Under **Mnemolith 0.4.0 (бета)** (or the newest beta), download the asset **`mnemolith-0.4.0.jar`**. Do not download the source zip.
 4. In the Minecraft launcher, select the NeoForge 26.2 profile once so it creates the game folder, then open that folder (or use the launcher’s “Open game directory”).
 5. Put the jar into the `mods` folder. Create `mods` if it is missing. Do not unzip the jar.
 6. Launch that NeoForge profile. In the mods list you should see **Mnemolith**.
@@ -322,7 +323,7 @@ No other mods are required. Optional overlays (JEI / WTHIT) work if you already 
 2. Put the **same** `mnemolith-*.jar` into the server’s `mods` folder.
 3. Start the server, then join with a client that also has that jar.
 
-Client and server must run the **same Mnemolith version**. Worlds from 0.1.3, 0.2.0 and 0.2.1 open on 0.3.0; mixing different jars between client and server will break.
+Client and server must run the **same Mnemolith version**. Worlds from 0.1.3, 0.2.0, 0.2.1 and 0.3.0 open on 0.4.0; mixing different jars between client and server will break.
 
 ### Build from source (optional)
 
@@ -430,7 +431,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), pressure logging |
 | `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, screen shake, fracture fringe, lens chime volume |
 
-`spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible. `spawnRates.imprintNodeWeight` is still reserved and has no effect.
+`spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible.
 
 `relay.relayEnabled` (true), `relay.relayLinkRange` (16 blocks to tie), `relay.relayHopCooldownSeconds` (5) and `relay.relayMirror` (true) shape the echo relay. `vault.vaultsEnabled` (true), `vault.vaultCapacity` (12), `vault.vaultDrawSeconds` (10), `vault.vaultBleed` (0.15 of stored pressure on the vault's chunk) and `vault.vaultLeakSeconds` (60; 0 turns leaking off) shape archive vaults. All apply the next time that action runs; links and stored imprints stay saved while a feature is off.
 
@@ -454,8 +455,9 @@ Server options in `mnemolith-server.toml` are authoritative and are synced to co
 
 ## Known issues
 
-- No new biome and no strikethrough shafts. Fracture logs, can spawn a moment replicant, and is where a recollection storm can gather. A storm nobody watches (centre unloaded) fades after `stormUnwatchedTicks` (2 minutes) without raising a Scar.
+- No strikethrough shafts (there is a new biome now: Memory Hollows). Fracture logs, can spawn a moment replicant, and is where a recollection storm can gather. A storm nobody watches (centre unloaded) fades after `stormUnwatchedTicks` (2 minutes) without raising a Scar.
 - Observatory spacing is the structure set, not `worldGen.structureSpacing`.
+- The Memory Hollows and faded sounds are synthesised and have not been checked by ear in a playtest yet.
 - Fracture feel is client-side and follows the synced band. `visuals.pressureVignette` darkens the edge in an overloaded or fractured chunk. `visuals.stormScreenShake` shakes the camera there. It shakes near any overloaded chunk, not only during a storm; a storm's own darkened sky and fog come with its boss bar. `visuals.fractureFringe` desaturates the fractured chunk under you with one fullscreen pass, the same post-chain path as the lens thermal view. If that chain fails to load, the log says so once and the vignette and shake still run. Particles, item glint, and archival stratum light are unchanged.
 - The game test world has structure generation off (hard-coded in `GameTestServer`), so the `qa` `locate` check is waived there; run `/mnemolith qa` on a real world for it. Its search radius of 4 counts 32-chunk placement cells (about 128 chunks each way), not chunks, so it does reach an observatory.
 - A dedicated server that stops before the world loads may be waiting on `eula.txt`. Set `eula=true` and start it again.

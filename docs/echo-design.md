@@ -996,7 +996,6 @@ Dev · N м». Пакет `mnemolith:echo_command` (id сущности, при�
 | `server.maxStormsPerDimension` | 1 | активных бурь в измерении |
 | `server.stormUnwatchedTicks` | 2400 | тиков без свидетелей, после которых буря рассеивается (0 — ждёт вечно) |
 | `difficulty.recollectionStormThreshold` | 1.0 | множитель порогов полос (когда наступает разлом) |
-| `spawnRates.imprintNodeWeight` | 4 | по-прежнему зарезервирован: к буре не относится, генерации узлов нет |
 
 ### 14.9. Известные ограничения
 
