@@ -43,10 +43,19 @@ public class ExtractionNeedleItem extends Item {
         return this.twin;
     }
 
-    /** Right-click in the air: with a lens in the other hand, catch a memory flicker in reach. */
+    /** Whether this needle catches flickers without a lens in the other hand (the recollite needle). */
+    public boolean catchesUnaided() {
+        return false;
+    }
+
+    private boolean canCatch(Player player) {
+        return this.catchesUnaided() || ChronicleLensItem.isHeld(player);
+    }
+
+    /** Right-click in the air: with a lens in the other hand (or a recollite needle), catch a memory flicker in reach. */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (!ChronicleLensItem.isHeld(player)) {
+        if (!this.canCatch(player)) {
             return InteractionResult.PASS;
         }
         if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer serverPlayer)) {
@@ -123,7 +132,7 @@ public class ExtractionNeedleItem extends Item {
             return InteractionResult.FAIL;
         }
         // A flicker is usually standing on the block the player clicks: catch it first, extract only when none is near.
-        if (ChronicleLensItem.isHeld(player)) {
+        if (this.canCatch(player)) {
             InteractionResult caught = this.catchFlicker(level, player, context.getItemInHand());
             if (caught != null) {
                 return caught;

@@ -62,6 +62,8 @@ public final class HollowFlickers {
     /** How far from the player a flicker can be caught: with a chronicle lens, and with a recollite lens. */
     public static final double LENS_REACH = 5.0D;
     public static final double RECOLLITE_REACH = 9.0D;
+    /** Catch reach of a recollite needle with no lens. */
+    public static final double NEEDLE_REACH = 7.0D;
     /** Flicker chance multiplier for a player holding a recollite lens. */
     public static final double RECOLLITE_CHANCE = 1.5D;
     private static final int MAX_ACTIVE = 256;
@@ -91,6 +93,7 @@ public final class HollowFlickers {
     private static final List<Active> ACTIVE = new ArrayList<>();
     private static long sent;
     private static long caught;
+    private static long replayed;
 
     private HollowFlickers() {}
 
@@ -150,6 +153,8 @@ public final class HollowFlickers {
         }
         ACTIVE.add(new Active(at.immutable(), payload.tag(), now + CATCH_WINDOW));
         sent++;
+        com.mnemolith.entity.mob.Faded.onFlicker(level, at, payload.tag() >= 0 && payload.tag() < ImprintTag.values().length
+                ? ImprintTag.values()[payload.tag()] : null);
         Mnemolith.LOGGER.debug("Mnemolith hollow flicker at {} scene={} tag={}", at.toShortString(), payload.scene(), payload.tag());
     }
 
@@ -213,10 +218,10 @@ public final class HollowFlickers {
      * caught once and a chunk is not a free slip source.
      */
     public static CatchResult tryCatch(ServerLevel level, ServerPlayer player) {
-        if (!ChronicleLensItem.isHeld(player)) {
+        double reach = reach(player);
+        if (reach <= 0.0D) {
             return CatchResult.NOTHING;
         }
-        double reach = RecolliteLensItem.holds(player) ? RECOLLITE_REACH : LENS_REACH;
         long now = level.getGameTime();
         Active nearest = null;
         double best = reach * reach;
@@ -246,12 +251,41 @@ public final class HollowFlickers {
         ACTIVE.remove(nearest);
         send(level, new HollowFlickerPayload(nearest.pos(), 0.0F, CAUGHT, nearest.tag()));
         caught++;
+        com.mnemolith.entity.mob.Faded.onCatch(level, nearest.pos(), player);
         net.minecraft.advancements.AdvancementHolder advancement = level.getServer().getAdvancements().get(CAUGHT_ADVANCEMENT);
         if (advancement != null) {
             player.getAdvancements().award(advancement, "caught");
         }
         Mnemolith.LOGGER.debug("Mnemolith hollow flicker caught at {} tag={} by {}", nearest.pos().toShortString(), tag, player.getName().getString());
         return new CatchResult(Catch.CAUGHT, tag);
+    }
+
+    /** Catch reach for what {@code player} holds: lens 5, recollite lens 9, a recollite needle alone 7; 0 = none. */
+    public static double reach(ServerPlayer player) {
+        double reach = 0.0D;
+        if (ChronicleLensItem.isHeld(player)) {
+            reach = RecolliteLensItem.holds(player) ? RECOLLITE_REACH : LENS_REACH;
+        }
+        if (player.getMainHandItem().getItem() instanceof com.mnemolith.content.item.RecolliteNeedleItem
+                || player.getOffhandItem().getItem() instanceof com.mnemolith.content.item.RecolliteNeedleItem) {
+            reach = Math.max(reach, NEEDLE_REACH);
+        }
+        return reach;
+    }
+
+    /**
+     * A lectern reads a slip aloud: the same figure, at {@code pos}, to players near it. Not kept as an active flicker,
+     * so it cannot be caught (the slip already holds that memory).
+     */
+    public static void replay(ServerLevel level, BlockPos pos, float yaw, ImprintTag tag) {
+        PacketDistributor.sendToPlayersNear(level, null, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, AUDIENCE,
+                new HollowFlickerPayload(pos, yaw, scene(tag), tag.ordinal()));
+        replayed++;
+    }
+
+    /** Lectern replays since the server started (QA). */
+    public static long replayCount() {
+        return replayed;
     }
 
     /** Flickers still showing (QA). */
@@ -274,5 +308,6 @@ public final class HollowFlickers {
         ACTIVE.clear();
         sent = 0;
         caught = 0;
+        replayed = 0;
     }
 }

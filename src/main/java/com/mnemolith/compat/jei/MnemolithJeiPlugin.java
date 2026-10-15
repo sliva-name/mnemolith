@@ -87,6 +87,14 @@ public final class MnemolithJeiPlugin implements IModPlugin {
                 new ItemStack(ModItems.RECOLLITE_LENS.get()),
                 VanillaTypes.ITEM_STACK,
                 Component.translatable("mnemolith.jei.hollows.lens"));
+        registration.addIngredientInfo(
+                new ItemStack(ModItems.RECOLLITE_NEEDLE.get()),
+                VanillaTypes.ITEM_STACK,
+                Component.translatable("mnemolith.jei.hollows.needle"));
+        registration.addIngredientInfo(
+                new ItemStack(net.minecraft.world.item.Items.LECTERN),
+                VanillaTypes.ITEM_STACK,
+                Component.translatable("mnemolith.jei.hollows.lectern"));
     }
 
     @Override

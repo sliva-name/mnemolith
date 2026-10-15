@@ -30,7 +30,7 @@ final class CommandNegativeTests {
 
     /** Every operator-only branch, with a sample of its arguments. */
     private static final List<String> GATED = List.of("smoke", "spawn archivist", "spawn archive_guardian", "mobs", "worldgen", "perf", "mpsmoke",
-            "echoqa", "jobqa", "mineqa", "echo3qa", "graftqa", "residueqa", "stormqa", "guardqa", "hollowsqa", "hollows2qa", "hollows survey", "hollows flicker 2", "relayqa", "recallqa", "rememberqa", "rememberqa death",
+            "echoqa", "jobqa", "mineqa", "echo3qa", "graftqa", "residueqa", "stormqa", "guardqa", "hollowsqa", "hollows2qa", "hollows3qa", "hollows survey", "hollows flicker 2", "relayqa", "recallqa", "rememberqa", "rememberqa death",
             "investigateqa", "useqa", "interveneqa", "echodemo farm", "echodemo guard", "echodemo archer", "echodemo escort", "echodemo worn", "echodemo armored", "qa", "debug pressure fracture", "debug storm stop", "debug misfire seed", "debug farm grow", "debug relay link", "debug residue observatory", "debug stranger", "debug imprint fire 1");
 
     static void badCalls(GameTestHelper helper) {

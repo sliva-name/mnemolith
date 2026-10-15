@@ -20,6 +20,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.FIELD_GUIDE.get());
                 output.accept(ModItems.CHRONICLE_LENS.get());
                 output.accept(ModItems.RECOLLITE_LENS.get());
+                output.accept(ModItems.RECOLLITE_NEEDLE.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.REINFORCED_NEEDLE.get());
                 output.accept(ModItems.TWIN_NEEDLE.get());
@@ -106,6 +107,7 @@ public final class ModCreativeTabs {
                 output.accept(com.mnemolith.armory.ArmoryItems.LEDGER_MITE_SPAWN_EGG.get());
                 output.accept(com.mnemolith.armory.ArmoryItems.KIN_WITNESS_SPAWN_EGG.get());
                 output.accept(com.mnemolith.armory.ArmoryItems.FRACTURE_STALKER_SPAWN_EGG.get());
+                output.accept(ModItems.FADED_SPAWN_EGG.get());
             })
             .withTabsBefore(CreativeModeTabs.TOOLS_AND_UTILITIES)
             .build());

@@ -920,5 +920,48 @@
       }
     ],
     "subtitle": "subtitles.mnemolith.flicker_catch"
+  },
+  "faded_ambient": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_mood",
+        "volume": 0.5,
+        "pitch": 1.3
+      },
+      {
+        "name": "mnemolith:hollows_mood",
+        "volume": 0.5,
+        "pitch": 1.45
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.faded_ambient"
+  },
+  "faded_hurt": {
+    "sounds": [
+      {
+        "name": "mnemolith:faded_hurt"
+      },
+      {
+        "name": "mnemolith:faded_hurt",
+        "pitch": 1.12
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.faded_hurt"
+  },
+  "faded_death": {
+    "sounds": [
+      {
+        "name": "mnemolith:faded_death"
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.faded_death"
+  },
+  "lectern_replay": {
+    "sounds": [
+      {
+        "name": "mnemolith:lectern_replay"
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.lectern_replay"
   }
 }

@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'players', 'reference')
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'players', 'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
 ECHO_TINT = (255, 179, 220, 208)          # EchoRenderer.SILHOUETTE_TINT
@@ -922,6 +922,8 @@ def p_reference():
     # of taking a slot each (two rows of nine slots is all the page holds above the block plates).
     variants = [n for n in items.ITEMS if n.startswith('imprint_slip_')]
     names = [n for n in items.ITEMS if not n.endswith('spawn_egg') and n not in variants]
+    # the recollite lens is drawn by the hollows stage; it takes the last slot of the second row
+    names.append('recollite_lens')
     s = gui.slot()
     cols = 9
     assert len(names) <= 2 * cols, 'reference grid overflows: %d items' % len(names)
@@ -929,7 +931,8 @@ def p_reference():
         x = 48 + (k % cols) * 52
         y = 52 + (k // cols) * 50
         p.center(s, x, y, shadow=False)
-        p.sprite(n, x, y, 1, shadow=False)
+        src = _hollows_tex('item', n) if n == 'recollite_lens' else None
+        p.sprite(n, x, y, 1, shadow=False, src=src)
     step = 32
     x0 = W // 2 - (len(variants) - 1) * step // 2
     p.plate(x0 - 22, 128, x0 + (len(variants) - 1) * step + 22, 166)
@@ -1066,6 +1069,45 @@ def p_sunken():
     p.ring(452, 206, 34, dotted=True)
     p.sprite('chronicle_lens', 340, 206, 1)
     p.ring(340, 206, 24, dotted=True)
+    return p.image()
+
+
+FADED_TINT = (255, 255, 255, 140)      # FadedRenderer: translucent while unseen
+FADED_SEEN = (255, 255, 255, 235)      # nearly solid while a lens reveals it
+
+
+def p_faded():
+    """Memory Hollows, stage 3: two faded on the turf (one copying a kneeling flicker, one revealed by a lens), the
+    lectern reading a slip aloud, and the recollite needle."""
+    p = Page('faded')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
+    # a flicker kneels; the faded beside it copies the pose
+    d.add(mob_quads('echo', -1.6, 0, 0.6, 200), light='entity', tint=(*FLICKER_TINT[:3], 110))
+    d.add(mob_quads('faded_kneel', -0.4, 0, 1.2, 210), light='entity', tint=FADED_TINT)
+    # the second one, seen through the lens: nearly solid
+    d.add(mob_quads('faded', 1.3, 0, -0.9, 230), light='entity', tint=FADED_SEEN)
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # lens raised at the faded
+    p.sprite('chronicle_lens', 330, 52, 2)
+    p.arrow((362, 52), (392, 52))
+    p.sprite('faded_spawn_egg', 420, 52, 2, src=_hollows_tex('item', 'faded_spawn_egg'))
+    # slip to a lectern: the memory plays in front of it
+    # a lectern drawn flat in wood (no vanilla textures in the pipeline): base, post and slanted desk
+    wood = RAMPS['wood']
+    p.d.polygon([(380, 160), (420, 160), (416, 152), (384, 152)], fill=(*wood[2], 255), outline=(*wood[0], 255))
+    p.d.rectangle([394, 124, 406, 152], fill=(*wood[3], 255), outline=(*wood[0], 255))
+    p.d.polygon([(376, 122), (424, 110), (426, 118), (378, 130)], fill=(*wood[4], 255), outline=(*wood[0], 255))
+    p.d.line([(386, 121), (416, 113)], fill=(*RAMPS['paper'][5], 255), width=2)
+    p.sprite('imprint_slip', 330, 134, 2)
+    p.arrow((356, 134), (372, 134))
+    p.tag('path', 452, 134)
+    # the recollite needle: catches without a lens, 7 blocks
+    p.sprite('recollite_needle', 360, 210, 2, src=_hollows_tex('item', 'recollite_needle'))
+    p.ring(440, 210, 28, dotted=True)
+    p.tag('path', 440, 210)
     return p.image()
 
 

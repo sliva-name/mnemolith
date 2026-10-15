@@ -47,6 +47,7 @@ public final class ModGameEvents {
         com.mnemolith.echo.relay.EchoRelays.clearPending();
         com.mnemolith.vault.ArchiveVaults.clearAll();
         com.mnemolith.worldgen.hollows.HollowFlickers.clear();
+        com.mnemolith.worldgen.hollows.LecternReplay.clear();
         com.mnemolith.worldgen.hollows.HollowRegions.clear();
     }
 
@@ -57,6 +58,7 @@ public final class ModGameEvents {
         com.mnemolith.echo.storm.Storms.tick(event.getServer());
         com.mnemolith.echo.relay.EchoRelays.serverTick(event.getServer());
         com.mnemolith.worldgen.hollows.HollowFlickers.tick(event.getServer());
+        com.mnemolith.worldgen.hollows.FadedSpawner.tick(event.getServer());
     }
 
     @SubscribeEvent
@@ -74,6 +76,7 @@ public final class ModGameEvents {
                         .then(Commands.literal("ledger_mite").executes(context -> MobCommands.spawn(context, "ledger_mite")))
                         .then(Commands.literal("kin_witness").executes(context -> MobCommands.spawn(context, "kin_witness")))
                         .then(Commands.literal("fracture_stalker").executes(context -> MobCommands.spawn(context, "fracture_stalker")))
+                        .then(Commands.literal("faded").executes(context -> MobCommands.spawn(context, "faded")))
                         .then(Commands.literal("pleading_chair").executes(context -> MobCommands.spawn(context, "pleading_chair")))
                         .then(Commands.literal("silence_mirror").executes(context -> MobCommands.spawn(context, "silence_mirror")))
                         .then(Commands.literal("archive_guardian").executes(context -> MobCommands.spawn(context, "archive_guardian"))))
@@ -116,6 +119,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("hollows2qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.Hollows2Qa::run))
+                .then(Commands.literal("hollows3qa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.Hollows3Qa::run))
                 .then(Commands.literal("hollows")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .then(Commands.literal("survey")

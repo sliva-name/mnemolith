@@ -78,6 +78,8 @@ public final class MnemolithGameTests {
         suite("hollowsqa", com.mnemolith.command.qa.HollowsQa::check, Map.of());
         // Memory Hollows stage 2: sunken archive data, catching flickers, recollite lens, early amethyst path, audio.
         suite("hollows2qa", com.mnemolith.command.qa.Hollows2Qa::check, Map.of());
+        // Memory Hollows stage 3: the faded, lectern replay, recollite needle.
+        suite("hollows3qa", com.mnemolith.command.qa.Hollows3Qa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
         suite("armoryqa", com.mnemolith.command.qa.ArmoryQa::check, Map.of());

@@ -19,6 +19,7 @@ public final class ModEntityRenderers {
     public static final ModelLayerLocation LEDGER_MITE = layer("ledger_mite");
     public static final ModelLayerLocation KIN_WITNESS = layer("kin_witness");
     public static final ModelLayerLocation FRACTURE_STALKER = layer("fracture_stalker");
+    public static final ModelLayerLocation FADED = layer("faded");
 
     private ModEntityRenderers() {}
 
@@ -30,6 +31,7 @@ public final class ModEntityRenderers {
         event.registerLayerDefinition(LEDGER_MITE, com.mnemolith.client.model.LedgerMiteModel::createBodyLayer);
         event.registerLayerDefinition(KIN_WITNESS, com.mnemolith.client.model.KinWitnessModel::createBodyLayer);
         event.registerLayerDefinition(FRACTURE_STALKER, com.mnemolith.client.model.FractureStalkerModel::createBodyLayer);
+        event.registerLayerDefinition(FADED, com.mnemolith.client.model.FadedModel::createBodyLayer);
     }
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -40,6 +42,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.LEDGER_MITE.get(), ArmoryRenderers.MiteRenderer::new);
         event.registerEntityRenderer(ModEntities.KIN_WITNESS.get(), ArmoryRenderers.WitnessRenderer::new);
         event.registerEntityRenderer(ModEntities.FRACTURE_STALKER.get(), ArmoryRenderers.StalkerRenderer::new);
+        event.registerEntityRenderer(ModEntities.FADED.get(), FadedRenderer::new);
         event.registerEntityRenderer(ModEntities.MEMORY_BOLT.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
         event.registerEntityRenderer(ModEntities.SCAR.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.SILENCE_MIRROR.get(), ScarRenderer::new);

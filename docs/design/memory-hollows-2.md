@@ -118,5 +118,5 @@ recipes are needed.
 
 ## Next stages
 
-- Stage 3 ideas: a hollows mob (a "faded" that copies the last flicker), recollite tools, a lectern in the archive
-  that replays a stored flicker on demand, hollows-specific imprint tags.
+- Stage 3 is [memory-hollows-3.md](memory-hollows-3.md): the faded, lectern replay, the recollite needle. Still open:
+  hollows-specific imprint tags.

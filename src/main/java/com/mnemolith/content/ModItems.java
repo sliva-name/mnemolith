@@ -54,6 +54,12 @@ public final class ModItems {
             "extraction_needle",
             ExtractionNeedleItem::new,
             needle());
+    public static final DeferredItem<com.mnemolith.content.item.RecolliteNeedleItem> RECOLLITE_NEEDLE = ITEMS.registerItem(
+            "recollite_needle",
+            com.mnemolith.content.item.RecolliteNeedleItem::new,
+            properties -> properties.durability(ImprintConstants.NEEDLE_DURABILITY * 2));
+    public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> FADED_SPAWN_EGG = ITEMS.registerItem(
+            "faded_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.FADED.get()));
     public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(
             "reinforced_needle",
             properties -> new ExtractionNeedleItem(properties, true, false),
