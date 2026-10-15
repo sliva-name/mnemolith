@@ -213,11 +213,12 @@ public class Unremembered extends Monster {
         return this.lastFeed = "fed";
     }
 
-    /** Darkness and slowness for every player within {@link #PULSE_RANGE}. Returns how many it touched. */
+    /** Darkness and slowness for every player within {@link #PULSE_RANGE} who does not wear a remembering circlet. Returns how many it touched. */
     public int pulse(ServerLevel level) {
         int touched = 0;
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(PULSE_RANGE))) {
-            if (player.isCreative() || player.isSpectator() || player.distanceToSqr(this) > PULSE_RANGE * PULSE_RANGE) {
+            if (player.isCreative() || player.isSpectator() || player.distanceToSqr(this) > PULSE_RANGE * PULSE_RANGE
+                    || com.mnemolith.content.item.RememberingCirclet.worn(player)) {
                 continue;
             }
             player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0), this);
@@ -341,6 +342,14 @@ public class Unremembered extends Monster {
         super.die(source);
         if (!wasDead && this.level() instanceof ServerLevel level) {
             this.remembered = remember(level, this.blockPosition());
+            var advancement = level.getServer().getAdvancements().get(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.mnemolith.Mnemolith.MOD_ID, "unremembered_rest"));
+            if (advancement != null) {
+                for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(TELL_RANGE))) {
+                    if (!player.isSpectator()) {
+                        player.getAdvancements().award(advancement, "rested");
+                    }
+                }
+            }
             for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(TELL_RANGE))) {
                 player.sendSystemMessage(Component.translatable("mnemolith.unremembered.remembers", this.remembered));
             }
@@ -393,6 +402,9 @@ public class Unremembered extends Monster {
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
         this.spawnAtLocation(level, ImprintSlips.of(ImprintTag.FORGOTTEN, this.blockPosition()));
+        if (killedByPlayer) {
+            this.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.LETHE_TEAR.get()));
+        }
     }
 
     @Override

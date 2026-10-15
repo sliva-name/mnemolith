@@ -38,8 +38,8 @@ public final class HollowForgetting {
         if (!Hollows.is(level.getBiome(pos))) {
             return false;
         }
-        if (HollowLanterns.guarded(level, pos)) {
-            // a recollite lantern keeps the memory: nothing leaves, nothing is written
+        if (HollowLanterns.guarded(level, pos) || com.mnemolith.content.item.RememberingCirclet.wornNear(level, pos)) {
+            // a recollite lantern (or someone wearing a remembering circlet) keeps the memory: nothing leaves, nothing is written
             HollowLanterns.noteKept();
             return false;
         }

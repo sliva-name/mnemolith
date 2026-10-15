@@ -32,6 +32,10 @@ public final class ArmoryMaterials {
     public static final ArmorMaterial ECHO = armor("echo", 16, defense(2, 4, 5, 2), 14, 0.0F, 0.0F, REPAIRS_ECHO, SoundEvents.ARMOR_EQUIP_CHAIN);
     public static final ArmorMaterial SCAR = armor("scar", 28, defense(3, 6, 7, 3), 12, 2.0F, 0.05F, REPAIRS_SCAR, SoundEvents.ARMOR_EQUIP_NETHERITE);
 
+    /** The remembering circlet (Unremembered stage 2): a helmet only; light, the point is what it does. */
+    public static final TagKey<Item> REPAIRS_CIRCLET = repair("repairs_remembering_circlet");
+    public static final ArmorMaterial CIRCLET = armor("remembering_circlet", 20, defense(1, 2, 3, 2), 18, 0.0F, 0.0F, REPAIRS_CIRCLET, SoundEvents.ARMOR_EQUIP_GOLD);
+
     public static final ToolMaterial RECALL = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 250, 6.0F, 2.0F, 14, REPAIRS_RECALL);
     public static final ToolMaterial MAUL = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 400, 4.0F, 3.0F, 10, REPAIRS_MAUL);
     public static final ToolMaterial SPEAR = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 190, 5.0F, 1.0F, 12, REPAIRS_SPEAR);

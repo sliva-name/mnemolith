@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:hollows_found",
+  "display": {
+    "icon": {
+      "id": "mnemolith:lethe_tear"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.unremembered_rest.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.unremembered_rest.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "rested": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "rested"
+    ]
+  ]
+}

@@ -33,6 +33,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_mendqa` | `/mnemolith mendqa` (10) | Places and removes one heart; clears its chunk memory after |
 | `mnemolith:suite_memorialqa` | `/mnemolith memorialqa` (9) | One memorial stone and two fake players; clears memory after |
 | `mnemolith:suite_unrememberedqa` | `/mnemolith unrememberedqa` (17) | Paints a patch of Memory Hollows with `fillbiome`, one fake player, calls and kills a boss; clears memory, faded and drops after |
+| `mnemolith:suite_unremembered2qa` | `/mnemolith unremembered2qa` (10) | One fake player, two slain bosses, two faded; removes drops after |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -101,6 +102,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `posy_rests_residue` | A real player (live site 10) right-clicks an unread fire residue with two posies (`interactOn`): the residue is gone and one posy is left | 200 |
 | `memorial_shares_notes` | Two real players (live site 13): the carver uses a written transcript on a memorial stone (`gameMode.useItemOn`) and it is spent; the reader touches it with an empty hand and learns tags 5 and formula bit 1; the stone keeps the notes | 200 |
 | `unremembered_called_and_seen` | Two real players (live site 14) on a painted hollow with 3 forgotten imprints: the caller uses a hollow effigy on the ground (`gameMode.useItemOn`), it is spent and one Unremembered rises; after 12 ticks both players are on its boss bar and its pulse darkens both | 200 |
+| `circlet_wards_and_keeps` | Two real players (live site 15) on a painted hollow, one wearing a remembering circlet: the boss pulse touches 1 and darkens only the bare-headed player; `HollowForgetting.forget` refuses beside the wearer and still forgets 24 blocks away | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
 | `mending_tends_heart` | A real player (live site 11) right-clicks a Scar heart with posies three times (`gameMode.useItemOn`, the day wound back between): memorial stone, memorial site with 3 tendings, 3 posies spent | 200 |
 
@@ -835,3 +837,7 @@ Manual (two clients):
 ## The Unremembered
 
 `/mnemolith unrememberedqa` (gamemaster) checks the stage 1 boss and its effigy ([design note](design/unremembered.md)).
+
+## The Unremembered, stage 2
+
+`/mnemolith unremembered2qa` (gamemaster) checks the Lethe tear and the remembering circlet ([design note](design/unremembered.md#stage-2-rules)).
