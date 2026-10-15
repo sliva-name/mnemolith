@@ -12,6 +12,10 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue STORM_UNWATCHED_TICKS;
     public static final ModConfigSpec.IntValue STORM_LULL_TICKS;
     public static final ModConfigSpec.BooleanValue LOG_PRESSURE_CHANGES;
+    public static final ModConfigSpec.BooleanValue UNREMEMBERED_ENABLED;
+    public static final ModConfigSpec.DoubleValue UNREMEMBERED_HEALTH;
+    public static final ModConfigSpec.DoubleValue UNREMEMBERED_HEALTH_PER_PLAYER;
+    public static final ModConfigSpec.IntValue UNREMEMBERED_CALL_FORGOTTEN;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -23,6 +27,13 @@ public final class ServerConfig {
         STORM_UNWATCHED_TICKS = SpecValues.integer(builder, "stormUnwatchedTicks", "Ticks a recollection storm may go unwatched (its centre chunk unloaded, or its last wave waiting on residues in unloaded chunks) before it fades: it ends without a Scar, frees the storm cap, and halves the instability of its area the next time the centre loads. 0 keeps the old behaviour (an unwatched storm waits, frozen).", 2400, 0, 72000);
         STORM_LULL_TICKS = SpecValues.integer(builder, "stormLullTicks", "Ticks a spent or contained recollection storm keeps its surroundings (two chunks from its centre) free of new storms. 24000 is one Minecraft day. 0 turns lulls off: a cleared area can storm again at once.", 24000, 0, 168000);
         LOG_PRESSURE_CHANGES = SpecValues.bool(builder, "logPressureChanges", "Whether a pressure band change, other than fracture, is written to the server log.", false);
+        builder.pop();
+
+        SpecValues.section(builder, "unremembered", "The Unremembered, the Memory Hollows boss called with a hollow effigy.");
+        UNREMEMBERED_ENABLED = SpecValues.bool(builder, "unrememberedEnabled", "Whether a hollow effigy can call the Unremembered. One already risen stays.", true);
+        UNREMEMBERED_HEALTH = SpecValues.decimal(builder, "unrememberedHealth", "Health of the Unremembered when one player takes part.", 160.0D, 40.0D, 1024.0D);
+        UNREMEMBERED_HEALTH_PER_PLAYER = SpecValues.decimal(builder, "unrememberedHealthPerPlayer", "Extra health for each further player within 32 blocks when it is called, as a share of unrememberedHealth (0.5: two players face 1.5x). 0 turns scaling off.", 0.5D, 0.0D, 2.0D);
+        UNREMEMBERED_CALL_FORGOTTEN = SpecValues.integer(builder, "unrememberedCallForgotten", "Forgotten imprints a hollow chunk must hold before a hollow effigy can call the Unremembered there.", 3, 1, 32);
         builder.pop();
 
         SPEC = builder.build();

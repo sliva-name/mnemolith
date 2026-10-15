@@ -1386,7 +1386,7 @@
   "item.mnemolith.hollow_effigy": "Hollow Effigy",
   "item.mnemolith.hollow_effigy.hint": "Use it in a Memory Hollows chunk that has forgotten at least 3 times: the forgetting gathers into the Unremembered. No lantern may guard the spot.",
   "mnemolith.effigy.not_hollow": "Only a memory hollow forgets enough to answer.",
-  "mnemolith.effigy.too_few": "This place has not forgotten enough yet (3 forgotten memories needed).",
+  "mnemolith.effigy.too_few": "This place has not forgotten enough yet (%s forgotten memories needed).",
   "mnemolith.effigy.kept": "A recollite lantern keeps this place; nothing here gathers.",
   "mnemolith.effigy.another": "Something unremembered already walks nearby.",
   "mnemolith.effigy.failed": "Nothing answers.",
@@ -1402,5 +1402,17 @@
   "advancements.mnemolith.unremembered_rest.title": "The Hollow Remembers",
   "advancements.mnemolith.unremembered_rest.description": "Bring down the Unremembered.",
   "advancements.mnemolith.remembering_circlet.title": "Nothing Unseen",
-  "advancements.mnemolith.remembering_circlet.description": "Wear a remembering circlet and see a faded without a lens."
+  "advancements.mnemolith.remembering_circlet.description": "Wear a remembering circlet and see a faded without a lens.",
+  "mnemolith.effigy.disabled": "This server does not let the Unremembered be called.",
+  "mnemolith.configuration.unremembered": "The Unremembered",
+  "mnemolith.configuration.unremembered.tooltip": "The Memory Hollows boss called with a hollow effigy.",
+  "mnemolith.configuration.unrememberedEnabled": "Unremembered Can Be Called",
+  "mnemolith.configuration.unrememberedEnabled.tooltip": "Whether a hollow effigy can call the Unremembered. One already risen stays.",
+  "mnemolith.configuration.unrememberedHealth": "Unremembered Health",
+  "mnemolith.configuration.unrememberedHealth.tooltip": "Health of the Unremembered when one player takes part.",
+  "mnemolith.configuration.unrememberedHealthPerPlayer": "Extra Health per Player",
+  "mnemolith.configuration.unrememberedHealthPerPlayer.tooltip": "Extra health for each further player within 32 blocks when it is called, as a share of the base health (0.5: two players face 1.5x). 0 turns scaling off.",
+  "mnemolith.configuration.unrememberedCallForgotten": "Forgotten Memories to Call",
+  "mnemolith.configuration.unrememberedCallForgotten.tooltip": "Forgotten imprints a hollow chunk must hold before a hollow effigy can call the Unremembered there.",
+  "mnemolith.configuration.unremembered.button": "The Unremembered"
 }
