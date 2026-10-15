@@ -5,10 +5,11 @@
     "0.2.0": "Expansion catalog T1–Z4, Archive Guardian, QA/UI/texture/structure fixes",
     "0.2.1": "Bug fixes: structures no longer generate as empty pits, Mute Library needs ground in the End, UI no longer cut off, elite/twin mobs keep status after reload, server syncs limits to clients",
     "0.3.0": "The world remembers you: your past self replays your death, home, big build or hard fight when you return; Leave Bed at night no longer counts as sleep; fixes for reel slips, echo items and chunk memory lost on load",
-    "0.4.0": "Echo guard (melee, bows, shields, escort; mobs fight back, armor) and Memory Hollows (new biome, sunken archive, catching flickers, recollite lens and needle, the faded, lectern replay); unwatched storms fade"
+    "0.4.0": "Echo guard (melee, bows, shields, escort; mobs fight back, armor) and Memory Hollows (new biome, sunken archive, catching flickers, recollite lens and needle, the faded, lectern replay); unwatched storms fade",
+    "0.5.0": "Hollows stage 4, recollite pickaxe and lantern, remembrance posy, chronicle transcripts and the chronicler's notes, storm lull (configurable), mending the Scar (memorial stone, grove, shared notes), perf budgets"
   },
   "promos": {
-    "26.2-latest": "0.4.0",
-    "26.2-recommended": "0.4.0"
+    "26.2-latest": "0.5.0",
+    "26.2-recommended": "0.5.0"
   }
 }

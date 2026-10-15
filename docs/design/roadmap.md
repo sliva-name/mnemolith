@@ -4,7 +4,7 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated for release 0.4.0)
+## 0. Status (updated for release 0.5.0)
 
 | System | Status | Where |
 | --- | --- | --- |
@@ -221,5 +221,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 19. The posy on residues (done, PR #73): lay residual echoes to rest; see [posy-residues.md](posy-residues.md).
 20. Mending the Scar (stage 1 done, PR #74; stage 2 done, PR #75; memorial notes done, PR #76): turn a Scar site into a memorial; see [mending.md](mending.md).
 21. Memorial notes (done, PR #76): shared notes on a mended Scar; see [mending.md](mending.md).
-22. Perf budgets (PR #77): `perfqa` plus a faster lantern guard; see [perf-budgets.md](perf-budgets.md).
-23. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+22. Perf budgets (done, PR #77): `perfqa` plus a faster lantern guard; see [perf-budgets.md](perf-budgets.md).
+23. Release 0.5.0 (`release/0.5.0`): items 10–22; manual checklist [../playtest-0.5.0.md](../playtest-0.5.0.md).
+24. Next: pick from [expansion-ideas.md](expansion-ideas.md).
