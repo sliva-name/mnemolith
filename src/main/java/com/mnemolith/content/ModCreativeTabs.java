@@ -57,6 +57,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RECOLLITE_ORE.get());
                 output.accept(ModItems.RECOLLITE_SHARD.get());
                 output.accept(ModItems.RECOLLITE_BLOCK.get());
+                output.accept(ModItems.RECOLLITE_LANTERN.get());
                 output.accept(ModItems.FORGET_ME_NOT.get());
                 output.accept(ModItems.ARCHIVAL_TABLET.get());
                 output.accept(ModItems.ARCHIVE_SCHEMATIC.get());

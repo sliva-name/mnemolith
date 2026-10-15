@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1178,6 +1178,33 @@ def p_pickaxe():
     p.tag('silence', 330, 210)
     p.arrow((352, 210), (392, 210), dotted=True)
     p.ring(420, 210, 22, dotted=True)
+    return p.image()
+
+
+def p_lantern():
+    """The recollite lantern: a lantern on the turf, a ring of what it keeps, a flicker inside the ring that is not
+    forgotten, and one outside it that is."""
+    p = Page('lantern')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('l_side', 'recollite_lantern_side'), ('l_top', 'recollite_lantern_top')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
+    d.add(cube('l_top', 'l_side', 0, 0, 0))
+    # a flicker inside the light, kept
+    d.add(mob_quads('echo', 1.6, 0, 1.2, 200), light='entity', tint=(188, 200, 236, 140))
+    # one at the edge, sinking: forgotten
+    d.add(mob_quads('echo', -2.4, -0.9, -1.6, 200), light='entity', tint=(169, 173, 188, 80))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    p.ring(150, 150, 96, dotted=True, ry=48)
+    # kept: the tag stays
+    p.tag('path', 330, 70)
+    p.arrow((352, 70), (392, 70))
+    p.tag('path', 420, 70)
+    # outside: forgotten
+    p.tag('path', 330, 180)
+    p.arrow((352, 180), (392, 180), dotted=True)
+    p.tag('forgotten', 420, 180)
     return p.image()
 
 

@@ -88,6 +88,41 @@ def recollite_block():
     return cv.image()
 
 
+def _lantern_frame(seed):
+    rng = core.rng_for(seed)
+    cv = surface('hollowstone', S, S, rng, face='side', bevel=0, wear=0.3, tile=False, base_shift=0.3)
+    rim = m_rect(S, S, 0, 0, S - 1, S - 1) & ~m_rect(S, S, 3, 3, S - 4, S - 4)
+    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(255, 250, 240))
+    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
+    return cv, rng, rim
+
+
+def lantern_side():
+    """A hollowstone frame around a cold recollite pane, a forget-me-not glowing inside."""
+    cv, rng, rim = _lantern_frame('recollite_lantern_side')
+    pane = m_rect(S, S, 5, 5, S - 6, S - 6)
+    cv.part(pane, 'recollite', 'flat', 5, rng=rng, noise=0.25)
+    cv.shade_px(m_rect(S, S, 5, 5, S - 6, 5) | m_rect(S, S, 5, 5, 5, S - 6), 0.4)
+    # mullions: a cross of hollowstone
+    cv.part(m_rect(S, S, 15, 5, 16, S - 6) | m_rect(S, S, 5, 15, S - 6, 16), 'pale', 'flat', 3)
+    shapes.glow(cv, 15.5, 15.5, 10, RAMPS['pale'][6], 0.45)
+    for (x, y) in ((10, 10), (21, 10), (10, 21), (21, 21)):
+        cv.fill(m_ellipse(S, S, x + 0.5, y + 0.5, 1.6, 1.6), RAMPS['recollite'][6])
+        cv.px(x, y, RAMPS['pale'][6])
+    return cv.image()
+
+
+def lantern_top():
+    """The lantern's cap: hollowstone with a round recollite vent in the middle."""
+    cv, rng, rim = _lantern_frame('recollite_lantern_top')
+    vent = m_ellipse(S, S, 15.5, 15.5, 7, 7)
+    cv.part(vent, 'recollite', 'flat', 5, rng=rng, noise=0.2)
+    cv.shade_px(m_ellipse(S, S, 15.5, 15.5, 7, 7) & ~m_ellipse(S, S, 15.5, 15.5, 6, 6), 0.45)
+    shapes.glow(cv, 15.5, 15.5, 6, RAMPS['pale'][6], 0.5)
+    core.glint(cv, 13, 13, arm=1)
+    return cv.image()
+
+
 def turf_top():
     rng = core.rng_for('hollow_turf_top')
     cv = surface('lilac', S, S, rng, face='top', bevel=0, wear=0, tile=True)
@@ -280,6 +315,8 @@ BLOCK_TEXTURES = {
     'hollowstone_bricks': hollowstone_bricks,
     'recollite_ore': recollite_ore,
     'recollite_block': recollite_block,
+    'recollite_lantern_side': lantern_side,
+    'recollite_lantern_top': lantern_top,
     'forget_me_not': forget_me_not,
 }
 ITEM_TEXTURES = {

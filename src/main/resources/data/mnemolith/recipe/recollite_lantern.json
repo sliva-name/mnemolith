@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "H": "mnemolith:hollowstone_bricks",
+    "R": "mnemolith:recollite_shard",
+    "F": "mnemolith:forget_me_not"
+  },
+  "pattern": [
+    "HRH",
+    "RFR",
+    "HRH"
+  ],
+  "result": {
+    "id": "mnemolith:recollite_lantern"
+  }
+}

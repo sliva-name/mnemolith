@@ -38,6 +38,11 @@ public final class HollowForgetting {
         if (!Hollows.is(level.getBiome(pos))) {
             return false;
         }
+        if (HollowLanterns.guarded(level, pos)) {
+            // a recollite lantern keeps the memory: nothing leaves, nothing is written
+            HollowLanterns.noteKept();
+            return false;
+        }
         if (replaced != null && replaced != ImprintTag.FORGOTTEN) {
             LevelChunk chunk = level.getChunkAt(pos);
             ChunkMemory memory = LoadedChunkMemory.existing(chunk);
