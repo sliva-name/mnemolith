@@ -4,10 +4,12 @@ import java.util.List;
 
 import com.mnemolith.Mnemolith;
 import com.mnemolith.content.ModItems;
+import com.mnemolith.entity.echo.ResidueEntity;
 import com.mnemolith.entity.mob.Faded;
 import com.mnemolith.imprint.ImprintWriter;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -31,20 +33,27 @@ public final class RemembrancePosy {
     public enum Result { NONE, RESTED, CALMED }
 
     private static long rested;
+    private static long residuesRested;
 
     private RemembrancePosy() {}
 
     @SubscribeEvent
     public static void onInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getHand() != InteractionHand.MAIN_HAND || !(event.getLevel() instanceof ServerLevel level)
-                || !(event.getEntity() instanceof ServerPlayer player) || !(event.getTarget() instanceof Faded faded)) {
+                || !(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
         ItemStack stack = player.getMainHandItem();
         if (!stack.is(ModItems.REMEMBRANCE_POSY.get())) {
             return;
         }
-        if (offer(level, player, faded, stack) != Result.NONE) {
+        Result result = Result.NONE;
+        if (event.getTarget() instanceof Faded faded) {
+            result = offer(level, player, faded, stack);
+        } else if (event.getTarget() instanceof ResidueEntity residue) {
+            result = offerResidue(level, player, residue, stack);
+        }
+        if (result != Result.NONE) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
         }
@@ -76,6 +85,37 @@ public final class RemembrancePosy {
             stack.shrink(1);
         }
         return result;
+    }
+
+    /**
+     * {@code player} gives {@code stack} (a posy) to a residual echo, ordinary or storm: it is laid to rest at once, no
+     * lens read needed. It leaves nothing (no shard, no slip) and writes nothing back; a storm loses it like a captured
+     * one. A legendary residue (one of your own living memories) refuses. Public for QA.
+     */
+    public static Result offerResidue(ServerLevel level, ServerPlayer player, ResidueEntity residue, ItemStack stack) {
+        if (!residue.isAlive() || residue.isRemoved() || !stack.is(ModItems.REMEMBRANCE_POSY.get())) {
+            return Result.NONE;
+        }
+        if (residue.legendary()) {
+            player.sendOverlayMessage(Component.translatable("mnemolith.posy.residue_refuses"));
+            return Result.NONE;
+        }
+        boolean storm = residue.storm() != 0L;
+        level.sendParticles(ParticleTypes.SOUL, residue.getX(), residue.getY() + 0.8D, residue.getZ(), 12, 0.3D, 0.5D, 0.3D, 0.01D);
+        level.playSound(null, residue.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 1.0F, 0.6F);
+        residue.setStorm(0L);
+        residue.discard();
+        residuesRested++;
+        player.sendOverlayMessage(Component.translatable(storm ? "mnemolith.posy.storm_residue_rest" : "mnemolith.posy.residue_rest"));
+        if (!player.isCreative()) {
+            stack.shrink(1);
+        }
+        return Result.RESTED;
+    }
+
+    /** Residues laid to rest since the server started (QA). */
+    public static long residuesRestedCount() {
+        return residuesRested;
     }
 
     /** Faded laid to rest since the server started (QA). */

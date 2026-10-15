@@ -29,6 +29,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_transcriptqa` | `/mnemolith transcriptqa` (12) | Two fake players with discovery set by hand; no world blocks touched |
 | `mnemolith:suite_lullqa` | `/mnemolith lullqa` (13) | Parks active storms and puts them back; removes only its own lulls |
 | `mnemolith:suite_chroniclerqa` | `/mnemolith chroniclerqa` (9) | Villagers created off-world (not added); one fake reader |
+| `mnemolith:suite_posy2qa` | `/mnemolith posy2qa` (8) | Residues spawned with no AI and removed; its one storm ends as passed |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -92,6 +93,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `transcript_shared_between_players` | Two real players: the author (death, sculk, formula 1) uses a blank transcript (`gameMode.useItem`) and it is written; the reader uses the sheet and ends with exactly the author's tags and formulas; the sheet is spent | 200 |
 | `storm_lull_refuses_shard` | A real player in a fracture (live site 8): the gate is open; a storm there is spent and the gate answers `LULL`; a residual shard freed through the real item use calls no storm | 200 |
 | `chronicler_sells_notes` | A real player (live site 9) and a real level 3 chronicler (respawned until it offers the sheet, at most 30): the offer counts a use, the player reads the sheet (`gameMode.useItem`), learns exactly the five body tags and no formula; the sheet is spent | 200 |
+| `posy_rests_residue` | A real player (live site 10) right-clicks an unread fire residue with two posies (`interactOn`): the residue is gone and one posy is left | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -746,3 +748,19 @@ Manual (to do on a normal world):
 
 - [ ] A journeyman chronicler's trading screen shows the sheet; buying it works.
 - [ ] The tooltip shows "Chronicler" in EN and "Хронист" in RU as the author.
+
+## Posy on residues QA
+
+`/mnemolith posy2qa` (gamemaster) checks the posy on residual echoes ([design note](design/posy-residues.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `restsUnread`, `leavesNothing`, `spends` | An unread residue is laid to rest; no item drops and no imprint is written; one posy spent |
+| `stormLoses` | A storm residue is laid to rest and the storm no longer lists it |
+| `legendRefuses` | A legendary residue stays and the posy is kept |
+| `creativeKeeps`, `deadIgnored`, `needsPosy` | Creative keeps the posy; a removed residue takes nothing; another item does nothing |
+
+Manual (to do on a normal world):
+
+- [ ] The rest, storm-rest and refusal lines in RU and EN.
+- [ ] During a real storm, laying every storm residue to rest ends it spent with a lull.
