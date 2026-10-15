@@ -1,6 +1,6 @@
 # Mending the Scar
 
-Status: stage 1 implemented on `feature/mending-1`; stage 2 planned.
+Status: stage 1 done (PR #74); stage 2 implemented on `feature/mending-2`.
 
 A content line for the end of the storm arc. It turns the Scar site from a dead end into a choice that lasts.
 
@@ -41,6 +41,11 @@ A content line for the end of the storm arc. It turns the Scar site from a dead 
 - Residual echoes within 8 blocks of a memorial **rest instead of festering**. They dissolve quietly, with no write-back
   and no act-out, and they do not lash. A memorial makes its surroundings calm.
 - The guide page and QA grow to cover it.
+- As built: the grove grows on the memorial site's daily pulse (`ScarSites.reseed`, which a memorial now uses for the
+  grove instead of a residue). The ground must accept a forget-me-not (grass, dirt, moss, podzol, hollow turf).
+  `ScarSites.nearMemorial` checks the 3x3 chunks for a memorial stone within 8 blocks. A residue rechecks it every 100
+  ticks to skip its lash. At fester it dissolves, including old residues left over from before the mending.
+  Legendary residues are untouched.
 
 ## Balance
 

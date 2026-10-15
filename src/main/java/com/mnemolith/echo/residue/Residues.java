@@ -278,7 +278,11 @@ public final class Residues {
         BlockPos pos = residue.blockPosition();
         ImprintTag tag = residue.tag();
         Fester result;
-        if (LoadedChunkMemory.isMuted(level, pos)) {
+        if (com.mnemolith.echo.storm.ScarSites.nearMemorial(level, pos) && !residue.legendary()) {
+            // A memorial's calm: the residue rests, nothing written back, nothing acted out.
+            dissolve(level, residue);
+            result = Fester.DISSOLVED;
+        } else if (LoadedChunkMemory.isMuted(level, pos)) {
             result = weaken(level, residue, Fester.STARVED);
         } else if (feed(level, residue)) {
             result = weaken(level, residue, Fester.FED);

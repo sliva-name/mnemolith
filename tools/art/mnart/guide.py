@@ -747,6 +747,10 @@ def p_mending():
         R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
     d.add(cube('m_top', 'm_side', -0.5, 0, -0.5))
     p.center(d.render(0, 0.6, 0), 400, 120)
+    # stage 2, the grove: forget-me-nots around the stone, and a residue at rest
+    for (x, y) in ((340, 196), (452, 192), (470, 150)):
+        p.sprite('forget_me_not', x, y, 1, src=_hollows_tex('block', 'forget_me_not'))
+    p.spark(330, 60, 12, TEMPER['silence'])
     return p.image()
 
 
