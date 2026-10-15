@@ -184,7 +184,14 @@ public final class ScarSites {
      */
     public static @Nullable ResidueEntity reseed(ServerLevel level, LevelChunk chunk, ChunkMemory memory) {
         ScarSite site = memory.scar();
-        if (site == null || site.memorial() || !Residues.enabled() || level.getGameTime() - site.seededAt() < RESEED_TICKS) {
+        if (site == null || level.getGameTime() - site.seededAt() < RESEED_TICKS) {
+            return null;
+        }
+        if (site.memorial()) {
+            grow(level, chunk, memory, site);
+            return null;
+        }
+        if (!Residues.enabled()) {
             return null;
         }
         return seed(level, chunk, memory, site);
@@ -226,20 +233,101 @@ public final class ScarSites {
         return residue;
     }
 
+    /** Forget-me-nots a memorial grows per day, how far from the stone, and how many may stand around it. */
+    public static final int GROVE_PER_DAY = 2;
+    public static final int GROVE_RADIUS = 6;
+    public static final int GROVE_CAP = 12;
+    /** Residues within this many blocks of a memorial stone rest instead of festering and do not lash. */
+    public static final double CALM_RADIUS = 8.0D;
+
+    /**
+     * The memorial grove: up to {@link #GROVE_PER_DAY} forget-me-nots within {@link #GROVE_RADIUS} blocks of the stone,
+     * on grass, dirt or moss, into air, while fewer than {@link #GROVE_CAP} stand there. Resets the site's day. Returns
+     * how many grew. Public for QA (ignores nothing: callers check the day).
+     */
+    public static int grow(ServerLevel level, LevelChunk chunk, ChunkMemory memory, ScarSite site) {
+        memory.setScar(site.withSeededAt(level.getGameTime()));
+        chunk.markUnsaved();
+        BlockPos stone = findBlock(level, chunk, ModBlocks.MEMORIAL_STONE.get());
+        if (stone == null) {
+            return 0;
+        }
+        int standing = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(stone.offset(-GROVE_RADIUS, -3, -GROVE_RADIUS), stone.offset(GROVE_RADIUS, 3, GROVE_RADIUS))) {
+            if (level.getBlockState(pos).is(ModBlocks.FORGET_ME_NOT.get())) {
+                standing++;
+            }
+        }
+        int grown = 0;
+        RandomSource random = level.getRandom();
+        for (int attempt = 0; attempt < 24 && grown < GROVE_PER_DAY && standing + grown < GROVE_CAP; attempt++) {
+            int x = stone.getX() + random.nextInt(GROVE_RADIUS * 2 + 1) - GROVE_RADIUS;
+            int z = stone.getZ() + random.nextInt(GROVE_RADIUS * 2 + 1) - GROVE_RADIUS;
+            if (!level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
+                continue;
+            }
+            BlockPos spot = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
+            if (Math.abs(spot.getY() - stone.getY()) > 3 || !level.getBlockState(spot).isAir()
+                    || !groveGround(level.getBlockState(spot.below()))
+                    || !ModBlocks.FORGET_ME_NOT.get().defaultBlockState().canSurvive(level, spot)) {
+                continue;
+            }
+            level.setBlock(spot, ModBlocks.FORGET_ME_NOT.get().defaultBlockState(), Block.UPDATE_ALL);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, x + 0.5D, spot.getY() + 0.5D, z + 0.5D, 4, 0.2D, 0.2D, 0.2D, 0.0D);
+            grown++;
+        }
+        Mnemolith.LOGGER.debug("Mnemolith memorial grove at {} grew {} (standing {})", stone.toShortString(), grown, standing);
+        return grown;
+    }
+
+    /** Grass, dirt, moss or hollow turf: ground a forget-me-not may grow on. */
+    public static boolean groveGround(BlockState state) {
+        return state.is(net.minecraft.tags.BlockTags.DIRT) || state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)
+                || state.is(net.minecraft.world.level.block.Blocks.MOSS_BLOCK) || state.is(net.minecraft.world.level.block.Blocks.PODZOL)
+                || state.is(ModBlocks.HOLLOW_TURF.get());
+    }
+
+    /** Whether a memorial stone stands within {@link #CALM_RADIUS} of {@code pos} (memorial sites in the 3x3 chunks). */
+    public static boolean nearMemorial(ServerLevel level, BlockPos pos) {
+        ChunkPos center = ChunkPos.containing(pos);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (!level.getChunkSource().hasChunk(center.x() + dx, center.z() + dz)) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(center.x() + dx, center.z() + dz);
+                ChunkMemory memory = LoadedChunkMemory.existing(chunk);
+                if (memory == null || memory.scar() == null || !memory.scar().memorial()) {
+                    continue;
+                }
+                BlockPos stone = findBlock(level, chunk, ModBlocks.MEMORIAL_STONE.get());
+                if (stone != null && stone.distToCenterSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= CALM_RADIUS * CALM_RADIUS) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /** The heart block in this chunk, if any (only sections whose palette may hold it are walked). */
     public static @Nullable BlockPos findHeart(ServerLevel level, LevelChunk chunk) {
+        return findBlock(level, chunk, ModBlocks.SCAR_HEART.get());
+    }
+
+    /** The first {@code block} in this chunk, if any (only sections whose palette may hold it are walked). */
+    public static @Nullable BlockPos findBlock(ServerLevel level, LevelChunk chunk, Block block) {
         LevelChunkSection[] sections = chunk.getSections();
         ChunkPos pos = chunk.getPos();
         for (int index = 0; index < sections.length; index++) {
             LevelChunkSection section = sections[index];
-            if (section.hasOnlyAir() || !section.maybeHas(state -> state.is(ModBlocks.SCAR_HEART.get()))) {
+            if (section.hasOnlyAir() || !section.maybeHas(state -> state.is(block))) {
                 continue;
             }
             int baseY = level.getSectionYFromSectionIndex(index) << 4;
             for (int y = 0; y < 16; y++) {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
-                        if (section.getBlockState(x, y, z).is(ModBlocks.SCAR_HEART.get())) {
+                        if (section.getBlockState(x, y, z).is(block)) {
                             return new BlockPos(pos.getMinBlockX() + x, baseY + y, pos.getMinBlockZ() + z);
                         }
                     }

@@ -60,6 +60,8 @@ public final class ResidueEntity extends Mob {
     private int festerTicks;
     private int pinTicks;
     private int lashCooldown;
+    private int calmCheck;
+    private boolean calmed;
     /** The recollection storm that condensed this residue (0 = none): its waves drive it instead of the fester. */
     private long storm;
     /** Set when this residue is an offer from this play. Server only. */
@@ -226,6 +228,11 @@ public final class ResidueEntity extends Mob {
         }
     }
 
+    /** Whether a memorial stone calmed this residue at its last check (no lash). Rechecked every 100 ticks. */
+    public boolean calmed() {
+        return this.calmed;
+    }
+
     /** The storm this residue belongs to (0 = none). */
     public long storm() {
         return this.storm;
@@ -278,6 +285,14 @@ public final class ResidueEntity extends Mob {
         double radius = com.mnemolith.config.CommonConfig.RESIDUE_LASH_RADIUS.get();
         if (radius <= 0.0D) {
             return;
+        }
+        if (this.calmCheck <= 0) {
+            this.calmCheck = 100;
+            this.calmed = com.mnemolith.echo.storm.ScarSites.nearMemorial(level, this.blockPosition());
+        }
+        this.calmCheck--;
+        if (this.calmed) {
+            return; // a memorial's calm: no lash
         }
         for (ServerPlayer player : players) {
             if (player.level() != level || !Residues.affects(player)) {
