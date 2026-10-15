@@ -32,7 +32,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Lull feedback | Done on main (PR #70): a shard freed during a lull tells the player how many minutes are left; the storms guide page explains the lull | [storm-lull.md](storm-lull.md#feedback), `lullqa` 12/12 |
 | Lull config | Done on main (PR #72): `server.stormLullTicks` (default 24000, 0 turns lulls off, up to 7 days), RU/EN config screen strings | [storm-lull.md](storm-lull.md#config), `lullqa` 13/13 |
 | Chronicler's copied notes | Done on main (PR #71): a journeyman chronicler sells a written transcript of the five body tags (10 emeralds and a paper, 2 uses), signed by the chronicler | [chronicler-notes.md](chronicler-notes.md), `chroniclerqa` 9/9, live `chronicler_sells_notes` |
-| Posy on residues | `feature/posy-residues`: a remembrance posy lays any residual echo (ordinary or storm) to rest without a read; leaves nothing; legendary residues refuse | [posy-residues.md](posy-residues.md), `posy2qa` 8/8, live `posy_rests_residue` |
+| Posy on residues | Done on main (PR #73): a remembrance posy lays any residual echo (ordinary or storm) to rest without a read; leaves nothing; legendary residues refuse | [posy-residues.md](posy-residues.md), `posy2qa` 8/8, live `posy_rests_residue` |
+| Mending the Scar, stage 1 | `feature/mending-1`: tend a Scar heart with a remembrance posy once a day (gives up that day's old residue); three tendings mend it into a memorial stone (storm ward, no seeding); guide page `mending` | [mending.md](mending.md), `mendqa` 10/10, live `mending_tends_heart` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -214,5 +215,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 16. Lull feedback (done, PR #70): the shard says how long the lull lasts.
 17. The chronicler's copied notes (done, PR #71): a transcript for sale; see [chronicler-notes.md](chronicler-notes.md).
 18. Lull config (done, PR #72): `stormLullTicks` for servers; see [storm-lull.md](storm-lull.md#config).
-19. The posy on residues (`feature/posy-residues`): lay residual echoes to rest; see [posy-residues.md](posy-residues.md).
-20. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+19. The posy on residues (done, PR #73): lay residual echoes to rest; see [posy-residues.md](posy-residues.md).
+20. Mending the Scar (`feature/mending-1`, stage 2 next): turn a Scar site into a memorial; see [mending.md](mending.md).
+21. Next: pick from [expansion-ideas.md](expansion-ideas.md).

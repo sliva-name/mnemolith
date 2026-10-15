@@ -68,6 +68,20 @@ public final class ModBlocks {
             com.mnemolith.content.block.ScarHeartBlock::new,
             scarHeartProperties());
 
+    /** A mended Scar's heart (three posy tendings). No item, no drops; breaking it forgets the site. */
+    public static final DeferredBlock<com.mnemolith.content.block.MemorialStoneBlock> MEMORIAL_STONE = BLOCKS.registerBlock(
+            "memorial_stone",
+            com.mnemolith.content.block.MemorialStoneBlock::new,
+            properties -> properties
+                    .mapColor(MapColor.QUARTZ)
+                    .strength(30.0F, 1200.0F)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 7)
+                    .noLootTable()
+                    .requiresCorrectToolForDrops()
+                    .pushReaction(PushReaction.BLOCK)
+                    .isValidSpawn((state, level, pos, type) -> false));
+
     /** Archive shrine: challenge the Archive Guardian (B4). Placeable; also in hush chapel / archive structures. */
     public static final DeferredBlock<com.mnemolith.content.block.ArchiveShrineBlock> ARCHIVE_SHRINE = BLOCKS.registerBlock(
             "archive_shrine",

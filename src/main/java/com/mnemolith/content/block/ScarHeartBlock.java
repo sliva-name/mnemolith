@@ -40,6 +40,19 @@ public class ScarHeartBlock extends Block {
     }
 
     @Override
+    protected net.minecraft.world.InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+        if (!stack.is(com.mnemolith.content.ModItems.REMEMBRANCE_POSY.get())) {
+            return net.minecraft.world.InteractionResult.PASS;
+        }
+        if (!(level instanceof ServerLevel server) || !(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        return ScarSites.tend(server, serverPlayer, pos, stack) == ScarSites.Tend.NONE
+                ? net.minecraft.world.InteractionResult.PASS : net.minecraft.world.InteractionResult.SUCCESS_SERVER;
+    }
+
+    @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         ScarSites.heal(level, pos);
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
