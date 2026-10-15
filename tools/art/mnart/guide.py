@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1277,6 +1277,38 @@ def p_posy():
     # the keeper: calmed, still at its chest
     p.d.rectangle([316, 196, 344, 216], fill=(*RAMPS['wood'][3], 255), outline=(*RAMPS['wood'][0], 255))
     p.spark(410, 206, 14, TEMPER['silence'])
+    return p.image()
+
+
+UNREMEMBERED_TINT = (255, 255, 255, 200)   # UnrememberedRenderer: more solid than a faded
+
+
+def p_unremembered():
+    """The Unremembered risen on hollow turf, a revealed faded at its side and a recollite lantern it cannot feed by;
+    the effigy taking up three forgotten memories, the lens that reveals it and the posy that lays part of it to rest."""
+    p = Page('unremembered')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
+                       ('l_side', 'recollite_lantern_side'), ('l_top', 'recollite_lantern_top')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 21)
+    d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
+    d.add(mob_quads('unremembered', 0.2, 0, -0.4, 222, k=1.8), light='entity', tint=UNREMEMBERED_TINT)
+    d.add(mob_quads('faded', -1.9, 0, 1.1, 225), light='entity', tint=FADED_TINT)
+    d.add(cube('l_top', 'l_side', 1.9, 0, 1.2))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # the effigy takes up the forgetting: three forgotten tags into the figure
+    p.sprite('hollow_effigy', 330, 52, 2, src=_hollows_tex('item', 'hollow_effigy'))
+    p.arrow((362, 52), (384, 52))
+    for i in range(3):
+        p.tag('forgotten', 404 + i * 22, 52)
+    # the lens reveals it
+    p.sprite('chronicle_lens', 330, 134, 2)
+    p.arrow((362, 134), (392, 134))
+    p.spark(420, 134, 16, TEMPER['forgotten'])
+    # the posy lays part of it to rest
+    p.sprite('remembrance_posy', 330, 210, 2, src=_hollows_tex('item', 'remembrance_posy'))
+    p.arrow((362, 210), (392, 210))
+    p.ring(420, 210, 18, dotted=True)
     return p.image()
 
 

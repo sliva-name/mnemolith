@@ -289,6 +289,44 @@ def recollite_pickaxe():
     return cv.image()
 
 
+def hollow_effigy():
+    """A small hollowstone figure on a brick plinth: a hooded body with a hollow face, and a recollite heart set in its
+    chest that glows through the stone."""
+    rng = core.rng_for('hollow_effigy')
+    cv = Canvas(S, S)
+    stone = RAMPS['pale']
+    # plinth: two courses of hollowstone brick
+    cv.fill(m_rect(S, S, 8, 25, 23, 29), stone[2])
+    cv.fill(m_rect(S, S, 8, 25, 23, 25), stone[3])
+    for x in (12, 18):
+        cv.px(x, 27, stone[1])
+    cv.fill(m_rect(S, S, 8, 27, 23, 27), stone[1])
+    cv.fill(m_rect(S, S, 15, 28, 15, 29), stone[1])
+    # body: a hooded robe narrowing to the shoulders
+    robe = m_rect(S, S, 12, 13, 19, 24) | m_rect(S, S, 11, 18, 20, 24)
+    cv.fill(robe, stone[4])
+    for x in range(12, 20, 2):
+        cv.fill(m_rect(S, S, x, 16, x, 24) & robe, stone[3])
+    cv.fill(m_rect(S, S, 19, 13, 20, 24) & robe, stone[2])
+    # head and hood
+    head = m_ellipse(S, S, 16.0, 9.0, 4.2, 4.6)
+    cv.fill(head, stone[5])
+    cv.fill(m_rect(S, S, 14, 8, 18, 12) | m_rect(S, S, 15, 7, 17, 13), RAMPS['indigo'][1])
+    for x in (15, 17):
+        cv.px(x, 9, RAMPS['recollite'][6])
+        cv.px(x, 10, RAMPS['recollite'][4])
+    # the recollite heart, glowing through the stone
+    shapes.glow(cv, 16, 18, 5, RAMPS['recollite'][5], 0.45)
+    shapes.gem(cv, [(15, 16), (17, 16), (18, 18), (16, 21), (14, 18)], 'recollite', 4)
+    cv.px(16, 17, RAMPS['pale'][6])
+    # a few chips worn out of the stone
+    for _ in range(4):
+        x, y = rng.randrange(12, 20), rng.randrange(14, 24)
+        cv.px(x, y, stone[2])
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
 def faded_spawn_egg():
     from .items import _egg
     return _egg('faded_spawn_egg', 'pale', 'lilac', 3, band='recollite')
@@ -297,10 +335,20 @@ def faded_spawn_egg():
 def faded():
     """The faded's 64×64 layout (FadedModel): pale worn cloth over a body that frays into a veil, a hollow face,
     a recollite splinter at the heart. Painted mostly opaque; the renderer makes the whole figure translucent."""
-    import numpy as np
+    return _faded_sheet('faded', 'pale', 'lilac', crown=False)
+
+
+def unremembered():
+    """The Unremembered on the faded's layout: the same figure in dusk-dark cloth (indigo over lilac skin), the face sockets
+    lit recollite, and a crown of recollite splinters standing round the hood. Drawn 1.8x by its renderer."""
+    return _faded_sheet('unremembered', 'lilac', 'indigo', crown=True)
+
+
+def _faded_sheet(name, skin_mat, cloth_mat, crown):
     from .entities import Sheet
     from .materials import surface
-    s = Sheet('faded')
+    s = Sheet(name)
+    hi = 'pale' if not crown else 'recollite'
 
     def fray(cv, rng, rows):
         h, w = cv.alpha.shape
@@ -310,46 +358,59 @@ def faded():
                 cv.alpha[h - cut:, x] = 0
 
     def head(f, w, h, rng):
-        cv = surface('pale', w, h, rng, face='top' if f == 'up' else 'side', wear=0.45, base_shift=0.3)
+        cv = surface(skin_mat, w, h, rng, face='top' if f == 'up' else 'side', wear=0.45, base_shift=0.3)
         if f == 'north':
             # a hollow face: two soft dark sockets and a faint mouth line, no features
             for x0 in (w // 4 - 1, w - w // 4 - 3):
                 cv.fill(m_rect(w, h, x0, h // 2 - 3, x0 + 3, h // 2 + 1), RAMPS['ink'][1])
                 cv.px(x0 + 1, h // 2 - 2, RAMPS['recollite'][5])
+                if crown:
+                    cv.px(x0 + 2, h // 2 - 2, RAMPS['recollite'][6])
+                    cv.px(x0 + 1, h // 2 - 1, RAMPS['recollite'][4])
                 # the face runs: a pale streak under each socket
                 cv.fill(m_rect(w, h, x0 + 1, h // 2 + 2, x0 + 2, h - 3), RAMPS['lilac'][3])
             cv.fill(m_rect(w, h, w // 2 - 2, h - 3, w // 2 + 1, h - 3), RAMPS['lilac'][2])
         if f in ('up', 'north', 'left', 'right', 'south'):
             # a pale hood edge
-            cv.fill(m_rect(w, h, 0, 0, w - 1, 1), RAMPS['lilac'][4])
+            cv.fill(m_rect(w, h, 0, 0, w - 1, 1), RAMPS['lilac'][4] if not crown else RAMPS['indigo'][4])
+        if crown and f in ('north', 'left', 'right', 'south'):
+            # the splinter crown: recollite shards standing on the hood rim, each with a lit tip
+            for x in range(1, w - 1, 3):
+                tall = 2 + (x * 7 % 3)
+                cv.fill(m_rect(w, h, x, 0, x, tall), RAMPS['recollite'][4])
+                cv.px(x, 0, RAMPS['pale'][6])
+        if crown and f == 'up':
+            for x in range(0, w, 3):
+                cv.px(x, 0, RAMPS['recollite'][5])
+                cv.px(x, h - 1, RAMPS['recollite'][5])
         return cv
 
     def body(f, w, h, rng):
-        cv = surface('lilac', w, h, rng, face='side', wear=0.55, base_shift=0.6)
+        cv = surface(cloth_mat, w, h, rng, face='side', wear=0.55, base_shift=0.6)
         if f in ('north', 'south', 'left', 'right'):
             for x in range(1, w, 3):
                 cv.shade_px(m_rect(w, h, x, 0, x, h - 1), 0.22)
-            cv.fill(m_rect(w, h, 0, 4, w - 1, 4), RAMPS['pale'][5])
+            cv.fill(m_rect(w, h, 0, 4, w - 1, 4), RAMPS[hi][5])
         return cv
 
     def veil(f, w, h, rng):
         if f in ('up', 'down'):
             return None
-        cv = surface('lilac', w, h, rng, face='side', wear=0.6, base_shift=0.9)
+        cv = surface(cloth_mat, w, h, rng, face='side', wear=0.6, base_shift=0.9)
         for x in range(0, w, 2):
             cv.shade_px(m_rect(w, h, x, 0, x, h - 1), 0.18)
         fray(cv, rng, h // 2)
         return cv
 
     def arm(f, w, h, rng):
-        cv = surface('pale', w, h, rng, face='side', wear=0.5, base_shift=0.1)
+        cv = surface(skin_mat, w, h, rng, face='side', wear=0.5, base_shift=0.1)
         if f in ('north', 'south', 'left', 'right'):
-            cv.fill(m_rect(w, h, 0, 0, w - 1, 9), RAMPS['lilac'][3])
+            cv.fill(m_rect(w, h, 0, 0, w - 1, 9), RAMPS[cloth_mat][3])
             fray(cv, rng, 3)
         return cv
 
     def leg(f, w, h, rng):
-        cv = surface('pale', w, h, rng, face='side', wear=0.55, base_shift=-0.2)
+        cv = surface(skin_mat, w, h, rng, face='side', wear=0.55, base_shift=-0.2)
         fray(cv, rng, 6)
         return cv
 
@@ -386,8 +447,10 @@ ITEM_TEXTURES = {
     'recollite_needle': recollite_needle,
     'recollite_pickaxe': recollite_pickaxe,
     'remembrance_posy': remembrance_posy,
+    'hollow_effigy': hollow_effigy,
     'faded_spawn_egg': faded_spawn_egg,
 }
 ENTITY_TEXTURES = {
     'faded': faded,
+    'unremembered': unremembered,
 }

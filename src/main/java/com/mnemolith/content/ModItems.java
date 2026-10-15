@@ -66,6 +66,9 @@ public final class ModItems {
             "recollite_pickaxe",
             com.mnemolith.content.item.RecollitePickaxeItem::new,
             properties -> properties.pickaxe(com.mnemolith.content.item.RecollitePickaxeItem.MATERIAL, 1.0F, -2.8F));
+    /** Hollowstone and recollite: calls the Unremembered where a hollow has forgotten enough (see {@code HollowEffigy}). */
+    public static final DeferredItem<com.mnemolith.content.item.HollowEffigy> HOLLOW_EFFIGY = ITEMS.registerItem(
+            "hollow_effigy", com.mnemolith.content.item.HollowEffigy::new, properties -> properties.stacksTo(1));
     public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> FADED_SPAWN_EGG = ITEMS.registerItem(
             "faded_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.FADED.get()));
     public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(

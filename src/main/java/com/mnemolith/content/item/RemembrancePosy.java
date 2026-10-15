@@ -50,6 +50,8 @@ public final class RemembrancePosy {
         Result result = Result.NONE;
         if (event.getTarget() instanceof Faded faded) {
             result = offer(level, player, faded, stack);
+        } else if (event.getTarget() instanceof com.mnemolith.entity.boss.Unremembered boss) {
+            result = offerBoss(level, player, boss, stack);
         } else if (event.getTarget() instanceof ResidueEntity residue) {
             result = offerResidue(level, player, residue, stack);
         }
@@ -107,6 +109,27 @@ public final class RemembrancePosy {
         residue.discard();
         residuesRested++;
         player.sendOverlayMessage(Component.translatable(storm ? "mnemolith.posy.storm_residue_rest" : "mnemolith.posy.residue_rest"));
+        if (!player.isCreative()) {
+            stack.shrink(1);
+        }
+        return Result.RESTED;
+    }
+
+    /**
+     * {@code player} gives {@code stack} (a posy) to the Unremembered: while a lens reveals it, part of it is laid to
+     * rest ({@link com.mnemolith.entity.boss.Unremembered#POSY_DAMAGE}) and the posy is spent; unrevealed it refuses
+     * and nothing is spent. Public for QA.
+     */
+    public static Result offerBoss(ServerLevel level, ServerPlayer player, com.mnemolith.entity.boss.Unremembered boss, ItemStack stack) {
+        if (!boss.isAlive() || boss.isRemoved() || !stack.is(ModItems.REMEMBRANCE_POSY.get())) {
+            return Result.NONE;
+        }
+        if (!boss.takePosy(level, player)) {
+            player.sendOverlayMessage(Component.translatable("mnemolith.posy.unremembered_unseen"));
+            return Result.NONE;
+        }
+        level.playSound(null, boss.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 1.2F, 0.5F);
+        player.sendOverlayMessage(Component.translatable("mnemolith.posy.unremembered_rest"));
         if (!player.isCreative()) {
             stack.shrink(1);
         }

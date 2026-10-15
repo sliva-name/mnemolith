@@ -37,6 +37,7 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Mending the Scar, stage 2 | Done on main (PR #75): the memorial grove (two forget-me-nots a day near the stone, at most 12) and its calm (residues within 8 blocks rest at fester and never lash) | [mending.md](mending.md), `mend2qa` 9/9, live `memorial_calms_residue` |
 | Memorial notes | Done on main (PR #76): carve a written transcript into a memorial stone (bits join, sheet spent); anyone touching the stone learns what is carved, without spending it | [mending.md](mending.md#stage-3-memorial-notes), `memorialqa` 9/9, live `memorial_shares_notes` |
 | Perf budgets | Done on main (PR #77): `perfqa` regression budgets for hot server paths; palette-skipping lantern guard (73 µs to 0.75 µs) | [perf-budgets.md](perf-budgets.md), `perfqa` 6/6 |
+| The Unremembered, stage 1 | `feature/unremembered-1`: the hollow effigy calls a boss where a hollow has forgotten 3 times; lens-gated damage, feeding a lantern blocks, forgetting pulse, faded in its second half, posy strikes; its death clears forgotten imprints around it | [unremembered.md](unremembered.md), `unrememberedqa` 17/17, live `unremembered_called_and_seen` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -222,5 +223,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 20. Mending the Scar (stage 1 done, PR #74; stage 2 done, PR #75; memorial notes done, PR #76): turn a Scar site into a memorial; see [mending.md](mending.md).
 21. Memorial notes (done, PR #76): shared notes on a mended Scar; see [mending.md](mending.md).
 22. Perf budgets (done, PR #77): `perfqa` plus a faster lantern guard; see [perf-budgets.md](perf-budgets.md).
-23. Release 0.5.0 (`release/0.5.0`): items 10–22; manual checklist [../playtest-0.5.0.md](../playtest-0.5.0.md).
-24. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+23. Release 0.5.0 (done, PR #78; tagged and published as v0.5.0): items 10–22; manual checklist [../playtest-0.5.0.md](../playtest-0.5.0.md).
+24. The Unremembered (stage 1 `feature/unremembered-1`; stages 2–3 planned): a Memory Hollows boss; see [unremembered.md](unremembered.md).
+25. Next: pick from [expansion-ideas.md](expansion-ideas.md).
