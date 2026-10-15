@@ -138,6 +138,8 @@
 
 **Реколлитовый фонарь** (кирпичи полостного камня по углам, осколки реколлита по бокам, незабудка в центре) светит холодным светом и **хранит лощину**: в 8 блоках от него (на 4 вверх или вниз) ничего не забывается — ни непойманная вспышка, ни умерший блёклый не оставляют отпечатка «забытое», а вспышки рядом можно поймать вдвое дольше. Уберите фонарь, и лощина снова забывает. `/mnemolith lanternqa` проверяет фонарь; заметка — [docs/design/recollite-lantern.md](docs/design/recollite-lantern.md).
 
+**Букетик памяти** (три незабудки и нить): используйте его на блёклом, и тот **упокоится**. Он растает без смерти, воспоминание, которое он копировал, вернётся в чанк (ничего не забудется), а сам он оставит осколок реколлита. Хранителя архива букетик только успокаивает: он перестаёт драться, но стережёт сундук. `/mnemolith posyqa` проверяет букетик; заметка — [docs/design/remembrance-posy.md](docs/design/remembrance-posy.md).
+
 ### Живая память
 
 Мир хранит это прохождение и молчит об этом.
@@ -416,6 +418,8 @@ The hollows also **forget**. A flicker that plays out uncaught is sometimes forg
 The **recollite pickaxe** (two recollite shards and an iron ingot over two sticks) mines like iron, lasts twice as long, and **reads the chunk**: every block it breaks answers to the chunk's loudest memory. Fire smelts the drops, portal brings them to your feet, death gives ore 3 more experience, and silence or forgotten leave no imprint. At most every 3 seconds a line over the hotbar names what the stone remembers and a short effect follows: haste, slow falling, night vision, or glowing monsters. A mute stone hushes the reading. In Memory Hollows the memory also surfaces as a flicker at the block. `/mnemolith pickaxeqa` checks it; design note: [docs/design/recollite-pickaxe.md](docs/design/recollite-pickaxe.md).
 
 The **recollite lantern** (hollowstone bricks at the corners, recollite shards at the sides, a forget-me-not in the middle) gives a cold light and **keeps a hollow**: within 8 blocks of it (4 up or down) nothing is forgotten. An uncaught flicker or a dying faded leaves no forgotten imprint, and flickers nearby stay catchable twice as long. Take the lantern away and the hollow forgets again. `/mnemolith lanternqa` checks it; design note: [docs/design/recollite-lantern.md](docs/design/recollite-lantern.md).
+
+The **remembrance posy** (three forget-me-nots and a string): use it on a faded and it is **laid to rest**. It fades out without dying, the memory it was copying goes back into the chunk (nothing is forgotten), and it leaves a recollite shard. An archive keeper is only calmed: it stops fighting but still keeps its chest. `/mnemolith posyqa` checks it; design note: [docs/design/remembrance-posy.md](docs/design/remembrance-posy.md).
 
 ### Living memory
 

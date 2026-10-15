@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1205,6 +1205,29 @@ def p_lantern():
     p.tag('path', 330, 180)
     p.arrow((352, 180), (392, 180), dotted=True)
     p.tag('forgotten', 420, 180)
+    return p.image()
+
+
+def p_posy():
+    """The remembrance posy: a faded on the turf receiving forget-me-nots and fading out, its memory going back to the
+    place and a recollite shard left behind; the archive keeper only calmed."""
+    p = Page('posy')
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(5, 4, 2, top='h_top', side='h_side', under='h_stone')
+    d.add(mob_quads('faded', 0.6, 0, 0, 220), light='entity', tint=(*FADED_TINT[:3], 110))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    p.sprite('remembrance_posy', 236, 64, 2, src=_hollows_tex('item', 'remembrance_posy'))
+    p.arrow((222, 84), (186, 112), bend=0.2)
+    # the memory goes back: a slip's tag, and the shard left behind
+    p.tag('fall', 330, 60)
+    p.arrow((352, 60), (392, 60))
+    p.ring(420, 60, 18, dotted=True)
+    p.sprite('recollite_shard', 420, 140, 2, src=_hollows_tex('item', 'recollite_shard'))
+    # the keeper: calmed, still at its chest
+    p.d.rectangle([316, 196, 344, 216], fill=(*RAMPS['wood'][3], 255), outline=(*RAMPS['wood'][0], 255))
+    p.spark(410, 206, 14, TEMPER['silence'])
     return p.image()
 
 

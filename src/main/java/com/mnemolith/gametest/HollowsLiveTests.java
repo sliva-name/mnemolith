@@ -418,6 +418,48 @@ final class HollowsLiveTests {
                 .thenSucceed();
     }
 
+    /**
+     * The remembrance posy: a real player in a hollow right-clicks a faded that copied a fall with a posy (the real
+     * entity interaction). The faded is gone without dying, the hollow keeps the fall (nothing forgotten), a recollite
+     * shard lies where it stood, and one posy is spent.
+     */
+    static void posyLaysFadedToRest(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 160, (origin.getZ() >> 4) + 120);
+        helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
+        BlockPos stand = site.offset(2, 0, 0);
+        var chunk = level.getChunkAt(stand);
+        LoadedChunkMemory.clear(chunk);
+        com.mnemolith.entity.mob.Faded faded = com.mnemolith.entity.ModEntities.FADED.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        helper.assertTrue(faded != null, "no faded");
+        faded.snapTo(stand.getX() + 0.5D, stand.getY(), stand.getZ() + 0.5D, 0.0F, 0.0F);
+        faded.setNoAi(true);
+        level.addFreshEntity(faded);
+        faded.copy(stand, ImprintTag.FALL);
+        ServerPlayer giver = LivePlayers.join(helper, "LivePosyGiver", Vec3.atBottomCenterOf(site));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    giver.getInventory().clearContent();
+                    giver.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.REMEMBRANCE_POSY.get(), 2));
+                    net.minecraft.world.InteractionResult result = giver.interactOn(faded, InteractionHand.MAIN_HAND, faded.position().add(0.0D, 1.0D, 0.0D));
+                    helper.assertTrue(faded.isRemoved() && !faded.isDeadOrDying(), "the faded was not laid to rest: result=" + result
+                            + " removed=" + faded.isRemoved());
+                    helper.assertTrue(giver.getMainHandItem().getCount() == 1, "the posy was not spent: " + giver.getMainHandItem().getCount());
+                    helper.assertTrue(count(chunk, ImprintTag.FALL) == 1 && count(chunk, ImprintTag.FORGOTTEN) == 0,
+                            "the memory did not go back: fall=" + count(chunk, ImprintTag.FALL) + " forgotten=" + count(chunk, ImprintTag.FORGOTTEN));
+                    int shards = 0;
+                    for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(stand).inflate(3.0D))) {
+                        shards += item.getItem().is(ModItems.RECOLLITE_SHARD.get()) ? item.getItem().getCount() : 0;
+                        item.discard();
+                    }
+                    helper.assertTrue(shards == 1, "laying it to rest left " + shards + " shards");
+                })
+                .thenSucceed();
+    }
+
     private static int count(net.minecraft.world.level.chunk.LevelChunk chunk, ImprintTag tag) {
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         int n = 0;

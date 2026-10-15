@@ -25,6 +25,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_hollows4qa` | `/mnemolith hollows4qa` (18) | Fake-player owner, opener and attacker; a `fillbiome` patch and a plain spot 48 blocks off; flickers are expired with a forced chance; the keeper's chest is placed with the archive loot table |
 | `mnemolith:suite_pickaxeqa` | `/mnemolith pickaxeqa` (14) | Fake-player miner; plain and `fillbiome` hollow columns; drops are built item entities passed to `PickaxeReading.surface`; the reading cooldown is reset between checks |
 | `mnemolith:suite_lanternqa` | `/mnemolith lanternqa` (10) | A `fillbiome` hollow column with the lantern set one block up; the far spot is 22 blocks off, in another chunk; flickers are expired at forced times with chance 1 |
+| `mnemolith:suite_posyqa` | `/mnemolith posyqa` (10) | Fake-player giver; faded spawned with no AI on a plains column (the write-back is checked, not the biome); one keeper made with `makeKeeper` and provoked |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -84,6 +85,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `pickaxe_reads_fire_in_hollow` | A real player in a hollow breaks iron ore with a recollite pickaxe (`gameMode.destroyBlock`) in a chunk whose loudest memory is fire: the drop is an iron ingot (no raw iron), the pickaxe took one damage, and a fire flicker at the ore is read off the connection (same tick) | 200 |
 | `pickaxe_quiet_in_silent_chunk` | A real player breaks stone with the pickaxe in a chunk that remembers silence: no build imprint; then in a path chunk next to it: one build imprint | 200 |
 | `lantern_keeps_hollow_memory` | A real player places a recollite lantern in a hollow (`gameMode.useItemOn`): forgetting a path memory 5 blocks off is refused and nothing is written; the player mines the lantern with an iron pickaxe, gets one back, and the same memory is then forgotten | 200 |
+| `posy_lays_faded_to_rest` | A real player in a hollow right-clicks a faded that copied a fall with two posies (`Player.interactOn`): the faded is removed without dying, the fall stays and nothing is forgotten, one recollite shard drops, one posy is left | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -659,3 +661,20 @@ Manual (to do on a normal world):
 
 - [ ] The lantern's light, texture and sound in a real hollow; the guide page reads well in RU and EN.
 - [ ] Flickers near a lantern visibly stay longer before they fade.
+
+## Remembrance posy QA
+
+`/mnemolith posyqa` (gamemaster) checks the remembrance posy ([design note](design/remembrance-posy.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `itemData`, `recipe` | Stacks to 16; three forget-me-nots and a string craft it; the recipe advancement loads |
+| `restWritesBack`, `restLeavesShard`, `restSpends` | A faded that copied a fall is removed without dying, a fall imprint is written and no forgotten one, one recollite shard drops, one posy is spent |
+| `restNoCopy` | A faded that copied nothing rests and writes nothing |
+| `keeperCalmed` | A provoked keeper is calmed (anger 0, no target) and still stands as a keeper |
+| `creativeKeeps`, `deadIgnored`, `guidePage` | Creative keeps the posy; a removed faded takes nothing; the `posy` page sits right after `lantern` |
+
+Manual (to do on a normal world):
+
+- [ ] Giving a posy to a faded shows soul light and a chime as it fades; the posy looks right in hand.
+- [ ] A calmed archive keeper stops attacking and stays by its chest; the guide page reads well in RU and EN.
