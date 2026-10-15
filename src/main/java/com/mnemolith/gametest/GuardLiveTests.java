@@ -9,6 +9,7 @@ import com.mnemolith.echo.EchoRecording;
 import com.mnemolith.echo.FarmLesson;
 import com.mnemolith.echo.GuardLesson;
 import com.mnemolith.echo.LumberLesson;
+import com.mnemolith.config.CommonConfig;
 import com.mnemolith.echo.job.EchoJob;
 import com.mnemolith.entity.echo.EchoEntity;
 import com.mnemolith.world.LoadedChunkMemory;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /** The echo guard on the real server tick: it walks to a hostile mob near its post and kills it, sparing bystanders. */
@@ -170,7 +172,20 @@ final class GuardLiveTests {
         EchoEntity echo = guard(helper, level, owner, site);
         echo.inventory().insert(new ItemStack(Items.WOODEN_SWORD));
         helper.assertTrue(echo.job().startGuarding(echo), "guard did not start");
-        Mob husk = mob(level, EntityTypes.HUSK, site.offset(6, 0, 0));
+        // The husk starts outside the guard's fight radius (capped at echoGuardRadius, 8 at most here), so the guard
+        // does not charge it at once. At 6 blocks the guard reached it and struck before the husk's random target scan
+        // (EchoHuntGoal, interval 10) had picked the guard, which made the "noticed first" check a coin toss. The flat,
+        // open lane keeps the line of sight the scan needs and a straight path for the husk to walk in.
+        int start = CommonConfig.ECHO_GUARD_RADIUS.get() + 3 + 4; // fight radius + chase past it (GuardController.LEASH_EXTRA) + margin
+        for (int dx = -2; dx <= start + 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                level.setBlockAndUpdate(site.offset(dx, -1, dz), Blocks.GRASS_BLOCK.defaultBlockState());
+                for (int dy = 0; dy <= 3; dy++) {
+                    level.setBlockAndUpdate(site.offset(dx, dy, dz), Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+        Mob husk = mob(level, EntityTypes.HUSK, site.offset(start, 0, 0));
         boolean[] noticed = {false};
         float[] lowest = {echo.getHealth()};
         for (int t = 1; t < 380; t++) {
