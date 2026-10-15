@@ -1,6 +1,6 @@
 # Mending the Scar
 
-Status: stages 1 and 2 done (PRs #74, #75); stage 3, memorial notes, implemented on `feature/memorial-inscription`.
+Status: stages 1 and 2 done (PRs #74, #75); stage 3, memorial notes, done (PR #76).
 
 A content line for the end of the storm arc. It turns the Scar site from a dead end into a choice that lasts.
 
@@ -47,7 +47,7 @@ A content line for the end of the storm arc. It turns the Scar site from a dead 
   ticks to skip its lash. At fester it dissolves, including old residues left over from before the mending.
   Legendary residues are untouched.
 
-### Stage 3: memorial notes (`feature/memorial-inscription`)
+### Stage 3: memorial notes (PR #76)
 
 **Why:** multiplayer depth. Transcripts are spent when read, so on a server the knowledge moves one sheet at a time,
 and newcomers depend on someone being online. A mended Scar is a landmark the whole server fought for, which makes it

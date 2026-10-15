@@ -32,6 +32,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_posy2qa` | `/mnemolith posy2qa` (8) | Residues spawned with no AI and removed; its one storm ends as passed |
 | `mnemolith:suite_mendqa` | `/mnemolith mendqa` (10) | Places and removes one heart; clears its chunk memory after |
 | `mnemolith:suite_memorialqa` | `/mnemolith memorialqa` (9) | One memorial stone and two fake players; clears memory after |
+| `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
@@ -824,3 +825,7 @@ Manual (to do on a normal world):
 Manual (two clients):
 
 - [ ] Carve a sheet into a memorial and have a second player read it with an empty hand; the RU/EN lines show counts and the carver's name.
+
+## Perf budgets
+
+`/mnemolith perfqa` (gamemaster) checks per-call means of storm gate, lull lookup, memorial calm and lantern guard against budgets ([design note](design/perf-budgets.md)). The log line `Mnemolith perfqa ...` lists the measured means.

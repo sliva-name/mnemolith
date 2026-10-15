@@ -18,20 +18,48 @@ public final class HollowLanterns {
 
     private HollowLanterns() {}
 
-    /** Whether a lantern stands near {@code pos}. Scans loaded blocks only; used on rare events (forgetting, flickers). */
+    /**
+     * Whether a lantern stands near {@code pos} (within {@link #RADIUS} blocks across and {@link #HEIGHT} up or down).
+     * Loaded chunks only. A chunk section whose palette cannot hold a lantern is skipped without reading its blocks,
+     * so the usual answer (no lantern anywhere near) costs a few palette checks instead of 2601 block reads.
+     */
     public static boolean guarded(ServerLevel level, BlockPos pos) {
-        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
-        for (int dx = -RADIUS; dx <= RADIUS; dx++) {
-            for (int dz = -RADIUS; dz <= RADIUS; dz++) {
-                int x = pos.getX() + dx;
-                int z = pos.getZ() + dz;
-                if (!level.hasChunk(x >> 4, z >> 4)) {
+        net.minecraft.world.level.block.Block lantern = ModBlocks.RECOLLITE_LANTERN.get();
+        int minX = pos.getX() - RADIUS;
+        int maxX = pos.getX() + RADIUS;
+        int minZ = pos.getZ() - RADIUS;
+        int maxZ = pos.getZ() + RADIUS;
+        int minY = Math.max(level.getMinY(), pos.getY() - HEIGHT);
+        int maxY = Math.min(level.getMaxY(), pos.getY() + HEIGHT);
+        for (int cx = minX >> 4; cx <= maxX >> 4; cx++) {
+            for (int cz = minZ >> 4; cz <= maxZ >> 4; cz++) {
+                if (!level.hasChunk(cx, cz)) {
                     continue;
                 }
-                for (int dy = -HEIGHT; dy <= HEIGHT; dy++) {
-                    at.set(x, pos.getY() + dy, z);
-                    if (level.getBlockState(at).is(ModBlocks.RECOLLITE_LANTERN.get())) {
-                        return true;
+                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(cx, cz);
+                for (int sy = minY >> 4; sy <= maxY >> 4; sy++) {
+                    int index = level.getSectionIndexFromSectionY(sy);
+                    if (index < 0 || index >= chunk.getSections().length) {
+                        continue;
+                    }
+                    net.minecraft.world.level.chunk.LevelChunkSection section = chunk.getSections()[index];
+                    if (section.hasOnlyAir() || !section.maybeHas(state -> state.is(lantern))) {
+                        continue;
+                    }
+                    int x0 = Math.max(minX, cx << 4);
+                    int x1 = Math.min(maxX, (cx << 4) + 15);
+                    int z0 = Math.max(minZ, cz << 4);
+                    int z1 = Math.min(maxZ, (cz << 4) + 15);
+                    int y0 = Math.max(minY, sy << 4);
+                    int y1 = Math.min(maxY, (sy << 4) + 15);
+                    for (int x = x0; x <= x1; x++) {
+                        for (int z = z0; z <= z1; z++) {
+                            for (int y = y0; y <= y1; y++) {
+                                if (section.getBlockState(x & 15, y & 15, z & 15).is(lantern)) {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
