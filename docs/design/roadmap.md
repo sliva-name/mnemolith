@@ -34,7 +34,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Chronicler's copied notes | Done on main (PR #71): a journeyman chronicler sells a written transcript of the five body tags (10 emeralds and a paper, 2 uses), signed by the chronicler | [chronicler-notes.md](chronicler-notes.md), `chroniclerqa` 9/9, live `chronicler_sells_notes` |
 | Posy on residues | Done on main (PR #73): a remembrance posy lays any residual echo (ordinary or storm) to rest without a read; leaves nothing; legendary residues refuse | [posy-residues.md](posy-residues.md), `posy2qa` 8/8, live `posy_rests_residue` |
 | Mending the Scar, stage 1 | Done on main (PR #74): tend a Scar heart with a remembrance posy once a day (gives up that day's old residue); three tendings mend it into a memorial stone (storm ward, no seeding); guide page `mending` | [mending.md](mending.md), `mendqa` 10/10, live `mending_tends_heart` |
-| Mending the Scar, stage 2 | `feature/mending-2`: the memorial grove (two forget-me-nots a day near the stone, at most 12) and its calm (residues within 8 blocks rest at fester and never lash) | [mending.md](mending.md), `mend2qa` 9/9, live `memorial_calms_residue` |
+| Mending the Scar, stage 2 | Done on main (PR #75): the memorial grove (two forget-me-nots a day near the stone, at most 12) and its calm (residues within 8 blocks rest at fester and never lash) | [mending.md](mending.md), `mend2qa` 9/9, live `memorial_calms_residue` |
+| Memorial notes | `feature/memorial-inscription`: carve a written transcript into a memorial stone (bits join, sheet spent); anyone touching the stone learns what is carved, without spending it | [mending.md](mending.md#stage-3-memorial-notes), `memorialqa` 9/9, live `memorial_shares_notes` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -217,5 +218,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 17. The chronicler's copied notes (done, PR #71): a transcript for sale; see [chronicler-notes.md](chronicler-notes.md).
 18. Lull config (done, PR #72): `stormLullTicks` for servers; see [storm-lull.md](storm-lull.md#config).
 19. The posy on residues (done, PR #73): lay residual echoes to rest; see [posy-residues.md](posy-residues.md).
-20. Mending the Scar (stage 1 done, PR #74; stage 2 `feature/mending-2`): turn a Scar site into a memorial; see [mending.md](mending.md).
-21. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+20. Mending the Scar (stage 1 done, PR #74; stage 2 done, PR #75; memorial notes `feature/memorial-inscription`): turn a Scar site into a memorial; see [mending.md](mending.md).
+21. Memorial notes (`feature/memorial-inscription`): shared notes on a mended Scar; see [mending.md](mending.md).
+22. Next: pick from [expansion-ideas.md](expansion-ideas.md).

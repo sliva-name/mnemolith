@@ -92,6 +92,15 @@ public class TranscriptItem extends Item {
         if (notes == null) {
             return 0;
         }
+        int learned = learn(player, notes);
+        if (learned > 0 && !player.isCreative()) {
+            sheet.shrink(1);
+        }
+        return learned;
+    }
+
+    /** {@code player} learns every tag and formula in {@code notes} they did not know yet; returns how many. */
+    public static int learn(ServerPlayer player, Transcript notes) {
         Discovery discovery = player.getData(ModAttachments.DISCOVERY.get());
         int learned = 0;
         for (ImprintTag tag : ImprintTag.values()) {
@@ -105,9 +114,6 @@ public class TranscriptItem extends Item {
                 DiscoveryNotes.noteFormula(player, i);
                 learned++;
             }
-        }
-        if (learned > 0 && !player.isCreative()) {
-            sheet.shrink(1);
         }
         return learned;
     }
