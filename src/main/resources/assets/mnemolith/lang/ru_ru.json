@@ -64,6 +64,8 @@
   "mnemolith.configuration.allowRecollectionStorms.tooltip": "Могут ли собираться бури воспоминаний — сами или по зову выпущенного осколка осадка. Если выключить, идущие бури заканчиваются (их осадки остаются обычными осадками); места Шрама и сам Шрам остаются.",
   "mnemolith.configuration.maxStormsPerDimension": "Максимум бурь в измерении",
   "mnemolith.configuration.maxStormsPerDimension.tooltip": "Сколько бурь воспоминаний может одновременно собираться или бушевать в одном измерении. 0 не даёт начаться новым, как allowRecollectionStorms false, но идущие не обрывает.",
+  "mnemolith.configuration.stormLullTicks": "Затишье после бури (тики)",
+  "mnemolith.configuration.stormLullTicks.tooltip": "Сколько тиков выдохшаяся или сдержанная буря воспоминаний не даёт собраться новой в двух чанках от своего центра. 24000 — один игровой день. 0 выключает затишье: расчищенное место может снова разразиться бурей сразу.",
   "mnemolith.configuration.logPressureChanges": "Журнал давления",
   "mnemolith.configuration.logPressureChanges.tooltip": "Записывать ли изменения давления в журнал сервера.",
   "mnemolith.configuration.imprintParticles": "Частицы отпечатков",

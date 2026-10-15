@@ -25,6 +25,11 @@ A residual shard freed in a lulled chunk does not call a storm, and the player r
 hotbar: how many minutes are left (rounded up, at least 1; 20 for a full day). The storms page of the field guide
 explains the lull in RU and EN. Added in PR #70.
 
+## Config
+
+`server.stormLullTicks` (`mnemolith-server.toml`, default 24000, 0 to 168000) sets the lull length. 0 turns lulls off:
+no lull is recorded and no lull message is sent; lulls already recorded keep their end time. Added in `feature/lull-config`.
+
 ## Balance
 
 It rewards clearing a storm properly with a day of quiet, so a base in a loud area is not hit by storm after storm,
@@ -33,7 +38,7 @@ unchanged and still the permanent answers.
 
 ## QA
 
-- `/mnemolith lullqa` and `mnemolith:suite_lullqa` (12 checks).
+- `/mnemolith lullqa` and `mnemolith:suite_lullqa` (13 checks).
 - Live `storm_lull_refuses_shard`: a real player in a fracture; a storm there is spent; the residual shard the player
   then frees through the real item use calls no storm.
 - Manual: the lull message in RU and EN after clearing a storm, and no new storm in that area until the next day.

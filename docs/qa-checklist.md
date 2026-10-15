@@ -27,7 +27,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_lanternqa` | `/mnemolith lanternqa` (10) | A `fillbiome` hollow column with the lantern set one block up; the far spot is 22 blocks off, in another chunk; flickers are expired at forced times with chance 1 |
 | `mnemolith:suite_posyqa` | `/mnemolith posyqa` (10) | Fake-player giver; faded spawned with no AI on a plains column (the write-back is checked, not the biome); one keeper made with `makeKeeper` and provoked |
 | `mnemolith:suite_transcriptqa` | `/mnemolith transcriptqa` (12) | Two fake players with discovery set by hand; no world blocks touched |
-| `mnemolith:suite_lullqa` | `/mnemolith lullqa` (12) | Parks active storms and puts them back; removes only its own lulls |
+| `mnemolith:suite_lullqa` | `/mnemolith lullqa` (13) | Parks active storms and puts them back; removes only its own lulls |
 | `mnemolith:suite_chroniclerqa` | `/mnemolith chroniclerqa` (9) | Villagers created off-world (not added); one fake reader |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
@@ -719,10 +719,12 @@ Manual (to do on a normal world, two clients):
 | `lang` | `mnemolith.storm.lull` exists in EN and RU |
 | `lineMinutes` | The lulled line rounds up to minutes: a full day is 20, 1 tick and 0 ticks are 1, 1201 ticks are 2; `mnemolith.storm.lulled` exists in EN and RU |
 | `shardRefused` | During the lull a freed residue calls no storm |
+| `config` | `stormLullTicks` defaults to 24000, accepts 0, rejects -1, and has EN and RU config strings; the spent/contained checks use the configured length |
 
 Manual (to do on a normal world):
 
 - [ ] Clearing a storm shows the lull message in RU and EN.
+- [ ] With `stormLullTicks = 0` in `mnemolith-server.toml`, a cleared storm shows no lull message and a new storm can gather at once.
 - [ ] Freeing a shard in the lulled area shows the minutes left in RU and EN; the storms guide page mentions the lull and fits its pages.
 - [ ] Standing in the same fracture afterwards gathers no storm until the next day; a storm two chunks further away still can.
 

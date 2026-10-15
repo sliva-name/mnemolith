@@ -169,7 +169,7 @@ NeoForge пишет три файла. Правите их при закрыто
 | Файл | Где загружается | Что содержит |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Клиент и выделенный сервер | Сложность, частоты появления, генерация мира, геймплей (включая каталог и подсказки открытия), мобы, отголоски, прививки, осадки, связь отголосков (`relay.*`) и архивные хранилища (`vault.*`) |
-| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), журналирование давления |
+| `config/mnemolith-server.toml` | Интегрированный и выделенный сервер; синхронизируется клиентам | Разрешены ли бури воспоминаний (`allowRecollectionStorms`), потолок на измерение (`maxStormsPerDimension`), через сколько тиков буря без свидетелей рассеивается (`stormUnwatchedTicks`), сколько длится затишье после бури (`stormLullTicks`, 0 выключает), журналирование давления |
 | `config/mnemolith-client.toml` | Только физический клиент | Пользовательские частицы памяти, плотность частиц, потолок частиц за тик, окружающее мерцание без линзы, интервал опроса линзы, оверлей линзы, непрозрачность оверлея, числовое давление, виньетка давления, тряска экрана, бахрома разлома, громкость звона линзы |
 
 `spawnRates.stormAttemptChance` (общий, 0.02) — шанс раз в секунду на игрока в разломанном чанке, что буря соберётся; 0 выключает естественные бури, а выпущенный осколок осадка всё ещё может вызвать одну. `difficulty.recollectionStormThreshold` масштабирует пороги полос, так что он же решает, насколько громким должен стать чанк, прежде чем буря возможна.
@@ -456,7 +456,7 @@ NeoForge writes three files. Edit them while the game is closed, or use the in-g
 | File | Where it loads | What it holds |
 | --- | --- | --- |
 | `config/mnemolith-common.toml` | Client and dedicated server | Difficulty, spawn rates, world generation, gameplay (including the catalog and discovery hints), mobs, echoes, grafts, residues, the echo relay (`relay.*`) and archive vaults (`vault.*`) |
-| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), pressure logging |
+| `config/mnemolith-server.toml` | Integrated and dedicated server; synced to clients | Whether recollection storms may gather (`allowRecollectionStorms`), the per-dimension cap (`maxStormsPerDimension`), how many ticks an unwatched storm lasts before it fades (`stormUnwatchedTicks`), how long the lull after a cleared storm lasts (`stormLullTicks`, 0 turns it off), pressure logging |
 | `config/mnemolith-client.toml` | Physical client only | Custom memory particles, particle density, the per-tick particle cap, ambient shimmer without the lens, lens poll interval, lens overlay, overlay opacity, numeric pressure, pressure vignette, screen shake, fracture fringe, lens chime volume |
 
 `spawnRates.stormAttemptChance` (common, 0.02) is the once-a-second chance per player in a fractured chunk that a storm gathers; 0 turns natural storms off, and a freed residual shard can still call one. `difficulty.recollectionStormThreshold` scales the band thresholds, so it also decides how loud a chunk must get before a storm is possible.

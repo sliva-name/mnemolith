@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
  */
 public final class LullQa {
     private static final String[] NAMES = {"lullDay", "spentLulls", "containedLulls", "othersDont", "range", "dimension",
-            "expires", "gate", "saved", "lang", "lineMinutes", "shardRefused"};
+            "expires", "gate", "saved", "lang", "lineMinutes", "shardRefused", "config"};
     private static int salt;
 
     private LullQa() {}
@@ -56,9 +56,9 @@ public final class LullQa {
             ok[0] = Storms.LULL_TICKS == 24000L;
             Storms.finish(level, Storms.start(level, centres[0], "qa"), Storms.End.SPENT);
             long spent = Storms.lullLeft(level, centres[0]);
-            ok[1] = spent == Storms.LULL_TICKS;
+            ok[1] = spent == Storms.lullTicks();
             Storms.finish(level, Storms.start(level, centres[1], "qa"), Storms.End.CONTAINED);
-            ok[2] = Storms.lullLeft(level, centres[1]) == Storms.LULL_TICKS;
+            ok[2] = Storms.lullLeft(level, centres[1]) == Storms.lullTicks();
             Storms.finish(level, Storms.start(level, centres[2], "qa"), Storms.End.PASSED);
             Storms.finish(level, Storms.start(level, centres[3], "qa"), Storms.End.FADED);
             ok[3] = Storms.lullLeft(level, centres[2]) == 0L && Storms.lullLeft(level, centres[3]) == 0L;
@@ -89,7 +89,7 @@ public final class LullQa {
                 Storms.finish(level, Storms.start(level, ca, "qa"), Storms.End.SPENT);
             }
             Storms.Gate after = Storms.gate(level, ca);
-            ok[7] = !Storms.enabled() || Storms.maxPerDimension() <= 0 ? before == after
+            ok[7] = !Storms.enabled() || Storms.maxPerDimension() <= 0 || Storms.lullTicks() <= 0L ? true
                     : band == PressureBand.FRACTURE && before == Storms.Gate.OK && after == Storms.Gate.LULL;
             notes.add("gate band=" + band + " before=" + before + " after=" + after);
 
@@ -103,8 +103,13 @@ public final class LullQa {
             ok[10] = minutes(Storms.lullLine(Storms.LULL_TICKS)) == 20L && minutes(Storms.lullLine(1L)) == 1L
                     && minutes(Storms.lullLine(1201L)) == 2L && minutes(Storms.lullLine(0L)) == 1L
                     && langHas("ru_ru", "mnemolith.storm.lulled") && langHas("en_us", "mnemolith.storm.lulled");
-            ok[11] = !Storms.enabled() || Storms.maxPerDimension() <= 0 || after != Storms.Gate.LULL
+            ok[11] = !Storms.enabled() || Storms.maxPerDimension() <= 0 || Storms.lullTicks() <= 0L
                     ? true : !Storms.callByShard(level, residue(level, a), null) && Storms.at(level, ca) == null;
+            ok[12] = com.mnemolith.config.ServerConfig.STORM_LULL_TICKS.getDefault() == 24000
+                    && com.mnemolith.config.ServerConfig.STORM_LULL_TICKS.getSpec().test(0)
+                    && !com.mnemolith.config.ServerConfig.STORM_LULL_TICKS.getSpec().test(-1)
+                    && langHas("en_us", "mnemolith.configuration.stormLullTicks.tooltip") && langHas("ru_ru", "mnemolith.configuration.stormLullTicks.tooltip");
+            notes.add("lullTicks=" + Storms.lullTicks());
         } finally {
             int x0 = bx - 64;
             data.removeLulls(lull -> lull.chunkX() >= x0 && lull.chunkX() <= bx + 8 && Math.abs(lull.chunkZ() - bz) <= 26);

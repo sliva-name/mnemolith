@@ -594,10 +594,11 @@ public final class Storms {
             case PASSED -> tell(level, storm, "mnemolith.storm.passed", true);
             default -> {}
         }
-        if (end == End.SPENT || end == End.CONTAINED) {
+        long lull = lullTicks();
+        if ((end == End.SPENT || end == End.CONTAINED) && lull > 0L) {
             ServerLevel home = level.getServer().getLevel(storm.dimension());
             long now = (home != null ? home : level).getGameTime();
-            data.addLull(new StormData.Lull(storm.dimension(), storm.center().x(), storm.center().z(), now + LULL_TICKS), now);
+            data.addLull(new StormData.Lull(storm.dimension(), storm.center().x(), storm.center().z(), now + lull), now);
             tell(level, storm, "mnemolith.storm.lull", false);
         }
         dropBar(storm);
@@ -612,7 +613,12 @@ public final class Storms {
         return Component.translatable("mnemolith.storm.lulled", Math.max(1L, (ticksLeft + 1199L) / 1200L));
     }
 
-    /** Game ticks a spent or contained storm leaves its surroundings quiet: one Minecraft day. */
+    /** The lull a storm leaves now: {@code server.stormLullTicks} (default {@link #LULL_TICKS}); 0 means none. */
+    public static long lullTicks() {
+        return ServerConfig.STORM_LULL_TICKS.get();
+    }
+
+    /** Default game ticks a spent or contained storm leaves its surroundings quiet: one Minecraft day. */
     public static final long LULL_TICKS = 24000L;
 
     /**

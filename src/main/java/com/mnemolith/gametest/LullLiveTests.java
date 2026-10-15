@@ -34,7 +34,7 @@ final class LullLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
-                    if (!Storms.enabled() || Storms.maxPerDimension() <= 0) {
+                    if (!Storms.enabled() || Storms.maxPerDimension() <= 0 || Storms.lullTicks() <= 0L) {
                         return;
                     }
                     LivePlayers.unmute(level, site);
