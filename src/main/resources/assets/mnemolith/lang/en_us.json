@@ -64,6 +64,8 @@
   "mnemolith.configuration.allowRecollectionStorms.tooltip": "Whether recollection storms may gather, naturally or called by a freed residual shard. Turning it off ends storms that are running (their residues stay as ordinary residues); Scar sites and the Scar stay.",
   "mnemolith.configuration.maxStormsPerDimension": "Max Storms Per Dimension",
   "mnemolith.configuration.maxStormsPerDimension.tooltip": "Maximum recollection storms gathering or raging in one dimension at once. 0 stops new storms like allowRecollectionStorms false, without ending running ones.",
+  "mnemolith.configuration.stormLullTicks": "Storm Lull Ticks",
+  "mnemolith.configuration.stormLullTicks.tooltip": "Ticks a spent or contained recollection storm keeps its surroundings (two chunks from its centre) free of new storms. 24000 is one Minecraft day. 0 turns lulls off: a cleared area can storm again at once.",
   "mnemolith.configuration.logPressureChanges": "Log Pressure Changes",
   "mnemolith.configuration.logPressureChanges.tooltip": "Whether pressure changes are written to the server log.",
   "mnemolith.configuration.imprintParticles": "Imprint Particles",

@@ -1,6 +1,6 @@
 # The chronicler's copied notes
 
-Status: implemented on `feature/chronicler-transcript`. Depth for the chronicle transcript (PR #68) and the chronicler
+Status: implemented (PR #71). Depth for the chronicle transcript (PR #68) and the chronicler
 villager: no new item, block or texture.
 
 ## Lore
