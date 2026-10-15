@@ -53,13 +53,19 @@ final class HollowsLiveTests {
         BlockPos far = LivePlayers.surface(level, (site.getX() >> 4) + 9, site.getZ() >> 4);
         LivePlayers.force(level, far);
         CommandSourceStack console = level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput();
-        String fill = String.format("fillbiome %d %d %d %d %d %d mnemolith:memory_hollows", site.getX() - 24, site.getY() - 2, site.getZ() - 24,
-                site.getX() + 24, site.getY() + 5, site.getZ() + 24);
-        try {
-            level.getServer().getCommands().getDispatcher().execute(fill, console);
-        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
-            helper.fail("fillbiome failed: " + e.getMessage());
-            return;
+        // Biome reads are fuzzed: level.getBiome blends the 4x4x4 cells around a position, so a player standing a block
+        // lower than the site can read the cell under the filled range. Fill well above and below the surface (CI
+        // failed with the seer one block under the site reading hollow=false).
+        // fillbiome takes at most 32768 blocks per call, so fill in slabs of 8.
+        for (int y0 = site.getY() - 12; y0 <= site.getY() + 12; y0 += 8) {
+            String fill = String.format("fillbiome %d %d %d %d %d %d mnemolith:memory_hollows", site.getX() - 24, y0, site.getZ() - 24,
+                    site.getX() + 24, Math.min(y0 + 7, site.getY() + 12), site.getZ() + 24);
+            try {
+                level.getServer().getCommands().getDispatcher().execute(fill, console);
+            } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                helper.fail("fillbiome failed: " + e.getMessage());
+                return;
+            }
         }
         helper.assertTrue(Hollows.is(level.getBiome(site)), "fillbiome did not make the site Memory Hollows");
         // Every chunk a flicker spot can fall in remembers a path.
