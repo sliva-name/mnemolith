@@ -26,6 +26,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_pickaxeqa` | `/mnemolith pickaxeqa` (14) | Fake-player miner; plain and `fillbiome` hollow columns; drops are built item entities passed to `PickaxeReading.surface`; the reading cooldown is reset between checks |
 | `mnemolith:suite_lanternqa` | `/mnemolith lanternqa` (10) | A `fillbiome` hollow column with the lantern set one block up; the far spot is 22 blocks off, in another chunk; flickers are expired at forced times with chance 1 |
 | `mnemolith:suite_posyqa` | `/mnemolith posyqa` (10) | Fake-player giver; faded spawned with no AI on a plains column (the write-back is checked, not the biome); one keeper made with `makeKeeper` and provoked |
+| `mnemolith:suite_transcriptqa` | `/mnemolith transcriptqa` (12) | Two fake players with discovery set by hand; no world blocks touched |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -75,7 +76,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `relay_mirror_break` | Possessing one end, the player breaks a stone beside them with a pickaxe (`gameMode.destroyBlock`, the real break event): on the next server tick the other end breaks the stone at the same offset beside itself | 100 |
 | `vault_draws_then_spends` | The player places a vault (`gameMode.useItemOn` with the item), switches it on with an empty hand; its own block entity tick draws the death and fire imprints out of the area within two intervals; the second empty-hand click switches it off; the needle (`useItemOn`, the vault passes the click to the item) takes the loudest (death) as a slip; a sneaking empty-hand click discharges the rest into the chunk | 700 |
 
-**Live Memory Hollows test** (`com.mnemolith.gametest.HollowsLiveTests`), in the `mnemolith:live` batch on its own site (the setup turns it into Memory Hollows with `fillbiome`).
+**Live Memory Hollows test** (`com.mnemolith.gametest.HollowsLiveTests`), in the `mnemolith:live` batch on its own site (the setup turns it into Memory Hollows with `fillbiome`). Each live test that builds a site takes a fixed one, `LivePlayers.liveSite(k)` at chunk (-600 - 24k, 600), so no two tests share chunks whatever the test layout; tests that check writes first lift any mute registered within the mute radius (`LivePlayers.unmute`), since a config test briefly forces mute pockets while those chunks may be generating.
 
 | Test | What is proved | Budget |
 | --- | --- | --- |
@@ -83,9 +84,10 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `hollows_keeper_rises_at_archive_chest` | A real player opens a chest holding the `chests/sunken_archive` loot table in a hollow, through the real block use: one keeper rises bound to that chest and the loot is rolled; a second open wakes nothing; the player's kill drops a forgotten slip and the death leaves a forgotten imprint | 200 |
 | `hollows_forgotten_flicker_caught` | A real player in a hollow is sent a forgotten flicker: the payload read off the connection is the fade scene; needle and lens catch it into one forgotten slip (in the same tick, since suites beside it clear the shared flicker list) | 200 |
 | `pickaxe_reads_fire_in_hollow` | A real player in a hollow breaks iron ore with a recollite pickaxe (`gameMode.destroyBlock`) in a chunk whose loudest memory is fire: the drop is an iron ingot (no raw iron), the pickaxe took one damage, and a fire flicker at the ore is read off the connection (same tick) | 200 |
-| `pickaxe_quiet_in_silent_chunk` | A real player breaks stone with the pickaxe in a chunk that remembers silence: no build imprint; then in a path chunk next to it: one build imprint | 200 |
+| `pickaxe_quiet_in_silent_chunk` | A real player breaks stone with the pickaxe in a chunk that remembers silence: no build imprint; then, without moving (a move into that chunk could write a path imprint and its write pause), in a path chunk two chunks over: one build imprint | 200 |
 | `lantern_keeps_hollow_memory` | A real player places a recollite lantern in a hollow (`gameMode.useItemOn`): forgetting a path memory 5 blocks off is refused and nothing is written; the player mines the lantern with an iron pickaxe, gets one back, and the same memory is then forgotten | 200 |
 | `posy_lays_faded_to_rest` | A real player in a hollow right-clicks a faded that copied a fall with two posies (`Player.interactOn`): the faded is removed without dying, the fall stays and nothing is forgotten, one recollite shard drops, one posy is left | 200 |
+| `transcript_shared_between_players` | Two real players: the author (death, sculk, formula 1) uses a blank transcript (`gameMode.useItem`) and it is written; the reader uses the sheet and ends with exactly the author's tags and formulas; the sheet is spent | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -678,3 +680,21 @@ Manual (to do on a normal world):
 
 - [ ] Giving a posy to a faded shows soul light and a chime as it fades; the posy looks right in hand.
 - [ ] A calmed archive keeper stops attacking and stays by its chest; the guide page reads well in RU and EN.
+
+## Chronicle transcript QA
+
+`/mnemolith transcriptqa` (gamemaster) checks the chronicle transcript ([design note](design/chronicle-transcript.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `itemData`, `recipe` | Stacks to 16; paper, ink and a feather craft it; the recipe advancement loads |
+| `nothingToWrite` | With no discovery a blank stays blank |
+| `writeCarries`, `stackSplits` | The written sheet carries the author's exact tag and formula bits and name (3 tags, 2 formulas); a stack of 3 leaves 2 blanks |
+| `readTeaches`, `readSpends`, `partialNew` | A reader who knew fire learns silence, portal and both formulas (4 new) and nothing else; the sheet is spent |
+| `authorKeeps`, `creativeKeeps`, `knowledgeOnly` | The author learns nothing and keeps the sheet; a creative reader learns all 5 and keeps it; no imprint cast on the sheet, a blank teaches nothing |
+| `guidePage` | The `transcript` page sits right after `catalog` |
+
+Manual (to do on a normal world, two clients):
+
+- [ ] A blank and a written sheet look different; the tooltip shows the author and counts in RU and EN.
+- [ ] Reading a friend's sheet fills in their catalog entries on your catalog screen.

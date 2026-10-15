@@ -40,8 +40,7 @@ final class HollowsLiveTests {
 
     static void flickerDeliveredAndCaught(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 40, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 0);
         // Keep every chunk a flicker spot can land in (up to MAX_DISTANCE = 20 blocks, so two chunks out) loaded. Only
         // the site chunk was held before; the others could unload and come back from worldgen without the hollow
         // biome or the path imprints, and then no spot qualified.
@@ -176,8 +175,7 @@ final class HollowsLiveTests {
      */
     static void keeperRisesAtArchiveChest(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 60, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 1);
         helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
         BlockPos chest = site.offset(0, 0, 3);
         for (int dx = -4; dx <= 4; dx++) {
@@ -200,6 +198,7 @@ final class HollowsLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
+                    LivePlayers.unmute(level, chest);
                     opener.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     opener.gameMode.useItemOn(opener, level, ItemStack.EMPTY, InteractionHand.MAIN_HAND, face);
                     List<com.mnemolith.entity.mob.Faded> keepers = level.getEntitiesOfClass(com.mnemolith.entity.mob.Faded.class,
@@ -246,8 +245,7 @@ final class HollowsLiveTests {
      */
     static void forgottenFlickerCaught(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 80, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 2);
         helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
         BlockPos spot = site.offset(3, 0, 0);
         var chunk = level.getChunkAt(spot);
@@ -288,8 +286,7 @@ final class HollowsLiveTests {
      */
     static void pickaxeReadsFireInHollow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 100, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 3);
         helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
         BlockPos ore = site.offset(2, 0, 0);
         level.setBlockAndUpdate(ore.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
@@ -301,6 +298,7 @@ final class HollowsLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
+                    LivePlayers.unmute(level, ore);
                     com.mnemolith.content.item.PickaxeReading.resetCooldown(miner.getUUID());
                     miner.getInventory().clearContent();
                     miner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.RECOLLITE_PICKAXE.get()));
@@ -332,9 +330,8 @@ final class HollowsLiveTests {
      */
     static void pickaxeQuietInSilentChunk(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos quietSite = LivePlayers.surface(level, (origin.getX() >> 4) - 120, (origin.getZ() >> 4) + 120);
-        BlockPos loudSite = LivePlayers.surface(level, (origin.getX() >> 4) - 118, (origin.getZ() >> 4) + 120);
+        BlockPos quietSite = LivePlayers.liveSite(level, 4);
+        BlockPos loudSite = LivePlayers.liveSite(level, 4, 2);
         LivePlayers.force(level, quietSite);
         LivePlayers.force(level, loudSite);
         BlockPos quietStone = quietSite.offset(1, 0, 0);
@@ -353,14 +350,20 @@ final class HollowsLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
+                    LivePlayers.unmute(level, quietStone);
+                    LivePlayers.unmute(level, loudStone);
                     miner.getInventory().clearContent();
                     miner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.RECOLLITE_PICKAXE.get()));
                     helper.assertTrue(miner.gameMode.destroyBlock(quietStone), "the pickaxe did not break the stone in the silent chunk");
                     helper.assertTrue(count(quietChunk, ImprintTag.BUILD) == 0, "mining in the silent chunk wrote a build imprint");
-                    miner.teleportTo(level, loudSite.getX() + 0.5D, loudSite.getY(), loudSite.getZ() + 0.5D, java.util.Set.of(), 0.0F, 0.0F, true);
+                    // Break the second stone from where the miner stands: walking or teleporting into that chunk can write a
+                    // path imprint first, and its write pause would then hold back the build imprint this checks.
+                    var loudMemory = LoadedChunkMemory.existing(loudChunk);
+                    boolean accepts = com.mnemolith.imprint.ImprintWriter.acceptsThrottled(level, loudStone);
                     helper.assertTrue(miner.gameMode.destroyBlock(loudStone), "the pickaxe did not break the stone in the path chunk");
                     helper.assertTrue(count(loudChunk, ImprintTag.BUILD) == 1, "mining in the path chunk wrote " + count(loudChunk, ImprintTag.BUILD)
-                            + " build imprints, not 1");
+                            + " build imprints, not 1 (accepted before=" + accepts + ", imprints=" + (loudMemory == null ? "none" : loudMemory.imprintsCopy())
+                            + ", muted=" + com.mnemolith.world.LoadedChunkMemory.isMutedExcept(level, loudStone, ImprintTag.BUILD) + ")");
                     for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
                             new net.minecraft.world.phys.AABB(quietStone).inflate(40.0D))) {
                         item.discard();
@@ -375,8 +378,7 @@ final class HollowsLiveTests {
      */
     static void lanternKeepsHollowMemory(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 140, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 5);
         helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
         BlockPos floor = site.offset(2, -1, 0);
         level.setBlockAndUpdate(floor, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
@@ -389,6 +391,7 @@ final class HollowsLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
+                    LivePlayers.unmute(level, memoryAt);
                     keeper.getInventory().clearContent();
                     ItemStack lantern = new ItemStack(ModItems.RECOLLITE_LANTERN.get());
                     keeper.setItemInHand(InteractionHand.MAIN_HAND, lantern);
@@ -425,8 +428,7 @@ final class HollowsLiveTests {
      */
     static void posyLaysFadedToRest(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 160, (origin.getZ() >> 4) + 120);
+        BlockPos site = LivePlayers.liveSite(level, 6);
         helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
         BlockPos stand = site.offset(2, 0, 0);
         var chunk = level.getChunkAt(stand);
@@ -441,6 +443,7 @@ final class HollowsLiveTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
+                    LivePlayers.unmute(level, stand);
                     giver.getInventory().clearContent();
                     giver.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.REMEMBRANCE_POSY.get(), 2));
                     net.minecraft.world.InteractionResult result = giver.interactOn(faded, InteractionHand.MAIN_HAND, faded.position().add(0.0D, 1.0D, 0.0D));

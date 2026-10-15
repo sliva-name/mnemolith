@@ -93,6 +93,11 @@ public final class ModItems {
             "catalog_fragment",
             CatalogFragmentItem::new,
             stackTo(64));
+    /** Copies your discovered tags and formulas onto paper for another player to read ({@code TranscriptItem}). */
+    public static final DeferredItem<com.mnemolith.content.item.TranscriptItem> CHRONICLE_TRANSCRIPT = ITEMS.registerItem(
+            "chronicle_transcript",
+            com.mnemolith.content.item.TranscriptItem::new,
+            stackTo(16));
     public static final DeferredItem<Item> ARCHIVIST_HUSK = ITEMS.registerItem("archivist_husk", Item::new, stackTo(64));
     public static final DeferredItem<Item> UNSTABLE_SLIP = ITEMS.registerItem("unstable_slip", Item::new, stackTo(16));
     public static final DeferredItem<Item> ARCHIVAL_TABLET = ITEMS.registerItem("archival_tablet", Item::new, stackTo(16));

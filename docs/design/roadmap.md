@@ -26,7 +26,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Memory Hollows, stage 4 | Done on main (PR #64): the forgotten imprint (hollows-only tag; an uncaught flicker or a dying faded forgets its memory; fade scene), the forgotten temper (its work lets go of the chunk's loudest imprint; possessed: invisibility) and the Forgetting formula, the archive keeper (woken by opening a sunken archive chest, bound to it, always drops a forgotten slip), field guide page `forgotten` | [memory-hollows-4.md](memory-hollows-4.md), `hollows4qa` 18/18, live `hollows_keeper_rises_at_archive_chest`, `hollows_forgotten_flicker_caught` |
 | Recollite pickaxe | Done on main (PR #65): an iron-tier pickaxe (500 uses, recollite repair) that reads the chunk's loudest imprint per block (fire smelts, portal pulls drops home, death adds ore experience, silence/forgotten leave no build imprint), a hotbar line and short effect per 3 s, a flicker surfacing in Memory Hollows; guide page `pickaxe`, advancement `recollite_pickaxe` | [recollite-pickaxe.md](recollite-pickaxe.md), `pickaxeqa` 14/14, live `pickaxe_reads_fire_in_hollow`, `pickaxe_quiet_in_silent_chunk` |
 | Recollite lantern | Done on main (PR #66): a hollowstone and recollite block with a forget-me-not (light 13); within 8 blocks a hollow forgets nothing and flickers stay catchable twice as long; guide page `lantern` | [recollite-lantern.md](recollite-lantern.md), `lanternqa` 10/10, live `lantern_keeps_hollow_memory` |
-| Remembrance posy | `feature/remembrance-posy`: three forget-me-nots and a string; used on a faded it lays it to rest (gone without dying, its copied memory written back, a recollite shard left), an archive keeper is only calmed; guide page `posy` | [remembrance-posy.md](remembrance-posy.md), `posyqa` 10/10, live `posy_lays_faded_to_rest` |
+| Remembrance posy | Done on main (PR #67): three forget-me-nots and a string; used on a faded it lays it to rest (gone without dying, its copied memory written back, a recollite shard left), an archive keeper is only calmed; guide page `posy` | [remembrance-posy.md](remembrance-posy.md), `posyqa` 10/10, live `posy_lays_faded_to_rest` |
+| Chronicle transcript | `feature/chronicle-transcript`: paper, ink and a feather; copies your discovered tags and formulas onto a signed sheet that another player reads to learn the new ones (knowledge only); guide page `transcript` | [chronicle-transcript.md](chronicle-transcript.md), `transcriptqa` 12/12, live `transcript_shared_between_players` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -202,5 +203,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 10. Memory Hollows stage 4 (done, PR #64): the forgotten imprint and temper, the archive keeper; see [memory-hollows-4.md](memory-hollows-4.md).
 11. The recollite pickaxe (done, PR #65): mining reads the chunk's loudest imprint; see [recollite-pickaxe.md](recollite-pickaxe.md).
 12. The recollite lantern (done, PR #66): keeps a hollow from forgetting; see [recollite-lantern.md](recollite-lantern.md).
-13. The remembrance posy (`feature/remembrance-posy`): lay a faded to rest; see [remembrance-posy.md](remembrance-posy.md).
-14. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+13. The remembrance posy (done, PR #67): lay a faded to rest; see [remembrance-posy.md](remembrance-posy.md).
+14. The chronicle transcript (`feature/chronicle-transcript`): share discovery between players; see [chronicle-transcript.md](chronicle-transcript.md).
+15. Next: pick from [expansion-ideas.md](expansion-ideas.md).
