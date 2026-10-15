@@ -79,7 +79,7 @@ public final class ItemTooltips {
                 if (notes == null) {
                     builder.accept(Component.translatable("item.mnemolith.chronicle_transcript.hint"));
                 } else {
-                    builder.accept(Component.translatable("item.mnemolith.chronicle_transcript.notes", notes.author(), notes.tagCount(), notes.formulaCount())
+                    builder.accept(Component.translatable("item.mnemolith.chronicle_transcript.notes", notes.authorName(), notes.tagCount(), notes.formulaCount())
                             .withStyle(net.minecraft.ChatFormatting.AQUA));
                 }
             } else if (stack.getItem() == ModItems.CATALOG_FRAGMENT.get()) {

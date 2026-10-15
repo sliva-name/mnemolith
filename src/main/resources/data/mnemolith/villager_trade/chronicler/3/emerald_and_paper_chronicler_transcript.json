@@ -1,0 +1,22 @@
+{
+  "wants": {
+    "count": 10,
+    "id": "minecraft:emerald"
+  },
+  "additional_wants": {
+    "id": "minecraft:paper"
+  },
+  "gives": {
+    "id": "mnemolith:chronicle_transcript",
+    "components": {
+      "mnemolith:transcript": {
+        "tags": 55,
+        "formulas": 0,
+        "author": "#chronicler"
+      }
+    }
+  },
+  "max_uses": 2,
+  "xp": 15,
+  "reputation_discount": 0.2
+}

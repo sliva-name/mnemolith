@@ -56,7 +56,7 @@ public class TranscriptItem extends Item {
             serverPlayer.sendOverlayMessage(Component.translatable("item.mnemolith.chronicle_transcript.known"));
             return InteractionResult.FAIL;
         }
-        serverPlayer.sendOverlayMessage(Component.translatable("item.mnemolith.chronicle_transcript.learned", learned, written.author()));
+        serverPlayer.sendOverlayMessage(Component.translatable("item.mnemolith.chronicle_transcript.learned", learned, written.authorName()));
         level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 0.8F);
         return InteractionResult.SUCCESS;
     }
