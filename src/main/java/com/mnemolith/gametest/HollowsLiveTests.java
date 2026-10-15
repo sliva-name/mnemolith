@@ -42,7 +42,14 @@ final class HollowsLiveTests {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);
         BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 40, (origin.getZ() >> 4) + 120);
-        LivePlayers.force(level, site);
+        // Keep every chunk a flicker spot can land in (up to MAX_DISTANCE = 20 blocks, so two chunks out) loaded. Only
+        // the site chunk was held before; the others could unload and come back from worldgen without the hollow
+        // biome or the path imprints, and then no spot qualified.
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                LivePlayers.force(level, site.offset(dx * 16, 0, dz * 16));
+            }
+        }
         BlockPos far = LivePlayers.surface(level, (site.getX() >> 4) + 9, site.getZ() >> 4);
         LivePlayers.force(level, far);
         CommandSourceStack console = level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput();
@@ -82,7 +89,8 @@ final class HollowsLiveTests {
                     for (int i = 0; i < 40 && !sent; i++) {
                         sent = HollowFlickers.offer(level, seer, 4.0D, now + i * 100L);
                     }
-                    helper.assertTrue(sent, "no flicker was offered to a player standing in Memory Hollows");
+                    helper.assertTrue(sent, "no flicker was offered to a player standing in Memory Hollows at " + seer.blockPosition().toShortString()
+                            + " hollow=" + Hollows.is(level.getBiome(seer.blockPosition())));
                     List<HollowFlickerPayload> seen = flickers(seer);
                     helper.assertTrue(seen.size() == 1, "the player in the hollow got " + seen.size() + " flicker payloads, not 1; read " + LAST
                             + " open=" + channel(seer).isOpen() + " connected=" + seer.connection.getConnection().isConnected());
@@ -122,7 +130,10 @@ final class HollowsLiveTests {
                         helper.assertTrue(told.size() == 1 && told.get(0).scene() == HollowFlickers.CAUGHT && told.get(0).pos().equals(shown[0].pos()),
                                 watcher.getName().getString() + " was not told the flicker was caught: " + told);
                     }
-                    helper.assertTrue(HollowFlickers.active().isEmpty(), "the caught flicker is still catchable");
+                    // The server's own once-a-second roll can show these players another flicker meanwhile, so only
+                    // the caught one has to be gone.
+                    helper.assertTrue(HollowFlickers.active().stream().noneMatch(a -> a.pos().equals(shown[0].pos())),
+                            "the caught flicker is still catchable: " + HollowFlickers.active());
                     var advancement = level.getServer().getAdvancements().get(
                             net.minecraft.resources.Identifier.fromNamespaceAndPath(com.mnemolith.Mnemolith.MOD_ID, "flicker_caught"));
                     helper.assertTrue(advancement != null && seer.getAdvancements().getOrStartProgress(advancement).isDone(),
