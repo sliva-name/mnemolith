@@ -24,6 +24,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_hollows3qa` | `/mnemolith hollows3qa` (19) | Fake-player catcher and attacker; faded are spawned without AI next to a `fillbiome` patch and stepped by direct calls. The loot, recipe and advancement checks read the real data |
 | `mnemolith:suite_hollows4qa` | `/mnemolith hollows4qa` (18) | Fake-player owner, opener and attacker; a `fillbiome` patch and a plain spot 48 blocks off; flickers are expired with a forced chance; the keeper's chest is placed with the archive loot table |
 | `mnemolith:suite_pickaxeqa` | `/mnemolith pickaxeqa` (14) | Fake-player miner; plain and `fillbiome` hollow columns; drops are built item entities passed to `PickaxeReading.surface`; the reading cooldown is reset between checks |
+| `mnemolith:suite_lanternqa` | `/mnemolith lanternqa` (10) | A `fillbiome` hollow column with the lantern set one block up; the far spot is 22 blocks off, in another chunk; flickers are expired at forced times with chance 1 |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -82,6 +83,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `hollows_forgotten_flicker_caught` | A real player in a hollow is sent a forgotten flicker: the payload read off the connection is the fade scene; needle and lens catch it into one forgotten slip (in the same tick, since suites beside it clear the shared flicker list) | 200 |
 | `pickaxe_reads_fire_in_hollow` | A real player in a hollow breaks iron ore with a recollite pickaxe (`gameMode.destroyBlock`) in a chunk whose loudest memory is fire: the drop is an iron ingot (no raw iron), the pickaxe took one damage, and a fire flicker at the ore is read off the connection (same tick) | 200 |
 | `pickaxe_quiet_in_silent_chunk` | A real player breaks stone with the pickaxe in a chunk that remembers silence: no build imprint; then in a path chunk next to it: one build imprint | 200 |
+| `lantern_keeps_hollow_memory` | A real player places a recollite lantern in a hollow (`gameMode.useItemOn`): forgetting a path memory 5 blocks off is refused and nothing is written; the player mines the lantern with an iron pickaxe, gets one back, and the same memory is then forgotten | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -640,3 +642,20 @@ Manual (to do on a normal world):
 - [ ] The hotbar line shows once per few seconds while mining and reads well in RU and EN.
 - [ ] The pickaxe looks right in hand and in the inventory; the guide page reads well.
 - [ ] In a real hollow a flicker rises from a dug block and can be caught with the needle.
+
+## Recollite lantern QA
+
+`/mnemolith lanternqa` (gamemaster) checks the recollite lantern ([design note](design/recollite-lantern.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `blockData`, `recipe` | Light 13, mineable with a pickaxe and needs it, a loot table that loads; bricks, shards and a forget-me-not craft it, the recipe advancement loads |
+| `guardRadius` | Guarded 8 blocks across and 4 up; not 22 blocks off, not 5 up |
+| `forgetKept`, `forgetAway` | Beside the lantern `forget` refuses (path stays, no forgotten, the kept counter rises); in another chunk 22 blocks off it forgets |
+| `flickerLingers`, `flickerNormal`, `expiryKept` | A guarded flicker is catchable for 180 ticks, an unguarded one for 90; the guarded one survives the normal window and closes after the doubled one without forgetting |
+| `removedForgets`, `guidePage` | With the lantern removed the hollow forgets again; the `lantern` page sits right after `pickaxe` |
+
+Manual (to do on a normal world):
+
+- [ ] The lantern's light, texture and sound in a real hollow; the guide page reads well in RU and EN.
+- [ ] Flickers near a lantern visibly stay longer before they fade.

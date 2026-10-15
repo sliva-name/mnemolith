@@ -154,7 +154,7 @@ public final class HollowFlickers {
         if (ACTIVE.size() >= MAX_ACTIVE) {
             ACTIVE.remove(0);
         }
-        ACTIVE.add(new Active(at.immutable(), payload.tag(), now + CATCH_WINDOW));
+        ACTIVE.add(new Active(at.immutable(), payload.tag(), now + HollowLanterns.catchWindow(level, at)));
         sent++;
         com.mnemolith.entity.mob.Faded.onFlicker(level, at, payload.tag() >= 0 && payload.tag() < ImprintTag.values().length
                 ? ImprintTag.values()[payload.tag()] : null);

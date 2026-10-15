@@ -163,6 +163,14 @@ public final class ModBlocks {
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 6)
                     .requiresCorrectToolForDrops());
+    /** Hollowstone and recollite around a forget-me-not: near it a hollow forgets nothing ({@code HollowLanterns}). */
+    public static final DeferredBlock<Block> RECOLLITE_LANTERN = BLOCKS.registerSimpleBlock(
+            "recollite_lantern", properties -> properties
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 13)
+                    .requiresCorrectToolForDrops());
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FORGET_ME_NOT = BLOCKS.registerBlock(
             "forget_me_not",
             props -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 5.0F, props),

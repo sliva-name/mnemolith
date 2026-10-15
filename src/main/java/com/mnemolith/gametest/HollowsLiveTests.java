@@ -369,6 +369,55 @@ final class HollowsLiveTests {
                 .thenSucceed();
     }
 
+    /**
+     * The recollite lantern: a real player places one in a hollow (the real block use); the chunk beside it does not
+     * forget its path memory; the player mines the lantern with a pickaxe, gets it back, and the hollow forgets again.
+     */
+    static void lanternKeepsHollowMemory(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos site = LivePlayers.surface(level, (origin.getX() >> 4) - 140, (origin.getZ() >> 4) + 120);
+        helper.assertTrue(hollowSite(helper, site), "the site is not Memory Hollows");
+        BlockPos floor = site.offset(2, -1, 0);
+        level.setBlockAndUpdate(floor, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(floor.above(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(floor.above(2), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        BlockPos lamp = floor.above();
+        BlockPos memoryAt = site.offset(-3, 0, 2);
+        var chunk = level.getChunkAt(memoryAt);
+        ServerPlayer keeper = LivePlayers.join(helper, "LiveLanternKeeper", Vec3.atBottomCenterOf(site));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    keeper.getInventory().clearContent();
+                    ItemStack lantern = new ItemStack(ModItems.RECOLLITE_LANTERN.get());
+                    keeper.setItemInHand(InteractionHand.MAIN_HAND, lantern);
+                    net.minecraft.world.phys.BlockHitResult top = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(floor).add(0.0D, 0.5D, 0.0D),
+                            net.minecraft.core.Direction.UP, floor, false);
+                    keeper.gameMode.useItemOn(keeper, level, keeper.getMainHandItem(), InteractionHand.MAIN_HAND, top);
+                    helper.assertTrue(level.getBlockState(lamp).is(com.mnemolith.content.ModBlocks.RECOLLITE_LANTERN.get()),
+                            "the lantern was not placed: " + level.getBlockState(lamp));
+                    LoadedChunkMemory.clear(chunk);
+                    LoadedChunkMemory.getOrCreate(chunk).addImprint(new Imprint(ImprintTag.PATH, 3, memoryAt, Optional.empty(), 7171, level.getGameTime()), 8);
+                    boolean forgot = com.mnemolith.worldgen.hollows.HollowForgetting.forget(level, memoryAt, ImprintTag.PATH);
+                    helper.assertTrue(!forgot && count(chunk, ImprintTag.PATH) == 1 && count(chunk, ImprintTag.FORGOTTEN) == 0,
+                            "the hollow forgot beside a lantern: forgot=" + forgot + " path=" + count(chunk, ImprintTag.PATH));
+                    keeper.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE));
+                    helper.assertTrue(keeper.gameMode.destroyBlock(lamp), "the lantern could not be mined");
+                    int dropped = 0;
+                    for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(lamp).inflate(3.0D))) {
+                        dropped += item.getItem().is(ModItems.RECOLLITE_LANTERN.get()) ? item.getItem().getCount() : 0;
+                        item.discard();
+                    }
+                    helper.assertTrue(dropped == 1, "mining the lantern dropped " + dropped + " lanterns");
+                    boolean forgotAfter = com.mnemolith.worldgen.hollows.HollowForgetting.forget(level, memoryAt, ImprintTag.PATH);
+                    helper.assertTrue(forgotAfter && count(chunk, ImprintTag.PATH) == 0 && count(chunk, ImprintTag.FORGOTTEN) == 1,
+                            "with the lantern gone the hollow did not forget: forgot=" + forgotAfter);
+                })
+                .thenSucceed();
+    }
+
     private static int count(net.minecraft.world.level.chunk.LevelChunk chunk, ImprintTag tag) {
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
         int n = 0;
