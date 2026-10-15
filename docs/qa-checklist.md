@@ -27,6 +27,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_lanternqa` | `/mnemolith lanternqa` (10) | A `fillbiome` hollow column with the lantern set one block up; the far spot is 22 blocks off, in another chunk; flickers are expired at forced times with chance 1 |
 | `mnemolith:suite_posyqa` | `/mnemolith posyqa` (10) | Fake-player giver; faded spawned with no AI on a plains column (the write-back is checked, not the biome); one keeper made with `makeKeeper` and provoked |
 | `mnemolith:suite_transcriptqa` | `/mnemolith transcriptqa` (12) | Two fake players with discovery set by hand; no world blocks touched |
+| `mnemolith:suite_lullqa` | `/mnemolith lullqa` (10) | Parks active storms and puts them back; removes only its own lulls |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
 | `mnemolith:suite_recallqa` | `/mnemolith recallqa` (14) | Gesture buffer, old-vs-fresh selection, replicant RECALL (including the held item), mute. Gamemaster-only; no player tutorial |
@@ -88,6 +89,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `lantern_keeps_hollow_memory` | A real player places a recollite lantern in a hollow (`gameMode.useItemOn`): forgetting a path memory 5 blocks off is refused and nothing is written; the player mines the lantern with an iron pickaxe, gets one back, and the same memory is then forgotten | 200 |
 | `posy_lays_faded_to_rest` | A real player in a hollow right-clicks a faded that copied a fall with two posies (`Player.interactOn`): the faded is removed without dying, the fall stays and nothing is forgotten, one recollite shard drops, one posy is left | 200 |
 | `transcript_shared_between_players` | Two real players: the author (death, sculk, formula 1) uses a blank transcript (`gameMode.useItem`) and it is written; the reader uses the sheet and ends with exactly the author's tags and formulas; the sheet is spent | 200 |
+| `storm_lull_refuses_shard` | A real player in a fracture (live site 8): the gate is open; a storm there is spent and the gate answers `LULL`; a residual shard freed through the real item use calls no storm | 200 |
 
 **Still manual.** Everything drawn on a client (the `Manual (client)` lists below, fracture feel, GUI contrast, the storm's sky, bar and ring, the Scar's look), a natural storm start (a 2% roll per second; `stormqa` checks the gate and the shard call instead), the structure `locate` check, real-world terrain (hills, water, caves: the game test world is flat), a real second client for multiplayer, and restart persistence of a whole world (the suites cover NBT round trips of the entities and chunk memory, not a server restart).
 
@@ -698,3 +700,23 @@ Manual (to do on a normal world, two clients):
 
 - [ ] A blank and a written sheet look different; the tooltip shows the author and counts in RU and EN.
 - [ ] Reading a friend's sheet fills in their catalog entries on your catalog screen.
+
+## Storm lull QA
+
+`/mnemolith lullqa` (gamemaster) checks the storm lull ([design note](design/storm-lull.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `lullDay` | `LULL_TICKS` is 24000 |
+| `spentLulls`, `containedLulls` | A spent or contained storm leaves a full-day lull at its centre |
+| `othersDont` | Passed and faded storms leave none |
+| `range` | The lull reaches `2 * AREA` chunks and not one more |
+| `dimension`, `expires` | A lull in another dimension does not count; an ended lull is gone, a running one reports its ticks left |
+| `gate` | On a real fracture the gate is `OK`, then `LULL` once a storm there is spent |
+| `saved` | The lulls survive a codec round trip of the storm data |
+| `lang` | `mnemolith.storm.lull` exists in EN and RU |
+
+Manual (to do on a normal world):
+
+- [ ] Clearing a storm shows the lull message in RU and EN.
+- [ ] Standing in the same fracture afterwards gathers no storm until the next day; a storm two chunks further away still can.

@@ -676,6 +676,7 @@
   "mnemolith.storm.spent": "The recollection storm is spent: nothing left to recall.",
   "mnemolith.storm.faded_here": "A recollection storm passed here with no one to witness it. The area is quieter now.",
   "mnemolith.storm.passed": "The recollection storm passes. Its residues stay.",
+  "mnemolith.storm.lull": "The storm's passing leaves a lull: no new storm gathers here for a day.",
   "mnemolith.storm.scar": "The storm's residues merge. The Scar rises.",
   "mnemolith.storm.scar_site": "The storm's residues merge into the ground. A Scar site remains.",
   "mnemolith.storm.called": "The shard's memory calls the fracture: a recollection storm gathers.",

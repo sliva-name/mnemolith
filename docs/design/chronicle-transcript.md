@@ -1,6 +1,6 @@
 # The chronicle transcript
 
-Status: implemented on `feature/chronicle-transcript`. A multiplayer addition to discovery and the catalog
+Status: implemented (PR #68). A multiplayer addition to discovery and the catalog
 ([../multiplayer.md](../multiplayer.md)): each player's discovery is private and synced only to them. Until now there was
 no way to share it except by doing every extraction and formula again.
 
