@@ -1,6 +1,6 @@
 # Mending the Scar
 
-Status: stage 1 done (PR #74); stage 2 implemented on `feature/mending-2`.
+Status: stages 1 and 2 done (PRs #74, #75); stage 3, memorial notes, implemented on `feature/memorial-inscription`.
 
 A content line for the end of the storm arc. It turns the Scar site from a dead end into a choice that lasts.
 
@@ -46,6 +46,22 @@ A content line for the end of the storm arc. It turns the Scar site from a dead 
   `ScarSites.nearMemorial` checks the 3x3 chunks for a memorial stone within 8 blocks. A residue rechecks it every 100
   ticks to skip its lash. At fester it dissolves, including old residues left over from before the mending.
   Legendary residues are untouched.
+
+### Stage 3: memorial notes (`feature/memorial-inscription`)
+
+**Why:** multiplayer depth. Transcripts are spent when read, so on a server the knowledge moves one sheet at a time,
+and newcomers depend on someone being online. A mended Scar is a landmark the whole server fought for, which makes it
+a natural place for shared notes.
+
+- Use a written chronicle transcript on a memorial stone to carve it in. Its tag and formula bits join what is already
+  carved, the newest carver's name signs it, and the sheet is spent (not in creative).
+- Touch the stone with an empty hand to learn every carved entry you did not know. Nothing is spent, and the stone can
+  be read any number of times. A blank stone says so.
+- Stored as an optional `inscription` (a `Transcript`) on `ScarSite`. Breaking the stone forgets the site, carvings
+  included.
+- This adds no item, block or texture. The mending guide page gains a paragraph (RU/EN).
+- Balance: knowledge only, as with any transcript. It needs a mended Scar first, so it is a late, shared reward rather
+  than an early shortcut.
 
 ## Balance
 

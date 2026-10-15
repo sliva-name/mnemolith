@@ -31,6 +31,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_chroniclerqa` | `/mnemolith chroniclerqa` (9) | Villagers created off-world (not added); one fake reader |
 | `mnemolith:suite_posy2qa` | `/mnemolith posy2qa` (8) | Residues spawned with no AI and removed; its one storm ends as passed |
 | `mnemolith:suite_mendqa` | `/mnemolith mendqa` (10) | Places and removes one heart; clears its chunk memory after |
+| `mnemolith:suite_memorialqa` | `/mnemolith memorialqa` (9) | One memorial stone and two fake players; clears memory after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
 | `mnemolith:suite_mpsmoke` | `/mnemolith mpsmoke` (7) | Two fake players, as the command |
@@ -96,6 +97,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `storm_lull_refuses_shard` | A real player in a fracture (live site 8): the gate is open; a storm there is spent and the gate answers `LULL`; a residual shard freed through the real item use calls no storm | 200 |
 | `chronicler_sells_notes` | A real player (live site 9) and a real level 3 chronicler (respawned until it offers the sheet, at most 30): the offer counts a use, the player reads the sheet (`gameMode.useItem`), learns exactly the five body tags and no formula; the sheet is spent | 200 |
 | `posy_rests_residue` | A real player (live site 10) right-clicks an unread fire residue with two posies (`interactOn`): the residue is gone and one posy is left | 200 |
+| `memorial_shares_notes` | Two real players (live site 13): the carver uses a written transcript on a memorial stone (`gameMode.useItemOn`) and it is spent; the reader touches it with an empty hand and learns tags 5 and formula bit 1; the stone keeps the notes | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
 | `mending_tends_heart` | A real player (live site 11) right-clicks a Scar heart with posies three times (`gameMode.useItemOn`, the day wound back between): memorial stone, memorial site with 3 tendings, 3 posies spent | 200 |
 
@@ -805,3 +807,20 @@ Manual (to do on a normal world):
 
 - [ ] Standing by a memorial on the next days, forget-me-nots appear around it (two a day, at most twelve), never on stone or paths.
 - [ ] Residues that drift near a memorial do not lash and fade at their next fester; the guide page image shows the grove.
+
+## Memorial notes QA (mending stage 3)
+
+`/mnemolith memorialqa` (gamemaster) checks notes carved into a memorial ([design note](design/mending.md)).
+
+| Flag | What is proved |
+| --- | --- |
+| `codec` | A carved site round-trips; an old memorial loads with no inscription |
+| `blankStone` | A memorial with nothing carved answers blank |
+| `carves`, `joins` | A written sheet is carved in and spent; a second joins it (bits OR, newest author) |
+| `readKeeps` | A reader learns exactly the carved entries; a second read is "known"; the stone keeps its notes |
+| `notMemorial`, `blankSheet`, `creativeKeeps` | A Scar heart site takes and gives nothing; a blank sheet is refused; creative keeps the sheet |
+| `guideText` | The mending page tells about carving |
+
+Manual (two clients):
+
+- [ ] Carve a sheet into a memorial and have a second player read it with an empty hand; the RU/EN lines show counts and the carver's name.

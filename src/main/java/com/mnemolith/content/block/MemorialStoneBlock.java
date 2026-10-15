@@ -29,6 +29,32 @@ public class MemorialStoneBlock extends Block {
     }
 
     @Override
+    protected net.minecraft.world.InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+        if (stack.isEmpty()) {
+            return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (!stack.has(com.mnemolith.data.ModDataComponents.TRANSCRIPT.get())) {
+            return net.minecraft.world.InteractionResult.PASS;
+        }
+        if (!(level instanceof ServerLevel server) || !(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        return MemorialNotes.inscribe(server, serverPlayer, pos, stack) ? net.minecraft.world.InteractionResult.SUCCESS_SERVER
+                : net.minecraft.world.InteractionResult.PASS;
+    }
+
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
+        if (!(level instanceof ServerLevel server) || !(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        MemorialNotes.read(server, serverPlayer, pos);
+        return net.minecraft.world.InteractionResult.SUCCESS_SERVER;
+    }
+
+    @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         ScarSites.heal(level, pos);
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
