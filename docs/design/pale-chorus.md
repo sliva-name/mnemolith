@@ -1,6 +1,6 @@
 # The Pale Chorus (the End line)
 
-Status: stage 1 done (the hushling and hush filament); stage 2 next.
+Status: stages 1 and 2 done (the hushling, hush filament, the hush loom); stage 3 next.
 
 ## Why
 
@@ -74,3 +74,27 @@ Stacks to 64. In stage 1 it is a material only. Stage 2 gives it its use.
     silence; the End death adds exactly one more);
   - loot, spawn modifier and the guide page.
 - Live test: a hushling with its AI on finds a real player, hits them, and the player is hushed.
+
+## Stage 2 rules
+
+### The hush loom (`hush_loom`)
+
+- **Recipe:** three hush filament, one purpur block, five End stone bricks (`FPF / SFS / SSS`). Pickaxe, drops itself.
+- **Threading:** use a hush filament on it. It threads itself with the tag of the **loudest** imprint in its chunk
+  (the one an ember brazier would burn next) and spends one filament. Threading again re-threads it, again from the
+  loudest imprint, so a player picks what to keep by what is loudest when they thread. An empty chunk takes nothing
+  and changes nothing. An empty hand shows what it keeps.
+- **Keeping:** while it stands, its tag cannot be thinned by a hushling or burned by an ember brazier. They take the
+  quietest or loudest imprint among the rest, and when only kept imprints are left they find nothing (a brazier then
+  spends no charge). Several looms in one chunk keep several tags.
+- **Not a mute:** writes are unchanged. Other removals (the write cap, grafts, the Unremembered's pulse) are not
+  affected; the loom answers only the two Pale Chorus / Embers sinks.
+- **Storage:** the tag is in the block state (`kept`, tag ordinal + 1; `threaded` picks the model) and in the chunk
+  memory's `looms` list (saved, optional in the codec). Breaking the loom removes its mark.
+
+### QA (stage 2)
+
+- `/mnemolith hush2qa`: block data, recipe, loot; threading by hand with the loudest tag; an empty chunk takes
+  nothing; thinning and burning skip the kept tag and stop when only it is left; writes unchanged; the mark survives a
+  save round trip; breaking forgets it; the guide page.
+- Live test `loom_keeps_thread`: a real player threads a loom by hand, then thinning leaves only the kept tag.
