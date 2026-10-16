@@ -40,7 +40,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | The Unremembered, stage 1 | Done on main (PR #79): the hollow effigy calls a boss where a hollow has forgotten 3 times; lens-gated damage, feeding a lantern blocks, forgetting pulse, faded in its second half, posy strikes; its death clears forgotten imprints around it | [unremembered.md](unremembered.md), `unrememberedqa` 17/17, live `unremembered_called_and_seen` |
 | The Unremembered, stage 2 | Done on main (PR #80): the Lethe tear (player kills only) crafts the remembering circlet. Worn, it reveals faded and the boss nearby, wards off the pulse, and keeps a hollow from forgetting near you; two advancements | [unremembered.md](unremembered.md#stage-2-rules), `unremembered2qa` 10/10, live `circlet_wards_and_keeps` |
 | The Unremembered, stage 3 | Done on main (PR #81): health scales with the players near the call (+50% each by default); one Lethe tear per fighter; server options `unrememberedEnabled`, `unrememberedHealth`, `unrememberedHealthPerPlayer`, `unrememberedCallForgotten` | [unremembered.md](unremembered.md#stage-3-rules), `unremembered3qa` 11/11, live `unremembered_scales_and_shares` |
-| Embers, stage 1 | `feature/embers-1`: the cinderkin, a Nether mob of burning memory (fire immune, its hit ignites, snowballs and water hurt it, a fire imprint where it dies in the Nether) and the memory ember it drops (furnace fuel, 1600 ticks) | [embers.md](embers.md), `emberqa` 11/11, live `cinderkin_burns_player` |
+| Embers, stage 1 | Done on main (PR #83): the cinderkin, a Nether mob of burning memory (fire immune, its hit ignites, snowballs and water hurt it, a fire imprint where it dies in the Nether) and the memory ember it drops (furnace fuel, 1600 ticks) | [embers.md](embers.md), `emberqa` 11/11, live `cinderkin_burns_player` |
+| Embers, stage 2 | `feature/embers-2`: the ember brazier. Fed memory embers by hand (4 burns each, 16 max), it burns the loudest imprint of its chunk every 5 s and writes nothing; an empty chunk spends nothing; comparator reads the charge | [embers.md](embers.md#stage-2-rules), `ember2qa` 12/12, live `brazier_burns_down` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -230,5 +231,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 24. The Unremembered (stage 1 done, PR #79; stages 2–3 below): a Memory Hollows boss; see [unremembered.md](unremembered.md).
 25. The Unremembered, stage 2 (done, PR #80): the Lethe tear and the remembering circlet.
 26. The Unremembered, stage 3 (done, PR #81): multiplayer scaling, shared tears and server options.
-27. Embers (stage 1 `feature/embers-1`; stages 2–3 planned): Nether content; see [embers.md](embers.md).
-28. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+27. Embers (stage 1 done, PR #83; stages 2–3 planned): Nether content; see [embers.md](embers.md).
+28. Embers, stage 2 (`feature/embers-2`): the ember brazier, an active pressure sink fed from the Nether.
+29. Next: pick from [expansion-ideas.md](expansion-ideas.md).

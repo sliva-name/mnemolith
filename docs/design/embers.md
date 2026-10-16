@@ -1,6 +1,6 @@
 # Embers of memory (the Nether line)
 
-Status: stage 1 implemented on `feature/embers-1`; stages 2 and 3 planned.
+Status: stage 1 done (PR #83); stage 2 implemented on `feature/embers-2`; stage 3 planned.
 
 ## Why
 
@@ -58,10 +58,37 @@ The lore joins the two. The Nether burns. A memory that falls into it does not f
 
 - Stacks to 64.
 - In stage 1 it is a crafting material and fuel: it burns in a furnace for 1600 ticks (like coal).
-- Stage 2 gives it its real use.
+- Stage 2 gives it its real use: it feeds the ember brazier.
+
+## Stage 2 rules
+
+### The ember brazier (`ember_brazier`)
+
+- **Recipe (shaped):** `I I` / `IEI` / `BBB`, where I is an iron ingot, E a memory ember and B polished blackstone.
+  The recipe unlocks when you pick up a memory ember. Mined with a pickaxe; it drops itself.
+- **Feeding:** use a memory ember on it. One ember adds **4 charges** (`CHARGE_PER_EMBER`), and it holds up to
+  **16** (`MAX_CHARGE`). An ember that would overflow is refused with an overlay line, and nothing is spent. Fed, it
+  lights (light 13, flames and smoke on top). There is no other fuel: embers come only from cinderkin.
+- **Burning:** every **100 ticks** (5 s, `BURN_PERIOD`) a lit brazier takes the loudest imprint of its own chunk (the
+  same pick as the Unremembered's feeding: `removeHighest`) and spends one charge. It writes nothing in its place, and
+  the chunk's pressure is recomputed and saved.
+- **Nothing to burn:** a chunk with no imprints spends nothing; the brazier stays lit and tries again next period.
+- **Going cold:** the last charge puts it out (unlit model, no light), and it stops scheduling ticks.
+- **Comparator:** the signal is the charge left (0–16, capped at 15).
+- **Why it is balanced:** a cinderkin drops 0–2 embers (about one on average), so one kill burns about 4 imprints.
+  A busy base writes far more than that, so the brazier keeps a room or a farm calm rather than silencing a whole
+  town. Mute stones still stop writing; the brazier is the only block that removes what was already written.
+
+### Not in stage 2
+
+No server options or advancements (stage 3).
 
 ## QA
 
 - `/mnemolith emberqa` checks every rule above.
 - Live test `cinderkin_burns_player`: a cinderkin with its AI on finds a real player by itself, and its hit sets
   the player on fire. (Snowball damage is checked in `emberqa` with a real snowball entity as the damage source.)
+- `/mnemolith ember2qa` checks the brazier: recipe, loot, feeding by hand and the full refusal, burning the loudest
+  imprint and writing nothing, an empty chunk, going cold, light and comparator.
+- Live test `brazier_burns_down`: a real player feeds an ember by hand (`gameMode.useItemOn`), and the brazier's own
+  scheduled ticks burn the two imprints written into its chunk.

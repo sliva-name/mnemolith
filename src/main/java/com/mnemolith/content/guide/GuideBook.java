@@ -16,7 +16,7 @@ public final class GuideBook {
     public static final int ART_WIDTH = 256;
     public static final int ART_HEIGHT = 128;
     /** Pages QA expects. */
-    public static final int PAGE_COUNT = 47;
+    public static final int PAGE_COUNT = 48;
 
     private static final String[] PAGES = {
             "welcome",
@@ -64,6 +64,7 @@ public final class GuideBook {
             "posy",
             "unremembered",
             "cinderkin",
+            "brazier",
             "players",
             "reference"
     };

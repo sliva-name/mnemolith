@@ -185,6 +185,14 @@ public final class ModBlocks {
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 13)
                     .requiresCorrectToolForDrops());
+    /** Fed memory embers, burns away the loudest imprint of its chunk ({@code EmberBrazierBlock}). */
+    public static final DeferredBlock<com.mnemolith.content.block.EmberBrazierBlock> EMBER_BRAZIER = BLOCKS.registerBlock(
+            "ember_brazier", com.mnemolith.content.block.EmberBrazierBlock::new, properties -> properties
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .strength(2.0F, 6.0F)
+                    .sound(SoundType.NETHER_BRICKS)
+                    .lightLevel(state -> state.getValue(com.mnemolith.content.block.EmberBrazierBlock.LIT) ? 13 : 0)
+                    .requiresCorrectToolForDrops());
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FORGET_ME_NOT = BLOCKS.registerBlock(
             "forget_me_not",
             props -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 5.0F, props),

@@ -1418,7 +1418,12 @@
   "entity.mnemolith.cinderkin": "Cinderkin",
   "item.mnemolith.cinderkin_spawn_egg": "Cinderkin Spawn Egg",
   "item.mnemolith.memory_ember": "Memory Ember",
-  "item.mnemolith.memory_ember.hint": "What is left of a memory burned in the Nether. Burns like coal.",
+  "item.mnemolith.memory_ember.hint": "What is left of a memory burned in the Nether. Burns like coal, and feeds an ember brazier.",
   "mnemolith.guide.cinderkin.title": "Cinderkin",
-  "mnemolith.guide.cinderkin.body": "A memory that falls into the Nether does not fade; it smoulders. Cinderkin are such memories burning down: charcoal figures with glowing cracks that walk every Nether biome, alone or in pairs. They glow in the dark and feel no fire.\n\nThey come for you, and their touch sets you alight for a few seconds. Bring fire resistance or water.\n\nCold puts them out: a snowball deals 5 damage to a cinderkin, and water burns it as rain burns an enderman. A stack of snowballs is the best weapon to bring.\n\nWhere one dies in the Nether it leaves a fire imprint. Killed by you, it drops memory embers: what is left of the memory. An ember burns in a furnace as long as coal."
+  "mnemolith.guide.cinderkin.body": "A memory that falls into the Nether does not fade; it smoulders. Cinderkin are such memories burning down: charcoal figures with glowing cracks that walk every Nether biome, alone or in pairs. They glow in the dark and feel no fire.\n\nThey come for you, and their touch sets you alight for a few seconds. Bring fire resistance or water.\n\nCold puts them out: a snowball deals 5 damage to a cinderkin, and water burns it as rain burns an enderman. A stack of snowballs is the best weapon to bring.\n\nWhere one dies in the Nether it leaves a fire imprint. Killed by you, it drops memory embers: what is left of the memory. An ember burns in a furnace as long as coal.",
+  "block.mnemolith.ember_brazier": "Ember Brazier",
+  "block.mnemolith.ember_brazier.hint": "Feed it memory embers: it burns away the loudest memory of its chunk every 5 seconds.",
+  "message.mnemolith.ember_brazier.full": "The brazier is full",
+  "mnemolith.guide.brazier.title": "Ember Brazier",
+  "mnemolith.guide.brazier.body": "Memory pressure builds wherever you live: every build, fight and death leaves an imprint, and a loud chunk storms, fractures and draws trouble. Until now you could only muffle it. The ember brazier burns it away.\n\nCraft it from iron, polished blackstone and a memory ember, and feed it embers by hand. One ember is 4 burns; it holds 16.\n\nWhile lit, every 5 seconds it burns the loudest imprint of its chunk and writes nothing in its place. If the chunk has nothing left to burn, it waits and spends nothing.\n\nA comparator reads how many burns are left. Embers come only from cinderkin, so a quiet home is paid for in the Nether."
 }

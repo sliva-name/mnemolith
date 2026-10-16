@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "mnemolith:block/ember_brazier"
+    },
+    "lit=true": {
+      "model": "mnemolith:block/ember_brazier_lit"
+    }
+  }
+}

@@ -134,7 +134,7 @@ public final class EmberQa {
         ok[8] = server.reloadableRegistries().getLootTable(ResourceKey.create(Registries.LOOT_TABLE, id("entities/cinderkin"))) != LootTable.EMPTY;
         ok[9] = server.registryAccess().lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, id("nether_cinderkin"))).isPresent();
-        ok[10] = GuideBook.pageCount() == GuideBook.PAGE_COUNT && GuideBook.PAGE_COUNT == 47 && guidePage("cinderkin");
+        ok[10] = GuideBook.pageCount() == GuideBook.PAGE_COUNT && guidePage("cinderkin");
         return new QaReport("emberqa", NAMES, ok, notes);
     }
 

@@ -36,6 +36,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_unremembered2qa` | `/mnemolith unremembered2qa` (10) | One fake player, two slain bosses, two faded; removes drops after |
 | `mnemolith:suite_unremembered3qa` | `/mnemolith unremembered3qa` (11) | Two fake players (one creative) and one boss; reads the config spec |
 | `mnemolith:suite_emberqa` | `/mnemolith emberqa` (11) | Cinderkin in the overworld and the Nether (no AI), a zombie target and a snowball; clears memory and drops after |
+| `mnemolith:suite_ember2qa` | `/mnemolith ember2qa` (12) | One brazier and one fake player on a test column; writes and burns imprints in that chunk, then clears it and removes the brazier |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -107,6 +108,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `circlet_wards_and_keeps` | Two real players (live site 15) on a painted hollow, one wearing a remembering circlet: the boss pulse touches 1 and darkens only the bare-headed player; `HollowForgetting.forget` refuses beside the wearer and still forgets 24 blocks away | 200 |
 | `unremembered_scales_and_shares` | Two real players (live site 16) on a painted hollow: one calls with an effigy (`gameMode.useItemOn`) while both are near, so it rises with two-player health; both strike it (`attack`); brought down, it leaves two Lethe tears | 200 |
 | `cinderkin_burns_player` | One real player (live site 17) and a cinderkin with its AI on: it targets the player by itself, closes in and its hit sets the player on fire | 200 |
+| `brazier_burns_down` | One real player (live site 18) feeds a memory ember to a brazier by hand (`gameMode.useItemOn`): it lights with 4 charges and the ember is spent; its own scheduled ticks then burn the explosion and build imprints written into its chunk | 400 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
 | `mending_tends_heart` | A real player (live site 11) right-clicks a Scar heart with posies three times (`gameMode.useItemOn`, the day wound back between): memorial stone, memorial site with 3 tendings, 3 posies spent | 200 |
 
@@ -859,3 +861,7 @@ Manual:
 ## Embers
 
 `/mnemolith emberqa` (gamemaster) checks the cinderkin and the memory ember ([design note](design/embers.md)).
+
+## Embers, stage 2
+
+`/mnemolith ember2qa` (gamemaster) checks the ember brazier ([design note](design/embers.md#stage-2-rules)).

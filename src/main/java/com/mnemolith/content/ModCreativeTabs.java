@@ -27,6 +27,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.LETHE_TEAR.get());
                 output.accept(ModItems.REMEMBERING_CIRCLET.get());
                 output.accept(ModItems.MEMORY_EMBER.get());
+                output.accept(ModItems.EMBER_BRAZIER.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.REINFORCED_NEEDLE.get());
                 output.accept(ModItems.TWIN_NEEDLE.get());

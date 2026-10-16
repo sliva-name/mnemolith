@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "mnemolith:block/ember_brazier_top",
+    "bottom": "mnemolith:block/ember_brazier_bottom",
+    "side": "mnemolith:block/ember_brazier_side"
+  }
+}
