@@ -156,6 +156,15 @@ public final class VisualTour {
         c.cmd("effect clear @s");
     }
 
+    private static int firstOf(com.mnemolith.pressure.PressureBand band) {
+        for (int p = 0; p < 1_000_000; p++) {
+            if (com.mnemolith.pressure.MemoryPressure.band(p) == band) {
+                return p;
+            }
+        }
+        return 0;
+    }
+
     private static void scene(String name, Consumer<Ctx> setup, double[] camera, int settle, boolean hud) {
         scene(name, setup, camera, settle, hud, null, null);
     }
@@ -241,13 +250,31 @@ public final class VisualTour {
         cue("kept", MemoryFeel.Kind.KEPT);
         cue("caught", MemoryFeel.Kind.CAUGHT);
         cue("forgotten", MemoryFeel.Kind.FORGOTTEN);
-        for (String[] v : new String[][] {{"strong_hint", "35"}, {"afterimages", "120"}}) {
+        // strong hint alone: a saturated (not overloaded) chunk, written the normal way
+        scene("strong_hint", c -> {
+            platform(c, "smooth_stone");
+            for (int i = 0; i < 6; i++) {
+                c.write(6 + i, 10, ImprintTag.DEATH);
+            }
+        }, new double[] {8.5, Y, 3.5, 0, 12}, 35, true);
+        // the pressure vignette on its own, with the lens out so the band is visible in the pill
+        for (String[] v : new String[][] {{"overloaded_vignette", "OVERLOADED"}, {"fracture_vignette", "FRACTURE"}, {"hint_plus_overloaded", "OVERLOADED"}}) {
+            Consumer<Ctx> hold = c -> { Mnemolith.LOGGER.info("Visual tour: hold {} = {}", v[1], firstOf(com.mnemolith.pressure.PressureBand.valueOf(v[1]))); LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)).setCachedPressure(firstOf(com.mnemolith.pressure.PressureBand.valueOf(v[1]))); };
             scene(v[0], c -> {
                 platform(c, "smooth_stone");
-                com.mnemolith.command.qa.Feel3Qa.saturate(LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)), new BlockPos(6, Y, 12), 4, c.level.getGameTime());
-                c.tp(40.5, Y + 30, 40.5, 0, 0);
-            }, new double[] {8.5, Y, 3.5, 0, 12}, Integer.parseInt(v[1]), true);
+                com.mnemolith.command.qa.Feel3Qa.saturate(LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)), new BlockPos(6, Y, 12), 2, c.level.getGameTime());
+                hold.accept(c);
+                c.cmd("item replace entity @s weapon.mainhand with mnemolith:chronicle_lens");
+                if (!v[0].startsWith("hint")) {
+                    c.tp(40.5, Y + 30, 40.5, 0, 0);
+                }
+            }, new double[] {8.5, Y, 3.5, 0, 12}, 160, true, hold, mc -> {});
         }
+        scene("afterimages", c -> {
+            platform(c, "smooth_stone");
+            com.mnemolith.command.qa.Feel3Qa.saturate(LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)), new BlockPos(6, Y, 12), 4, c.level.getGameTime());
+            c.tp(40.5, Y + 30, 40.5, 0, 0);
+        }, new double[] {8.5, Y, 3.5, 0, 12}, 120, true);
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");
