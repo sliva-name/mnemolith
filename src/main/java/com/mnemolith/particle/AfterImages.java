@@ -59,6 +59,8 @@ public final class AfterImages {
         long stillSince;
         long lastImages = Long.MIN_VALUE / 2;
         long chunk = Long.MIN_VALUE;
+        int hints;
+        int images;
     }
 
     public static void tick(MinecraftServer server) {
@@ -103,6 +105,7 @@ public final class AfterImages {
         if (entered) {
             PacketDistributor.sendToPlayer(player, new StrongMemoryPayload(chunk.getPos().x(), chunk.getPos().z()));
             hintsSent++;
+            state.hints++;
             hint = true;
         }
         int images = 0;
@@ -110,6 +113,7 @@ public final class AfterImages {
             images = show(level, player, memory);
             if (images > 0) {
                 state.lastImages = now;
+                state.images += images;
             }
         }
         return new Result(hint, images);
@@ -131,6 +135,12 @@ public final class AfterImages {
 
     public static void forget(UUID player) {
         STATE.remove(player);
+    }
+
+    /** Hints and after-images sent to one player since they joined, {hints, images}. For QA. */
+    public static int[] sentTo(UUID player) {
+        State state = STATE.get(player);
+        return state == null ? new int[2] : new int[] {state.hints, state.images};
     }
 
     public static int imagesSent() {

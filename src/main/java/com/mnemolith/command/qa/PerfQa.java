@@ -33,10 +33,10 @@ import net.minecraft.world.level.block.Blocks;
  * tracking.
  */
 public final class PerfQa {
-    private static final String[] NAMES = {"stormGate", "lullLookup", "calmNone", "calmMemorial", "lanternGuard", "lanternFound"};
+    private static final String[] NAMES = {"stormGate", "lullLookup", "calmNone", "calmMemorial", "lanternGuard", "lanternFound", "afterImageScan"};
     static final int CALLS = 2000;
     /** Budgets in nanoseconds per call. */
-    static final long[] BUDGET_NS = {50_000L, 20_000L, 50_000L, 400_000L, 50_000L, 400_000L};
+    static final long[] BUDGET_NS = {50_000L, 20_000L, 50_000L, 400_000L, 50_000L, 400_000L, 50_000L};
     private static int salt;
 
     private PerfQa() {}
@@ -74,6 +74,13 @@ public final class PerfQa {
             level.setBlock(lamp, ModBlocks.RECOLLITE_LANTERN.get().defaultBlockState(), 3);
             mean[5] = time(() -> HollowLanterns.guarded(level, probe));
             level.setBlock(lamp, Blocks.AIR.defaultBlockState(), 3);
+            // memory feel stage 3: the once-a-second ambient scan for one player (calm chunk, the common case)
+            net.neoforged.neoforge.common.util.FakePlayer scanner = net.neoforged.neoforge.common.util.FakePlayerFactory.get(level,
+                    new com.mojang.authlib.GameProfile(java.util.UUID.fromString("66666666-4444-2222-3333-aeaeaeaeaeae"), "PerfScan"));
+            scanner.snapTo(probe.getX() + 0.5D, probe.getY(), probe.getZ() + 0.5D, 0.0F, 0.0F);
+            long[] tick = {level.getGameTime()};
+            mean[6] = time(() -> com.mnemolith.particle.AfterImages.scan(level, scanner, tick[0]++) != null);
+            com.mnemolith.particle.AfterImages.forget(scanner.getUUID());
             for (int i = 0; i < NAMES.length; i++) {
                 ok[i] = mean[i] <= BUDGET_NS[i] && (i != 3 || calmed);
                 notes.add(NAMES[i] + "=" + mean[i] + "ns/" + BUDGET_NS[i]);

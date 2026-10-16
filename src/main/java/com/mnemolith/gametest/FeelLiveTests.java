@@ -83,4 +83,29 @@ final class FeelLiveTests {
                 })
                 .thenSucceed();
     }
+
+    /**
+     * Stage 3: a real player (live site 28) stands in a saturated chunk: the server's own once-a-second scan sends the
+     * strong-memory hint once and, after standing still, after-images.
+     */
+    static void strongChunkHintsPlayer(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = LivePlayers.liveSite(level, 28);
+        LivePlayers.force(level, site);
+        ServerPlayer[] player = new ServerPlayer[1];
+        helper.startSequence()
+                .thenExecute(() -> {
+                    LoadedChunkMemory.clear(level.getChunkAt(site));
+                    com.mnemolith.command.qa.Feel3Qa.saturate(LoadedChunkMemory.getOrCreate(level.getChunkAt(site)), site, 4, level.getGameTime());
+                    player[0] = LivePlayers.join(helper, "LiveFeel3", Vec3.atBottomCenterOf(site));
+                    com.mnemolith.particle.AfterImages.forget(player[0].getUUID());
+                })
+                .thenIdle(140)
+                .thenExecute(() -> {
+                    int[] sent = com.mnemolith.particle.AfterImages.sentTo(player[0].getUUID());
+                    LoadedChunkMemory.clear(level.getChunkAt(site));
+                    helper.assertTrue(sent[0] == 1 && sent[1] >= 1, "hints=" + sent[0] + " images=" + sent[1]);
+                })
+                .thenSucceed();
+    }
 }
