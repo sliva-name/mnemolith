@@ -6,6 +6,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
+ * Version 10: lens snapshot chunks carry their loudest tag (memory feel, stage 4).
  * Version 9: the strong-memory hint (memory feel, stage 3).
  * Version 8: memory flickers in Memory Hollows.
  * Version 7: the past-self vision (the world remembers you).
@@ -23,7 +24,7 @@ public final class ModNetwork {
     }
 
     private static void onRegister(RegisterPayloadHandlersEvent event) {
-        event.registrar("9")
+        event.registrar("10")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)

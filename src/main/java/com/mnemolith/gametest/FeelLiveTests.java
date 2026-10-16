@@ -108,4 +108,40 @@ final class FeelLiveTests {
                 })
                 .thenSucceed();
     }
+
+    /**
+     * Stage 4: a real player (live site 29) wearing a remembering circlet stands in a chunk whose loudest memory is a
+     * death under newer paths: the lens snapshot the server would send names death for that chunk, and the circlet tint
+     * applies; taking the circlet off ends it.
+     */
+    static void lensReadsLoudestCircletTints(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = LivePlayers.liveSite(level, 29);
+        LivePlayers.force(level, site);
+        ServerPlayer player = LivePlayers.join(helper, "LiveFeel4", Vec3.atBottomCenterOf(site));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    LoadedChunkMemory.clear(level.getChunkAt(site));
+                    ImprintWriter.write(level, site, java.util.List.of(ImprintTag.DEATH), null, false);
+                    var memory = LoadedChunkMemory.getOrCreate(level.getChunkAt(site));
+                    for (int i = 0; i < 3; i++) {
+                        memory.addImprint(new com.mnemolith.imprint.Imprint(ImprintTag.PATH, 1, site.east(i), java.util.Optional.empty(), 40 + i,
+                                level.getGameTime(), false), 64);
+                    }
+                    player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(ModItems.REMEMBERING_CIRCLET.get()));
+                    int cx = site.getX() >> 4;
+                    int cz = site.getZ() >> 4;
+                    var here = com.mnemolith.network.PressureCollector.snapshotFor(player).stream()
+                            .filter(c -> c.chunkX() == cx && c.chunkZ() == cz).findFirst().orElse(null);
+                    boolean tinted = com.mnemolith.common.MemoryGlyphs.circletTint(player);
+                    player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
+                    boolean after = com.mnemolith.common.MemoryGlyphs.circletTint(player);
+                    LoadedChunkMemory.clear(level.getChunkAt(site));
+                    helper.assertTrue(here != null && here.loudest() == ImprintTag.DEATH.ordinal(), "loudest in snapshot: " + here);
+                    helper.assertTrue(tinted && !after, "circlet tint: worn=" + tinted + " off=" + after);
+                })
+                .thenSucceed();
+    }
 }

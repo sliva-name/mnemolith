@@ -1,6 +1,6 @@
 # Memory feel: one visual and audio language
 
-Status: stages 1 (the language), 2 (the older systems) and 3 (ambient cues) done; stage 4 next.
+Status: all four stages done (the language, the older systems, ambient cues, lens and circlet overlays).
 
 ## Why
 
@@ -127,3 +127,24 @@ by-hand check, since the test server has no audio).
   after standing still, capped at 3, the cooldown, moving resets.
 - Live test `strong_chunk_hints_player`: a real player in a saturated chunk gets one hint and after-images from the
   server's own scan.
+
+## Stage 4 rules (as built)
+
+- Each lens snapshot chunk carries `loudest`, the tag of its strongest imprint (-1 for none or a band-only sample;
+  network version 10). `PressureCollector.loudestOrdinal` picks it with `ChunkMemory.highest()`.
+- **Lens glyph:** the chronicle lens pill shows, after the band, a small swatch in the tag's glyph colour and the tag's
+  name (`MemoryGlyphs.colour`: fire, explosion and lightning ember; death and boss red; fall bone; build and trade
+  green; silence indigo; player and path teal; redstone red; portal blue; sculk verdigris; forgotten grey). The name is
+  drawn in bone, so it stays readable whatever the swatch colour. Client toggle `lensLoudestGlyph`; `lensOverlay` still
+  hides the whole pill.
+- **Circlet tint:** while a remembering circlet is worn (not as a spectator) the screen edge holds a faint, steady tint
+  in the kept indigo, fading in and out over about a second, below the strong-memory hint and the pressure vignette.
+  Client toggle `circletTint`.
+
+### QA (stage 4)
+
+- `/mnemolith feel4qa` (9): the loudest tag survives the wire (and -1), the loudest is the strongest not the newest,
+  every tag has a glyph colour and out-of-range has none, the circlet tint only when worn on the head and not as a
+  spectator, the toggles' RU/EN lang.
+- Live test `lens_reads_loudest_circlet_tints`: a real player with a circlet in a chunk whose loudest memory is a death
+  under newer paths: the server's lens snapshot names death, the tint applies, and stops when the circlet comes off.

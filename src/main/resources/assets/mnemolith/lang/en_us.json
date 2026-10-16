@@ -1492,5 +1492,9 @@
   "mnemolith.configuration.memoryAfterImages": "Memory after-images",
   "mnemolith.configuration.memoryAfterImages.tooltip": "Whether standing still in a strongly remembering chunk shows faint after-images where its loudest memories happened.",
   "mnemolith.configuration.strongMemoryHint": "Strong-memory hint",
-  "mnemolith.configuration.strongMemoryHint.tooltip": "Whether a strongly remembering chunk breathes a faint tint at the screen edge and says so the first time you enter it."
+  "mnemolith.configuration.strongMemoryHint.tooltip": "Whether a strongly remembering chunk breathes a faint tint at the screen edge and says so the first time you enter it.",
+  "mnemolith.configuration.lensLoudestGlyph": "Lens loudest-memory glyph",
+  "mnemolith.configuration.lensLoudestGlyph.tooltip": "Whether the chronicle lens pill shows the loudest memory of the chunk as a coloured glyph and its name.",
+  "mnemolith.configuration.circletTint": "Circlet edge tint",
+  "mnemolith.configuration.circletTint.tooltip": "Whether wearing a remembering circlet tints the screen edge with the kept colour."
 }
