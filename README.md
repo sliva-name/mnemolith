@@ -150,7 +150,7 @@
 
 **Беспамятный в мультиплеере** (этап 3): здоровье растёт с числом игроков рядом с призывом (по умолчанию +50% за каждого следующего), а каждый, кто его ранил, получает свою слезу Леты. Настройки сервера: `unrememberedEnabled`, `unrememberedHealth`, `unrememberedHealthPerPlayer`, `unrememberedCallForgotten`. `/mnemolith unremembered3qa` проверяет это.
 
-**Угольки** (Незер, этап 1): в Незере бродит тлеющий — память, догорающая до углей. Он не боится огня, его удар поджигает, а снежки и вода ранят его. Умирая в Незере, он оставляет отпечаток огня; убитый игроком, роняет угольки памяти — топливо для печи (как стержень ифрита, 1600 тиков). `/mnemolith emberqa` проверяет это; заметка — [docs/design/embers.md](docs/design/embers.md).
+**Угольки** (Незер, этап 1): в Незере бродит тлеющий — память, догорающая до углей. Он не боится огня, его удар поджигает, а снежки и вода ранят его. Умирая в Незере, он оставляет отпечаток огня; убитый игроком, роняет угольки памяти — топливо для печи (как уголь, 1600 тиков). `/mnemolith emberqa` проверяет это; заметка — [docs/design/embers.md](docs/design/embers.md).
 
 **Бюджеты производительности**: `/mnemolith perfqa` замеряет горячие серверные пути (ворота бурь, затишье, покой у памятника, охрана фонарей) и падает, если среднее время вызова выходит за бюджет. Проверка фонарей теперь пропускает секции чанка без фонарей. Заметка: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
@@ -452,7 +452,7 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 
 **The Unremembered in multiplayer** (stage 3): its health grows with the players near the call (+50% per further player by default), and everyone who hurt it gets their own Lethe tear. Server options: `unrememberedEnabled`, `unrememberedHealth`, `unrememberedHealthPerPlayer`, `unrememberedCallForgotten`. `/mnemolith unremembered3qa` checks it.
 
-**Embers** (the Nether, stage 1): the cinderkin roams the Nether, a memory burning down to cinders. It is fire immune and its hit sets you alight, but snowballs and water hurt it. Dying in the Nether it leaves a fire imprint; killed by a player it drops memory embers, furnace fuel (1600 ticks, like a blaze rod). `/mnemolith emberqa` checks it; design note: [docs/design/embers.md](docs/design/embers.md).
+**Embers** (the Nether, stage 1): the cinderkin roams the Nether, a memory burning down to cinders. It is fire immune and its hit sets you alight, but snowballs and water hurt it. Dying in the Nether it leaves a fire imprint; killed by a player it drops memory embers, furnace fuel (1600 ticks, like coal). `/mnemolith emberqa` checks it; design note: [docs/design/embers.md](docs/design/embers.md).
 
 **Performance budgets**: `/mnemolith perfqa` times the hot server paths (storm gate, lull, memorial calm, lantern guard) and fails if a per-call mean goes over budget. The lantern check now skips chunk sections that hold no lantern. Design note: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 

@@ -63,5 +63,5 @@ The lore joins the two. The Nether burns. A memory that falls into it does not f
 ## QA
 
 - `/mnemolith emberqa` checks every rule above.
-- Live test `cinderkin_burns_player`: a real player is hit by a cinderkin and catches fire; a snowball the player
-  throws for real deals its cold damage.
+- Live test `cinderkin_burns_player`: a cinderkin with its AI on finds a real player by itself, and its hit sets
+  the player on fire. (Snowball damage is checked in `emberqa` with a real snowball entity as the damage source.)
