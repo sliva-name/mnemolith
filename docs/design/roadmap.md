@@ -239,4 +239,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 28. Embers, stage 2 (done, PR #84): the ember brazier, an active pressure sink fed from the Nether.
 29. Embers, stage 3 (done, PR #85): server options, advancements and a shared brazier.
 30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); done: PR #88, #89 and stage 3).
-31. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+31. Undertow (fishing line; design note [undertow.md](undertow.md), stages 1–3 planned).
+32. Next: pick from [expansion-ideas.md](expansion-ideas.md).
