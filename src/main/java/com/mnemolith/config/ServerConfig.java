@@ -16,6 +16,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue UNREMEMBERED_HEALTH;
     public static final ModConfigSpec.DoubleValue UNREMEMBERED_HEALTH_PER_PLAYER;
     public static final ModConfigSpec.IntValue UNREMEMBERED_CALL_FORGOTTEN;
+    public static final ModConfigSpec.BooleanValue CINDERKIN_SPAWNS;
+    public static final ModConfigSpec.IntValue EMBER_BRAZIER_BURN_TICKS;
+    public static final ModConfigSpec.IntValue EMBER_BRAZIER_CHARGE_PER_EMBER;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -34,6 +37,12 @@ public final class ServerConfig {
         UNREMEMBERED_HEALTH = SpecValues.decimal(builder, "unrememberedHealth", "Health of the Unremembered when one player takes part.", 160.0D, 40.0D, 1024.0D);
         UNREMEMBERED_HEALTH_PER_PLAYER = SpecValues.decimal(builder, "unrememberedHealthPerPlayer", "Extra health for each further player within 32 blocks when it is called, as a share of unrememberedHealth (0.5: two players face 1.5x). 0 turns scaling off.", 0.5D, 0.0D, 2.0D);
         UNREMEMBERED_CALL_FORGOTTEN = SpecValues.integer(builder, "unrememberedCallForgotten", "Forgotten imprints a hollow chunk must hold before a hollow effigy can call the Unremembered there.", 3, 1, 32);
+        builder.pop();
+
+        SpecValues.section(builder, "embers", "Embers of memory: the cinderkin of the Nether and the ember brazier.");
+        CINDERKIN_SPAWNS = SpecValues.bool(builder, "cinderkinSpawns", "Whether cinderkin spawn naturally in the Nether. Spawn eggs and commands still work; cinderkin already out stay.", true);
+        EMBER_BRAZIER_BURN_TICKS = SpecValues.integer(builder, "emberBrazierBurnTicks", "Ticks between two burns of a lit ember brazier (each burns the loudest imprint of its chunk). 100 is 5 seconds.", 100, 20, 1200);
+        EMBER_BRAZIER_CHARGE_PER_EMBER = SpecValues.integer(builder, "emberBrazierChargePerEmber", "Burns one memory ember gives an ember brazier. A brazier holds 16.", 4, 1, 16);
         builder.pop();
 
         SPEC = builder.build();

@@ -1,0 +1,35 @@
+{
+  "parent": "mnemolith:root",
+  "display": {
+    "icon": {
+      "id": "mnemolith:memory_ember"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.memory_ember.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.memory_ember.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "ember": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "mnemolith:memory_ember"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "ember"
+    ]
+  ]
+}

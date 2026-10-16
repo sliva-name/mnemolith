@@ -93,4 +93,59 @@ final class CinderkinLiveTests {
                 })
                 .thenSucceed();
     }
+
+    /**
+     * One brazier shared by two real players in a base (live site 19): each feeds it by hand, the charge adds up, the
+     * one who would overflow it is refused and keeps the ember, and both earn {@code ember_brazier_kindled}.
+     */
+    static void brazierShared(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = LivePlayers.liveSite(level, 19);
+        LivePlayers.force(level, site);
+        BlockPos pos = site.offset(1, 0, 0);
+        ServerPlayer a = LivePlayers.join(helper, "LiveBrazierA", Vec3.atBottomCenterOf(site.offset(0, 0, 2)));
+        ServerPlayer b = LivePlayers.join(helper, "LiveBrazierB", Vec3.atBottomCenterOf(site.offset(2, 0, 2)));
+        net.minecraft.world.phys.BlockHitResult top = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(pos).add(0.0D, 0.5D, 0.0D),
+                net.minecraft.core.Direction.UP, pos, false);
+        net.minecraft.world.InteractionHand hand = net.minecraft.world.InteractionHand.MAIN_HAND;
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    a.setGameMode(GameType.SURVIVAL);
+                    b.setGameMode(GameType.SURVIVAL);
+                    level.setBlock(pos, com.mnemolith.content.ModBlocks.EMBER_BRAZIER.get().defaultBlockState(), 3);
+                    a.setItemInHand(hand, new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.MEMORY_EMBER.get(), 3));
+                    b.setItemInHand(hand, new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.MEMORY_EMBER.get(), 3));
+                    int per = com.mnemolith.content.block.EmberBrazierBlock.chargePerEmber();
+                    int max = com.mnemolith.content.block.EmberBrazierBlock.MAX_CHARGE;
+                    int fromA = 0;
+                    int fromB = 0;
+                    // A and B take turns until the brazier refuses
+                    for (int turn = 0; turn < 6; turn++) {
+                        ServerPlayer who = turn % 2 == 0 ? a : b;
+                        int before = who.getMainHandItem().getCount();
+                        who.gameMode.useItemOn(who, level, who.getMainHandItem(), hand, top);
+                        if (who.getMainHandItem().getCount() < before) {
+                            if (who == a) {
+                                fromA++;
+                            } else {
+                                fromB++;
+                            }
+                        }
+                    }
+                    int charge = level.getBlockState(pos).getValue(com.mnemolith.content.block.EmberBrazierBlock.CHARGE);
+                    int expected = (max / per) * per;
+                    var advancement = level.getServer().getAdvancements().get(com.mnemolith.content.block.EmberBrazierBlock.ADVANCEMENT);
+                    boolean aDone = advancement != null && a.getAdvancements().getOrStartProgress(advancement).isDone();
+                    boolean bDone = advancement != null && b.getAdvancements().getOrStartProgress(advancement).isDone();
+                    level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    com.mnemolith.world.LoadedChunkMemory.clear(level.getChunkAt(pos));
+                    helper.assertTrue(charge == expected && fromA + fromB == max / per && fromA > 0 && fromB > 0,
+                            "the charge did not add up: charge=" + charge + " fromA=" + fromA + " fromB=" + fromB);
+                    helper.assertTrue(a.getMainHandItem().getCount() + b.getMainHandItem().getCount() == 6 - max / per,
+                            "a refused ember was spent: a=" + a.getMainHandItem().getCount() + " b=" + b.getMainHandItem().getCount());
+                    helper.assertTrue(aDone && bDone, "kindled advancement: a=" + aDone + " b=" + bDone);
+                })
+                .thenSucceed();
+    }
 }

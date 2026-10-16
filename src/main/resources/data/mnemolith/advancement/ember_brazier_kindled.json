@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:memory_ember",
+  "display": {
+    "icon": {
+      "id": "mnemolith:ember_brazier"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.ember_brazier_kindled.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.ember_brazier_kindled.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "kindled": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "kindled"
+    ]
+  ]
+}

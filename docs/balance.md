@@ -172,3 +172,12 @@ Defaults live in the `recall` section. The player-facing plan is [design/living-
 | `unrememberedHealth` | 160 | about two minutes of fighting for one player with a revealed iron sword, longer if it feeds; a lantern decides the pace |
 | `unrememberedHealthPerPlayer` | 0.5 | a second player adds half again, not double: two players still finish faster, and each gets a tear |
 | `unrememberedCallForgotten` | 3 | three uncaught flickers or slain faded in one chunk: a calling site you grow on purpose in an evening, not by accident |
+
+## Embers
+
+| Number | Default | Why |
+| --- | --- | --- |
+| `cinderkinSpawns` | on | the only source of memory embers; turning it off leaves the brazier fed from spawn eggs and commands only |
+| cinderkin drop | 0–2 embers (+1 per Looting), player kills only | about one ember per kill: a short Nether trip with a stack of snowballs fills a brazier |
+| `emberBrazierChargePerEmber` | 4 | one kill is about 4 burns. A busy base writes far more than that, so a brazier keeps one room or farm calm, not a whole town |
+| `emberBrazierBurnTicks` | 100 | 5 s per burn: a full brazier (16) empties a loud chunk in under a minute and a half, quickly enough to see, slowly enough to matter |

@@ -29,17 +29,21 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * The ember brazier: fed memory embers, it burns away the loudest imprint of its chunk every {@link #BURN_PERIOD}
- * ticks and writes nothing. One ember is {@link #CHARGE_PER_EMBER} burns; it holds up to {@link #MAX_CHARGE}. A burn
- * that finds the chunk empty spends nothing. See {@code docs/design/embers.md}, stage 2.
+ * The ember brazier: fed memory embers, it burns away the loudest imprint of its chunk every {@link #burnPeriod()}
+ * ticks and writes nothing. One ember is {@link #chargePerEmber()} burns; it holds up to {@link #MAX_CHARGE}. A burn
+ * that finds the chunk empty spends nothing. Feeding one awards the {@link #ADVANCEMENT}. See
+ * {@code docs/design/embers.md}, stages 2 and 3.
  */
 public class EmberBrazierBlock extends Block {
     public static final MapCodec<EmberBrazierBlock> CODEC = simpleCodec(EmberBrazierBlock::new);
+    /** Defaults of the server options {@code emberBrazierChargePerEmber} and {@code emberBrazierBurnTicks}. */
     public static final int CHARGE_PER_EMBER = 4;
     public static final int MAX_CHARGE = 16;
     public static final int BURN_PERIOD = 100;
     public static final IntegerProperty CHARGE = IntegerProperty.create("charge", 0, MAX_CHARGE);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
+    public static final net.minecraft.resources.Identifier ADVANCEMENT = net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            com.mnemolith.Mnemolith.MOD_ID, "ember_brazier_kindled");
 
     /** What the last burn did, for QA: "burned", "empty", "cold". */
     public enum Burn { BURNED, EMPTY, COLD }
@@ -75,19 +79,34 @@ public class EmberBrazierBlock extends Block {
             return InteractionResult.FAIL;
         }
         stack.consume(1, player);
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            var advancement = server.getServer().getAdvancements().get(ADVANCEMENT);
+            if (advancement != null) {
+                serverPlayer.getAdvancements().award(advancement, "kindled");
+            }
+        }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    public static int chargePerEmber() {
+        return com.mnemolith.config.ServerConfig.EMBER_BRAZIER_CHARGE_PER_EMBER.get();
+    }
+
+    public static int burnPeriod() {
+        return com.mnemolith.config.ServerConfig.EMBER_BRAZIER_BURN_TICKS.get();
     }
 
     /** Adds one ember's worth of charge; false (nothing changes) when it would overflow. */
     public static boolean feed(ServerLevel level, BlockPos pos, BlockState state) {
         int charge = state.getValue(CHARGE);
-        if (charge + CHARGE_PER_EMBER > MAX_CHARGE) {
+        int add = chargePerEmber();
+        if (charge + add > MAX_CHARGE) {
             return false;
         }
-        level.setBlock(pos, state.setValue(CHARGE, charge + CHARGE_PER_EMBER).setValue(LIT, true), Block.UPDATE_ALL);
+        level.setBlock(pos, state.setValue(CHARGE, charge + add).setValue(LIT, true), Block.UPDATE_ALL);
         level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 1.2F);
         if (!level.getBlockTicks().hasScheduledTick(pos, state.getBlock())) {
-            level.scheduleTick(pos, state.getBlock(), BURN_PERIOD);
+            level.scheduleTick(pos, state.getBlock(), burnPeriod());
         }
         return true;
     }
@@ -95,7 +114,7 @@ public class EmberBrazierBlock extends Block {
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (burn(level, pos) != Burn.COLD && level.getBlockState(pos).getValue(LIT)) {
-            level.scheduleTick(pos, this, BURN_PERIOD);
+            level.scheduleTick(pos, this, burnPeriod());
         }
     }
 

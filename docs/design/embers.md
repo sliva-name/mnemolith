@@ -1,6 +1,6 @@
 # Embers of memory (the Nether line)
 
-Status: stage 1 done (PR #83); stage 2 implemented on `feature/embers-2`; stage 3 planned.
+Status: stage 1 done (PR #83); stage 2 done (PR #84); stage 3 implemented on `feature/embers-3`.
 
 ## Why
 
@@ -83,6 +83,29 @@ The lore joins the two. The Nether burns. A memory that falls into it does not f
 
 No server options or advancements (stage 3).
 
+## Stage 3 rules
+
+### Server options (`config/mnemolith-server.toml`, section `embers`)
+
+| Option | Default | Range | Effect |
+| --- | --- | --- | --- |
+| `cinderkinSpawns` | true | | Natural cinderkin spawns in the Nether. Off, the spawn rule refuses natural spawns; spawn eggs and `/mnemolith spawn cinderkin` still work, and cinderkin already out stay. |
+| `emberBrazierBurnTicks` | 100 | 20–1200 | Ticks between burns. A changed value applies from the next scheduled burn. |
+| `emberBrazierChargePerEmber` | 4 | 1–16 | Burns one ember gives. The brazier still holds 16 at most, and an ember that would overflow it is refused. |
+
+The numbers and their reasons are in [balance.md](../balance.md#embers).
+
+### Advancements
+
+- **Embers of Memory** (`memory_ember`, under the root): pick up a memory ember.
+- **Burn It Away** (`ember_brazier_kindled`, under Embers of Memory): feed an ember to a brazier by hand. Awarded by
+  the block to the player who fed it.
+
+### Multiplayer
+
+The brazier keeps no owner: whoever feeds it adds to the same charge, and anyone may feed a brazier someone else
+built. The overflow check is per ember, so two players feeding at once cannot push it past 16.
+
 ## QA
 
 - `/mnemolith emberqa` checks every rule above.
@@ -92,3 +115,8 @@ No server options or advancements (stage 3).
   imprint and writing nothing, an empty chunk, going cold, light and comparator.
 - Live test `brazier_burns_down`: a real player feeds an ember by hand (`gameMode.useItemOn`), and the brazier's own
   scheduled ticks burn the two imprints written into its chunk.
+- `/mnemolith ember3qa` checks the stage 3 options (defaults, ranges, lang), the spawn rule with spawns off (natural
+  refused, egg allowed, never in the Overworld), the brazier reading its charge and period from the options, and the
+  two advancements.
+- Live test `brazier_shared`: two real players take turns feeding one brazier by hand; the charge adds up to 16, the
+  refused ember is kept, and both earn Burn It Away.

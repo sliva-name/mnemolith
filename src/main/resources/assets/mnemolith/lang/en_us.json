@@ -1425,5 +1425,18 @@
   "block.mnemolith.ember_brazier.hint": "Feed it memory embers: it burns away the loudest memory of its chunk every 5 seconds.",
   "message.mnemolith.ember_brazier.full": "The brazier is full",
   "mnemolith.guide.brazier.title": "Ember Brazier",
-  "mnemolith.guide.brazier.body": "Memory pressure builds wherever you live: every build, fight and death leaves an imprint, and a loud chunk storms, fractures and draws trouble. Until now you could only muffle it. The ember brazier burns it away.\n\nCraft it from iron, polished blackstone and a memory ember, and feed it embers by hand. One ember is 4 burns; it holds 16.\n\nWhile lit, every 5 seconds it burns the loudest imprint of its chunk and writes nothing in its place. If the chunk has nothing left to burn, it waits and spends nothing.\n\nA comparator reads how many burns are left. Embers come only from cinderkin, so a quiet home is paid for in the Nether."
+  "mnemolith.guide.brazier.body": "Memory pressure builds wherever you live: every build, fight and death leaves an imprint, and a loud chunk storms, fractures and draws trouble. Until now you could only muffle it. The ember brazier burns it away.\n\nCraft it from iron, polished blackstone and a memory ember, and feed it embers by hand. One ember is 4 burns; it holds 16.\n\nWhile lit, every 5 seconds it burns the loudest imprint of its chunk and writes nothing in its place. If the chunk has nothing left to burn, it waits and spends nothing.\n\nA comparator reads how many burns are left. Embers come only from cinderkin, so a quiet home is paid for in the Nether.",
+  "advancements.mnemolith.memory_ember.title": "Embers of Memory",
+  "advancements.mnemolith.memory_ember.description": "Take a memory ember from a cinderkin in the Nether.",
+  "advancements.mnemolith.ember_brazier_kindled.title": "Burn It Away",
+  "advancements.mnemolith.ember_brazier_kindled.description": "Feed a memory ember to an ember brazier.",
+  "mnemolith.configuration.embers": "Embers",
+  "mnemolith.configuration.embers.tooltip": "Embers of memory: the cinderkin of the Nether and the ember brazier.",
+  "mnemolith.configuration.embers.button": "Embers",
+  "mnemolith.configuration.cinderkinSpawns": "Cinderkin Spawn",
+  "mnemolith.configuration.cinderkinSpawns.tooltip": "Whether cinderkin spawn naturally in the Nether. Spawn eggs and commands still work; cinderkin already out stay.",
+  "mnemolith.configuration.emberBrazierBurnTicks": "Brazier Burn Interval",
+  "mnemolith.configuration.emberBrazierBurnTicks.tooltip": "Ticks between two burns of a lit ember brazier (each burns the loudest imprint of its chunk). 100 is 5 seconds.",
+  "mnemolith.configuration.emberBrazierChargePerEmber": "Burns per Ember",
+  "mnemolith.configuration.emberBrazierChargePerEmber.tooltip": "Burns one memory ember gives an ember brazier. A brazier holds 16."
 }
