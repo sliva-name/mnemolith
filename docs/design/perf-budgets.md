@@ -25,3 +25,5 @@ change would only show up as tick lag on a busy server.
 
 ## Server compatibility
 A static scan found no client classes referenced outside the client packages. The GameTest server runs as a dedicated server.
+
+- `afterImageScan` (memory feel, stage 3): the once-a-second ambient scan for one player in a calm chunk; budget 50 µs, seen about 0.14 µs.
