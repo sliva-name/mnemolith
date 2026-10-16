@@ -164,6 +164,8 @@
 
 **Подводное течение** (рыбалка, этап 1): рыбачьте в чанке, который помнит. В 30% уловов (+10% за уровень «Морской удачи», не больше 60%) леска вытаскивает самый старый отпечаток чанка под поплавком листком отпечатка этого тега; взамен ничего не пишется. Тег, который бережёт станок тишины, не трогается. `/mnemolith anglingqa` проверяет это; заметка: [docs/design/undertow.md](docs/design/undertow.md).
 
+**Приливная блесна** (подводное течение, этап 2): соберите из нити, осколка реколлита и трёх осколков призмарина. Во второй руке при рыбалке она добавляет 20% к шансу (до 80%), и леска тянет самый громкий отпечаток чанка вместо самого старого. 32 использования, по одному за каждое вытащенное воспоминание. `/mnemolith lureqa` проверяет это.
+
 **Бюджеты производительности**: `/mnemolith perfqa` замеряет горячие серверные пути (ворота бурь, затишье, покой у памятника, охрана фонарей) и падает, если среднее время вызова выходит за бюджет. Проверка фонарей теперь пропускает секции чанка без фонарей. Заметка: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
@@ -477,6 +479,8 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 **The Pale Chorus on servers** (stage 3): server options `hushlingSpawns`, `hushTicks`, `hushlingThinTicks`; advancements The Pale Chorus and Keep This. A hush is personal: only the player hit is hushed. A loom is shared: anyone can thread it. `/mnemolith hush3qa` checks it.
 
 **Undertow** (fishing, stage 1): fish in a chunk that remembers. 30% of catches (+10% per level of Luck of the Sea, at most 60%) also bring up the oldest imprint of the chunk under the bobber as an imprint slip of its tag; nothing is written in its place. A hush loom's kept tag is left alone. `/mnemolith anglingqa` checks it; design note: [docs/design/undertow.md](docs/design/undertow.md).
+
+**Tide lure** (Undertow, stage 2): craft it from string, a recollite shard and three prismarine shards. In the off hand while fishing it adds 20% to the chance (up to 80%) and the line pulls the chunk's loudest imprint instead of its oldest. 32 uses, one per memory landed. `/mnemolith lureqa` checks it.
 
 **Performance budgets**: `/mnemolith perfqa` times the hot server paths (storm gate, lull, memorial calm, lantern guard) and fails if a per-call mean goes over budget. The lantern check now skips chunk sections that hold no lantern. Design note: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
