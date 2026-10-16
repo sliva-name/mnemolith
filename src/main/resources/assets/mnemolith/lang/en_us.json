@@ -1414,5 +1414,11 @@
   "mnemolith.configuration.unrememberedHealthPerPlayer.tooltip": "Extra health for each further player within 32 blocks when it is called, as a share of the base health (0.5: two players face 1.5x). 0 turns scaling off.",
   "mnemolith.configuration.unrememberedCallForgotten": "Forgotten Memories to Call",
   "mnemolith.configuration.unrememberedCallForgotten.tooltip": "Forgotten imprints a hollow chunk must hold before a hollow effigy can call the Unremembered there.",
-  "mnemolith.configuration.unremembered.button": "The Unremembered"
+  "mnemolith.configuration.unremembered.button": "The Unremembered",
+  "entity.mnemolith.cinderkin": "Cinderkin",
+  "item.mnemolith.cinderkin_spawn_egg": "Cinderkin Spawn Egg",
+  "item.mnemolith.memory_ember": "Memory Ember",
+  "item.mnemolith.memory_ember.hint": "What is left of a memory burned in the Nether. Burns like coal.",
+  "mnemolith.guide.cinderkin.title": "Cinderkin",
+  "mnemolith.guide.cinderkin.body": "A memory that falls into the Nether does not fade; it smoulders. Cinderkin are such memories burning down: charcoal figures with glowing cracks that walk every Nether biome, alone or in pairs. They glow in the dark and feel no fire.\n\nThey come for you, and their touch sets you alight for a few seconds. Bring fire resistance or water.\n\nCold puts them out: a snowball deals 5 damage to a cinderkin, and water burns it as rain burns an enderman. A stack of snowballs is the best weapon to bring.\n\nWhere one dies in the Nether it leaves a fire imprint. Killed by you, it drops memory embers: what is left of the memory. An ember burns in a furnace as long as coal."
 }

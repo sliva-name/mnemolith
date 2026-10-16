@@ -327,6 +327,37 @@ def hollow_effigy():
     return cv.image()
 
 
+def cinderkin():
+    """The cinderkin on the faded's layout: charcoal skin and ash-dark cloth with glowing ember cracks, ember eyes."""
+    return _faded_sheet('cinderkin', 'mute', 'deep', crown=False, cracks=True)
+
+
+def memory_ember():
+    """A lump of charcoal split open, a hot ember core glowing in the crack, a faint pale wisp (the memory) rising."""
+    rng = core.rng_for('memory_ember')
+    cv = Canvas(S, S)
+    lump = m_poly(S, S, [(7, 21), (10, 14), (16, 11), (23, 13), (26, 19), (23, 26), (15, 28), (9, 26)])
+    shapes.glow(cv, 16, 20, 12, RAMPS['ember'][4], 0.3)
+    cv.fill(lump, RAMPS['mute'][1])
+    cv.fill(lump & m_rect(S, S, 0, 0, S - 1, 17), RAMPS['mute'][3])
+    crack = core.m_lines(S, S, [(10, 23), (14, 19), (17, 21), (21, 16), (24, 18)], 1) & lump
+    cv.fill(crack, RAMPS['ember'][4])
+    cv.fill(erode(lump) & m_ellipse(S, S, 17.0, 20.0, 3.0, 2.2), RAMPS['ember'][5])
+    for _ in range(5):
+        x, y = rng.randrange(10, 23), rng.randrange(15, 26)
+        if lump[y, x]:
+            cv.px(x, y, RAMPS['ember'][3])
+    # the memory leaving: a thin pale wisp
+    cv.fill(core.m_lines(S, S, [(17, 11), (15, 8), (17, 5), (16, 2)], 1), mix(RAMPS['pale'][5], RAMPS['ember'][5], 0.25))
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
+def cinderkin_spawn_egg():
+    from .items import _egg
+    return _egg('cinderkin_spawn_egg', 'mute', 'ember', 5, band='ember')
+
+
 def lethe_tear():
     """A single tear of pale recollite glass, a darker memory curled inside it, a bright glint at the shoulder."""
     cv = Canvas(S, S)
@@ -413,7 +444,7 @@ def unremembered():
     return _faded_sheet('unremembered', 'lilac', 'indigo', crown=True)
 
 
-def _faded_sheet(name, skin_mat, cloth_mat, crown):
+def _faded_sheet(name, skin_mat, cloth_mat, crown, cracks=False):
     from .entities import Sheet
     from .materials import surface
     s = Sheet(name)
@@ -488,11 +519,32 @@ def _faded_sheet(name, skin_mat, cloth_mat, crown):
         cv.px(0, 0, RAMPS['pale'][6])
         return cv
 
-    s.box(0, 0, 8, 8, 8, head)
-    s.box(16, 16, 8, 12, 4, body)
-    s.box(0, 32, 9, 9, 5, veil)
-    s.box(40, 16, 3, 12, 3, arm)
-    s.box(0, 16, 3, 12, 3, leg)
+    def cracked(fn):
+        """Glowing ember cracks over a charcoal face: a few short jagged runs, hot core, cooler rim."""
+        if not cracks:
+            return fn
+
+        def paint(f, w, h, rng):
+            cv = fn(f, w, h, rng)
+            if cv is None or f in ('up', 'down'):
+                return cv
+            for _ in range(max(1, (w * h) // 90)):
+                x, y = rng.randrange(w), rng.randrange(h)
+                for _ in range(rng.randrange(3, 7)):
+                    if 0 <= x < w and 0 <= y < h and cv.alpha[y, x] > 0:
+                        cv.px(x, y, RAMPS['ember'][4])
+                        if x + 1 < w and cv.alpha[y, x + 1] > 0:
+                            cv.px(x + 1, y, RAMPS['ember'][2])
+                    x += rng.choice((-1, 0, 1))
+                    y += 1
+            return cv
+        return paint
+
+    s.box(0, 0, 8, 8, 8, cracked(head))
+    s.box(16, 16, 8, 12, 4, cracked(body))
+    s.box(0, 32, 9, 9, 5, cracked(veil))
+    s.box(40, 16, 3, 12, 3, cracked(arm))
+    s.box(0, 16, 3, 12, 3, cracked(leg))
     s.box(56, 0, 2, 3, 1, splinter)
     return s.image()
 
@@ -518,6 +570,8 @@ ITEM_TEXTURES = {
     'remembrance_posy': remembrance_posy,
     'hollow_effigy': hollow_effigy,
     'lethe_tear': lethe_tear,
+    'memory_ember': memory_ember,
+    'cinderkin_spawn_egg': cinderkin_spawn_egg,
     'remembering_circlet': remembering_circlet,
     'faded_spawn_egg': faded_spawn_egg,
 }
@@ -527,4 +581,5 @@ EQUIPMENT_TEXTURES = {
 ENTITY_TEXTURES = {
     'faded': faded,
     'unremembered': unremembered,
+    'cinderkin': cinderkin,
 }
