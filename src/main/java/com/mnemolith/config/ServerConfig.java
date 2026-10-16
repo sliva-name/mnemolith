@@ -19,6 +19,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue CINDERKIN_SPAWNS;
     public static final ModConfigSpec.IntValue EMBER_BRAZIER_BURN_TICKS;
     public static final ModConfigSpec.IntValue EMBER_BRAZIER_CHARGE_PER_EMBER;
+    public static final ModConfigSpec.BooleanValue HUSHLING_SPAWNS;
+    public static final ModConfigSpec.IntValue HUSH_TICKS;
+    public static final ModConfigSpec.IntValue HUSHLING_THIN_TICKS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -43,6 +46,12 @@ public final class ServerConfig {
         CINDERKIN_SPAWNS = SpecValues.bool(builder, "cinderkinSpawns", "Whether cinderkin spawn naturally in the Nether. Spawn eggs and commands still work; cinderkin already out stay.", true);
         EMBER_BRAZIER_BURN_TICKS = SpecValues.integer(builder, "emberBrazierBurnTicks", "Ticks between two burns of a lit ember brazier (each burns the loudest imprint of its chunk). 100 is 5 seconds.", 100, 20, 1200);
         EMBER_BRAZIER_CHARGE_PER_EMBER = SpecValues.integer(builder, "emberBrazierChargePerEmber", "Burns one memory ember gives an ember brazier. A brazier holds 16.", 4, 1, 16);
+        builder.pop();
+
+        SpecValues.section(builder, "paleChorus", "The Pale Chorus: the hushlings of the End and the hush loom.");
+        HUSHLING_SPAWNS = SpecValues.bool(builder, "hushlingSpawns", "Whether hushlings spawn naturally in the End. Spawn eggs and commands still work; hushlings already out stay.", true);
+        HUSH_TICKS = SpecValues.integer(builder, "hushTicks", "Ticks a hushling's hit hushes a player (nothing they do writes an imprint) and slows them. 120 is 6 seconds.", 120, 20, 1200);
+        HUSHLING_THIN_TICKS = SpecValues.integer(builder, "hushlingThinTicks", "Ticks between two thinnings of a hushling (each removes the quietest imprint of its chunk that no hush loom keeps). 200 is 10 seconds.", 200, 40, 2400);
         builder.pop();
 
         SPEC = builder.build();

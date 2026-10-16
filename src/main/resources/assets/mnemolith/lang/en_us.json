@@ -1452,5 +1452,18 @@
   "message.mnemolith.hush_loom.empty": "Nothing here to keep",
   "message.mnemolith.hush_loom.unthreaded": "The loom is unthreaded",
   "mnemolith.guide.loom.title": "Hush Loom",
-  "mnemolith.guide.loom.body": "Hushlings thin the quietest memories and an ember brazier burns the loudest. Neither asks what you wanted to keep. The hush loom does.\n\nCraft it from hush filament, purpur and End stone bricks. Use a hush filament on it: it threads itself with the tag of the loudest imprint in its chunk and keeps that tag from then on. Each threading costs one filament; in an empty chunk it takes nothing.\n\nA kept tag cannot be thinned by a hushling or burned by a brazier. Everything else still goes, and writes are not changed: the loom only chooses what stays.\n\nUse it with an empty hand to see what it keeps. Break it and the chunk forgets the choice."
+  "mnemolith.guide.loom.body": "Hushlings thin the quietest memories and an ember brazier burns the loudest. Neither asks what you wanted to keep. The hush loom does.\n\nCraft it from hush filament, purpur and End stone bricks. Use a hush filament on it: it threads itself with the tag of the loudest imprint in its chunk and keeps that tag from then on. Each threading costs one filament; in an empty chunk it takes nothing.\n\nA kept tag cannot be thinned by a hushling or burned by a brazier. Everything else still goes, and writes are not changed: the loom only chooses what stays.\n\nUse it with an empty hand to see what it keeps. Break it and the chunk forgets the choice.",
+  "advancements.mnemolith.hush_filament.title": "The Pale Chorus",
+  "advancements.mnemolith.hush_filament.description": "Take hush filament from a hushling in the End.",
+  "advancements.mnemolith.hush_loom_threaded.title": "Keep This",
+  "advancements.mnemolith.hush_loom_threaded.description": "Thread a hush loom with hush filament.",
+  "mnemolith.configuration.paleChorus": "Pale Chorus",
+  "mnemolith.configuration.paleChorus.tooltip": "The Pale Chorus: the hushlings of the End and the hush loom.",
+  "mnemolith.configuration.paleChorus.button": "Pale Chorus",
+  "mnemolith.configuration.hushlingSpawns": "Hushling Spawn",
+  "mnemolith.configuration.hushlingSpawns.tooltip": "Whether hushlings spawn naturally in the End. Spawn eggs and commands still work; hushlings already out stay.",
+  "mnemolith.configuration.hushTicks": "Hush Length",
+  "mnemolith.configuration.hushTicks.tooltip": "Ticks a hushling's hit hushes a player (nothing they do writes an imprint) and slows them. 120 is 6 seconds.",
+  "mnemolith.configuration.hushlingThinTicks": "Thinning Interval",
+  "mnemolith.configuration.hushlingThinTicks.tooltip": "Ticks between two thinnings of a hushling (each removes the quietest imprint of its chunk that no hush loom keeps). 200 is 10 seconds."
 }

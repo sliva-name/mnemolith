@@ -1,6 +1,6 @@
 # The Pale Chorus (the End line)
 
-Status: stages 1 and 2 done (the hushling, hush filament, the hush loom); stage 3 next.
+Status: done (stages 1–3: the hushling, hush filament, the hush loom, server options and advancements).
 
 ## Why
 
@@ -98,3 +98,21 @@ Stacks to 64. In stage 1 it is a material only. Stage 2 gives it its use.
   nothing; thinning and burning skip the kept tag and stop when only it is left; writes unchanged; the mark survives a
   save round trip; breaking forgets it; the guide page.
 - Live test `loom_keeps_thread`: a real player threads a loom by hand, then thinning leaves only the kept tag.
+
+## Stage 3 rules
+
+- **Server options** (`[paleChorus]` in `mnemolith-server.toml`):
+  - `hushlingSpawns` (default true): natural End spawns. Eggs and commands still work; hushlings already out stay.
+  - `hushTicks` (default 120, 20–1200): how long a hit hushes and slows.
+  - `hushlingThinTicks` (default 200, 40–2400): ticks between two thinnings.
+- **Advancements:** *The Pale Chorus* (take hush filament, parent: root) and *Keep This* (thread a hush loom by hand,
+  parent: The Pale Chorus). Every player who threads earns Keep This; a loom is shared like a brazier.
+- **Multiplayer:** a hush is personal. Only the player hit is hushed; others keep writing.
+
+### QA (stage 3)
+
+- `/mnemolith hush3qa`: defaults, ranges and lang of the three options; `hushlingSpawns` off stops natural End spawns
+  while eggs work; never in the overworld; the hit and the thinning read their options; both advancements load.
+- Live test `hush_personal_loom_shared`: two real players; a hushling with AI hushes A, B stays unhushed and still
+  writes while A's write is dropped; then both thread one loom (each spends a filament, each threading takes the
+  loudest tag) and both earn Keep This.

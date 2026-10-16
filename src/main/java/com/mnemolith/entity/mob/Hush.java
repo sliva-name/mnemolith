@@ -31,6 +31,11 @@ public final class Hush {
         return true;
     }
 
+    /** Ticks of hush left; 0 when not hushed. */
+    public static long remaining(ServerLevel level, UUID player) {
+        return hushed(level, player) ? UNTIL.get(player) - level.getGameTime() : 0L;
+    }
+
     public static void forget(UUID player) {
         UNTIL.remove(player);
     }
