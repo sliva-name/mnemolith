@@ -20,7 +20,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 /** One lens-sized walk of loaded chunks around a position. The list is capped at {@link ImprintConstants#LENS_CHUNK_LIMIT}. */
-final class PressureCollector {
+public final class PressureCollector {
     /**
      * Chebyshev radius of a band-only snapshot. Fixed at the base lens radius so an archival stratum under the
      * player does not widen it (that would leak the stratum to a player without a lens).
@@ -55,6 +55,16 @@ final class PressureCollector {
             }
         }
         return chunks;
+    }
+
+    /** The {@code ImprintTag} ordinal of the loudest imprint in {@code memory}, or -1. Public for QA. */
+    public static int loudestOrdinal(@org.jspecify.annotations.Nullable ChunkMemory memory) {
+        return memory == null ? -1 : memory.highest().map(imprint -> imprint.tag().ordinal()).orElse(-1);
+    }
+
+    /** The full lens snapshot the server would send {@code player} now. Public for QA and live tests. */
+    public static List<ChunkPressure> snapshotFor(net.minecraft.server.level.ServerPlayer player) {
+        return collect(player.level(), player.blockPosition(), player);
     }
 
     static List<ChunkPressure> collect(ServerLevel level, BlockPos playerPos) {
@@ -93,7 +103,7 @@ final class PressureCollector {
                 if (!muted && muteRadius > 0) {
                     muted = LoadedChunkMemory.isMuted(level, sample);
                 }
-                chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), LoadedChunkMemory.stateOf(memory, muted).ordinal()));
+                chunks.add(new ChunkPressure(chunkX, chunkZ, pressure, band.ordinal(), LoadedChunkMemory.stateOf(memory, muted).ordinal(), loudestOrdinal(memory)));
             }
         }
         return chunks;

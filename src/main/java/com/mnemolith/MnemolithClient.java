@@ -41,6 +41,7 @@ public final class MnemolithClient {
         modEventBus.addListener(LensOverlay::register);
         modEventBus.addListener(FractureFeel::register);
         modEventBus.addListener(com.mnemolith.client.render.StrongMemoryHint::register);
+        modEventBus.addListener(com.mnemolith.client.render.CircletTint::register);
         modEventBus.addListener(com.mnemolith.client.recall.PastVision::register);
         modEventBus.addListener(ClientPayloads::register);
         modEventBus.addListener(ClientParticles::register);
@@ -50,6 +51,7 @@ public final class MnemolithClient {
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(FractureFeel::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.StrongMemoryHint::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.CircletTint::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.StrongMemoryHint::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(FractureFeel::onCamera);
         NeoForge.EVENT_BUS.addListener(FractureFeel::onAfterWeather);
