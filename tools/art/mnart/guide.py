@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'hushling', 'loom', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'hushling', 'loom', 'undertow', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1424,6 +1424,31 @@ def p_loom():
         p.tag(tag, 330, 104 + i * 40)
         p.arrow((352, 104 + i * 40), (392, 104 + i * 40), dotted=True)
         p.cross(420, 104 + i * 40, 9)
+    return p.image()
+
+
+def p_undertow():
+    """A bobber on water over a chunk; the oldest imprint rising on the line as a slip, the newer ones staying."""
+    p = Page('undertow')
+    for alias in ('w_top', 'w_side', 'w_stone'):
+        t = R.texture('mnemolith:block/hollowstone').astype('float32')
+        t[..., 0] = t[..., 0] * 0.35 + 30
+        t[..., 1] = t[..., 1] * 0.45 + 70
+        t[..., 2] = t[..., 2] * 0.55 + 120
+        R._tex_cache['guide:' + alias] = t.clip(0, 255).astype('uint8')
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='w_top', side='w_side', under='w_stone')
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # the bobber and the line
+    p.ring(150, 112, 6)
+    p.arrow((150, 106), (210, 40), bend=-0.2)
+    p.sprite('imprint_slip_path', 236, 40, 2, src=_hollows_tex('item', 'imprint_slip_path'))
+    # oldest goes, newer stay
+    p.tag('path', 330, 50)
+    p.arrow((352, 50), (392, 50), dotted=True)
+    p.cross(420, 50, 9)
+    for i, tag in enumerate(('build', 'death')):
+        p.tag(tag, 330, 110 + i * 40)
     return p.image()
 
 

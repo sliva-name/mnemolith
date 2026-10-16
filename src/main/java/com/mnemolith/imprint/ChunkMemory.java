@@ -347,6 +347,21 @@ public final class ChunkMemory {
         return lowest < 0 ? Optional.empty() : Optional.of(this.imprints.remove(lowest));
     }
 
+    /** The oldest imprint whose tag no hush loom keeps (earliest write); empty when none is left (memory angling). */
+    public Optional<Imprint> removeOldestUnkept() {
+        int oldest = -1;
+        for (int i = 0; i < this.imprints.size(); i++) {
+            Imprint candidate = this.imprints.get(i);
+            if (this.keeps(candidate.tag())) {
+                continue;
+            }
+            if (oldest < 0 || candidate.writtenAt() < this.imprints.get(oldest).writtenAt()) {
+                oldest = i;
+            }
+        }
+        return oldest < 0 ? Optional.empty() : Optional.of(this.imprints.remove(oldest));
+    }
+
     /** The loudest imprint whose tag no hush loom keeps; empty when none is left (an ember brazier burning). */
     public Optional<Imprint> removeHighestUnkept() {
         int best = -1;

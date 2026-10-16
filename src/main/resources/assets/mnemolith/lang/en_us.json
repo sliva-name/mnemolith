@@ -1465,5 +1465,7 @@
   "mnemolith.configuration.hushTicks": "Hush Length",
   "mnemolith.configuration.hushTicks.tooltip": "Ticks a hushling's hit hushes a player (nothing they do writes an imprint) and slows them. 120 is 6 seconds.",
   "mnemolith.configuration.hushlingThinTicks": "Thinning Interval",
-  "mnemolith.configuration.hushlingThinTicks.tooltip": "Ticks between two thinnings of a hushling (each removes the quietest imprint of its chunk that no hush loom keeps). 200 is 10 seconds."
+  "mnemolith.configuration.hushlingThinTicks.tooltip": "Ticks between two thinnings of a hushling (each removes the quietest imprint of its chunk that no hush loom keeps). 200 is 10 seconds.",
+  "mnemolith.guide.undertow.title": "Undertow",
+  "mnemolith.guide.undertow.body": "What sinks can be fished back up. Fish in a chunk that remembers, and now and then the line brings up a memory along with the catch.\n\nThree catches in ten do it, and each level of Luck of the Sea on the rod adds one more, up to six in ten. The bobber must be in water.\n\nThe line takes the chunk's oldest imprint, the one that has waited longest, and it comes up as an imprint slip of that tag. Nothing is written in its place, so a patient angler slowly quiets a loud place.\n\nA hush loom's kept tag stays where it is. An empty chunk gives nothing but fish."
 }

@@ -1,6 +1,6 @@
 # Undertow: memory angling
 
-Status: design note (this PR); stage 1 next.
+Status: stage 1 done (memory angling); stage 2 next.
 
 ## Why
 
