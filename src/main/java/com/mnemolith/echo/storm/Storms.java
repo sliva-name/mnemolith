@@ -336,7 +336,8 @@ public final class Storms {
         }
         ChunkPos center = new ChunkPos(faded.chunkX(), faded.chunkZ());
         BlockPos middle = new BlockPos(center.getMiddleBlockX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.getMiddleBlockX(), center.getMiddleBlockZ()), center.getMiddleBlockZ());
-        level.playSound(null, middle, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.AMBIENT, 1.5F, 0.6F);
+        // an unwatched storm that fades is forgotten: the shared cue, at full strength
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.FORGOTTEN, middle.getX() + 0.5D, middle.getY() + 1.0D, middle.getZ() + 0.5D, 12);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, middle.getX() + 0.5D, middle.getY() + 1.5D, middle.getZ() + 0.5D,
                 24, 3.0D, 1.5D, 3.0D, 0.02D);
         for (ServerPlayer player : level.players()) {

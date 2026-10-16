@@ -41,6 +41,7 @@ public final class HollowForgetting {
         if (HollowLanterns.guarded(level, pos) || com.mnemolith.content.item.RememberingCirclet.wornNear(level, pos)) {
             // a recollite lantern (or someone wearing a remembering circlet) keeps the memory: nothing leaves, nothing is written
             HollowLanterns.noteKept();
+            com.mnemolith.particle.MemoryFeel.cueThrottled(level, com.mnemolith.particle.MemoryFeel.Kind.KEPT, pos, 3, 60);
             return false;
         }
         if (replaced != null && replaced != ImprintTag.FORGOTTEN) {
@@ -53,6 +54,7 @@ public final class HollowForgetting {
         boolean written = ImprintWriter.write(level, pos, List.of(ImprintTag.FORGOTTEN), null, false);
         if (written) {
             forgotten++;
+            com.mnemolith.particle.MemoryFeel.cueThrottled(level, com.mnemolith.particle.MemoryFeel.Kind.FORGOTTEN, pos, 4, 20);
             Mnemolith.LOGGER.debug("Mnemolith hollow forgot {} at {}", replaced, pos.toShortString());
         }
         return written;

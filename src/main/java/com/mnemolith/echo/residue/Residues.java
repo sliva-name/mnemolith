@@ -314,8 +314,8 @@ public final class Residues {
     }
 
     public static void dissolve(ServerLevel level, ResidueEntity residue) {
-        level.sendParticles(EchoGrafts.particle(residue.temper()), residue.getX(), residue.getY() + 0.8D, residue.getZ(), 24, 0.4D, 0.6D, 0.4D, 0.04D);
-        level.playSound(null, residue.blockPosition(), SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.HOSTILE, 0.8F, 1.4F);
+        level.sendParticles(EchoGrafts.particle(residue.temper()), residue.getX(), residue.getY() + 0.8D, residue.getZ(), 8, 0.4D, 0.6D, 0.4D, 0.04D);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.ERASED, residue.getX(), residue.getY() + 0.5D, residue.getZ(), 8);
         Mnemolith.LOGGER.debug("Mnemolith residue dissolved tag={} at {}", residue.tag().getSerializedName(), residue.blockPosition().toShortString());
         residue.discard();
     }
@@ -575,7 +575,7 @@ public final class Residues {
             needle.hurtAndBreak(cost, level, player, item -> {});
         }
         com.mnemolith.imprint.DiscoveryNotes.noteTag(player, residue.tag());
-        level.playSound(null, residue.blockPosition(), com.mnemolith.audio.ModSounds.EXTRACT.get(), SoundSource.PLAYERS, 1.0F, 0.6F);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.CAUGHT, residue.getX(), residue.getY() + 0.5D, residue.getZ(), 8);
         player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("mnemolith.residue.captured",
                 net.minecraft.network.chat.Component.translatable(residue.tag().translationKey()), residue.strength()), true);
         Mnemolith.LOGGER.debug("Mnemolith residue captured tag={} strength={} by {}", residue.tag().getSerializedName(), residue.strength(), player.getGameProfile().name());

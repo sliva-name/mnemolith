@@ -53,4 +53,34 @@ final class FeelLiveTests {
                 })
                 .thenSucceed();
     }
+
+    /** Stage 2: a real player (live site 27) places a block by hand; the build imprint is written with the shared WRITTEN cue. */
+    static void writeCueReachesPlayer(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = LivePlayers.liveSite(level, 27);
+        LivePlayers.force(level, site);
+        ServerPlayer player = LivePlayers.join(helper, "LiveFeel2", Vec3.atBottomCenterOf(site));
+        BlockPos floor = site.east(2).below();
+        BlockPos placed = floor.above();
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    level.setBlock(floor, Blocks.STONE.defaultBlockState(), 3);
+                    level.setBlock(placed, Blocks.AIR.defaultBlockState(), 3);
+                    LoadedChunkMemory.clear(level.getChunkAt(placed));
+                    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.COBBLESTONE, 4));
+                    int written = MemoryFeel.sent(MemoryFeel.Kind.WRITTEN);
+                    BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(floor).add(0.0D, 0.5D, 0.0D), Direction.UP, floor, false);
+                    player.gameMode.useItemOn(player, level, player.getMainHandItem(), InteractionHand.MAIN_HAND, hit);
+                    int after = MemoryFeel.sent(MemoryFeel.Kind.WRITTEN);
+                    BlockPos at = MemoryFeel.lastPos();
+                    boolean isPlaced = level.getBlockState(placed).is(Blocks.COBBLESTONE);
+                    level.setBlock(placed, Blocks.AIR.defaultBlockState(), 3);
+                    LoadedChunkMemory.clear(level.getChunkAt(placed));
+                    player.getInventory().clearContent();
+                    helper.assertTrue(isPlaced && after > written && at.closerThan(placed, 3.0D), "written cue: placed=" + isPlaced + " " + written + " -> " + after + " at " + at);
+                })
+                .thenSucceed();
+    }
 }

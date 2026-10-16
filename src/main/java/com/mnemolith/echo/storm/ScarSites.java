@@ -89,6 +89,8 @@ public final class ScarSites {
         level.setBlock(heart, ModBlocks.MEMORIAL_STONE.get().defaultBlockState(), Block.UPDATE_ALL);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, heart.getX() + 0.5D, heart.getY() + 1.0D, heart.getZ() + 0.5D,
                 40, 1.0D, 1.0D, 1.0D, 0.05D);
+        // a mended site is memory kept for good: the shared kept cue
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.KEPT, heart, 12);
         for (ServerPlayer near : level.players()) {
             if (near.distanceToSqr(heart.getX() + 0.5D, heart.getY() + 0.5D, heart.getZ() + 0.5D) <= 32.0D * 32.0D) {
                 near.sendSystemMessage(Component.translatable("mnemolith.mending.mended"), false);

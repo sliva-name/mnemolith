@@ -45,6 +45,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_lureqa` | `/mnemolith lureqa` (9) | One water block, one fishing hook and one fake player with a tide lure on a test column; writes and angles imprints there with a seeded roll; clears memory, slips and the water after |
 | `mnemolith:suite_undertow3qa` | `/mnemolith undertow3qa` (7) | Reads the config spec; sets `anglingChance` and `tideLureBonus` for the checks and restores them; one water block, hook and fake player on a test column |
 | `mnemolith:suite_feelqa` | `/mnemolith feelqa` (9) | Reads registries, sounds.json and lang; one brazier, hushling (no AI), loom, water block, hook and fake player on a test column; clears memory, drops and blocks after |
+| `mnemolith:suite_feel2qa` | `/mnemolith feel2qa` (9) | Writes and extracts one imprint, one residue, one scar heart and one fake player on a test column; settles a storm there; clears memory and blocks after |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -123,6 +124,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `lured_angler_lands_loudest` | A real player (live site 24) with a rod and a tide lure in the off hand over a chunk of 40 path imprints and one newer explosion: catches on the event bus bring up the explosion as a slip that reaches the inventory; the lure wears by one | 200 |
 | `two_anglers_one_chunk` | Two real players (live site 25) fishing one chunk: A (bare rod) lands the old fall, B (tide lure) the newer explosion; each slip reaches its angler; both earn Undertow, only B Lure of the Deep | 300 |
 | `loom_cue_reaches_player` | A real player (live site 26) threads a hush loom by hand: one shared kept cue is sent, at the loom | 200 |
+| `write_cue_reaches_player` | A real player (live site 27) places cobblestone by hand: the build imprint sends a shared written cue at the block | 200 |
 | `brazier_burns_down` | One real player (live site 18) feeds a memory ember to a brazier by hand (`gameMode.useItemOn`): it lights with 4 charges and the ember is spent; its own scheduled ticks then burn the explosion and build imprints written into its chunk | 400 |
 | `brazier_shared` | Two real players (live site 19) take turns feeding one brazier by hand (`gameMode.useItemOn`): the charge adds up to 16, the refused ember stays in hand, and both earn `ember_brazier_kindled` | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
@@ -928,3 +930,12 @@ Manual:
 - Threading a hush loom: an indigo ring closes in on the loom; sound: a short high "kept" tone ("Memory kept") over a soft wool thread.
 - Angling a memory: green motes arc from the bobber to you; sound: the catch tone ("Memory caught").
 - Client option `memoryEventSounds = false`: those four sounds stop, other sounds stay. `imprintParticles = false` or `particleDensity = 0`: the motes stop.
+
+## Memory feel, stage 2 (all sounds are by-hand: the test server has no audio)
+
+- Place any block: blue motes settle into the ground; sound: the "written" tone ("Memory written").
+- Extract an imprint, catch a Hollows flicker, capture a residue: green motes arc to you; sound: "Memory caught".
+- Place a mute stone, mend a scar site, stand near a lit recollite lantern in the Hollows: an indigo ring closes; sound: "Memory kept" (lantern: faint, at most every 3 s).
+- A residue dissolving: a few temper motes plus rising bone motes; sound: "Memory erased".
+- Hollows forgetting nearby and a storm fading: grey motes hang and fade; sound: "Memory fades" (Hollows: at most once a second per chunk).
+- `memoryEventSounds = false` silences all of the above.

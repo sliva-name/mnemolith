@@ -85,6 +85,34 @@ public final class MemoryFeel {
         lastPos = BlockPos.containing(x, y, z);
     }
 
+    /** Last cue time per kind and chunk, for {@link #cueThrottled}. Bounded; cleared when it grows past 512. */
+    private static final Map<Long, Long> LAST = new java.util.HashMap<>();
+    private static int throttled;
+
+    /**
+     * Like {@link #cue}, but at most one cue of {@code kind} per chunk every {@code ticks}, for events that can repeat
+     * quickly (Hollows forgetting, a lantern keeping). Returns whether a cue was sent.
+     */
+    public static boolean cueThrottled(ServerLevel level, Kind kind, BlockPos pos, int strength, int ticks) {
+        long key = ((((long) (pos.getX() >> 4)) << 32 | ((pos.getZ() >> 4) & 0xFFFFFFFFL)) * 31L) ^ kind.ordinal() ^ ((long) level.dimension().identifier().hashCode() << 40);
+        long now = level.getGameTime();
+        Long last = LAST.get(key);
+        if (last != null && now - last < ticks && now >= last) {
+            throttled++;
+            return false;
+        }
+        if (LAST.size() > 512) {
+            LAST.clear();
+        }
+        LAST.put(key, now);
+        cue(level, kind, pos, strength);
+        return true;
+    }
+
+    public static int throttledCount() {
+        return throttled;
+    }
+
     public static SimpleParticleType particle(Kind kind) {
         return switch (kind) {
             case WRITTEN -> ModParticles.MEMORY_WRITTEN.get();
