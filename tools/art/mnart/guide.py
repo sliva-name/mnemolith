@@ -1285,7 +1285,8 @@ UNREMEMBERED_TINT = (255, 255, 255, 200)   # UnrememberedRenderer: more solid th
 
 def p_unremembered():
     """The Unremembered risen on hollow turf, a revealed faded at its side and a recollite lantern it cannot feed by;
-    the effigy taking up three forgotten memories, the lens that reveals it and the posy that lays part of it to rest."""
+    the effigy taking up three forgotten memories, the lens that reveals it, the posy that lays part of it to rest, and
+    the Lethe tear it leaves becoming the remembering circlet."""
     p = Page('unremembered')
     for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
                        ('l_side', 'recollite_lantern_side'), ('l_top', 'recollite_lantern_top')):
@@ -1305,10 +1306,11 @@ def p_unremembered():
     p.sprite('chronicle_lens', 330, 134, 2)
     p.arrow((362, 134), (392, 134))
     p.spark(420, 134, 16, TEMPER['forgotten'])
-    # the posy lays part of it to rest
-    p.sprite('remembrance_posy', 330, 210, 2, src=_hollows_tex('item', 'remembrance_posy'))
-    p.arrow((362, 210), (392, 210))
-    p.ring(420, 210, 18, dotted=True)
+    # the posy lays part of it to rest; brought down, it leaves a Lethe tear for the circlet
+    p.sprite('remembrance_posy', 316, 210, 2, src=_hollows_tex('item', 'remembrance_posy'))
+    p.sprite('lethe_tear', 384, 210, 2, src=_hollows_tex('item', 'lethe_tear'))
+    p.arrow((410, 210), (430, 210))
+    p.sprite('remembering_circlet', 458, 210, 2, src=_hollows_tex('item', 'remembering_circlet'))
     return p.image()
 
 
