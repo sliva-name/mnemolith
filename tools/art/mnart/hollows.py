@@ -196,21 +196,33 @@ def brazier_bottom():
 
 
 def _loom_side(threaded):
-    """A pale bone frame with two posts and a beam; threaded, bone-white warp threads run down between the posts."""
+    """A purpur loom frame: two posts and a cloth beam around a lilac back, pale warp threads strung top to bottom;
+    threaded, a woven band of pale cloth grows up from the lower beam and a shuttle line crosses the warp."""
     rng = core.rng_for('hush_loom_side')
-    cv = surface('pale', S, S, rng, face='side', bevel=0, wear=0.3, tile=False, base_shift=-0.6)
-    cv.fill(m_rect(S, S, 4, 6, S - 5, S - 7), RAMPS['deep'][1])
+    cv = surface('lilac', S, S, rng, face='side', bevel=0, wear=0.3, tile=False, base_shift=-0.2)
+    back = m_rect(S, S, 4, 6, S - 5, S - 7)
+    cv.fill(back, RAMPS['lilac'][2])
+    cv.shade_px(m_rect(S, S, 4, 6, S - 5, 7), 0.35)
     for x0 in (1, S - 5):
-        cv.part(m_rect(S, S, x0, 1, x0 + 3, S - 2), 'bone', 'flat', 1)
+        cv.part(m_rect(S, S, x0, 1, x0 + 3, S - 2), 'amethyst', 'flat', 1)
+        cv.fill(m_rect(S, S, x0 + 1, 1, x0 + 1, S - 2), RAMPS['magenta'][4])
         cv.shade_px(m_rect(S, S, x0 + 3, 1, x0 + 3, S - 2), 0.35)
     for y0 in (1, S - 6):
-        cv.part(m_rect(S, S, 1, y0, S - 2, y0 + 4), 'bone', 'flat', 1)
-        cv.shade_px(m_rect(S, S, 1, y0, S - 2, y0), 0.3, toward=(240, 240, 250))
+        cv.part(m_rect(S, S, 1, y0, S - 2, y0 + 4), 'amethyst', 'flat', 1)
+        cv.shade_px(m_rect(S, S, 1, y0, S - 2, y0), 0.3, toward=(250, 230, 250))
+    # warp: always strung, pale; brighter on the threaded loom
+    for x in range(6, S - 6, 2):
+        cv.fill(m_rect(S, S, x, 6, x, S - 7), RAMPS['white'][6] if threaded else RAMPS['pale'][5])
+    # heddle bar across the warp
+    cv.fill(m_rect(S, S, 4, 11, S - 5, 11), RAMPS['amethyst'][3])
     if threaded:
-        for x in range(7, S - 7, 3):
-            cv.fill(m_rect(S, S, x, 6, x, S - 7), RAMPS['white'][6])
-        for y in (12, 19):
-            cv.fill(m_rect(S, S, 5, y, S - 6, y), RAMPS['lilac'][4])
+        cloth = m_rect(S, S, 5, 19, S - 6, S - 7)
+        cv.fill(cloth, RAMPS['pale'][5])
+        for y in range(19, S - 6, 2):
+            cv.fill(m_rect(S, S, 5, y, S - 6, y) & cloth, RAMPS['white'][6])
+        cv.fill(m_rect(S, S, 5, 17, S - 6, 17), RAMPS['lilac'][5])
+        cv.px(6, 17, RAMPS['magenta'][4])
+        cv.px(S - 7, 17, RAMPS['magenta'][4])
     cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
     return cv.image()
 
@@ -224,17 +236,23 @@ def loom_side_threaded():
 
 
 def _loom_top(threaded):
-    """The beam from above: a bone frame around a dark well; threaded, a woven pale square fills it."""
+    """The loom from above: a purpur frame, the warp threads running across a lilac well over the cloth beam;
+    threaded, a pale woven square fills the middle."""
     rng = core.rng_for('hush_loom_top')
-    cv = surface('pale', S, S, rng, face='top', bevel=0, wear=0.3, tile=False, base_shift=-0.4)
+    cv = surface('amethyst', S, S, rng, face='top', bevel=0, wear=0.3, tile=False, base_shift=0.3)
     well = m_rect(S, S, 5, 5, S - 6, S - 6)
-    cv.fill(well, RAMPS['deep'][1])
+    cv.fill(well, RAMPS['lilac'][2])
+    for k in range(6, S - 6, 2):
+        cv.fill(m_rect(S, S, k, 5, k, S - 6) & well, RAMPS['white'][6] if threaded else RAMPS['pale'][5])
+    cv.fill(m_rect(S, S, 5, 15, S - 6, 16), RAMPS['amethyst'][3])
     if threaded:
-        for k in range(6, S - 6, 2):
-            cv.fill(m_rect(S, S, k, 6, k, S - 7) & well, RAMPS['white'][6] if k % 4 == 2 else RAMPS['lilac'][4])
+        cloth = m_rect(S, S, 8, 8, S - 9, S - 9)
+        cv.fill(cloth, RAMPS['pale'][5])
+        for k in range(8, S - 8, 2):
+            cv.fill(m_rect(S, S, 8, k, S - 9, k) & cloth, RAMPS['white'][6])
         core.glint(cv, 12, 12, arm=1)
-    cv.shade_px(m_rect(S, S, 5, 5, S - 6, 5) | m_rect(S, S, 5, 5, 5, S - 6), 0.5)
-    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(240, 240, 250))
+    cv.shade_px(m_rect(S, S, 5, 5, S - 6, 5) | m_rect(S, S, 5, 5, 5, S - 6), 0.45)
+    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(250, 230, 250))
     cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
     return cv.image()
 
@@ -249,7 +267,7 @@ def loom_top_threaded():
 
 def loom_bottom():
     rng = core.rng_for('hush_loom_bottom')
-    cv = surface('pale', S, S, rng, face='bottom', bevel=1, wear=0.3, tile=False, base_shift=-0.8)
+    cv = surface('amethyst', S, S, rng, face='bottom', bevel=1, wear=0.3, tile=False, base_shift=-0.2)
     return cv.image()
 
 
