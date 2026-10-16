@@ -1469,5 +1469,16 @@
   "mnemolith.guide.undertow.title": "Undertow",
   "mnemolith.guide.undertow.body": "What sinks can be fished back up. Fish in a chunk that remembers, and now and then the line brings up a memory along with the catch.\n\nThree catches in ten do it, and each level of Luck of the Sea on the rod adds one more, up to six in ten. The bobber must be in water.\n\nThe line takes the chunk's oldest imprint, the one that has waited longest, and it comes up as an imprint slip of that tag. Nothing is written in its place, so a patient angler slowly quiets a loud place.\n\nA hush loom's kept tag stays where it is. An empty chunk gives nothing but fish.\n\nA tide lure in the off hand changes the pull: the line goes for the chunk's loudest memory instead of its oldest, and bites two catches in ten more often (up to eight in ten). Each memory it lands wears the lure a little; it lasts 32.",
   "item.mnemolith.tide_lure": "Tide Lure",
-  "item.mnemolith.tide_lure.hint": "Hold it in the off hand while fishing: the line pulls the loudest memory, and bites more often."
+  "item.mnemolith.tide_lure.hint": "Hold it in the off hand while fishing: the line pulls the loudest memory, and bites more often.",
+  "advancements.mnemolith.undertow_landed.title": "Undertow",
+  "advancements.mnemolith.undertow_landed.description": "Fish a memory up out of the water.",
+  "advancements.mnemolith.tide_lure_landed.title": "Lure of the Deep",
+  "advancements.mnemolith.tide_lure_landed.description": "Land a memory with a tide lure in your off hand.",
+  "mnemolith.configuration.undertow": "Undertow",
+  "mnemolith.configuration.undertow.tooltip": "Undertow: memory angling and the tide lure.",
+  "mnemolith.configuration.undertow.button": "Undertow",
+  "mnemolith.configuration.anglingChance": "Angling Chance",
+  "mnemolith.configuration.anglingChance.tooltip": "Chance that a catch reeled in from water also brings up a memory of the chunk under the bobber (before Luck of the Sea, +0.1 per level up to three). 0 turns memory angling off.",
+  "mnemolith.configuration.tideLureBonus": "Tide Lure Bonus",
+  "mnemolith.configuration.tideLureBonus.tooltip": "Chance a tide lure in the off hand adds to memory angling. The total never exceeds 1."
 }

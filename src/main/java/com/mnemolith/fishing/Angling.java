@@ -51,13 +51,30 @@ public final class Angling {
         return chanceFor(luck);
     }
 
+    /** Base plus 10% per level of Luck of the Sea (at most three levels count), never above 1. */
     public static float chanceFor(int luck) {
-        return Math.min(MAX_CHANCE, BASE_CHANCE + PER_LUCK * Math.max(0, luck));
+        return Math.min(1.0F, baseChance() + PER_LUCK * Math.min(3, Math.max(0, luck)));
     }
 
     public static float chanceFor(int luck, boolean lure) {
-        return lure ? Math.min(LURE_MAX_CHANCE, chanceFor(luck) + LURE_BONUS) : chanceFor(luck);
+        return lure ? Math.min(1.0F, chanceFor(luck) + lureBonus()) : chanceFor(luck);
     }
+
+    /** The server option {@code anglingChance} (default {@link #BASE_CHANCE}). */
+    public static float baseChance() {
+        return com.mnemolith.config.ServerConfig.ANGLING_CHANCE.get().floatValue();
+    }
+
+    /** The server option {@code tideLureBonus} (default {@link #LURE_BONUS}). */
+    public static float lureBonus() {
+        return com.mnemolith.config.ServerConfig.TIDE_LURE_BONUS.get().floatValue();
+    }
+
+    /** Advancements: Undertow (any memory landed) and Lure of the Deep (one landed with a tide lure). */
+    public static final net.minecraft.resources.Identifier ADVANCEMENT = net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            com.mnemolith.Mnemolith.MOD_ID, "undertow_landed");
+    public static final net.minecraft.resources.Identifier LURE_ADVANCEMENT = net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            com.mnemolith.Mnemolith.MOD_ID, "tide_lure_landed");
 
     /** True when the player holds a tide lure in the off hand. */
     public static boolean lured(Player player) {
@@ -67,7 +84,14 @@ public final class Angling {
     /** The chance for this player's catch: the rod's Luck of the Sea and the off-hand lure. */
     public static float chance(ServerLevel level, Player player) {
         float base = chance(level, rod(player));
-        return lured(player) ? Math.min(LURE_MAX_CHANCE, base + LURE_BONUS) : base;
+        return lured(player) ? Math.min(1.0F, base + lureBonus()) : base;
+    }
+
+    private static void award(ServerLevel level, net.minecraft.server.level.ServerPlayer player, net.minecraft.resources.Identifier id, String criterion) {
+        var advancement = level.getServer().getAdvancements().get(id);
+        if (advancement != null) {
+            player.getAdvancements().award(advancement, criterion);
+        }
     }
 
     /** The rod in the owner's hands (main hand first), or empty. */
@@ -107,6 +131,12 @@ public final class Angling {
         chunk.markUnsaved();
         if (lure) {
             player.getOffhandItem().hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+        }
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            award(level, serverPlayer, ADVANCEMENT, "landed");
+            if (lure) {
+                award(level, serverPlayer, LURE_ADVANCEMENT, "landed");
+            }
         }
         MemoryPressure.recompute(chunk, memory);
         ItemEntity slip = new ItemEntity(level, hook.getX(), hook.getY(), hook.getZ(), ImprintSlips.of(taken.get().tag(), at));

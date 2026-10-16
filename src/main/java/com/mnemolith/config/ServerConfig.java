@@ -22,6 +22,8 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue HUSHLING_SPAWNS;
     public static final ModConfigSpec.IntValue HUSH_TICKS;
     public static final ModConfigSpec.IntValue HUSHLING_THIN_TICKS;
+    public static final ModConfigSpec.DoubleValue ANGLING_CHANCE;
+    public static final ModConfigSpec.DoubleValue TIDE_LURE_BONUS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -52,6 +54,11 @@ public final class ServerConfig {
         HUSHLING_SPAWNS = SpecValues.bool(builder, "hushlingSpawns", "Whether hushlings spawn naturally in the End. Spawn eggs and commands still work; hushlings already out stay.", true);
         HUSH_TICKS = SpecValues.integer(builder, "hushTicks", "Ticks a hushling's hit hushes a player (nothing they do writes an imprint) and slows them. 120 is 6 seconds.", 120, 20, 1200);
         HUSHLING_THIN_TICKS = SpecValues.integer(builder, "hushlingThinTicks", "Ticks between two thinnings of a hushling (each removes the quietest imprint of its chunk that no hush loom keeps). 200 is 10 seconds.", 200, 40, 2400);
+        builder.pop();
+
+        SpecValues.section(builder, "undertow", "Undertow: memory angling and the tide lure.");
+        ANGLING_CHANCE = SpecValues.decimal(builder, "anglingChance", "Chance that a catch reeled in from water also brings up a memory of the chunk under the bobber (before Luck of the Sea, +0.1 per level up to three). 0 turns memory angling off.", 0.30D, 0.0D, 1.0D);
+        TIDE_LURE_BONUS = SpecValues.decimal(builder, "tideLureBonus", "Chance a tide lure in the off hand adds to memory angling. The total never exceeds 1.", 0.20D, 0.0D, 1.0D);
         builder.pop();
 
         SPEC = builder.build();

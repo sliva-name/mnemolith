@@ -1,0 +1,28 @@
+{
+  "parent": "mnemolith:undertow_landed",
+  "display": {
+    "icon": {
+      "id": "mnemolith:tide_lure"
+    },
+    "title": {
+      "translate": "advancements.mnemolith.tide_lure_landed.title"
+    },
+    "description": {
+      "translate": "advancements.mnemolith.tide_lure_landed.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "landed": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "landed"
+    ]
+  ]
+}
