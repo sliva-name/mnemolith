@@ -41,6 +41,9 @@ public class HushLoomBlock extends Block {
     public static final MapCodec<HushLoomBlock> CODEC = simpleCodec(HushLoomBlock::new);
     public static final IntegerProperty KEPT = IntegerProperty.create("kept", 0, ImprintTag.values().length);
     public static final BooleanProperty THREADED = BooleanProperty.create("threaded");
+    /** Awarded to the player who threads a loom by hand (Pale Chorus, stage 3). */
+    public static final net.minecraft.resources.Identifier ADVANCEMENT = net.minecraft.resources.Identifier.fromNamespaceAndPath(
+            com.mnemolith.Mnemolith.MOD_ID, "hush_loom_threaded");
 
     public HushLoomBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -84,6 +87,12 @@ public class HushLoomBlock extends Block {
             return InteractionResult.FAIL;
         }
         stack.consume(1, player);
+        if (player instanceof ServerPlayer serverPlayer) {
+            var advancement = server.getServer().getAdvancements().get(ADVANCEMENT);
+            if (advancement != null) {
+                serverPlayer.getAdvancements().award(advancement, "threaded");
+            }
+        }
         return InteractionResult.SUCCESS_SERVER;
     }
 

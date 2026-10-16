@@ -51,6 +51,17 @@ public class Hushling extends Monster {
     public static final double NOTE_RANGE = 12.0D;
 
     private int thinTicks = THIN_PERIOD;
+
+    /** The server option {@code hushlingThinTicks} (default {@link #THIN_PERIOD}). */
+    public static int thinPeriod() {
+        return com.mnemolith.config.ServerConfig.HUSHLING_THIN_TICKS.get();
+    }
+
+    /** The server option {@code hushTicks} (default {@link #HUSH_TICKS}). */
+    public static int hushTicks() {
+        return com.mnemolith.config.ServerConfig.HUSH_TICKS.get();
+    }
+
     private long shatteredUntil;
 
     public Hushling(EntityType<? extends Hushling> type, Level level) {
@@ -106,7 +117,7 @@ public class Hushling extends Monster {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         if (--this.thinTicks <= 0) {
-            this.thinTicks = THIN_PERIOD;
+            this.thinTicks = thinPeriod();
             this.thin(level);
         }
     }
@@ -145,8 +156,8 @@ public class Hushling extends Monster {
         if (this.shattered() || player.isCreative() || player.isSpectator()) {
             return false;
         }
-        Hush.hush(level, player.getUUID(), HUSH_TICKS);
-        player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, HUSH_TICKS, 0));
+        Hush.hush(level, player.getUUID(), hushTicks());
+        player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, hushTicks(), 0));
         player.sendOverlayMessage(Component.translatable("mnemolith.hushling.hushed"));
         level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.HOSTILE, 0.6F, 0.5F);
         return true;
