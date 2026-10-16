@@ -1,6 +1,6 @@
 # Memory feel: one visual and audio language
 
-Status: stages 1 (the language) and 2 (the older systems) done; stage 3 next.
+Status: stages 1 (the language), 2 (the older systems) and 3 (ambient cues) done; stage 4 next.
 
 ## Why
 
@@ -106,3 +106,24 @@ by-hand check, since the test server has no audio).
 - `/mnemolith feel2qa` (9): write, extraction, mute, residue dissolve, storm settle and mend each send the right kind;
   the throttle holds a repeat in the same chunk, lets another kind or chunk through, and opens after its window.
 - Live test `write_cue_reaches_player`: a real player places a block by hand; the build imprint sends a written cue there.
+
+## Stage 3 rules (as built)
+
+- `AfterImages` scans each player once a second (20 ticks), reading only the cached pressure of the chunk underfoot.
+- **Strong-memory hint:** stepping into a different chunk that is saturated or louder sends that player a
+  `StrongMemoryPayload` (network version 9). The client then breathes a faint indigo edge tint (below the pressure
+  vignette, about a 5 s cycle) while the player stays in that chunk, and the first time per chunk this session the action
+  bar says "This place remembers." / «Это место помнит.» Client toggle `strongMemoryHint`.
+- **After-images:** standing still (under 0.3 blocks between scans) for 3 s in such a chunk shows that player only up to
+  3 slow pale columns (`memory_afterimage`, 6 motes, 4 s life) at the origins of the chunk's loudest imprints, at most
+  once per 3 s. Moving resets the wait. Client toggle `memoryAfterImages` (the particle is not drawn); the particles also
+  follow `imprintParticles`, `particleDensity` and `maxParticlesPerTick`.
+- One colour for all after-images (pale ghost blue) rather than one per kind: a single particle type keeps it simple.
+- `perfqa` budget `afterImageScan`: 50 µs per scan (seen locally: well under 1 µs).
+
+### QA (stage 3)
+
+- `/mnemolith feel3qa` (9): registrations and lang, nothing in a calm chunk, the hint once on entry, after-images only
+  after standing still, capped at 3, the cooldown, moving resets.
+- Live test `strong_chunk_hints_player`: a real player in a saturated chunk gets one hint and after-images from the
+  server's own scan.

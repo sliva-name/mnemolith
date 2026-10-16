@@ -1487,5 +1487,10 @@
   "subtitles.mnemolith.memory.caught": "Memory caught",
   "subtitles.mnemolith.memory.forgotten": "Memory fades",
   "mnemolith.configuration.memoryEventSounds": "Memory Event Sounds",
-  "mnemolith.configuration.memoryEventSounds.tooltip": "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity."
+  "mnemolith.configuration.memoryEventSounds.tooltip": "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity.",
+  "mnemolith.memory.strong_hint": "This place remembers.",
+  "mnemolith.configuration.memoryAfterImages": "Memory after-images",
+  "mnemolith.configuration.memoryAfterImages.tooltip": "Whether standing still in a strongly remembering chunk shows faint after-images where its loudest memories happened.",
+  "mnemolith.configuration.strongMemoryHint": "Strong-memory hint",
+  "mnemolith.configuration.strongMemoryHint.tooltip": "Whether a strongly remembering chunk breathes a faint tint at the screen edge and says so the first time you enter it."
 }

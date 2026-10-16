@@ -58,6 +58,7 @@ public final class ModGameEvents {
         com.mnemolith.echo.storm.Storms.tick(event.getServer());
         com.mnemolith.echo.relay.EchoRelays.serverTick(event.getServer());
         com.mnemolith.worldgen.hollows.HollowFlickers.tick(event.getServer());
+        com.mnemolith.particle.AfterImages.tick(event.getServer());
         com.mnemolith.worldgen.hollows.FadedSpawner.tick(event.getServer());
     }
 
@@ -188,6 +189,9 @@ public final class ModGameEvents {
                 .then(Commands.literal("feel2qa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.Feel2Qa::run))
+                .then(Commands.literal("feel3qa")
+                        .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+                        .executes(com.mnemolith.command.qa.Feel3Qa::run))
                 .then(Commands.literal("perfqa")
                         .requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
                         .executes(com.mnemolith.command.qa.PerfQa::run))

@@ -23,6 +23,7 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_KEPT = register("memory_kept");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_CAUGHT = register("memory_caught");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_FORGOTTEN = register("memory_forgotten");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_AFTERIMAGE = register("memory_afterimage");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPRINT_EXTRACT = register("imprint_extract");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> COMPOSE_SUCCESS = register("compose_success");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> COMPOSE_FAIL = register("compose_fail");

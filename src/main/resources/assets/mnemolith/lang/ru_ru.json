@@ -1487,5 +1487,10 @@
   "subtitles.mnemolith.memory.caught": "Память поймана",
   "subtitles.mnemolith.memory.forgotten": "Память угасает",
   "mnemolith.configuration.memoryEventSounds": "Звуки памяти",
-  "mnemolith.configuration.memoryEventSounds.tooltip": "Играют ли на этом клиенте общие звуки памяти (запись, стирание, сбережение, улов, забвение). Их частицы подчиняются imprintParticles и particleDensity."
+  "mnemolith.configuration.memoryEventSounds.tooltip": "Играют ли на этом клиенте общие звуки памяти (запись, стирание, сбережение, улов, забвение). Их частицы подчиняются imprintParticles и particleDensity.",
+  "mnemolith.memory.strong_hint": "Это место помнит.",
+  "mnemolith.configuration.memoryAfterImages": "Отпечатки-видения",
+  "mnemolith.configuration.memoryAfterImages.tooltip": "Показывать ли бледные видения на местах самых громких воспоминаний, когда вы стоите неподвижно в сильно помнящем чанке.",
+  "mnemolith.configuration.strongMemoryHint": "Подсказка сильной памяти",
+  "mnemolith.configuration.strongMemoryHint.tooltip": "Дышит ли край экрана слабым оттенком в сильно помнящем чанке и сообщается ли об этом при первом входе."
 }

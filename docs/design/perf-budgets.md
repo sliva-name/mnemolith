@@ -22,6 +22,7 @@ change would only show up as tick lag on a busy server.
 | calmMemorial | ~16 µs | 400 µs |
 | lanternGuard (none near) | ~0.75 µs (was 73 µs) | 50 µs |
 | lanternFound | ~0.9 µs | 400 µs |
+| afterImageScan (memory feel stage 3, one player, calm chunk) | ~0.14 µs | 50 µs |
 
 ## Server compatibility
 A static scan found no client classes referenced outside the client packages. The GameTest server runs as a dedicated server.

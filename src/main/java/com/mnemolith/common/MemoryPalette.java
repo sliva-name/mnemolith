@@ -31,6 +31,8 @@ public final class MemoryPalette {
     public static final int EMBER = 0xE07A4A;
     /** Memory feel: the faded grey of a forgotten memory. */
     public static final int FADED = 0x8A8696;
+    /** Memory feel after-images: a pale ghost blue. */
+    public static final int AFTERIMAGE = 0xC9D4F0;
     /** Imprint shimmer mote. */
     public static final int SHIMMER = 0x6E7CC4;
     /** Echo-strider trail mote. */
