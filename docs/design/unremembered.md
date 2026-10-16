@@ -1,6 +1,6 @@
 # The Unremembered
 
-Status: stage 1 done (PR #79); stage 2 done (PR #80); stage 3 implemented on `feature/unremembered-3`.
+Status: stage 1 done (PR #79); stage 2 done (PR #80); stage 3 done (PR #81); the guide picture shows the tear and circlet (stage 4 polish).
 
 ## Why
 
@@ -27,7 +27,7 @@ hurts it. Every tool the hollows taught you then gets a job in one fight:
    - it wards off the forgetting pulse;
    - the chunk you stand in does not forget.
    Stage 2 also adds advancements.
-3. **Stage 3, multiplayer and servers** (`feature/unremembered-3`). Health scales with the players taking part, and each of them gets a tear.
+3. **Stage 3, multiplayer and servers** (done, PR #81). Health scales with the players taking part, and each of them gets a tear.
    Server config covers whether it can be called, its health, and how many forgotten imprints a call needs. A
    dedicated-server live test with two players covers the boss bar and the loot.
 
