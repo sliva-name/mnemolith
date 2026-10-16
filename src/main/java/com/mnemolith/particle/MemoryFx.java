@@ -15,8 +15,13 @@ import net.minecraft.sounds.SoundSource;
 public final class MemoryFx {
     private MemoryFx() {}
 
+    /** The written motes of the shared language: settling downward (the write sound is played by the writer). */
     public static void write(ServerLevel level, BlockPos pos) {
-        burst(level, ModParticles.IMPRINT_SHIMMER.get(), pos.getX() + 0.5D, pos.getY() + 0.6D, pos.getZ() + 0.5D, 4, 0.25D);
+        for (int i = 0; i < 4; i++) {
+            double ox = (level.getRandom().nextDouble() - 0.5D) * 0.6D;
+            double oz = (level.getRandom().nextDouble() - 0.5D) * 0.6D;
+            level.sendParticles(ModParticles.MEMORY_WRITTEN.get(), pos.getX() + 0.5D + ox, pos.getY() + 1.1D, pos.getZ() + 0.5D + oz, 0, 0.0D, -1.0D, 0.0D, 0.03D);
+        }
     }
 
     public static void extract(ServerLevel level, BlockPos pos) {
@@ -58,8 +63,9 @@ public final class MemoryFx {
         Mnemolith.LOGGER.debug("Mnemolith fx pressure at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 
+    /** A mute stone holding its chunk: the shared kept cue. */
     public static void mute(ServerLevel level, BlockPos pos) {
-        burst(level, ModParticles.MUTE_HAZE.get(), pos.getX() + 0.5D, pos.getY() + 0.8D, pos.getZ() + 0.5D, 8, 0.45D);
+        MemoryFeel.cue(level, MemoryFeel.Kind.KEPT, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 8);
         Mnemolith.LOGGER.debug("Mnemolith fx mute at {},{},{}", pos.getX(), pos.getY(), pos.getZ());
     }
 

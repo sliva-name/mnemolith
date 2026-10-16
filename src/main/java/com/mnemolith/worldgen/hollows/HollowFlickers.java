@@ -277,6 +277,7 @@ public final class HollowFlickers {
             return new CatchResult(Catch.GONE, tag);
         }
         ACTIVE.remove(nearest);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.CAUGHT, nearest.pos(), 6);
         send(level, new HollowFlickerPayload(nearest.pos(), 0.0F, CAUGHT, nearest.tag()));
         caught++;
         com.mnemolith.entity.mob.Faded.onCatch(level, nearest.pos(), player);
