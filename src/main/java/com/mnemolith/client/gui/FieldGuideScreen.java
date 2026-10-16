@@ -174,6 +174,15 @@ public class FieldGuideScreen extends Screen {
         return Math.max(0, Math.min(maxScroll, value));
     }
 
+    /** Opens page {@code index} (the dev visual tour uses it). */
+    public void showPage(int index) {
+        if (index >= 0 && index < GuideBook.pageCount()) {
+            this.page = index;
+            this.scroll = 0;
+            this.syncButtons();
+        }
+    }
+
     private void turn(int delta) {
         int next = this.page + delta;
         if (next < 0 || next >= GuideBook.pageCount()) {
