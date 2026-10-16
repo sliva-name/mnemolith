@@ -1,6 +1,6 @@
 # Memory feel: one visual and audio language
 
-Status: stage 1 done (the language; brazier, hushling, loom, angling); stage 2 next.
+Status: stages 1 (the language) and 2 (the older systems) done; stage 3 next.
 
 ## Why
 
@@ -84,3 +84,25 @@ by-hand check, since the test server has no audio).
 - `/mnemolith feelqa` (9): registrations, sounds.json and subtitles, the toggle matching only memory sounds, the right
   kind from each stage 1 system, no cue when nothing happened.
 - Live test `loom_cue_reaches_player`: a real player threads a loom; one kept cue at the loom.
+
+## Stage 2 rules (as built)
+
+- `MemoryFeel.cueThrottled(level, kind, pos, strength, ticks)`: at most one cue of a kind per chunk per window, for
+  events that can repeat fast. The map is bounded (cleared past 512 entries).
+- Applied:
+  - writing any imprint: **written** (4), motes settling into the ground (was the imprint shimmer and write sound);
+  - extracting an imprint: **caught** (8) arcing to the player (was the extract sound and burst);
+  - a mute stone holding its chunk: **kept** (8) (was the mute haze);
+  - Memory Hollows forgetting: **forgotten** (4), at most once per chunk per second;
+  - a recollite lantern or remembering circlet keeping a Hollows memory: **kept** (3), at most once per chunk per 3 s;
+  - catching a Hollows flicker: **caught** (6);
+  - a residue dissolving: **erased** (8), with 8 of its temper motes (was 24 and an amethyst break);
+  - capturing a residue: **caught** (8) (was the extract sound);
+  - an unwatched storm settling: **forgotten** (12) (was an amethyst resonate);
+  - mending a scar site: **kept** (12), beside the end-rod burst.
+
+### QA (stage 2)
+
+- `/mnemolith feel2qa` (9): write, extraction, mute, residue dissolve, storm settle and mend each send the right kind;
+  the throttle holds a repeat in the same chunk, lets another kind or chunk through, and opens after its window.
+- Live test `write_cue_reaches_player`: a real player places a block by hand; the build imprint sends a written cue there.
