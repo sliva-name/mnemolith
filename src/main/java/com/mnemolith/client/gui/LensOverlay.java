@@ -85,7 +85,7 @@ public final class LensOverlay {
         // memory feel stage 4: the loudest memory of the chunk as a coloured glyph and its name
         int glyph = here == null || !ClientConfig.LENS_LOUDEST_GLYPH.get() ? 0 : com.mnemolith.common.MemoryGlyphs.colour(here.loudest());
         Component loudest = glyph == 0 ? null : Component.translatable(com.mnemolith.imprint.ImprintTag.values()[here.loudest()].translationKey());
-        int glyphWidth = loudest == null ? 0 : 12 + font.width(loudest);
+        int glyphWidth = loudest == null ? 0 : 15 + font.width(loudest);
         int lineWidth = font.width(line);
         textWidth = Math.max(textWidth, lineWidth + glyphWidth);
         int boxWidth = textWidth + 16;
@@ -104,11 +104,11 @@ public final class LensOverlay {
         graphics.fill(x, y, x + 2, y + boxHeight, MemoryPalette.opaque(MemoryPalette.PIGMENT));
         GuiArt.label(graphics, font, line, x + 8, y + 4, GuiArt.BONE);
         if (loudest != null) {
-            int gx = x + 8 + lineWidth + 6;
+            int gx = x + 8 + lineWidth + 5;
             // a small diamond-ish swatch: a 5x5 square with its corners trimmed
             graphics.fill(gx + 1, y + 5, gx + 4, y + 10, MemoryPalette.opaque(glyph));
             graphics.fill(gx, y + 6, gx + 5, y + 9, MemoryPalette.opaque(glyph));
-            GuiArt.label(graphics, font, loudest, gx + 7, y + 4, GuiArt.BONE);
+            GuiArt.label(graphics, font, loudest, gx + 9, y + 4, GuiArt.BONE);
         }
         int textY = y + 14;
         if (detail != null) {
