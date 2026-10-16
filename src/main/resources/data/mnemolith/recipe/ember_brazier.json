@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "E": "mnemolith:memory_ember",
+    "B": "minecraft:polished_blackstone"
+  },
+  "pattern": [
+    "I I",
+    "IEI",
+    "BBB"
+  ],
+  "result": {
+    "id": "mnemolith:ember_brazier"
+  }
+}

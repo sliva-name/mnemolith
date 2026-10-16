@@ -50,4 +50,47 @@ final class CinderkinLiveTests {
                 })
                 .thenSucceed();
     }
+
+    /**
+     * The ember brazier with a real player: an ember fed by hand ({@code gameMode.useItemOn}) lights it and is spent,
+     * and the brazier's own scheduled ticks burn the explosion and the build written into its chunk, one charge each.
+     */
+    static void brazierBurnsDown(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = LivePlayers.liveSite(level, 18);
+        LivePlayers.force(level, site);
+        BlockPos pos = site.offset(1, 0, 0);
+        ServerPlayer player = LivePlayers.join(helper, "LiveBrazierKeeper", Vec3.atBottomCenterOf(site.offset(0, 0, 2)));
+        net.minecraft.world.phys.BlockHitResult top = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(pos).add(0.0D, 0.5D, 0.0D),
+                net.minecraft.core.Direction.UP, pos, false);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    LivePlayers.unmute(level, pos);
+                    player.setGameMode(GameType.SURVIVAL);
+                    level.setBlock(pos, com.mnemolith.content.ModBlocks.EMBER_BRAZIER.get().defaultBlockState(), 3);
+                    com.mnemolith.world.LoadedChunkMemory.clear(level.getChunkAt(pos));
+                    com.mnemolith.imprint.ImprintWriter.write(level, pos, java.util.List.of(com.mnemolith.imprint.ImprintTag.EXPLOSION), null, false);
+                    com.mnemolith.imprint.ImprintWriter.write(level, pos, java.util.List.of(com.mnemolith.imprint.ImprintTag.BUILD), null, false);
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                            new net.minecraft.world.item.ItemStack(com.mnemolith.content.ModItems.MEMORY_EMBER.get(), 2));
+                    player.gameMode.useItemOn(player, level, player.getMainHandItem(), net.minecraft.world.InteractionHand.MAIN_HAND, top);
+                    var state = level.getBlockState(pos);
+                    helper.assertTrue(state.getValue(com.mnemolith.content.block.EmberBrazierBlock.LIT)
+                            && state.getValue(com.mnemolith.content.block.EmberBrazierBlock.CHARGE) == 4
+                            && player.getMainHandItem().getCount() == 1, "feeding by hand: " + state + " left=" + player.getMainHandItem().getCount());
+                })
+                .thenWaitUntil(() -> {
+                    var memory = com.mnemolith.world.LoadedChunkMemory.existing(level.getChunkAt(pos));
+                    boolean gone = memory == null || memory.imprintsCopy().stream().noneMatch(i -> i.tag() == com.mnemolith.imprint.ImprintTag.EXPLOSION
+                            || i.tag() == com.mnemolith.imprint.ImprintTag.BUILD);
+                    int charge = level.getBlockState(pos).getValue(com.mnemolith.content.block.EmberBrazierBlock.CHARGE);
+                    helper.assertTrue(gone && charge <= 2, "the brazier has not burned both yet: charge=" + charge);
+                })
+                .thenExecute(() -> {
+                    level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    com.mnemolith.world.LoadedChunkMemory.clear(level.getChunkAt(pos));
+                })
+                .thenSucceed();
+    }
 }

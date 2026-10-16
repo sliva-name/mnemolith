@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1343,6 +1343,29 @@ def p_cinderkin():
     p.arrow((362, 134), (392, 134))
     p.spark(420, 134, 16, TEMPER['fire'])
     p.sprite('cinderkin_spawn_egg', 420, 210, 2, src=_hollows_tex('item', 'cinderkin_spawn_egg'))
+    return p.image()
+
+
+def p_brazier():
+    """The ember brazier lit on ordinary ground, an ember going in; beside it the chunk's loudest imprints burning
+    away one by one and the pressure bar dropping."""
+    p = Page('brazier')
+    for alias, tex in (('b_side', 'ember_brazier_side_lit'), ('b_top', 'ember_brazier_top_lit'), ('b_bottom', 'ember_brazier_bottom')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(5, 4, 2)
+    d.add(cube('b_top', 'b_side', 0, 0, 0, tex_bottom='b_bottom'))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    p.spark(150, 70, 14, TEMPER['fire'])
+    p.sprite('memory_ember', 236, 56, 2, src=_hollows_tex('item', 'memory_ember'))
+    p.arrow((222, 74), (178, 98), bend=0.2)
+    # the loudest imprints burn, one per tick of the brazier
+    for i, tag in enumerate(('explosion', 'build', 'death')):
+        p.tag(tag, 330, 44 + i * 40)
+        p.arrow((352, 44 + i * 40), (392, 44 + i * 40), dotted=True)
+        p.cross(420, 44 + i * 40, 9)
+    p.bar(316, 200, 470, 210, [(0.25, BAND['calm']), (0.25, BAND['saturated']), (0.25, BAND['overloaded']), (0.25, BAND['fracture'])], 0.2)
+    p.arrow((460, 186), (340, 186))
     return p.image()
 
 

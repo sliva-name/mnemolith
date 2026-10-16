@@ -176,6 +176,7 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> RECOLLITE_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.RECOLLITE_ORE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> RECOLLITE_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.RECOLLITE_BLOCK);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> RECOLLITE_LANTERN = ITEMS.registerSimpleBlockItem(ModBlocks.RECOLLITE_LANTERN);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> EMBER_BRAZIER = ITEMS.registerSimpleBlockItem(ModBlocks.EMBER_BRAZIER);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> FORGET_ME_NOT = ITEMS.registerSimpleBlockItem(ModBlocks.FORGET_ME_NOT);
     public static final DeferredItem<net.minecraft.world.item.Item> RECOLLITE_SHARD = ITEMS.registerItem("recollite_shard", net.minecraft.world.item.Item::new, properties -> properties.stacksTo(64));
     /** Optional music disc — storm/Scar motif placeholders (Z1). */
