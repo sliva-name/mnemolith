@@ -43,6 +43,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_hush3qa` | `/mnemolith hush3qa` (10) | Reads the config spec; flips `hushlingSpawns`, `hushTicks` and `hushlingThinTicks` for one check each and restores them; one End spot, one hushling (no AI) and one fake player on a test column |
 | `mnemolith:suite_anglingqa` | `/mnemolith anglingqa` (10) | One water block, one fishing hook, one hush loom and one fake player on a test column; writes and angles imprints there with a seeded roll; clears memory, slips and blocks after |
 | `mnemolith:suite_lureqa` | `/mnemolith lureqa` (9) | One water block, one fishing hook and one fake player with a tide lure on a test column; writes and angles imprints there with a seeded roll; clears memory, slips and the water after |
+| `mnemolith:suite_undertow3qa` | `/mnemolith undertow3qa` (7) | Reads the config spec; sets `anglingChance` and `tideLureBonus` for the checks and restores them; one water block, hook and fake player on a test column |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -119,6 +120,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `hush_personal_loom_shared` | Two real players (live site 22, B 24 blocks east): a hushling with AI set on A hushes A only; A's write is dropped, B's is kept; both then thread one loom by hand and both earn Keep This | 300 |
 | `angler_lands_memory` | A real player (live site 23) with a rod and a hook in water over a chunk holding one old fall imprint and newer builds: catches posted on the event bus bring up the fall imprint as a slip, which reaches the inventory | 200 |
 | `lured_angler_lands_loudest` | A real player (live site 24) with a rod and a tide lure in the off hand over a chunk of 40 path imprints and one newer explosion: catches on the event bus bring up the explosion as a slip that reaches the inventory; the lure wears by one | 200 |
+| `two_anglers_one_chunk` | Two real players (live site 25) fishing one chunk: A (bare rod) lands the old fall, B (tide lure) the newer explosion; each slip reaches its angler; both earn Undertow, only B Lure of the Deep | 300 |
 | `brazier_burns_down` | One real player (live site 18) feeds a memory ember to a brazier by hand (`gameMode.useItemOn`): it lights with 4 charges and the ember is spent; its own scheduled ticks then burn the explosion and build imprints written into its chunk | 400 |
 | `brazier_shared` | Two real players (live site 19) take turns feeding one brazier by hand (`gameMode.useItemOn`): the charge adds up to 16, the refused ember stays in hand, and both earn `ember_brazier_kindled` | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
@@ -910,3 +912,9 @@ Manual:
 
 - Craft a tide lure, hold it in the off hand and fish near loud memories: the slips that come up are the loudest tags (explosion, death), and they come more often than with a bare rod.
 - The lure loses one use per memory; fishing in an empty chunk does not wear it.
+
+## Undertow, stage 3
+
+- Set `anglingChance = 0`: fishing brings up no memories, even with a lure if `tideLureBonus = 0`.
+- Land a memory (Undertow), then one with a tide lure (Lure of the Deep).
+- Two players fishing one chunk each get their own slips.

@@ -1,6 +1,6 @@
 # Undertow: memory angling
 
-Status: stages 1 and 2 done (memory angling, the tide lure); stage 3 next.
+Status: done (stages 1–3: memory angling, the tide lure, server options and advancements).
 
 ## Why
 
@@ -58,3 +58,21 @@ lectern).
   lure breaks; seeded rolls wear it once per hit.
 - Live test `lured_angler_lands_loudest`: a real player with a lure; the loudest imprint comes up and reaches the
   inventory, and the lure wears by one.
+
+## Stage 3 rules
+
+- **Server options** (`[undertow]` in `mnemolith-server.toml`):
+  - `anglingChance` (default 0.30, 0–1): the bare chance per catch; 0 turns memory angling off. Luck of the Sea adds
+    0.1 per level, at most three levels.
+  - `tideLureBonus` (default 0.20, 0–1): what a tide lure adds. The total never exceeds 1.
+- **Advancements:** *Undertow* (land a memory, parent: root) and *Lure of the Deep* (land one with a tide lure, parent:
+  Undertow).
+- **Multiplayer:** each angler's catch is their own: two players on one chunk each take one imprint per bite (bare rod
+  the oldest, lure the loudest), and each slip flies to its own angler.
+
+### QA (stage 3)
+
+- `/mnemolith undertow3qa`: defaults, ranges and lang of both options; the chance reads them; 0 lands nothing over 50
+  seeded catches; totals cap at 1; both advancements load.
+- Live test `two_anglers_one_chunk`: two real players on one chunk; A (bare rod) lands the oldest, B (lure) the
+  loudest; each slip reaches its angler; both earn Undertow, only B Lure of the Deep.
