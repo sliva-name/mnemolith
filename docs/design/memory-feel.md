@@ -1,6 +1,6 @@
 # Memory feel: one visual and audio language
 
-Status: design note (this PR); stage 1 next.
+Status: stage 1 done (the language; brazier, hushling, loom, angling); stage 2 next.
 
 ## Why
 
@@ -62,3 +62,25 @@ Rules:
 
 Each stage: a QA suite (the right cue for the right event, toggles honoured), docs, by-hand checks (every sound is a
 by-hand check, since the test server has no audio).
+
+## Stage 1 rules (as built)
+
+- `MemoryFeel.cue(level, kind, pos, strength)` with the five kinds above; particle types `memory_written`,
+  `memory_erased`, `memory_kept`, `memory_caught`, `memory_forgotten` (existing sprites, new tints, own motion);
+  sound events `memory.written`, `memory.erased`, `memory.kept`, `memory.caught`, `memory.forgotten` (existing
+  samples, own pitch and volume, subtitles RU/EN).
+- Client toggle `memoryEventSounds` (default on) mutes exactly the `mnemolith:memory.*` sounds. The particles follow
+  `imprintParticles`, `particleDensity` and `maxParticlesPerTick` like every memory particle.
+- Applied:
+  - ember brazier burn: **erased** (6), with three soul-fire motes for the cause (was 8 soul flames and fire ambient);
+  - hushling thinning: **erased** (5) (was white ash);
+  - a hushling's hush: **forgotten** (4) on the player (was an amethyst chime);
+  - hush loom threading: **kept** (8), a soft wool thread under it (was white ash and a loud wool sound);
+  - memory angling: **caught** (6) arcing to the angler, a few bubbles for the water (was a bubble column sound).
+- A burn or thinning that finds nothing sends no cue.
+
+### QA (stage 1)
+
+- `/mnemolith feelqa` (9): registrations, sounds.json and subtitles, the toggle matching only memory sounds, the right
+  kind from each stage 1 system, no cue when nothing happened.
+- Live test `loom_cue_reaches_player`: a real player threads a loom; one kept cue at the loom.
