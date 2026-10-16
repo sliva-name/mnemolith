@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "threaded=false": {
+      "model": "mnemolith:block/hush_loom"
+    },
+    "threaded=true": {
+      "model": "mnemolith:block/hush_loom_threaded"
+    }
+  }
+}

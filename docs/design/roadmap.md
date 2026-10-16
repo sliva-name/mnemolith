@@ -43,7 +43,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Embers, stage 1 | Done on main (PR #83): the cinderkin, a Nether mob of burning memory (fire immune, its hit ignites, snowballs and water hurt it, a fire imprint where it dies in the Nether) and the memory ember it drops (furnace fuel, 1600 ticks) | [embers.md](embers.md), `emberqa` 11/11, live `cinderkin_burns_player` |
 | Embers, stage 2 | Done on main (PR #84): the ember brazier. Fed memory embers by hand (4 burns each, 16 max), it burns the loudest imprint of its chunk every 5 s and writes nothing; an empty chunk spends nothing; comparator reads the charge | [embers.md](embers.md#stage-2-rules), `ember2qa` 12/12, live `brazier_burns_down` |
 | Embers, stage 3 | Done on main (PR #85): server options `cinderkinSpawns`, `emberBrazierBurnTicks`, `emberBrazierChargePerEmber`; advancements Embers of Memory and Burn It Away; a brazier shared by two players | [embers.md](embers.md#stage-3-rules), `ember3qa` 10/10, live `brazier_shared` |
-| Pale Chorus, stage 1 | Done: the hushling, an End mob that thins the quietest imprint of its chunk every 10 s; its hit hushes a player for 6 s (their writes are dropped) and slows them; a note block played within 12 blocks shatters it for 10 s (no thinning or hushing, double damage); dying in the End it writes silence and drops hush filament | [pale-chorus.md](pale-chorus.md), `hushqa` 18/18, live `hushling_hushes_player` |
+| Pale Chorus, stage 1 | Done on main (PR #88): the hushling, an End mob that thins the quietest imprint of its chunk every 10 s; its hit hushes a player for 6 s (their writes are dropped) and slows them; a note block played within 12 blocks shatters it for 10 s (no thinning or hushing, double damage); dying in the End it writes silence and drops hush filament | [pale-chorus.md](pale-chorus.md), `hushqa` 18/18, live `hushling_hushes_player` |
+| Pale Chorus, stage 2 | Done: the hush loom. Threaded with hush filament, it keeps the loudest tag of its chunk from hushling thinning and brazier burning; writes are unchanged; breaking it forgets the choice | [pale-chorus.md](pale-chorus.md#stage-2-rules), `hush2qa` 11/11, live `loom_keeps_thread` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -236,5 +237,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 27. Embers (done: PR #83, #84, #85): Nether content; see [embers.md](embers.md).
 28. Embers, stage 2 (done, PR #84): the ember brazier, an active pressure sink fed from the Nether.
 29. Embers, stage 3 (done, PR #85): server options, advancements and a shared brazier.
-30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); stage 1 done, stages 2–3 planned).
+30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); stage 1 done (PR #88), stage 2 done (the hush loom), stage 3 planned).
 31. Next: pick from [expansion-ideas.md](expansion-ideas.md).

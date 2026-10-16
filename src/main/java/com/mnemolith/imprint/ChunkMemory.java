@@ -31,7 +31,8 @@ public final class ChunkMemory {
             ScarSite.CODEC.optionalFieldOf("scar").forGetter(ChunkMemory::scarOptional),
             Codec.INT.optionalFieldOf("vault_load", 0).forGetter(ChunkMemory::vaultLoad),
             Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("selective_mutes", List.of()).forGetter(ChunkMemory::selectiveMutesCopy),
-            VoidPressure.CODEC.optionalFieldOf("void", VoidPressure.NONE).forGetter(ChunkMemory::voidState)
+            VoidPressure.CODEC.optionalFieldOf("void", VoidPressure.NONE).forGetter(ChunkMemory::voidState),
+            Codec.list(SelectiveMuteMark.CODEC, 0, ImprintConstants.ABSOLUTE_LIST_CAP).optionalFieldOf("looms", List.of()).forGetter(ChunkMemory::loomsCopy)
     ).apply(instance, ChunkMemory::fromCodec));
 
     /**
@@ -45,6 +46,8 @@ public final class ChunkMemory {
     private final List<Imprint> imprints = new ArrayList<>();
     private final List<BlockPos> muteStones = new ArrayList<>();
     private final List<SelectiveMuteMark> selectiveMutes = new ArrayList<>();
+    /** Hush looms: each keeps one tag of this chunk from being thinned or burned (the mark's tag). Optional in the codec. */
+    private final List<SelectiveMuteMark> looms = new ArrayList<>();
     private final List<BlockPos> resonators = new ArrayList<>();
     private final List<BlockPos> strata = new ArrayList<>();
     /** Scar glass in this chunk: a recollection storm cannot gather within one chunk of it. Optional in the codec. */
@@ -75,11 +78,12 @@ public final class ChunkMemory {
 
     public ChunkMemory() {}
 
-    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, Landmarks landmarks, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState) {
+    private static ChunkMemory fromCodec(List<Imprint> imprints, List<BlockPos> muteStones, boolean fractured, boolean archival, long lastWriteGameTime, int cachedPressure, int instability, List<BlockPos> resonators, List<BlockPos> strata, Landmarks landmarks, List<BlockPos> wards, Optional<ScarSite> scar, int vaultLoad, List<SelectiveMuteMark> selectiveMutes, VoidPressure voidState, List<SelectiveMuteMark> looms) {
         ChunkMemory memory = new ChunkMemory();
         memory.imprints.addAll(imprints);
         memory.muteStones.addAll(muteStones);
         memory.selectiveMutes.addAll(selectiveMutes);
+        memory.looms.addAll(looms);
         memory.fractured = fractured;
         memory.archival = archival;
         memory.lastWriteGameTime = lastWriteGameTime;
@@ -109,6 +113,7 @@ public final class ChunkMemory {
         return this.imprints.isEmpty()
                 && this.muteStones.isEmpty()
                 && this.selectiveMutes.isEmpty()
+                && this.looms.isEmpty()
                 && this.resonators.isEmpty()
                 && this.strata.isEmpty()
                 && this.wards.isEmpty()
@@ -325,6 +330,67 @@ public final class ChunkMemory {
             }
         }
         return Optional.of(this.imprints.remove(lowest));
+    }
+
+    /** Like {@link #removeLowest()}, but skips every tag a hush loom of this chunk keeps (a hushling thinning). */
+    public Optional<Imprint> removeLowestUnkept() {
+        int lowest = -1;
+        for (int i = 0; i < this.imprints.size(); i++) {
+            Imprint candidate = this.imprints.get(i);
+            if (this.keeps(candidate.tag())) {
+                continue;
+            }
+            if (lowest < 0 || lowerPriority(candidate, this.imprints.get(lowest))) {
+                lowest = i;
+            }
+        }
+        return lowest < 0 ? Optional.empty() : Optional.of(this.imprints.remove(lowest));
+    }
+
+    /** The loudest imprint whose tag no hush loom keeps; empty when none is left (an ember brazier burning). */
+    public Optional<Imprint> removeHighestUnkept() {
+        int best = -1;
+        for (int i = 0; i < this.imprints.size(); i++) {
+            Imprint candidate = this.imprints.get(i);
+            if (this.keeps(candidate.tag())) {
+                continue;
+            }
+            if (best < 0 || lowerPriority(this.imprints.get(best), candidate)) {
+                best = i;
+            }
+        }
+        return best < 0 ? Optional.empty() : Optional.of(this.imprints.remove(best));
+    }
+
+    public List<SelectiveMuteMark> loomsCopy() {
+        return List.copyOf(this.looms);
+    }
+
+    /** True when a hush loom of this chunk keeps {@code tag}. */
+    public boolean keeps(ImprintTag tag) {
+        for (SelectiveMuteMark mark : this.looms) {
+            if (mark.allowed() == tag) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean setLoom(BlockPos pos, ImprintTag kept) {
+        for (int i = 0; i < this.looms.size(); i++) {
+            if (this.looms.get(i).pos().equals(pos)) {
+                this.looms.set(i, new SelectiveMuteMark(pos, kept));
+                return true;
+            }
+        }
+        if (markListFull(this.looms.size())) {
+            return false;
+        }
+        return this.looms.add(new SelectiveMuteMark(pos, kept));
+    }
+
+    public boolean removeLoom(BlockPos pos) {
+        return this.looms.removeIf(mark -> mark.pos().equals(pos));
     }
 
     public Optional<Imprint> removeHighest() {

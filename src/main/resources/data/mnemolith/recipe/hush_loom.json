@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "F": "mnemolith:hush_filament",
+    "S": "minecraft:end_stone_bricks",
+    "P": "minecraft:purpur_block"
+  },
+  "pattern": [
+    "FPF",
+    "SFS",
+    "SSS"
+  ],
+  "result": {
+    "id": "mnemolith:hush_loom"
+  }
+}

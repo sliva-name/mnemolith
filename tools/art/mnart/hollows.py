@@ -195,6 +195,64 @@ def brazier_bottom():
     return cv.image()
 
 
+def _loom_side(threaded):
+    """A pale bone frame with two posts and a beam; threaded, bone-white warp threads run down between the posts."""
+    rng = core.rng_for('hush_loom_side')
+    cv = surface('pale', S, S, rng, face='side', bevel=0, wear=0.3, tile=False, base_shift=-0.6)
+    cv.fill(m_rect(S, S, 4, 6, S - 5, S - 7), RAMPS['deep'][1])
+    for x0 in (1, S - 5):
+        cv.part(m_rect(S, S, x0, 1, x0 + 3, S - 2), 'bone', 'flat', 1)
+        cv.shade_px(m_rect(S, S, x0 + 3, 1, x0 + 3, S - 2), 0.35)
+    for y0 in (1, S - 6):
+        cv.part(m_rect(S, S, 1, y0, S - 2, y0 + 4), 'bone', 'flat', 1)
+        cv.shade_px(m_rect(S, S, 1, y0, S - 2, y0), 0.3, toward=(240, 240, 250))
+    if threaded:
+        for x in range(7, S - 7, 3):
+            cv.fill(m_rect(S, S, x, 6, x, S - 7), RAMPS['white'][6])
+        for y in (12, 19):
+            cv.fill(m_rect(S, S, 5, y, S - 6, y), RAMPS['lilac'][4])
+    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
+    return cv.image()
+
+
+def loom_side():
+    return _loom_side(False)
+
+
+def loom_side_threaded():
+    return _loom_side(True)
+
+
+def _loom_top(threaded):
+    """The beam from above: a bone frame around a dark well; threaded, a woven pale square fills it."""
+    rng = core.rng_for('hush_loom_top')
+    cv = surface('pale', S, S, rng, face='top', bevel=0, wear=0.3, tile=False, base_shift=-0.4)
+    well = m_rect(S, S, 5, 5, S - 6, S - 6)
+    cv.fill(well, RAMPS['deep'][1])
+    if threaded:
+        for k in range(6, S - 6, 2):
+            cv.fill(m_rect(S, S, k, 6, k, S - 7) & well, RAMPS['white'][6] if k % 4 == 2 else RAMPS['lilac'][4])
+        core.glint(cv, 12, 12, arm=1)
+    cv.shade_px(m_rect(S, S, 5, 5, S - 6, 5) | m_rect(S, S, 5, 5, 5, S - 6), 0.5)
+    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(240, 240, 250))
+    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
+    return cv.image()
+
+
+def loom_top():
+    return _loom_top(False)
+
+
+def loom_top_threaded():
+    return _loom_top(True)
+
+
+def loom_bottom():
+    rng = core.rng_for('hush_loom_bottom')
+    cv = surface('pale', S, S, rng, face='bottom', bevel=1, wear=0.3, tile=False, base_shift=-0.8)
+    return cv.image()
+
+
 def _memorial_base(seed):
     rng = core.rng_for(seed)
     cv = surface('pale', S, S, rng, face='side', bevel=0, wear=0.25, tile=False, base_shift=0.2)
@@ -664,6 +722,11 @@ BLOCK_TEXTURES = {
     'ember_brazier_top': brazier_top,
     'ember_brazier_top_lit': brazier_top_lit,
     'ember_brazier_bottom': brazier_bottom,
+    'hush_loom_side': loom_side,
+    'hush_loom_side_threaded': loom_side_threaded,
+    'hush_loom_top': loom_top,
+    'hush_loom_top_threaded': loom_top_threaded,
+    'hush_loom_bottom': loom_bottom,
     'memorial_stone_side': memorial_side,
     'memorial_stone_top': memorial_top,
     'forget_me_not': forget_me_not,

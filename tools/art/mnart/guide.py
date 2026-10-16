@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'hushling', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'hushling', 'loom', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1396,6 +1396,34 @@ def p_hushling():
     p.arrow((362, 134), (392, 134))
     p.tag('silence', 420, 134)
     p.sprite('hushling_spawn_egg', 420, 212, 2, src=_hollows_tex('item', 'hushling_spawn_egg'))
+    return p.image()
+
+
+def p_loom():
+    """A threaded hush loom on End stone with a filament going in; the kept tag shielded while a hushling and a
+    brazier take the others."""
+    p = Page('loom')
+    for alias in ('e_top', 'e_side', 'e_stone'):
+        t = R.texture('mnemolith:block/hollowstone').astype('float32')
+        t[..., 0] = t[..., 0] * 0.55 + 105
+        t[..., 1] = t[..., 1] * 0.55 + 100
+        t[..., 2] = t[..., 2] * 0.40 + 60
+        R._tex_cache['guide:' + alias] = t.clip(0, 255).astype('uint8')
+    for alias, tex in (('l_side', 'hush_loom_side_threaded'), ('l_top', 'hush_loom_top_threaded'), ('l_bottom', 'hush_loom_bottom')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    d = Diorama(300, 230, 25)
+    d.ground(5, 4, 2, top='e_top', side='e_side', under='e_stone')
+    d.add(cube('l_top', 'l_side', 0, 0, 0, tex_bottom='l_bottom'))
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    p.sprite('hush_filament', 236, 56, 2, src=_hollows_tex('item', 'hush_filament'))
+    p.arrow((222, 74), (178, 98), bend=0.2)
+    # the kept tag stays, the others go
+    p.tag('death', 330, 44)
+    p.ring(330, 44, 22, dotted=True, ry=14)
+    for i, tag in enumerate(('path', 'build')):
+        p.tag(tag, 330, 104 + i * 40)
+        p.arrow((352, 104 + i * 40), (392, 104 + i * 40), dotted=True)
+        p.cross(420, 104 + i * 40, 9)
     return p.image()
 
 
