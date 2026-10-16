@@ -179,6 +179,7 @@ public final class ImprintEvents {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         PressureSync.forget(event.getEntity().getUUID());
+        com.mnemolith.particle.AfterImages.forget(event.getEntity().getUUID());
         MobEvents.forget(event.getEntity().getUUID());
         com.mnemolith.echo.relay.EchoRelays.forget(event.getEntity().getUUID());
     }

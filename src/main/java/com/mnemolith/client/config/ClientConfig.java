@@ -27,6 +27,8 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ECHO_HINTS;
     public static final ModConfigSpec.BooleanValue HOLLOW_FLICKERS;
     public static final ModConfigSpec.BooleanValue MEMORY_EVENT_SOUNDS;
+    public static final ModConfigSpec.BooleanValue MEMORY_AFTER_IMAGES;
+    public static final ModConfigSpec.BooleanValue STRONG_MEMORY_HINT;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -51,6 +53,8 @@ public final class ClientConfig {
         ECHO_HINTS = SpecValues.bool(builder, "echoHints", "Whether the lens and possession draw short key hints.", true);
         HOLLOW_FLICKERS = SpecValues.bool(builder, "hollowFlickers", "Whether memory flickers in Memory Hollows are drawn on this client. The server decides how often they appear.", true);
         MEMORY_EVENT_SOUNDS = SpecValues.bool(builder, "memoryEventSounds", "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity.", true);
+        MEMORY_AFTER_IMAGES = SpecValues.bool(builder, "memoryAfterImages", "Whether standing still in a strongly remembering chunk shows faint after-images where its loudest memories happened.", true);
+        STRONG_MEMORY_HINT = SpecValues.bool(builder, "strongMemoryHint", "Whether a strongly remembering (saturated or louder) chunk breathes a faint tint at the screen edge and says so the first time you enter it.", true);
         builder.pop();
 
         SPEC = builder.build();

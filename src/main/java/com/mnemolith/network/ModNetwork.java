@@ -6,6 +6,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * Play-phase payloads. The client handler for the snapshot is registered from {@code MnemolithClient}.
+ * Version 9: the strong-memory hint (memory feel, stage 3).
  * Version 8: memory flickers in Memory Hollows.
  * Version 7: the past-self vision (the world remembers you).
  * Version 6: server tuning sync (possess range, mining radius, drum formulas) for dedicated servers.
@@ -22,7 +23,7 @@ public final class ModNetwork {
     }
 
     private static void onRegister(RegisterPayloadHandlersEvent event) {
-        event.registrar("8")
+        event.registrar("9")
                 .playToServer(RequestPressurePayload.TYPE, RequestPressurePayload.STREAM_CODEC, PressureSync::handleRequest)
                 .playToClient(PressureSnapshotPayload.TYPE, PressureSnapshotPayload.STREAM_CODEC)
                 .playToClient(OpenCatalogPayload.TYPE, OpenCatalogPayload.STREAM_CODEC)
@@ -37,6 +38,7 @@ public final class ModNetwork {
                 .playToServer(EchoCommandPayload.TYPE, EchoCommandPayload.STREAM_CODEC, EchoNetwork::handleCommand)
                 .playToClient(ServerTuningPayload.TYPE, ServerTuningPayload.STREAM_CODEC)
                 .playToClient(PastVisionPayload.TYPE, PastVisionPayload.STREAM_CODEC)
-                .playToClient(HollowFlickerPayload.TYPE, HollowFlickerPayload.STREAM_CODEC);
+                .playToClient(HollowFlickerPayload.TYPE, HollowFlickerPayload.STREAM_CODEC)
+                .playToClient(StrongMemoryPayload.TYPE, StrongMemoryPayload.STREAM_CODEC);
     }
 }
