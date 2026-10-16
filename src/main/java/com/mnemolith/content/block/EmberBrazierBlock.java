@@ -129,7 +129,7 @@ public class EmberBrazierBlock extends Block {
         }
         LevelChunk chunk = level.getChunkAt(pos);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-        if (memory == null || memory.removeHighest().isEmpty()) {
+        if (memory == null || memory.removeHighestUnkept().isEmpty()) {
             return Burn.EMPTY;
         }
         MemoryPressure.recompute(chunk, memory);

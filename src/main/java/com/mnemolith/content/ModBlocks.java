@@ -193,6 +193,13 @@ public final class ModBlocks {
                     .sound(SoundType.NETHER_BRICKS)
                     .lightLevel(state -> state.getValue(com.mnemolith.content.block.EmberBrazierBlock.LIT) ? 13 : 0)
                     .requiresCorrectToolForDrops());
+    /** Threaded with hush filament, keeps one imprint tag of its chunk from thinning and burning ({@code HushLoomBlock}). */
+    public static final DeferredBlock<com.mnemolith.content.block.HushLoomBlock> HUSH_LOOM = BLOCKS.registerBlock(
+            "hush_loom", com.mnemolith.content.block.HushLoomBlock::new, properties -> properties
+                    .mapColor(MapColor.SAND)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.BONE_BLOCK)
+                    .requiresCorrectToolForDrops());
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FORGET_ME_NOT = BLOCKS.registerBlock(
             "forget_me_not",
             props -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 5.0F, props),

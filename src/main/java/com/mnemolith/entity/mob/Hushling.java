@@ -118,7 +118,7 @@ public class Hushling extends Monster {
         }
         LevelChunk chunk = level.getChunkAt(this.blockPosition());
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-        if (memory == null || memory.removeLowest().isEmpty()) {
+        if (memory == null || memory.removeLowestUnkept().isEmpty()) {
             return "empty";
         }
         MemoryPressure.recompute(chunk, memory);
