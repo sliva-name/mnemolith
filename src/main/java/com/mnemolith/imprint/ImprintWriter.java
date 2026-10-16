@@ -96,8 +96,8 @@ public final class ImprintWriter {
                     memory.cachedPressure(),
                     band);
         }
-        level.playSound(null, pos, ModSounds.MEMORY_WRITTEN.get(), SoundSource.BLOCKS, 0.6F, 1.2F);
-        MemoryFx.write(level, pos);
+        // the shared written cue: motes settle into the ground, the written sound
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.WRITTEN, pos, 4);
         NeoForge.EVENT_BUS.post(new ImprintWrittenEvent(level, pos, accepted, player, throttled));
         return true;
     }
