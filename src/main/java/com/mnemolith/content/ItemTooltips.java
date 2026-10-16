@@ -48,6 +48,8 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.hush_filament.hint").withStyle(net.minecraft.ChatFormatting.GRAY));
             } else if (stack.getItem() == ModItems.MEMORY_EMBER.get()) {
                 builder.accept(Component.translatable("item.mnemolith.memory_ember.hint").withStyle(net.minecraft.ChatFormatting.GOLD));
+            } else if (stack.getItem() == ModItems.TIDE_LURE.get()) {
+                builder.accept(Component.translatable("item.mnemolith.tide_lure.hint").withStyle(net.minecraft.ChatFormatting.GOLD));
             } else if (stack.getItem() == ModItems.HUSH_LOOM.get()) {
                 builder.accept(Component.translatable("block.mnemolith.hush_loom.hint").withStyle(net.minecraft.ChatFormatting.GOLD));
             } else if (stack.getItem() == ModItems.EMBER_BRAZIER.get()) {

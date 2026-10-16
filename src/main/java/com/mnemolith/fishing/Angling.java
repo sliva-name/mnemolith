@@ -27,13 +27,17 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
  * Undertow, stage 1: memory angling. A catch reeled in from water may bring up the oldest imprint of the bobber's
- * chunk (one no hush loom keeps) as an imprint slip, flung to the player like a second catch. See
+ * chunk (one no hush loom keeps; with a tide lure in the off hand, the loudest, more often) as an imprint slip, flung to the player like a second catch. See
  * {@code docs/design/undertow.md}.
  */
 public final class Angling {
     public static final float BASE_CHANCE = 0.30F;
     public static final float PER_LUCK = 0.10F;
     public static final float MAX_CHANCE = 0.60F;
+    /** Stage 2: a tide lure in the off hand adds this, up to {@link #LURE_MAX_CHANCE}, and pulls the loudest memory. */
+    public static final float LURE_BONUS = 0.20F;
+    public static final float LURE_MAX_CHANCE = 0.80F;
+    public static final int LURE_DURABILITY = 32;
 
     private Angling() {}
 
@@ -51,6 +55,21 @@ public final class Angling {
         return Math.min(MAX_CHANCE, BASE_CHANCE + PER_LUCK * Math.max(0, luck));
     }
 
+    public static float chanceFor(int luck, boolean lure) {
+        return lure ? Math.min(LURE_MAX_CHANCE, chanceFor(luck) + LURE_BONUS) : chanceFor(luck);
+    }
+
+    /** True when the player holds a tide lure in the off hand. */
+    public static boolean lured(Player player) {
+        return player.getOffhandItem().is(com.mnemolith.content.ModItems.TIDE_LURE.get());
+    }
+
+    /** The chance for this player's catch: the rod's Luck of the Sea and the off-hand lure. */
+    public static float chance(ServerLevel level, Player player) {
+        float base = chance(level, rod(player));
+        return lured(player) ? Math.min(LURE_MAX_CHANCE, base + LURE_BONUS) : base;
+    }
+
     /** The rod in the owner's hands (main hand first), or empty. */
     public static ItemStack rod(Player player) {
         if (player.getMainHandItem().is(Items.FISHING_ROD)) {
@@ -66,7 +85,7 @@ public final class Angling {
 
     /** As {@link #onCatch(ServerLevel, FishingHook, Player)} with the roll from {@code random} (QA seeds it). */
     public static Optional<Imprint> onCatch(ServerLevel level, FishingHook hook, Player player, net.minecraft.util.RandomSource random) {
-        if (random.nextFloat() >= chance(level, rod(player))) {
+        if (random.nextFloat() >= chance(level, player)) {
             return Optional.empty();
         }
         return angle(level, hook, player);
@@ -80,11 +99,15 @@ public final class Angling {
         }
         LevelChunk chunk = level.getChunkAt(at);
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-        Optional<Imprint> taken = memory == null ? Optional.empty() : memory.removeOldestUnkept();
+        boolean lure = lured(player);
+        Optional<Imprint> taken = memory == null ? Optional.empty() : lure ? memory.removeHighestUnkept() : memory.removeOldestUnkept();
         if (taken.isEmpty()) {
             return taken;
         }
         chunk.markUnsaved();
+        if (lure) {
+            player.getOffhandItem().hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+        }
         MemoryPressure.recompute(chunk, memory);
         ItemEntity slip = new ItemEntity(level, hook.getX(), hook.getY(), hook.getZ(), ImprintSlips.of(taken.get().tag(), at));
         double dx = player.getX() - hook.getX();

@@ -79,6 +79,8 @@ public final class ModItems {
                     .rarity(net.minecraft.world.item.Rarity.RARE));
     /** What is left of a memory burned in the Nether: dropped by cinderkin; fuel, and the brazier's feed (see {@code docs/design/embers.md}). */
     public static final DeferredItem<net.minecraft.world.item.Item> MEMORY_EMBER = ITEMS.registerSimpleItem("memory_ember", properties -> properties);
+    /** Undertow, stage 2: held in the off hand while fishing, the line pulls the loudest memory and bites more often. */
+    public static final DeferredItem<net.minecraft.world.item.Item> TIDE_LURE = ITEMS.registerSimpleItem("tide_lure", properties -> properties.durability(com.mnemolith.fishing.Angling.LURE_DURABILITY));
     /** What a hushling leaves: a thread of the quiet it sang (see {@code docs/design/pale-chorus.md}). */
     public static final DeferredItem<net.minecraft.world.item.Item> HUSH_FILAMENT = ITEMS.registerSimpleItem("hush_filament", properties -> properties);
     public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> HUSHLING_SPAWN_EGG = ITEMS.registerItem(

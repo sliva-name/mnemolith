@@ -512,6 +512,22 @@ def hush_filament():
     return cv.image()
 
 
+def tide_lure():
+    """A prismarine fish-shaped lure with a recollite eye and a short string loop."""
+    cv = Canvas(S, S)
+    body = core.m_ellipse(S, S, 15.5, 18.5, 9, 5)
+    cv.fill(body, RAMPS['verdigris'][4])
+    cv.fill(core.m_ellipse(S, S, 15.5, 17.5, 8, 3), RAMPS['verdigris'][5])
+    tail = core.m_lines(S, S, [(24, 18), (28, 14), (28, 23), (24, 18)], 1)
+    cv.fill(tail, RAMPS['verdigris'][3])
+    cv.px(10, 17, RAMPS['deep'][0])
+    cv.px(11, 17, RAMPS['recollite'][5])
+    cv.fill(core.m_lines(S, S, [(8, 16), (5, 10), (8, 5)], 1), RAMPS['white'][6])
+    core.glint(cv, 14, 16, arm=1)
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
 def hushling_spawn_egg():
     from .items import _egg
     return _egg('hushling_spawn_egg', 'bone', 'deep', 5, band='lilac')
@@ -741,6 +757,7 @@ ITEM_TEXTURES = {
     'lethe_tear': lethe_tear,
     'memory_ember': memory_ember,
     'hush_filament': hush_filament,
+    'tide_lure': tide_lure,
     'hushling_spawn_egg': hushling_spawn_egg,
     'cinderkin_spawn_egg': cinderkin_spawn_egg,
     'remembering_circlet': remembering_circlet,
