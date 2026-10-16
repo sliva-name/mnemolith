@@ -198,12 +198,14 @@ public final class Hollows3Qa {
             ok[7] = !idle && raised && !away;
             notes.add("lens idle=" + idle + " raised=" + raised + " away=" + away);
 
-            // ---------- slip drop: 12 kills, P(no slip) = 1/4096 ----------
+            // ---------- slip drop: 12 kills with seeded randoms, so the 50% roll can no longer come up all-or-nothing ----------
+            // (unseeded, 0 or 12 slips had a 2/4096 chance per run and failed the suite now and then)
             int slipDrops = 0;
             int wrongSlips = 0;
             for (int i = 0; i < 12; i++) {
                 Faded victim = faded(level, a.offset(-6, 0, 2));
                 spawned.add(victim);
+                victim.getRandom().setSeed(0x51195EEDL + i);
                 victim.copy(a, ImprintTag.FIRE);
                 victim.hurtServer(level, level.damageSources().playerAttack(player), 1000.0F);
                 for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, new AABB(a.offset(-6, 0, 2)).inflate(3.0D))) {
@@ -219,7 +221,7 @@ public final class Hollows3Qa {
                 }
             }
             ok[8] = slipDrops >= 1 && slipDrops < 12 && wrongSlips == 0;
-            notes.add("slipDrops=" + slipDrops + "/12");
+            notes.add(0, "slipDrops=" + slipDrops + "/12 wrong=" + wrongSlips);
 
             // ---------- lectern ----------
             LevelChunk chunk = level.getChunkAt(lectern);
