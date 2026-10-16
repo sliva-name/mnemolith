@@ -17,7 +17,9 @@ import net.minecraft.util.Mth;
 public class UnrememberedRenderer extends MobRenderer<Unremembered, FadedModel.State, FadedModel> {
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/entity/unremembered.png");
     public static final float SCALE = 1.8F;
-    public static final int UNSEEN_ALPHA = 0xA0;
+    public static final int UNSEEN_ALPHA = 0x80;
+    /** Unseen, the body is also washed toward a cold grey so the reveal reads as colour coming back, not only as an outline. */
+    public static final int UNSEEN_TINT = 0x9CA0B4;
     public static final int REVEALED_ALPHA = 0xF0;
 
     public UnrememberedRenderer(EntityRendererProvider.Context context) {
@@ -50,7 +52,7 @@ public class UnrememberedRenderer extends MobRenderer<Unremembered, FadedModel.S
     protected int getModelTint(FadedModel.State state) {
         int base = state.revealed ? REVEALED_ALPHA : UNSEEN_ALPHA;
         int alpha = Mth.clamp(base + (int) (Mth.sin(state.ageInTicks * 0.06F) * 0x18), 0x30, 0xFF);
-        return alpha << 24 | 0xFFFFFF;
+        return alpha << 24 | (state.revealed ? 0xFFFFFF : UNSEEN_TINT);
     }
 
     @Override
