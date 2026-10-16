@@ -99,6 +99,7 @@ public final class MnemolithGameTests {
         suite("unrememberedqa", com.mnemolith.command.qa.UnrememberedQa::check, Map.of());
         suite("unremembered2qa", com.mnemolith.command.qa.Unremembered2Qa::check, Map.of());
         suite("unremembered3qa", com.mnemolith.command.qa.Unremembered3Qa::check, Map.of());
+        suite("emberqa", com.mnemolith.command.qa.EmberQa::check, Map.of());
         suite("perfqa", com.mnemolith.command.qa.PerfQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
@@ -166,6 +167,7 @@ public final class MnemolithGameTests {
         live("memorial_shares_notes", MemorialNotesLiveTests::memorialSharesNotes, 200);
         live("unremembered_called_and_seen", UnrememberedLiveTests::calledAndSeen, 200);
         live("circlet_wards_and_keeps", CircletLiveTests::circletWardsAndKeeps, 200);
+        live("cinderkin_burns_player", CinderkinLiveTests::cinderkinBurnsPlayer, 200);
         live("unremembered_scales_and_shares", UnrememberedSharedLiveTests::scalesAndShares, 200);
 
         live("remember_records_real_events", RememberLiveTests::recordsRealEvents, 100);

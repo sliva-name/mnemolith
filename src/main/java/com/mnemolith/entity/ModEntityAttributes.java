@@ -18,6 +18,7 @@ public final class ModEntityAttributes {
         event.put(ModEntities.KIN_WITNESS.get(), com.mnemolith.entity.mob.KinWitness.createAttributes().build());
         event.put(ModEntities.FRACTURE_STALKER.get(), com.mnemolith.entity.mob.FractureStalker.createAttributes().build());
         event.put(ModEntities.UNREMEMBERED.get(), com.mnemolith.entity.boss.Unremembered.createAttributes().build());
+        event.put(ModEntities.CINDERKIN.get(), com.mnemolith.entity.mob.Cinderkin.createAttributes().build());
         event.put(ModEntities.FADED.get(), com.mnemolith.entity.mob.Faded.createAttributes().build());
         event.put(ModEntities.ECHO.get(), com.mnemolith.entity.echo.EchoEntity.createAttributes().build());
         event.put(ModEntities.ECHO_SHELL.get(), com.mnemolith.entity.echo.EchoShell.createAttributes().build());

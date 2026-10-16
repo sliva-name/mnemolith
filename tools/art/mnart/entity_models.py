@@ -127,4 +127,5 @@ MODELS = {
     'faded': (faded, 'mnemolith:entity/faded'),
     'faded_kneel': (lambda: faded(True), 'mnemolith:entity/faded'),
     'unremembered': (faded, 'mnemolith:entity/unremembered'),
+    'cinderkin': (faded, 'mnemolith:entity/cinderkin'),
 }

@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1311,6 +1311,38 @@ def p_unremembered():
     p.sprite('lethe_tear', 384, 210, 2, src=_hollows_tex('item', 'lethe_tear'))
     p.arrow((410, 210), (430, 210))
     p.sprite('remembering_circlet', 458, 210, 2, src=_hollows_tex('item', 'remembering_circlet'))
+    return p.image()
+
+
+def p_cinderkin():
+    """Two cinderkin on Nether ground (netherrack under soul soil stand-ins drawn from the pipeline's stone), one
+    struck by a snowball; the memory ember they leave and its fire imprint, and the furnace it feeds."""
+    p = Page('cinderkin')
+    for alias, tex in (('n_top', 'hollowstone'), ('n_side', 'hollowstone'), ('n_stone', 'hollowstone')):
+        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
+    # tint the stand-in ground towards netherrack
+    for alias in ('n_top', 'n_side', 'n_stone'):
+        t = R._tex_cache['guide:' + alias].astype('float32')
+        t[..., 0] = t[..., 0] * 0.55 + 22
+        t[..., 1] = t[..., 1] * 0.25
+        t[..., 2] = t[..., 2] * 0.25
+        R._tex_cache['guide:' + alias] = t.clip(0, 255).astype('uint8')
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='n_top', side='n_side', under='n_stone')
+    d.add(mob_quads('cinderkin', -0.9, 0, 0.4, 215), light='entity')
+    d.add(mob_quads('cinderkin', 1.3, 0, -0.9, 235), light='entity')
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # a snowball arcs in
+    p.d.ellipse([236, 70, 248, 82], fill=(240, 246, 252, 255), outline=(*LINE, 255))
+    p.arrow((252, 84), (196, 108), bend=0.2)
+    # what is left: an ember, a fire imprint, fuel
+    p.sprite('memory_ember', 330, 52, 2, src=_hollows_tex('item', 'memory_ember'))
+    p.arrow((362, 52), (392, 52))
+    p.tag('fire', 420, 52)
+    p.sprite('memory_ember', 330, 134, 2, src=_hollows_tex('item', 'memory_ember'))
+    p.arrow((362, 134), (392, 134))
+    p.spark(420, 134, 16, TEMPER['fire'])
+    p.sprite('cinderkin_spawn_egg', 420, 210, 2, src=_hollows_tex('item', 'cinderkin_spawn_egg'))
     return p.image()
 
 

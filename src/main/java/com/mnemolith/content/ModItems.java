@@ -77,6 +77,10 @@ public final class ModItems {
             "remembering_circlet", net.minecraft.world.item.Item::new,
             properties -> properties.humanoidArmor(com.mnemolith.armory.ArmoryMaterials.CIRCLET, net.minecraft.world.item.equipment.ArmorType.HELMET)
                     .rarity(net.minecraft.world.item.Rarity.RARE));
+    /** What is left of a memory burned in the Nether: dropped by cinderkin; fuel, and the brazier's feed (see {@code docs/design/embers.md}). */
+    public static final DeferredItem<net.minecraft.world.item.Item> MEMORY_EMBER = ITEMS.registerSimpleItem("memory_ember", properties -> properties);
+    public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> CINDERKIN_SPAWN_EGG = ITEMS.registerItem(
+            "cinderkin_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.CINDERKIN.get()));
     public static final DeferredItem<net.minecraft.world.item.SpawnEggItem> FADED_SPAWN_EGG = ITEMS.registerItem(
             "faded_spawn_egg", net.minecraft.world.item.SpawnEggItem::new, properties -> properties.spawnEgg(com.mnemolith.entity.ModEntities.FADED.get()));
     public static final DeferredItem<ExtractionNeedleItem> REINFORCED_NEEDLE = ITEMS.registerItem(
