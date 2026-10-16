@@ -16,5 +16,7 @@ Optional properties:
 
 Headless boxes: run under Xvfb with `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe`. The game quits when done.
 
+Tooltip scenes (`tooltip_<item>`) draw one real item tooltip through a dev-only screen, no mouse. RU pass: `-Dmnemolith.visualTour.lang=ru_ru`.
+
 Comparison scenes: `edge_baseline` vs `circlet_tint`, `strong_baseline` vs `strong_hint`, and the pressure vignette on its
 own (`overloaded_vignette`, `fracture_vignette`) and stacked with the hint (`hint_plus_overloaded`).

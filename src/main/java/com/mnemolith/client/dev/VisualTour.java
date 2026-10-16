@@ -318,6 +318,10 @@ public final class VisualTour {
         scene("guide_loom", c -> { }, FRONT, 20, true, null, mc -> guide(mc, "loom"));
         scene("guide_undertow", c -> { }, FRONT, 20, true, null, mc -> guide(mc, "undertow"));
         scene("creative_tab", c -> { }, FRONT, 20, true, null, VisualTour::creativeTab);
+        for (String item : new String[] {"chronicle_lens", "remembering_circlet", "recollite_lantern", "hollow_effigy", "remembrance_posy", "ember_brazier", "hush_loom"}) {
+            scene("tooltip_" + item, c -> platform(c, "smooth_stone"), FRONT, 15, true, null,
+                    mc -> mc.gui.setScreen(new TipScreen(new net.minecraft.world.item.ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, item))))));
+        }
         scene("natural_memory_hollows", c -> natural(c, "locate biome mnemolith:memory_hollows"), null, 260, false);
         for (String s : new String[] {"sunken_archive", "chronicle_observatory", "hush_chapel", "memory_field"}) {
             scene("natural_" + s, c -> natural(c, "locate structure mnemolith:" + s), null, 260, false);
@@ -487,5 +491,21 @@ public final class VisualTour {
             }
             Mnemolith.LOGGER.info("Visual tour: saved {}", file);
         });
+    }
+
+    /** Dev only: draws one item's real tooltip at a fixed spot, with no mouse involved. */
+    private static final class TipScreen extends net.minecraft.client.gui.screens.Screen {
+        private final net.minecraft.world.item.ItemStack stack;
+
+        TipScreen(net.minecraft.world.item.ItemStack stack) {
+            super(Component.empty());
+            this.stack = stack;
+        }
+
+        @Override
+        public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partial) {
+            super.extractRenderState(graphics, mouseX, mouseY, partial);
+            graphics.setTooltipForNextFrame(this.font, this.stack, 20, 30);
+        }
     }
 }
