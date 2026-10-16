@@ -47,6 +47,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_feelqa` | `/mnemolith feelqa` (9) | Reads registries, sounds.json and lang; one brazier, hushling (no AI), loom, water block, hook and fake player on a test column; clears memory, drops and blocks after |
 | `mnemolith:suite_feel2qa` | `/mnemolith feel2qa` (9) | Writes and extracts one imprint, one residue, one scar heart and one fake player on a test column; settles a storm there; clears memory and blocks after |
 | `mnemolith:suite_feel3qa` | `/mnemolith feel3qa` (9) | Two test columns (one marked saturated with five imprints) and one fake player; calls the ambient scan directly; clears memory and scan state after |
+| `mnemolith:suite_feel4qa` | `/mnemolith feel4qa` (9) | Encodes two snapshot chunks in memory; two imprints and one fake player (circlet on and off, spectator briefly) on a test column; clears memory and equipment after |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (7) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -127,6 +128,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `loom_cue_reaches_player` | A real player (live site 26) threads a hush loom by hand: one shared kept cue is sent, at the loom | 200 |
 | `write_cue_reaches_player` | A real player (live site 27) places cobblestone by hand: the build imprint sends a shared written cue at the block | 200 |
 | `strong_chunk_hints_player` | A real player (live site 28) joins in a chunk marked saturated: the server's own scan sends one strong-memory hint and, after standing still, after-images | 300 |
+| `lens_reads_loudest_circlet_tints` | A real player (live site 29) wearing a remembering circlet in a chunk with one death and newer paths: the server's lens snapshot names death as the loudest; the circlet tint applies and stops when it comes off | 200 |
 | `brazier_burns_down` | One real player (live site 18) feeds a memory ember to a brazier by hand (`gameMode.useItemOn`): it lights with 4 charges and the ember is spent; its own scheduled ticks then burn the explosion and build imprints written into its chunk | 400 |
 | `brazier_shared` | Two real players (live site 19) take turns feeding one brazier by hand (`gameMode.useItemOn`): the charge adds up to 16, the refused ember stays in hand, and both earn `ember_brazier_kindled` | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
@@ -947,4 +949,11 @@ Manual:
 - Walk into a saturated (or louder) chunk: the screen edge breathes a faint indigo tint while you stay; the first time, the action bar says "This place remembers." (RU: «Это место помнит.»). Leaving fades the tint out.
 - Stand still there for 3 s: up to 3 slow pale-blue mote columns rise where the chunk's loudest memories happened; again every 3 s while still; moving stops them. A second player nearby does not see your after-images.
 - `strongMemoryHint = false`: no tint and no line. `memoryAfterImages = false`: no columns. `particleDensity = 0`: no columns. The tint sits under the overloaded vignette and stays readable with it.
+- No new sounds in this stage.
+
+## Memory feel, stage 4
+
+- Hold the chronicle lens in a chunk with memories: after the band the pill shows a small coloured swatch and the loudest memory's name (e.g. a red swatch and "Death"); an empty chunk shows none. Check RU names and that the pill stays centred and readable at GUI scale 1–4, with `showNumericPressure` on and off.
+- `lensLoudestGlyph = false`: the pill without the glyph. `lensOverlay = false`: no pill at all.
+- Wear a remembering circlet: the screen edge holds a faint steady indigo tint; take it off and it fades out in about a second. It sits under the strong-memory breath and the overloaded vignette. `circletTint = false`: no tint. F1 hides it.
 - No new sounds in this stage.
