@@ -15,7 +15,7 @@ W, H = 512, 256
 PAGES = ('welcome', 'hour', 'loop', 'sources', 'bands', 'lens', 'needle', 'reel', 'formulas', 'fails', 'mute',
          'catalog', 'transcript', 'strider', 'archivist', 'replicant', 'recording', 'echoes', 'grafts', 'residues', 'storms',
          'scar', 'mending', 'relay', 'vault', 'noticed', 'traces', 'offer', 'rewrite', 'remembers', 'armory', 'beasts', 'roles',
-         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'players',
+         'guard', 'world', 'places', 'hollows', 'sunken', 'faded', 'forgotten', 'pickaxe', 'lantern', 'posy', 'unremembered', 'cinderkin', 'brazier', 'hushling', 'players',
          'reference')
 
 BAND = {'calm': c('verdigris', 4), 'saturated': c('brass', 4), 'overloaded': c('ember', 3), 'fracture': c('red', 3)}
@@ -1366,6 +1366,36 @@ def p_brazier():
         p.cross(420, 44 + i * 40, 9)
     p.bar(316, 200, 470, 210, [(0.25, BAND['calm']), (0.25, BAND['saturated']), (0.25, BAND['overloaded']), (0.25, BAND['fracture'])], 0.2)
     p.arrow((460, 186), (340, 186))
+    return p.image()
+
+
+def p_hushling():
+    """Two hushlings on End stone, one shattered by a note; the quietest tag thinning away; the filament and the
+    silence imprint it leaves."""
+    p = Page('hushling')
+    # End stone stand-in: the pipeline's hollowstone tinted pale yellow
+    for alias in ('e_top', 'e_side', 'e_stone'):
+        t = R.texture('mnemolith:block/hollowstone').astype('float32')
+        t[..., 0] = t[..., 0] * 0.55 + 105
+        t[..., 1] = t[..., 1] * 0.55 + 100
+        t[..., 2] = t[..., 2] * 0.40 + 60
+        R._tex_cache['guide:' + alias] = t.clip(0, 255).astype('uint8')
+    d = Diorama(300, 230, 25)
+    d.ground(6, 5, 2, top='e_top', side='e_side', under='e_stone')
+    d.add(mob_quads('hushling', -0.8, 0, 0.4, 215, 0.8), light='entity')
+    d.add(mob_quads('hushling', 1.4, 0, -0.8, 235, 0.8), light='entity')
+    p.center(d.render(0, 0.4, 0), 150, 134)
+    # a note shatters the right one
+    p.spark(206, 70, 14, ACCENT)
+    p.ring(206, 96, 26, dotted=True, ry=12)
+    # thinning: the quietest tag goes
+    p.tag('path', 330, 50)
+    p.arrow((352, 50), (392, 50), dotted=True)
+    p.cross(420, 50, 9)
+    p.sprite('hush_filament', 330, 134, 2, src=_hollows_tex('item', 'hush_filament'))
+    p.arrow((362, 134), (392, 134))
+    p.tag('silence', 420, 134)
+    p.sprite('hushling_spawn_egg', 420, 212, 2, src=_hollows_tex('item', 'hushling_spawn_egg'))
     return p.image()
 
 

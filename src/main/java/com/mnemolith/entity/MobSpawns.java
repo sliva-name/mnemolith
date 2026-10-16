@@ -180,6 +180,7 @@ public final class MobSpawns {
             case "fracture_stalker" -> summon(ModEntities.FRACTURE_STALKER.get(), level, pos);
             case "faded" -> summon(ModEntities.FADED.get(), level, pos);
             case "cinderkin" -> summon(ModEntities.CINDERKIN.get(), level, pos);
+            case "hushling" -> summon(ModEntities.HUSHLING.get(), level, pos);
             case "unremembered" -> summon(ModEntities.UNREMEMBERED.get(), level, pos);
             case "pleading_chair" -> com.mnemolith.entity.PleadingChair.summon(level, pos);
             case "silence_mirror" -> summonSilenceMirror(level, pos);

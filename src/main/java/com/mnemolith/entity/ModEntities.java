@@ -66,6 +66,11 @@ public final class ModEntities {
             com.mnemolith.entity.mob.Cinderkin::new,
             MobCategory.MONSTER,
             builder -> builder.sized(0.6F, 1.8F).eyeHeight(1.6F).clientTrackingRange(8).fireImmune().notInPeaceful());
+    public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.mob.Hushling>> HUSHLING = ENTITY_TYPES.registerEntityType(
+            "hushling",
+            com.mnemolith.entity.mob.Hushling::new,
+            MobCategory.MONSTER,
+            builder -> builder.sized(0.5F, 1.45F).eyeHeight(1.3F).clientTrackingRange(8).notInPeaceful());
     public static final DeferredHolder<EntityType<?>, EntityType<com.mnemolith.entity.armory.MemoryBolt>> MEMORY_BOLT = ENTITY_TYPES.registerEntityType(
             "memory_bolt",
             com.mnemolith.entity.armory.MemoryBolt::new,

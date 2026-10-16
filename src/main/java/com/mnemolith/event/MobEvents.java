@@ -51,11 +51,20 @@ public final class MobEvents {
         }
     }
 
+    /** Sound breaks the hush: a played note block shatters hushlings nearby. */
+    @SubscribeEvent
+    public static void onNotePlayed(net.neoforged.neoforge.event.level.NoteBlockEvent.Play event) {
+        if (event.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+            com.mnemolith.entity.mob.Hushling.onNote(level, event.getPos());
+        }
+    }
+
     /** Drops the player's per-player mob state (logout). Server thread only. */
     public static void forget(UUID player) {
         WAS_ON_GROUND.remove(player);
         ActionMemory.forget(player);
         PathLedger.forget(player);
+        com.mnemolith.entity.mob.Hush.forget(player);
         com.mnemolith.recall.LivingMemory.forgetSteps(player);
         com.mnemolith.recall.Investigate.forgetSession(player);
         com.mnemolith.recall.UseMemory.forgetSession(player);

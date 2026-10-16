@@ -156,6 +156,8 @@
 
 **Угольки на сервере** (этап 3): опции сервера `cinderkinSpawns`, `emberBrazierBurnTicks`, `emberBrazierChargePerEmber`; достижения «Угольки памяти» и «Выжечь дотла». Жаровня общая: кормить её может любой игрок, заряд складывается. `/mnemolith ember3qa` проверяет это.
 
+**Тишунец** (Бледный хор, Край, этап 1): тишунец бродит по Краю и истончает память — каждые 10 секунд стирает самый тихий отпечаток своего чанка. Его удар глушит игрока на 6 секунд (его отпечатки не пишутся) и замедляет. Единственное правило против него: сыграйте нотный блок в пределах 12 блоков — тишунец раскалывается на 10 секунд, светится, не истончает и не глушит, а урон по нему удвоен. Погибнув в Крае, он оставляет отпечаток тишины и роняет нить тишины. `/mnemolith hushqa` проверяет это; заметка: [docs/design/pale-chorus.md](docs/design/pale-chorus.md).
+
 **Бюджеты производительности**: `/mnemolith perfqa` замеряет горячие серверные пути (ворота бурь, затишье, покой у памятника, охрана фонарей) и падает, если среднее время вызова выходит за бюджет. Проверка фонарей теперь пропускает секции чанка без фонарей. Заметка: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
@@ -461,6 +463,8 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 **Ember brazier** (embers, stage 2): craft it from iron, polished blackstone and a memory ember, and feed it embers by hand. One ember is 4 burns; it holds 16. While lit, every 5 seconds it burns the loudest imprint of its chunk and writes nothing in its place; an empty chunk spends nothing. A comparator reads what is left. It is the first way to remove pressure already written, and it is paid for in the Nether. `/mnemolith ember2qa` checks it.
 
 **Embers on servers** (stage 3): server options `cinderkinSpawns`, `emberBrazierBurnTicks`, `emberBrazierChargePerEmber`; advancements Embers of Memory and Burn It Away. A brazier is shared: anyone can feed it and the charge adds up. `/mnemolith ember3qa` checks it.
+
+**Hushling** (the Pale Chorus, the End, stage 1): the hushling roams the End and thins memory, erasing the quietest imprint of its chunk every 10 seconds. Its hit hushes a player for 6 seconds (their imprints are not written) and slows them. One rule beats it: play a note block within 12 blocks and it shatters for 10 seconds, glowing, neither thinning nor hushing, and taking double damage. Dying in the End it leaves a silence imprint and drops hush filament. `/mnemolith hushqa` checks it; design note: [docs/design/pale-chorus.md](docs/design/pale-chorus.md).
 
 **Performance budgets**: `/mnemolith perfqa` times the hot server paths (storm gate, lull, memorial calm, lantern guard) and fails if a per-call mean goes over budget. The lantern check now skips chunk sections that hold no lantern. Design note: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 

@@ -430,6 +430,35 @@ def cinderkin_spawn_egg():
     return _egg('cinderkin_spawn_egg', 'mute', 'ember', 5, band='ember')
 
 
+def hushling():
+    """The hushling on the faded's layout: bone-white skin and pale cloth; its own face carries a dark open mouth."""
+    img = _faded_sheet('hushling', 'bone', 'paper', crown=False)
+    # the mouth: a dark oval low on the face (head front is at x 8..15, y 8..15 of the 64x64 sheet, scaled by 2)
+    from PIL import ImageDraw
+    d = ImageDraw.Draw(img)
+    k = img.width // 64
+    d.ellipse([11 * k, 13 * k + k // 2, 13 * k - 1, 15 * k - 1], fill=(*RAMPS['deep'][0], 255))
+    return img
+
+
+def hush_filament():
+    """A loose pale thread looped once, fading to nothing at both ends."""
+    cv = Canvas(S, S)
+    pts = [(4, 26), (9, 20), (15, 18), (21, 12), (24, 7), (20, 5), (16, 9), (17, 15), (22, 20), (27, 23)]
+    cv.fill(core.m_lines(S, S, pts, 1), RAMPS['bone'][5])
+    cv.fill(core.m_lines(S, S, pts[2:8], 1), RAMPS['white'][6])
+    for x, y in ((4, 26), (27, 23)):
+        cv.px(x, y, mix(RAMPS['bone'][4], RAMPS['lilac'][3], 0.5))
+    core.glint(cv, 21, 12, arm=1)
+    cv.outline(selout=0.5)
+    return cv.image()
+
+
+def hushling_spawn_egg():
+    from .items import _egg
+    return _egg('hushling_spawn_egg', 'bone', 'deep', 5, band='lilac')
+
+
 def lethe_tear():
     """A single tear of pale recollite glass, a darker memory curled inside it, a bright glint at the shoulder."""
     cv = Canvas(S, S)
@@ -648,6 +677,8 @@ ITEM_TEXTURES = {
     'hollow_effigy': hollow_effigy,
     'lethe_tear': lethe_tear,
     'memory_ember': memory_ember,
+    'hush_filament': hush_filament,
+    'hushling_spawn_egg': hushling_spawn_egg,
     'cinderkin_spawn_egg': cinderkin_spawn_egg,
     'remembering_circlet': remembering_circlet,
     'faded_spawn_egg': faded_spawn_egg,
@@ -659,4 +690,5 @@ ENTITY_TEXTURES = {
     'faded': faded,
     'unremembered': unremembered,
     'cinderkin': cinderkin,
+    'hushling': hushling,
 }

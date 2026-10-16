@@ -1,6 +1,6 @@
 # The Pale Chorus (the End line)
 
-Status: design note (this PR); stage 1 next.
+Status: stage 1 done (the hushling and hush filament); stage 2 next.
 
 ## Why
 
@@ -70,6 +70,7 @@ Stacks to 64. In stage 1 it is a material only. Stage 2 gives it its use.
   - the hit hushes a player, and a hushed player's writes are dropped until the hush ends;
   - a played note block shatters hushlings in range and not beyond, and a shattered one neither thins nor hushes and
     takes double damage;
-  - the silence imprint in the End and not elsewhere;
+  - the silence imprint in the End and not elsewhere (an unwitnessed death anywhere still writes the usual one witness
+    silence; the End death adds exactly one more);
   - loot, spawn modifier and the guide page.
 - Live test: a hushling with its AI on finds a real player, hits them, and the player is hushed.
