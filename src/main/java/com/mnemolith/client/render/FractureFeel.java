@@ -64,6 +64,11 @@ public final class FractureFeel {
         event.registerBelow(VanillaGuiLayers.HOTBAR, LAYER, FractureFeel::renderVignette);
     }
 
+    /** Smoothed vignette weight, 0 when no overloaded or fractured chunk is near. */
+    public static float intensity() {
+        return amount;
+    }
+
     public static void reset() {
         amount = 0.0F;
         fractureMix = 0.0F;

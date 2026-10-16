@@ -948,7 +948,7 @@ Manual:
 
 - Walk into a saturated (or louder) chunk: the screen edge breathes a faint indigo tint while you stay; the first time, the action bar says "This place remembers." (RU: «Это место помнит.»). Leaving fades the tint out.
 - Stand still there for 3 s: up to 3 slow pale-blue mote columns rise where the chunk's loudest memories happened; again every 3 s while still; moving stops them. A second player nearby does not see your after-images.
-- `strongMemoryHint = false`: no tint and no line. `memoryAfterImages = false`: no columns. `particleDensity = 0`: no columns. The tint sits under the overloaded vignette and stays readable with it.
+- `strongMemoryHint = false`: no tint and no line. `memoryAfterImages = false`: no columns. `particleDensity = 0`: no columns. The tint fades out while an overloaded or fractured vignette is up, so the two never stack; on its own it is a faint indigo edge breath.
 - No new sounds in this stage.
 
 ## Memory feel, stage 4

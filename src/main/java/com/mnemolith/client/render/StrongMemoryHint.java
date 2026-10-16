@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * Memory feel, stage 3: the strong-memory hint. The server says when this player steps into a saturated-or-louder
- * chunk; while the player stays in it the screen edge breathes a faint indigo tint (below the pressure vignette), and
+ * chunk; while the player stays in it the screen edge breathes a faint indigo tint (it fades out while the pressure vignette is up, so the two never stack), and
  * the first time per chunk this session the action bar says "This place remembers." Toggle: {@code strongMemoryHint}.
  */
 public final class StrongMemoryHint {
@@ -30,7 +30,7 @@ public final class StrongMemoryHint {
     private static final Set<Long> SEEN = new HashSet<>();
     private static long chunk = Long.MIN_VALUE;
     private static float amount;
-    private static final float MAX_ALPHA = 70.0F;
+    private static final float MAX_ALPHA = 150.0F;
 
     private StrongMemoryHint() {}
 
@@ -77,7 +77,10 @@ public final class StrongMemoryHint {
         float time = minecraft.player.tickCount + delta.getGameTimeDeltaPartialTick(false);
         // a slow breath, about 5 s per cycle
         float breath = 0.55F + 0.45F * (0.5F + 0.5F * Mth.sin(time * 0.063F));
-        int alpha = Mth.clamp(Math.round(amount * breath * MAX_ALPHA), 0, 255);
+        // yields to the pressure vignette: an overloaded or fractured chunk already darkens the edge, so the hint fades out
+        // instead of stacking under it
+        float yield = 1.0F - Mth.clamp(FractureFeel.intensity() / 0.3F, 0.0F, 1.0F);
+        int alpha = Mth.clamp(Math.round(amount * breath * yield * MAX_ALPHA), 0, 255);
         int width = graphics.guiWidth();
         int height = graphics.guiHeight();
         graphics.blit(RenderPipelines.GUI_TEXTURED, FractureFeel.VIGNETTE, 0, 0, 0.0F, 0.0F, width, height, width, height, (alpha << 24) | MemoryPalette.INDIGO);

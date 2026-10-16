@@ -250,6 +250,9 @@ public final class VisualTour {
         cue("kept", MemoryFeel.Kind.KEPT);
         cue("caught", MemoryFeel.Kind.CAUGHT);
         cue("forgotten", MemoryFeel.Kind.FORGOTTEN);
+        // baselines first: the hint and circlet tint fade out slowly and would leak into a later baseline
+        scene("edge_baseline", c -> platform(c, "moss_block"), new double[] {8.5, Y, 5.5, 0, 10}, 40, true);
+        scene("strong_baseline", c -> platform(c, "smooth_stone"), new double[] {8.5, Y, 3.5, 0, 12}, 40, true);
         // strong hint alone: a saturated (not overloaded) chunk, written the normal way
         scene("strong_hint", c -> {
             platform(c, "smooth_stone");
@@ -288,8 +291,6 @@ public final class VisualTour {
             c.write(9, 12, ImprintTag.BUILD);
             c.cmd("item replace entity @s weapon.mainhand with mnemolith:chronicle_lens");
         }, new double[] {8.5, Y, 5.5, 0, 20}, 60, true);
-        scene("edge_baseline", c -> platform(c, "moss_block"), new double[] {8.5, Y, 5.5, 0, 10}, 40, true);
-        scene("strong_baseline", c -> platform(c, "smooth_stone"), new double[] {8.5, Y, 3.5, 0, 12}, 40, true);
         scene("circlet_tint", c -> {
             platform(c, "moss_block");
             c.cmd("item replace entity @s armor.head with mnemolith:remembering_circlet");
