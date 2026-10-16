@@ -30,6 +30,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.EMBER_BRAZIER.get());
                 output.accept(ModItems.HUSH_FILAMENT.get());
                 output.accept(ModItems.HUSH_LOOM.get());
+                output.accept(ModItems.TIDE_LURE.get());
                 output.accept(ModItems.EXTRACTION_NEEDLE.get());
                 output.accept(ModItems.REINFORCED_NEEDLE.get());
                 output.accept(ModItems.TWIN_NEEDLE.get());

@@ -1,6 +1,6 @@
 # Undertow: memory angling
 
-Status: stage 1 done (memory angling); stage 2 next.
+Status: stages 1 and 2 done (memory angling, the tide lure); stage 3 next.
 
 ## Why
 
@@ -38,3 +38,23 @@ lectern).
   land take nothing; a hush-loom-kept tag is skipped; Luck of the Sea raises the chance and caps at 60%; guide page.
 - Live test: a real player with a rod and a hook in water; the catch event on the bus brings up a slip of the
   chunk's oldest imprint, which reaches the player.
+
+## Stage 2 rules
+
+### The tide lure (`tide_lure`)
+
+- **Recipe:** string, a recollite shard and three prismarine shards (` S  / PRP /  P `). Does not stack; 32 uses.
+- **Use:** held in the **off hand** while fishing (rod in the main hand). In the main hand it does nothing.
+- **Effect:** the chance rises by 20% (Luck of the Sea still counts), up to 80%; and the line pulls the chunk's
+  **loudest** imprint that no hush loom keeps, instead of its oldest. So the bare rod is slow housekeeping and the
+  lure is a targeted way to take the worst memory out.
+- **Wear:** one use per memory landed; a catch that brings no memory does not wear it. At 0 it breaks.
+- **Guide:** a paragraph on the Undertow page.
+
+### QA (stage 2)
+
+- `/mnemolith lureqa`: item data and recipe; the chance with and without the lure and its cap; a lured angle takes the
+  loudest and wears the lure by one; an empty chunk does not wear it; a lure in the main hand changes nothing; a worn
+  lure breaks; seeded rolls wear it once per hit.
+- Live test `lured_angler_lands_loudest`: a real player with a lure; the loudest imprint comes up and reaches the
+  inventory, and the lure wears by one.

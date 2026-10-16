@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "minecraft:prismarine_shard",
+    "S": "minecraft:string",
+    "R": "mnemolith:recollite_shard"
+  },
+  "pattern": [
+    " S ",
+    "PRP",
+    " P "
+  ],
+  "result": {
+    "id": "mnemolith:tide_lure"
+  }
+}
