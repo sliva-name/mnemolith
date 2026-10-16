@@ -4,7 +4,7 @@ Written after reading the code on `main` at d3e0db6 (stage 3 echoes plus the aud
 is now, where it is thin, and which systems should come next and in what order. Numbers are defaults from
 `CommonConfig`; see `docs/balance.md` and `docs/echo-design.md` for the full tables.
 
-## 0. Status (updated for release 0.5.0)
+## 0. Status (updated for release 0.6.0)
 
 | System | Status | Where |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Memory feel, stage 1 | Done on main (PR #97): one cue per memory event kind (written, erased, kept, caught, forgotten): own particle family, colour, motion and sound; client toggle `memoryEventSounds`; applied to the brazier, hushling, hush loom and angling | [memory-feel.md](memory-feel.md#stage-1-rules-as-built), `feelqa` 9/9, live `loom_cue_reaches_player` |
 | Memory feel, stage 2 | Done on main (PR #98): the older systems speak the language: writing (written), extraction, flicker and residue catches (caught), mute stones, lanterns and mending (kept), residues dissolving (erased), Hollows forgetting and storms settling (forgotten); repeat-prone cues throttled per chunk | [memory-feel.md](memory-feel.md#stage-2-rules-as-built), `feel2qa` 9/9, live `write_cue_reaches_player` |
 | Memory feel, stage 3 | Done on main (PR #99): ambient cues. A saturated-or-louder chunk breathes a faint edge tint and says "This place remembers." the first time; standing still there shows up to 3 after-images at its loudest memories; client toggles `strongMemoryHint`, `memoryAfterImages`; perfqa scan budget | [memory-feel.md](memory-feel.md#stage-3-rules-as-built), `feel3qa` 9/9, live `strong_chunk_hints_player` |
-| Memory feel, stage 4 | Done: the chronicle lens pill shows the chunk's loudest memory as a coloured glyph and its name; a worn remembering circlet tints the screen edge with the kept colour; client toggles `lensLoudestGlyph`, `circletTint` | [memory-feel.md](memory-feel.md#stage-4-rules-as-built), `feel4qa` 9/9, live `lens_reads_loudest_circlet_tints` |
+| Memory feel, stage 4 | Done on main (PR #100): the chronicle lens pill shows the chunk's loudest memory as a coloured glyph and its name; a worn remembering circlet tints the screen edge with the kept colour; client toggles `lensLoudestGlyph`, `circletTint` | [memory-feel.md](memory-feel.md#stage-4-rules-as-built), `feel4qa` 9/9, live `lens_reads_loudest_circlet_tints` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -247,5 +247,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 29. Embers, stage 3 (done, PR #85): server options, advancements and a shared brazier.
 30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); done: PR #88, #89, #90).
 31. Undertow (fishing line; design note [undertow.md](undertow.md); done: PR #93, #94, #95).
-32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md); stage 1 done, stages 2–4 planned).
+32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md); done: PR #96–#100).
 33. Next: pick from [expansion-ideas.md](expansion-ideas.md).
