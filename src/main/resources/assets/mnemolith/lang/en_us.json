@@ -1438,5 +1438,12 @@
   "mnemolith.configuration.emberBrazierBurnTicks": "Brazier Burn Interval",
   "mnemolith.configuration.emberBrazierBurnTicks.tooltip": "Ticks between two burns of a lit ember brazier (each burns the loudest imprint of its chunk). 100 is 5 seconds.",
   "mnemolith.configuration.emberBrazierChargePerEmber": "Burns per Ember",
-  "mnemolith.configuration.emberBrazierChargePerEmber.tooltip": "Burns one memory ember gives an ember brazier. A brazier holds 16."
+  "mnemolith.configuration.emberBrazierChargePerEmber.tooltip": "Burns one memory ember gives an ember brazier. A brazier holds 16.",
+  "entity.mnemolith.hushling": "Hushling",
+  "item.mnemolith.hushling_spawn_egg": "Hushling Spawn Egg",
+  "item.mnemolith.hush_filament": "Hush Filament",
+  "item.mnemolith.hush_filament.hint": "A thread of the quiet a hushling sang.",
+  "mnemolith.hushling.hushed": "You are hushed: nothing you do is remembered",
+  "mnemolith.guide.hushling.title": "Hushlings",
+  "mnemolith.guide.hushling.body": "The End is where memory goes quiet, and the Pale Chorus is its quiet singing. Its singers are hushlings: small pale figures on the End's islands, alone or in pairs.\n\nA hushling thins memory. Every ten seconds it eats the quietest imprint of the chunk it stands in: the opposite of an ember brazier, which burns the loudest.\n\nIts touch hushes you for six seconds. You slow down, and nothing you do while hushed writes an imprint.\n\nSound breaks the hush. Play a note block within twelve blocks and every hushling in range shatters for ten seconds: it glows, takes double damage, and can neither thin nor hush.\n\nWhere one dies in the End it leaves a silence imprint. Killed by you, it drops hush filament."
 }

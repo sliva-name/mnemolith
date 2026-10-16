@@ -79,6 +79,7 @@ public final class ModGameEvents {
                         .then(Commands.literal("faded").executes(context -> MobCommands.spawn(context, "faded")))
                         .then(Commands.literal("unremembered").executes(context -> MobCommands.spawn(context, "unremembered")))
                         .then(Commands.literal("cinderkin").executes(context -> MobCommands.spawn(context, "cinderkin")))
+                        .then(Commands.literal("hushling").executes(context -> MobCommands.spawn(context, "hushling")))
                         .then(Commands.literal("pleading_chair").executes(context -> MobCommands.spawn(context, "pleading_chair")))
                         .then(Commands.literal("silence_mirror").executes(context -> MobCommands.spawn(context, "silence_mirror")))
                         .then(Commands.literal("archive_guardian").executes(context -> MobCommands.spawn(context, "archive_guardian"))))

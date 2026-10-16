@@ -45,6 +45,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.FADED.get(), FadedRenderer::new);
         event.registerEntityRenderer(ModEntities.UNREMEMBERED.get(), UnrememberedRenderer::new);
         event.registerEntityRenderer(ModEntities.CINDERKIN.get(), CinderkinRenderer::new);
+        event.registerEntityRenderer(ModEntities.HUSHLING.get(), HushlingRenderer::new);
         event.registerEntityRenderer(ModEntities.MEMORY_BOLT.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
         event.registerEntityRenderer(ModEntities.SCAR.get(), ScarRenderer::new);
         event.registerEntityRenderer(ModEntities.SILENCE_MIRROR.get(), ScarRenderer::new);

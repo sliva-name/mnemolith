@@ -53,6 +53,10 @@ public final class ImprintWriter {
         if (!CommonConfig.WRITE_IMPRINTS.get() || tags.isEmpty()) {
             return false;
         }
+        if (player != null && com.mnemolith.entity.mob.Hush.hushed(level, player)) {
+            // a hushling's touch: nothing this player does is remembered until the hush ends
+            return false;
+        }
         List<ImprintTag> accepted = new ArrayList<>();
         for (ImprintTag tag : tags) {
             // The forgotten tag exists only in Memory Hollows: nothing writes it anywhere else.

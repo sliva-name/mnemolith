@@ -313,6 +313,20 @@ public final class ChunkMemory {
         return best < 0 ? Optional.empty() : Optional.of(this.imprints.get(best));
     }
 
+    /** Removes the quietest imprint (lowest pressure, then oldest); empty when the chunk holds none (a hushling thinning). */
+    public Optional<Imprint> removeLowest() {
+        if (this.imprints.isEmpty()) {
+            return Optional.empty();
+        }
+        int lowest = 0;
+        for (int i = 1; i < this.imprints.size(); i++) {
+            if (lowerPriority(this.imprints.get(i), this.imprints.get(lowest))) {
+                lowest = i;
+            }
+        }
+        return Optional.of(this.imprints.remove(lowest));
+    }
+
     public Optional<Imprint> removeHighest() {
         int best = this.highestIndex();
         return best < 0 ? Optional.empty() : Optional.of(this.imprints.remove(best));

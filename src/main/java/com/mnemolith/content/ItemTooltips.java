@@ -44,6 +44,8 @@ public final class ItemTooltips {
                 builder.accept(Component.translatable("item.mnemolith.lethe_tear.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
             } else if (stack.getItem() == ModItems.REMEMBERING_CIRCLET.get()) {
                 builder.accept(Component.translatable("item.mnemolith.remembering_circlet.hint").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+            } else if (stack.getItem() == ModItems.HUSH_FILAMENT.get()) {
+                builder.accept(Component.translatable("item.mnemolith.hush_filament.hint").withStyle(net.minecraft.ChatFormatting.GRAY));
             } else if (stack.getItem() == ModItems.MEMORY_EMBER.get()) {
                 builder.accept(Component.translatable("item.mnemolith.memory_ember.hint").withStyle(net.minecraft.ChatFormatting.GOLD));
             } else if (stack.getItem() == ModItems.EMBER_BRAZIER.get()) {

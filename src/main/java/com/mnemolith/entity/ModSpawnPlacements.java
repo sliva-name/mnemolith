@@ -58,6 +58,14 @@ public final class ModSpawnPlacements {
                         && net.minecraft.world.entity.monster.Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)),
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(
+                ModEntities.HUSHLING.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> MobSpawns.forced(reason)
+                        || (level.getLevel().dimension() == net.minecraft.world.level.Level.END
+                        && net.minecraft.world.entity.monster.Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)),
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(
                 ModEntities.FADED.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
