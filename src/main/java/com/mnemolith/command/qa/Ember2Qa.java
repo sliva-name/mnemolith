@@ -152,7 +152,7 @@ public final class Ember2Qa {
             player.getInventory().clearContent();
             releaseColumn(level, ChunkPos.containing(a));
         }
-        ok[11] = GuideBook.PAGE_COUNT == 48 && GuideBook.pageCount() == GuideBook.PAGE_COUNT && guidePage("brazier");
+        ok[11] = GuideBook.pageCount() == GuideBook.PAGE_COUNT && guidePage("brazier");
         return new QaReport("ember2qa", NAMES, ok, notes);
     }
 

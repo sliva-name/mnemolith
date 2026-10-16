@@ -38,6 +38,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `mnemolith:suite_emberqa` | `/mnemolith emberqa` (11) | Cinderkin in the overworld and the Nether (no AI), a zombie target and a snowball; clears memory and drops after |
 | `mnemolith:suite_ember2qa` | `/mnemolith ember2qa` (12) | One brazier and one fake player on a test column; writes and burns imprints in that chunk, then clears it and removes the brazier |
 | `mnemolith:suite_ember3qa` | `/mnemolith ember3qa` (10) | Reads the config spec; flips `cinderkinSpawns` and the brazier options for one check each and restores them; one brazier on a test column, one Nether spot |
+| `mnemolith:suite_hushqa` | `/mnemolith hushqa` (18) | Hushlings in the overworld and the End (no AI), one fake player and a note block; writes and thins imprints on a test column; clears memory, hush state and drops after |
 | `mnemolith:suite_perfqa` | `/mnemolith perfqa` (6) | Times 2000 calls per hot path against per-call budgets; restores the probe blocks after |
 | `mnemolith:suite_mend2qa` | `/mnemolith mend2qa` (9) | Builds a 15x15 floor, places a memorial stone and three residues; puts grass back and clears memory after |
 | `mnemolith:suite_relayqa` | `/mnemolith relayqa` (19) | Fake-player owner; possession and the hop run through `EchoPossession` directly |
@@ -109,6 +110,7 @@ The world is a deep superflat (bedrock, 60 stone, 3 dirt, grass, plains, surface
 | `circlet_wards_and_keeps` | Two real players (live site 15) on a painted hollow, one wearing a remembering circlet: the boss pulse touches 1 and darkens only the bare-headed player; `HollowForgetting.forget` refuses beside the wearer and still forgets 24 blocks away | 200 |
 | `unremembered_scales_and_shares` | Two real players (live site 16) on a painted hollow: one calls with an effigy (`gameMode.useItemOn`) while both are near, so it rises with two-player health; both strike it (`attack`); brought down, it leaves two Lethe tears | 200 |
 | `cinderkin_burns_player` | One real player (live site 17) and a cinderkin with its AI on: it targets the player by itself, closes in and its hit sets the player on fire | 200 |
+| `hushling_hushes_player` | A hushling with its AI on (live site 20) finds a real player, hits them, and the player is hushed: a write in their name is dropped | 200 |
 | `brazier_burns_down` | One real player (live site 18) feeds a memory ember to a brazier by hand (`gameMode.useItemOn`): it lights with 4 charges and the ember is spent; its own scheduled ticks then burn the explosion and build imprints written into its chunk | 400 |
 | `brazier_shared` | Two real players (live site 19) take turns feeding one brazier by hand (`gameMode.useItemOn`): the charge adds up to 16, the refused ember stays in hand, and both earn `ember_brazier_kindled` | 200 |
 | `memorial_calms_residue` | A real player (live site 12) beside a memorial stone with a fire residue one block away for 40 ticks: the residue is calmed and the player never burns | 200 |
@@ -871,3 +873,9 @@ Manual:
 ## Embers, stage 3
 
 `/mnemolith ember3qa` (gamemaster) checks the embers server options and advancements ([design note](design/embers.md#stage-3-rules)).
+
+## Pale Chorus, stage 1
+
+- Summon a hushling in the End (`/mnemolith spawn hushling`); let it hit you: the overlay says you are hushed and walking writes nothing for 6 s.
+- Play a note block next to it: it glows, stops thinning and takes double damage for 10 s.
+- Kill it in the End: a silence imprint and 0–2 hush filament.
