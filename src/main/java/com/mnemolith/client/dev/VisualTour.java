@@ -222,8 +222,9 @@ public final class VisualTour {
         }, new double[] {8.5, Y, 5.5, 0, 25}, 60, false);
         scene("hush_loom", c -> {
             platform(c, "end_stone_bricks");
-            c.cmd("setblock 8 " + Y + " 8 mnemolith:hush_loom");
-        }, new double[] {8.5, Y, 6.0, 0, 35}, 40, false);
+            c.cmd("setblock 7 " + Y + " 8 mnemolith:hush_loom");
+            c.cmd("setblock 9 " + Y + " 8 mnemolith:hush_loom[threaded=true]");
+        }, new double[] {8.5, Y + 0.5, 5.5, 0, 35}, 40, false);
         scene("memorial_grove", c -> {
             platform(c, "moss_block");
             c.cmd("setblock 8 " + Y + " 8 mnemolith:memorial_stone");
