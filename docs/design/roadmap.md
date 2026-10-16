@@ -243,4 +243,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 29. Embers, stage 3 (done, PR #85): server options, advancements and a shared brazier.
 30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); done: PR #88, #89, #90).
 31. Undertow (fishing line; design note [undertow.md](undertow.md); done: PR #93, #94 and stage 3).
-32. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md), stages 1–4 planned).
+33. Next: pick from [expansion-ideas.md](expansion-ideas.md).
