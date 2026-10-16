@@ -48,7 +48,8 @@ is now, where it is thin, and which systems should come next and in what order. 
 | Pale Chorus, stage 3 | Done on main (PR #90): server options `hushlingSpawns`, `hushTicks`, `hushlingThinTicks`; advancements The Pale Chorus and Keep This; a personal hush and a shared loom with two players | [pale-chorus.md](pale-chorus.md#stage-3-rules), `hush3qa` 10/10, live `hush_personal_loom_shared` |
 | Undertow, stage 1 | Done on main (PR #93): memory angling. A catch reeled in from water has a 30% chance (+10% per Luck of the Sea, at most 60%) to bring up the oldest imprint of the bobber's chunk that no hush loom keeps, as an imprint slip flung to the angler; nothing is written in its place | [undertow.md](undertow.md#stage-1-rules), `anglingqa` 10/10, live `angler_lands_memory` |
 | Undertow, stage 2 | Done on main (PR #94): the tide lure. In the off hand while fishing it adds 20% (up to 80%) and pulls the loudest unkept imprint instead of the oldest; 32 uses, one per memory landed | [undertow.md](undertow.md#stage-2-rules), `lureqa` 9/9, live `lured_angler_lands_loudest` |
-| Undertow, stage 3 | Done: server options `anglingChance`, `tideLureBonus`; advancements Undertow and Lure of the Deep; two anglers on one chunk | [undertow.md](undertow.md#stage-3-rules), `undertow3qa` 7/7, live `two_anglers_one_chunk` |
+| Undertow, stage 3 | Done on main (PR #95): server options `anglingChance`, `tideLureBonus`; advancements Undertow and Lure of the Deep; two anglers on one chunk | [undertow.md](undertow.md#stage-3-rules), `undertow3qa` 7/7, live `two_anglers_one_chunk` |
+| Memory feel, stage 1 | Done: one cue per memory event kind (written, erased, kept, caught, forgotten): own particle family, colour, motion and sound; client toggle `memoryEventSounds`; applied to the brazier, hushling, hush loom and angling | [memory-feel.md](memory-feel.md#stage-1-rules-as-built), `feelqa` 9/9, live `loom_cue_reaches_player` |
 | 32x art pass | Done | `tools/art/build.py`, [asset-pipeline.md](../asset-pipeline.md) |
 
 Residual echoes were re-scoped from the plan below (§3.2): instead of a stranger's recording to copy, a residue is the
@@ -242,6 +243,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 28. Embers, stage 2 (done, PR #84): the ember brazier, an active pressure sink fed from the Nether.
 29. Embers, stage 3 (done, PR #85): server options, advancements and a shared brazier.
 30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); done: PR #88, #89, #90).
-31. Undertow (fishing line; design note [undertow.md](undertow.md); done: PR #93, #94 and stage 3).
-32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md), stages 1–4 planned).
+31. Undertow (fishing line; design note [undertow.md](undertow.md); done: PR #93, #94, #95).
+32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md); stage 1 done, stages 2–4 planned).
 33. Next: pick from [expansion-ideas.md](expansion-ideas.md).

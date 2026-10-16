@@ -135,8 +135,9 @@ public class EmberBrazierBlock extends Block {
         MemoryPressure.recompute(chunk, memory);
         int charge = state.getValue(CHARGE) - 1;
         level.setBlock(pos, state.setValue(CHARGE, charge).setValue(LIT, charge > 0), Block.UPDATE_ALL);
-        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 8, 0.2D, 0.3D, 0.2D, 0.02D);
-        level.playSound(null, pos, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.7F, 0.8F);
+        // the memory part is the shared erased cue; a little soul fire says what burned it
+        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 3, 0.2D, 0.3D, 0.2D, 0.02D);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.ERASED, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 6);
         return Burn.BURNED;
     }
 

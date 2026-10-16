@@ -168,6 +168,8 @@
 
 **Подводное течение на сервере** (этап 3): опции сервера `anglingChance`, `tideLureBonus`; достижения «Подводное течение» и «Зов глубины». Улов у каждого свой: двое на одном чанке вытаскивают каждый своё. `/mnemolith undertow3qa` проверяет это.
 
+**Язык памяти** (этап 1): у каждого рода событий памяти теперь свои частицы, цвет, движение и звук: запись (синие искры оседают), стирание (костяные искры взлетают), сбережение (индиговое кольцо смыкается), улов (зелёные искры летят к вам), забвение (серые искры застывают и гаснут). Пока так звучат жаровня, тишунец, станок тишины и рыбалка. Опция клиента `memoryEventSounds` выключает эти звуки. `/mnemolith feelqa` проверяет это; заметка: [docs/design/memory-feel.md](docs/design/memory-feel.md).
+
 **Бюджеты производительности**: `/mnemolith perfqa` замеряет горячие серверные пути (ворота бурь, затишье, покой у памятника, охрана фонарей) и падает, если среднее время вызова выходит за бюджет. Проверка фонарей теперь пропускает секции чанка без фонарей. Заметка: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 
 **Выписка из хроники** (бумага, чернильный мешок и перо): используйте чистую, и она перепишет открытые вами теги и формулы на подписанный лист. Другой игрок, прочитав лист, узнает то, чего ещё не знал (лист тратится). Это только знание: каталог и подсказки барабана, без бланков и нравов. `/mnemolith transcriptqa` проверяет выписку; заметка — [docs/design/chronicle-transcript.md](docs/design/chronicle-transcript.md).
@@ -485,6 +487,8 @@ The **remembrance posy** (three forget-me-nots and a string): use it on a faded 
 **Tide lure** (Undertow, stage 2): craft it from string, a recollite shard and three prismarine shards. In the off hand while fishing it adds 20% to the chance (up to 80%) and the line pulls the chunk's loudest imprint instead of its oldest. 32 uses, one per memory landed. `/mnemolith lureqa` checks it.
 
 **Undertow on servers** (stage 3): server options `anglingChance`, `tideLureBonus`; advancements Undertow and Lure of the Deep. Each angler's catch is their own: two players on one chunk each land their own memories. `/mnemolith undertow3qa` checks it.
+
+**Memory feel** (stage 1): every kind of memory event now has its own particles, colour, motion and sound: written (blue motes settle), erased (bone motes rise), kept (an indigo ring closes), caught (green motes fly to you), forgotten (grey motes hang and fade). The brazier, hushling, hush loom and angling use it so far. Client option `memoryEventSounds` turns these sounds off. `/mnemolith feelqa` checks it; design note: [docs/design/memory-feel.md](docs/design/memory-feel.md).
 
 **Performance budgets**: `/mnemolith perfqa` times the hot server paths (storm gate, lull, memorial calm, lantern guard) and fails if a per-call mean goes over budget. The lantern check now skips chunk sections that hold no lantern. Design note: [docs/design/perf-budgets.md](docs/design/perf-budgets.md).
 

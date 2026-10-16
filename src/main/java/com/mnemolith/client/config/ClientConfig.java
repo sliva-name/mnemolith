@@ -26,6 +26,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.DoubleValue ECHO_AIM_ASSIST;
     public static final ModConfigSpec.BooleanValue ECHO_HINTS;
     public static final ModConfigSpec.BooleanValue HOLLOW_FLICKERS;
+    public static final ModConfigSpec.BooleanValue MEMORY_EVENT_SOUNDS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -49,6 +50,7 @@ public final class ClientConfig {
         ECHO_AIM_ASSIST = SpecValues.decimal(builder, "echoAimAssist", "Aim assist cone, in degrees, for targeting your echo through the lens.", 6.0D, 0.0D, 20.0D);
         ECHO_HINTS = SpecValues.bool(builder, "echoHints", "Whether the lens and possession draw short key hints.", true);
         HOLLOW_FLICKERS = SpecValues.bool(builder, "hollowFlickers", "Whether memory flickers in Memory Hollows are drawn on this client. The server decides how often they appear.", true);
+        MEMORY_EVENT_SOUNDS = SpecValues.bool(builder, "memoryEventSounds", "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity.", true);
         builder.pop();
 
         SPEC = builder.build();

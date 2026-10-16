@@ -1480,5 +1480,12 @@
   "mnemolith.configuration.anglingChance": "Angling Chance",
   "mnemolith.configuration.anglingChance.tooltip": "Chance that a catch reeled in from water also brings up a memory of the chunk under the bobber (before Luck of the Sea, +0.1 per level up to three). 0 turns memory angling off.",
   "mnemolith.configuration.tideLureBonus": "Tide Lure Bonus",
-  "mnemolith.configuration.tideLureBonus.tooltip": "Chance a tide lure in the off hand adds to memory angling. The total never exceeds 1."
+  "mnemolith.configuration.tideLureBonus.tooltip": "Chance a tide lure in the off hand adds to memory angling. The total never exceeds 1.",
+  "subtitles.mnemolith.memory.written": "Memory settles",
+  "subtitles.mnemolith.memory.erased": "Memory erased",
+  "subtitles.mnemolith.memory.kept": "Memory kept",
+  "subtitles.mnemolith.memory.caught": "Memory caught",
+  "subtitles.mnemolith.memory.forgotten": "Memory fades",
+  "mnemolith.configuration.memoryEventSounds": "Memory Event Sounds",
+  "mnemolith.configuration.memoryEventSounds.tooltip": "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity."
 }

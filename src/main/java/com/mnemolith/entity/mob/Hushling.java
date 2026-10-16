@@ -133,7 +133,7 @@ public class Hushling extends Monster {
             return "empty";
         }
         MemoryPressure.recompute(chunk, memory);
-        level.sendParticles(ParticleTypes.WHITE_ASH, this.getX(), this.getY() + 1.0D, this.getZ(), 10, 0.5D, 0.5D, 0.5D, 0.01D);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.ERASED, this.getX(), this.getY() + 0.8D, this.getZ(), 5);
         return "thinned";
     }
 
@@ -159,7 +159,7 @@ public class Hushling extends Monster {
         Hush.hush(level, player.getUUID(), hushTicks());
         player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, hushTicks(), 0));
         player.sendOverlayMessage(Component.translatable("mnemolith.hushling.hushed"));
-        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.HOSTILE, 0.6F, 0.5F);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.FORGOTTEN, player.getX(), player.getY() + 0.6D, player.getZ(), 4);
         return true;
     }
 

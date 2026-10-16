@@ -17,6 +17,12 @@ public final class ModParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, Mnemolith.MOD_ID);
 
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPRINT_SHIMMER = register("imprint_shimmer");
+    /** Memory feel: one family per event kind (see {@code MemoryFeel} and {@code docs/design/memory-feel.md}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_WRITTEN = register("memory_written");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_ERASED = register("memory_erased");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_KEPT = register("memory_kept");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_CAUGHT = register("memory_caught");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MEMORY_FORGOTTEN = register("memory_forgotten");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPRINT_EXTRACT = register("imprint_extract");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> COMPOSE_SUCCESS = register("compose_success");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> COMPOSE_FAIL = register("compose_fail");

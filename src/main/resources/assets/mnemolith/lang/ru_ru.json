@@ -1480,5 +1480,12 @@
   "mnemolith.configuration.anglingChance": "Шанс улова памяти",
   "mnemolith.configuration.anglingChance.tooltip": "Шанс, что улов из воды вытащит и воспоминание чанка под поплавком (до «Морской удачи», +0,1 за уровень, до трёх). 0 выключает рыбалку воспоминаний.",
   "mnemolith.configuration.tideLureBonus": "Прибавка блесны",
-  "mnemolith.configuration.tideLureBonus.tooltip": "Сколько добавляет к шансу приливная блесна во второй руке. Итог не больше 1."
+  "mnemolith.configuration.tideLureBonus.tooltip": "Сколько добавляет к шансу приливная блесна во второй руке. Итог не больше 1.",
+  "subtitles.mnemolith.memory.written": "Память оседает",
+  "subtitles.mnemolith.memory.erased": "Память стёрта",
+  "subtitles.mnemolith.memory.kept": "Память сбережена",
+  "subtitles.mnemolith.memory.caught": "Память поймана",
+  "subtitles.mnemolith.memory.forgotten": "Память угасает",
+  "mnemolith.configuration.memoryEventSounds": "Звуки памяти",
+  "mnemolith.configuration.memoryEventSounds.tooltip": "Играют ли на этом клиенте общие звуки памяти (запись, стирание, сбережение, улов, забвение). Их частицы подчиняются imprintParticles и particleDensity."
 }
