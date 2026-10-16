@@ -1,6 +1,6 @@
 # Embers of memory (the Nether line)
 
-Status: stage 1 done (PR #83); stage 2 done (PR #84); stage 3 implemented on `feature/embers-3`.
+Status: done on main (stage 1 PR #83, stage 2 PR #84, stage 3 PR #85).
 
 ## Why
 

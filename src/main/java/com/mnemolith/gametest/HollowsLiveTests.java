@@ -449,6 +449,12 @@ final class HollowsLiveTests {
                 .thenIdle(3)
                 .thenExecute(() -> {
                     LivePlayers.unmute(level, stand);
+                    // The giver stands in a hollow and writes PATH imprints as a player does. During the idle ticks a
+                    // natural flicker can replay one of them within 16 blocks, and an idle faded copies the flicker's
+                    // tag (Faded.onFlicker): it then held PATH, not FALL, and gave PATH back. Copy FALL and clear the
+                    // chunk in this tick, right before the posy, so no flicker can come between.
+                    LoadedChunkMemory.clear(chunk);
+                    faded.copy(stand, ImprintTag.FALL);
                     giver.getInventory().clearContent();
                     giver.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.REMEMBRANCE_POSY.get(), 2));
                     net.minecraft.world.InteractionResult result = giver.interactOn(faded, InteractionHand.MAIN_HAND, faded.position().add(0.0D, 1.0D, 0.0D));
@@ -456,7 +462,8 @@ final class HollowsLiveTests {
                             + " removed=" + faded.isRemoved());
                     helper.assertTrue(giver.getMainHandItem().getCount() == 1, "the posy was not spent: " + giver.getMainHandItem().getCount());
                     helper.assertTrue(count(chunk, ImprintTag.FALL) == 1 && count(chunk, ImprintTag.FORGOTTEN) == 0,
-                            "the memory did not go back: fall=" + count(chunk, ImprintTag.FALL) + " forgotten=" + count(chunk, ImprintTag.FORGOTTEN));
+                            "the memory did not go back: fall=" + count(chunk, ImprintTag.FALL) + " forgotten=" + count(chunk, ImprintTag.FORGOTTEN)
+                                    + " imprints=" + (LoadedChunkMemory.existing(chunk) == null ? "none" : LoadedChunkMemory.existing(chunk).imprintsCopy()));
                     int shards = 0;
                     for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
                             new net.minecraft.world.phys.AABB(stand).inflate(3.0D))) {
