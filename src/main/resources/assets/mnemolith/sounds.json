@@ -963,5 +963,90 @@
       }
     ],
     "subtitle": "subtitles.mnemolith.lectern_replay"
+  },
+  "memory.written": {
+    "sounds": [
+      {
+        "name": "mnemolith:imprint_write",
+        "stream": false,
+        "pitch": 1.0,
+        "volume": 0.5
+      },
+      {
+        "name": "mnemolith:imprint_write",
+        "stream": false,
+        "pitch": 1.08,
+        "volume": 0.45
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.written"
+  },
+  "memory.erased": {
+    "sounds": [
+      {
+        "name": "mnemolith:extract",
+        "stream": false,
+        "pitch": 0.7,
+        "volume": 0.7
+      },
+      {
+        "name": "mnemolith:extract",
+        "stream": false,
+        "pitch": 0.76,
+        "volume": 0.63
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.erased"
+  },
+  "memory.kept": {
+    "sounds": [
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false,
+        "pitch": 1.35,
+        "volume": 0.6
+      },
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false,
+        "pitch": 1.46,
+        "volume": 0.54
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.kept"
+  },
+  "memory.caught": {
+    "sounds": [
+      {
+        "name": "mnemolith:flicker_catch",
+        "stream": false,
+        "pitch": 1.0,
+        "volume": 0.8
+      },
+      {
+        "name": "mnemolith:flicker_catch",
+        "stream": false,
+        "pitch": 1.08,
+        "volume": 0.72
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.caught"
+  },
+  "memory.forgotten": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_chime",
+        "stream": false,
+        "pitch": 0.6,
+        "volume": 0.5
+      },
+      {
+        "name": "mnemolith:hollows_chime",
+        "stream": false,
+        "pitch": 0.65,
+        "volume": 0.45
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.forgotten"
   }
 }

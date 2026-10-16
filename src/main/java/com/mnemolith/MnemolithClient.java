@@ -64,6 +64,12 @@ public final class MnemolithClient {
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.RecallGhosts::onSubmitGeometry);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.RecallGhosts::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.hollows.FlickerRenderer::onClientTick);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.sound.PlaySoundEvent event) -> {
+            if (event.getSound() != null && !com.mnemolith.client.config.ClientConfig.MEMORY_EVENT_SOUNDS.get()
+                    && com.mnemolith.particle.MemoryFeel.isMemorySound(event.getSound().getIdentifier())) {
+                event.setSound(null);
+            }
+        });
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.hollows.FlickerRenderer::onSubmitGeometry);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.hollows.FlickerRenderer::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.recall.TraceMarks::onClientTick);

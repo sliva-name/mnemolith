@@ -145,8 +145,8 @@ public final class Angling {
         double dz = player.getZ() - hook.getZ();
         slip.setDeltaMovement(dx * 0.1D, dy * 0.1D + Math.sqrt(Mth.length(dx, dy, dz)) * 0.08D, dz * 0.1D);
         level.addFreshEntity(slip);
-        level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, hook.getX(), hook.getY(), hook.getZ(), 16, 0.2D, 0.3D, 0.2D, 0.05D);
-        level.playSound(null, at, SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, SoundSource.PLAYERS, 0.8F, 0.7F);
+        level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, hook.getX(), hook.getY(), hook.getZ(), 6, 0.2D, 0.3D, 0.2D, 0.05D);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.CAUGHT, hook.getX(), hook.getY(), hook.getZ(), 6);
         return taken;
     }
 }

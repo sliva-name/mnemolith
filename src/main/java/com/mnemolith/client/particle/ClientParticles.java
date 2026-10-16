@@ -23,6 +23,11 @@ public final class ClientParticles {
     public static void register(RegisterParticleProvidersEvent event) {
         sprite(event, ModParticles.IMPRINT_SHIMMER.get(), MemoryPalette.SHIMMER, 0.14F, 18);
         sprite(event, ModParticles.IMPRINT_EXTRACT.get(), MemoryPalette.BONE, 0.16F, 16);
+        sprite(event, ModParticles.MEMORY_WRITTEN.get(), MemoryPalette.SHIMMER, 0.14F, 20);
+        sprite(event, ModParticles.MEMORY_ERASED.get(), MemoryPalette.BONE, 0.15F, 14);
+        sprite(event, ModParticles.MEMORY_KEPT.get(), MemoryPalette.INDIGO, 0.22F, 26);
+        sprite(event, ModParticles.MEMORY_CAUGHT.get(), MemoryPalette.PIGMENT, 0.15F, 18);
+        sprite(event, ModParticles.MEMORY_FORGOTTEN.get(), MemoryPalette.FADED, 0.17F, 34);
         sprite(event, ModParticles.COMPOSE_SUCCESS.get(), MemoryPalette.PIGMENT, 0.18F, 20);
         sprite(event, ModParticles.COMPOSE_FAIL.get(), MemoryPalette.EMBER, 0.16F, 16);
         sprite(event, ModParticles.PRESSURE_WARN.get(), MemoryPalette.EMBER, 0.22F, 14);

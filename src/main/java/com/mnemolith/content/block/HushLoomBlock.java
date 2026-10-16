@@ -133,8 +133,8 @@ public class HushLoomBlock extends Block {
         }
         chunk.markUnsaved();
         level.setBlock(pos, state.setValue(KEPT, tag.ordinal() + 1).setValue(THREADED, true), Block.UPDATE_ALL);
-        level.playSound(null, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.8F, 0.6F);
-        level.sendParticles(ParticleTypes.WHITE_ASH, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 12, 0.3D, 0.2D, 0.3D, 0.01D);
+        level.playSound(null, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.5F, 0.6F);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.KEPT, pos.getX() + 0.5D, pos.getY() + 0.6D, pos.getZ() + 0.5D, 8);
         return true;
     }
 
