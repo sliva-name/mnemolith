@@ -33,6 +33,8 @@ public final class MemoryPalette {
     public static final int FADED = 0x8A8696;
     /** Memory feel after-images: a pale ghost blue. */
     public static final int AFTERIMAGE = 0xC9D4F0;
+    /** Erased motes: a mid slate violet, so they read on pale stone and sand as well as on dark ground. */
+    public static final int ERASED = 0x6E6488;
     /** Imprint shimmer mote. */
     public static final int SHIMMER = 0x6E7CC4;
     /** Echo-strider trail mote. */

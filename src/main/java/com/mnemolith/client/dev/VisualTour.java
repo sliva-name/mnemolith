@@ -274,11 +274,13 @@ public final class VisualTour {
                 }
             }, new double[] {8.5, Y, 3.5, 0, 12}, 160, true, hold, mc -> {});
         }
+        // after-images: a saturated chunk (not louder, so no vignette or residues), the camera close and side-on
         scene("afterimages", c -> {
             platform(c, "smooth_stone");
-            com.mnemolith.command.qa.Feel3Qa.saturate(LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)), new BlockPos(6, Y, 12), 4, c.level.getGameTime());
-            c.tp(40.5, Y + 30, 40.5, 0, 0);
-        }, new double[] {8.5, Y, 3.5, 0, 12}, 120, true);
+            for (int i = 0; i < 6; i++) {
+                c.write(6 + i, 10, ImprintTag.DEATH);
+            }
+        }, new double[] {8.5, Y, 4.5, 0, -8}, 120, true, c -> c.cmd("kill @e[type=!player]"), mc -> {});
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");

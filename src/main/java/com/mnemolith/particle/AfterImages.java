@@ -38,7 +38,7 @@ public final class AfterImages {
     public static final int STILL_TICKS = 60;
     public static final int COOLDOWN = 60;
     public static final int MAX_IMAGES = 3;
-    public static final int COLUMN = 6;
+    public static final int COLUMN = 9;
     /** Squared horizontal movement (blocks) still counted as standing still between two scans. */
     private static final double STILL_SQR = 0.3D * 0.3D;
 
@@ -127,7 +127,7 @@ public final class AfterImages {
             BlockPos origin = loudest.get(i).origin();
             // a slow column of pale motes standing where the memory happened, sent to this player only
             level.sendParticles(player, ModParticles.MEMORY_AFTERIMAGE.get(), false, false, origin.getX() + 0.5D, origin.getY() + 1.0D,
-                    origin.getZ() + 0.5D, COLUMN, 0.12D, 0.7D, 0.12D, 0.0D);
+                    origin.getZ() + 0.5D, COLUMN, 0.05D, 0.35D, 0.05D, 0.0D);
         }
         imagesSent += n;
         return n;

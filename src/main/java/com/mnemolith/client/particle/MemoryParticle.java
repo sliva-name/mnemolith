@@ -22,6 +22,18 @@ final class MemoryParticle extends SimpleAnimatedParticle {
         this.setSpriteFromAge(sprites);
     }
 
+    /**
+     * A mote that keeps its speed instead of easing to a stop: after-images use it so each mote climbs steadily and the
+     * motes of one burst read as a rising column, not as sparkles hanging in place.
+     */
+    static @Nullable Particle spawnRising(ClientLevel level, double x, double y, double z, double dy, SpriteSet sprites, int rgb, float size, int life, RandomSource random) {
+        Particle particle = spawn(level, x, y, z, 0.0D, dy, 0.0D, sprites, rgb, size, life, random);
+        if (particle instanceof MemoryParticle mote) {
+            mote.friction = 1.0F;
+        }
+        return particle;
+    }
+
     static @Nullable Particle spawn(
             ClientLevel level,
             double x,
