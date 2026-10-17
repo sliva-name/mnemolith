@@ -1513,5 +1513,7 @@
   "subtitles.mnemolith.memory.echo.boss": "Далёкий рёв — в памяти",
   "subtitles.mnemolith.memory.echo.trade": "Тихий звон сделки — в памяти",
   "subtitles.mnemolith.memory.echo.forgotten": "Что-то забытое шевельнулось",
-  "subtitles.mnemolith.memory.forgotten": "Память угасает"
+  "subtitles.mnemolith.memory.forgotten": "Память угасает",
+  "mnemolith.configuration.pressureEffectStrength": "Сила эффектов давления",
+  "mnemolith.configuration.pressureEffectStrength.tooltip": "Сила виньетки давления, покачивания камеры и обесцвечивания разлома. 0 выключает всё; плашка линзы по-прежнему показывает полосу."
 }

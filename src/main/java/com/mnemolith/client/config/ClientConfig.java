@@ -11,6 +11,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue IMPRINT_PARTICLES;
     public static final ModConfigSpec.BooleanValue PRESSURE_VIGNETTE;
+    public static final ModConfigSpec.DoubleValue PRESSURE_EFFECT_STRENGTH;
     public static final ModConfigSpec.BooleanValue PAST_VISION;
     public static final ModConfigSpec.BooleanValue STORM_SCREEN_SHAKE;
     public static final ModConfigSpec.BooleanValue FRACTURE_FRINGE;
@@ -39,6 +40,7 @@ public final class ClientConfig {
 
         SpecValues.section(builder, "visuals", "Local presentation of memory. These options stay on this client.");
         IMPRINT_PARTICLES = SpecValues.bool(builder, "imprintParticles", "Whether custom memory particles are shown.", true);
+        PRESSURE_EFFECT_STRENGTH = SpecValues.decimal(builder, "pressureEffectStrength", "Strength, from 0.0 to 1.0, of the pressure screen effects (vignette, camera sway, fracture desaturation). 0 turns them all off; the lens pill still shows the band.", 0.4D, 0.0D, 1.0D);
         PRESSURE_VIGNETTE = SpecValues.bool(builder, "pressureVignette", "Whether an overloaded or fractured chunk darkens the screen edge. The band comes from the server snapshot.", true);
         PAST_VISION = SpecValues.bool(builder, "pastVision", "Whether the screen edge brightens softly while the world replays one of your past moments.", true);
         STORM_SCREEN_SHAKE = SpecValues.bool(builder, "stormScreenShake", "Whether an overloaded or fractured chunk (where recollection storms gather) shakes the camera. Client only: it never starts or stops a storm, and the storm's darkened sky and fog come with its boss bar either way.", true);

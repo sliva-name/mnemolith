@@ -1513,5 +1513,7 @@
   "subtitles.mnemolith.memory.echo.boss": "A distant roar, remembered",
   "subtitles.mnemolith.memory.echo.trade": "A faint chime of trade, remembered",
   "subtitles.mnemolith.memory.echo.forgotten": "Something forgotten stirs",
-  "subtitles.mnemolith.memory.forgotten": "Memory fades"
+  "subtitles.mnemolith.memory.forgotten": "Memory fades",
+  "mnemolith.configuration.pressureEffectStrength": "Pressure effect strength",
+  "mnemolith.configuration.pressureEffectStrength.tooltip": "Strength of the pressure vignette, camera sway and fracture desaturation. 0 turns them all off; the lens pill still shows the band."
 }

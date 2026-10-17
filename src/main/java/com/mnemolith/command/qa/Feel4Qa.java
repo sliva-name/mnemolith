@@ -99,7 +99,7 @@ public final class Feel4Qa {
             ok[7] = !bare && !inHand && !spectator && !MemoryGlyphs.circletTint(null);
 
             boolean lang = true;
-            for (String key : new String[] {"lensLoudestGlyph", "circletTint"}) {
+            for (String key : new String[] {"lensLoudestGlyph", "circletTint", "pressureEffectStrength"}) {
                 for (String l : new String[] {"en_us", "ru_ru"}) {
                     lang &= langHas(l, "mnemolith.configuration." + key) && langHas(l, "mnemolith.configuration." + key + ".tooltip");
                 }
