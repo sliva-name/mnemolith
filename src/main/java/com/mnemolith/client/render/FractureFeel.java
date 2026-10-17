@@ -49,15 +49,20 @@ public final class FractureFeel {
     private static final float OVERLOADED = 0.48F;
     private static final float APPROACH = 0.35F;
     /** Fringe stays off for overload and for a fracture that is only next door. */
-    private static final float FRINGE_AMOUNT = 0.72F;
+    private static final float FRINGE_AMOUNT = 0.85F;
 
     private FractureFeel() {}
 
     /** True when any fracture-feel toggle still needs a server snapshot. */
     public static boolean wantsSnapshot() {
-        return ClientConfig.PRESSURE_VIGNETTE.get()
+        return strength() > 0.0F && (ClientConfig.PRESSURE_VIGNETTE.get()
                 || ClientConfig.STORM_SCREEN_SHAKE.get()
-                || ClientConfig.FRACTURE_FRINGE.get();
+                || ClientConfig.FRACTURE_FRINGE.get());
+    }
+
+    /** Master strength for every pressure screen effect; 0 turns them all off. The lens pill is unaffected. */
+    public static float strength() {
+        return (float) (double) ClientConfig.PRESSURE_EFFECT_STRENGTH.get();
     }
 
     public static void register(RegisterGuiLayersEvent event) {
@@ -87,7 +92,7 @@ public final class FractureFeel {
     }
 
     public static void onCamera(ViewportEvent.ComputeCameraAngles event) {
-        if (!ClientConfig.STORM_SCREEN_SHAKE.get() || amount < 0.02F) {
+        if (!ClientConfig.STORM_SCREEN_SHAKE.get() || amount < 0.02F || strength() <= 0.0F) {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
@@ -95,14 +100,15 @@ public final class FractureFeel {
             return;
         }
         float time = minecraft.player.tickCount + (float) event.getPartialTick();
-        float roll = (Mth.sin(time * 0.47F) * 0.65F + Mth.sin(time * 1.15F) * 0.35F) * 2.2F * amount;
-        float pitch = Mth.sin(time * 0.83F + 1.3F) * 0.7F * amount;
+        // a slow, subtle sway, not a shake: at the default strength a fractured chunk rolls about 0.2 degrees
+        float roll = (Mth.sin(time * 0.21F) * 0.65F + Mth.sin(time * 0.47F) * 0.35F) * 0.55F * amount * strength();
+        float pitch = Mth.sin(time * 0.33F + 1.3F) * 0.18F * amount * strength();
         event.setRoll(event.getRoll() + roll);
         event.setPitch(event.getPitch() + pitch);
     }
 
     public static void onAfterWeather(RenderLevelStageEvent.AfterWeather event) {
-        if (!ClientConfig.FRACTURE_FRINGE.get() || amount < FRINGE_AMOUNT || fractureMix < 0.65F) {
+        if (!ClientConfig.FRACTURE_FRINGE.get() || amount < FRINGE_AMOUNT || fractureMix < 0.65F || strength() <= 0.0F) {
             return;
         }
         if (EchoView.thermal()) {
@@ -128,7 +134,7 @@ public final class FractureFeel {
     }
 
     private static void renderVignette(GuiGraphicsExtractor graphics, DeltaTracker delta) {
-        if (!ClientConfig.PRESSURE_VIGNETTE.get() || amount < 0.02F) {
+        if (!ClientConfig.PRESSURE_VIGNETTE.get() || amount < 0.02F || strength() <= 0.0F) {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
@@ -141,8 +147,8 @@ public final class FractureFeel {
             float time = minecraft.player.tickCount + partial;
             pulse = 0.86F + 0.14F * (0.5F + 0.5F * Mth.sin(time * 0.17F));
         }
-        int alpha = Mth.clamp(Math.round(amount * pulse * 220.0F), 0, 220);
-        int color = (alpha << 24) | mixRgb(MemoryPalette.INK, 0x7A2A32, fractureMix);
+        int alpha = Mth.clamp(Math.round(amount * pulse * strength() * 130.0F), 0, 130);
+        int color = (alpha << 24) | mixRgb(MemoryPalette.INK, 0x5E3438, fractureMix * 0.6F);
         int width = graphics.guiWidth();
         int height = graphics.guiHeight();
         graphics.blit(RenderPipelines.GUI_TEXTURED, VIGNETTE, 0, 0, 0.0F, 0.0F, width, height, width, height, color);
