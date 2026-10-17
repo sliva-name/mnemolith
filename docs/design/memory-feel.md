@@ -148,3 +148,16 @@ by-hand check, since the test server has no audio).
   spectator, the toggles' RU/EN lang.
 - Live test `lens_reads_loudest_circlet_tints`: a real player with a circlet in a chunk whose loudest memory is a death
   under newer paths: the server's lens snapshot names death, the tint applies, and stops when the circlet comes off.
+
+## Gentle pressure (post-0.6.1 polish)
+
+Screen effects are secondary now; the band is read from the lens pill and the strong-memory hint.
+- New client slider `pressureEffectStrength` (0–1, default 0.4) scales vignette, camera sway and the
+  fracture fringe together; 0 turns all three off. The individual toggles `pressureVignette`,
+  `stormScreenShake`, `fractureFringe` still switch each effect off completely.
+- Camera: roll 2.2° → 0.55° and pitch 0.7° → 0.18° at full amount, slower (a sway, not a shake);
+  at default strength a fractured chunk rolls ≈0.2°.
+- Vignette: alpha cap 220 → 130, scaled by strength (fracture ≈52, overloaded ≈25 at default);
+  the fracture red is duller (`0x5E3438`) and mixed only 60%.
+- Fringe shader: desaturation 0.22/0.58 (centre/edge) → 0.05/0.18, chromatic shift 0.0035 → 0.0015,
+  cold tint 0.45 → 0.2; runs only above amount 0.85.
