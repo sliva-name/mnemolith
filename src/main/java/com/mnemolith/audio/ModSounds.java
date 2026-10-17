@@ -98,6 +98,17 @@ public final class ModSounds {
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, name)));
     }
 
+    /** After-echoes: one muffled distant replay per imprint kind ({@code mnemolith:memory.<tag>}), samples in sounds.json. */
+    public static final java.util.List<DeferredHolder<SoundEvent, SoundEvent>> MEMORY_ECHOES = registerMemoryEchoes();
+
+    private static java.util.List<DeferredHolder<SoundEvent, SoundEvent>> registerMemoryEchoes() {
+        java.util.List<DeferredHolder<SoundEvent, SoundEvent>> out = new java.util.ArrayList<>();
+        for (com.mnemolith.imprint.ImprintTag tag : com.mnemolith.imprint.ImprintTag.values()) {
+            out.add(register(com.mnemolith.particle.AfterEcho.soundName(tag)));
+        }
+        return java.util.List.copyOf(out);
+    }
+
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);
     }

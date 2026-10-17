@@ -2,6 +2,8 @@ package com.mnemolith.client.particle;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mnemolith.common.MemoryPalette;
+
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SimpleAnimatedParticle;
@@ -10,6 +12,7 @@ import net.minecraft.util.RandomSource;
 
 /** One tinted, fullbright memory mote. The provider returns null when the budget rejects it. */
 final class MemoryParticle extends SimpleAnimatedParticle {
+    private com.mnemolith.particle.AfterEcho.Motion motion;
     private MemoryParticle(ClientLevel level, double x, double y, double z, double dx, double dy, double dz, SpriteSet sprites, int rgb, float size, int life) {
         super(level, x, y, z, sprites, 0.0F);
         this.setParticleSpeed(dx, dy, dz);
@@ -32,6 +35,35 @@ final class MemoryParticle extends SimpleAnimatedParticle {
             mote.friction = 1.0F;
         }
         return particle;
+    }
+
+    /** An after-image mote: motion by the remembered kind (see {@code AfterEcho}). Keeps its speed (friction 1). */
+    static @Nullable Particle spawnAfter(ClientLevel level, double x, double y, double z, com.mnemolith.imprint.ImprintTag tag, SpriteSet sprites, RandomSource random) {
+        Particle particle = spawn(level, x, y, z, 0.0D, 0.0D, 0.0D, sprites, MemoryPalette.AFTERIMAGE, 0.2F, 80, random);
+        if (!(particle instanceof MemoryParticle mote)) {
+            return particle;
+        }
+        mote.motion = com.mnemolith.particle.AfterEcho.motionFor(tag);
+        mote.friction = 1.0F;
+        double angle = random.nextDouble() * Math.PI * 2.0D;
+        switch (mote.motion) {
+            case COLUMN -> { mote.setParticleSpeed(0.0D, 0.018D, 0.0D); mote.lifetime = 80; }
+            case RIPPLE -> { mote.setParticleSpeed(Math.cos(angle) * 0.04D, 0.003D, Math.sin(angle) * 0.04D); mote.lifetime = 60; mote.quadSize = 0.22F; }
+            case SINK -> { mote.setParticleSpeed(0.0D, -0.013D, 0.0D); mote.lifetime = 90; }
+            case GROUND -> { mote.setParticleSpeed(Math.cos(angle) * 0.008D, 0.0D, Math.sin(angle) * 0.008D); mote.lifetime = 55; mote.quadSize = 0.24F; }
+            case OUTLINE -> { mote.setParticleSpeed(0.0D, 0.005D, 0.0D); mote.lifetime = 75; mote.quadSize = 0.26F; }
+        }
+        return mote;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.motion == com.mnemolith.particle.AfterEcho.Motion.OUTLINE) {
+            this.quadSize *= 0.97F;
+        } else if (this.motion == com.mnemolith.particle.AfterEcho.Motion.GROUND) {
+            this.alpha = Math.max(0.0F, 0.9F * (1.0F - (float) this.age / (float) this.lifetime));
+        }
     }
 
     static @Nullable Particle spawn(

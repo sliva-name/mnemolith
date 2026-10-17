@@ -948,6 +948,7 @@ Manual:
 
 - Walk into a saturated (or louder) chunk: the screen edge breathes a faint indigo tint while you stay; the first time, the action bar says "This place remembers." (RU: «Это место помнит.»). Leaving fades the tint out.
 - Stand still there for 3 s: up to 3 thin columns of soft pale-blue motes climb steadily (about 1.5 blocks) where the chunk's loudest memories happened; again every 3 s while still; moving stops them. A second player nearby does not see your after-images.
+- After-echoes: stand still in a saturated chunk — each after-image faintly replays its kind's sound (explosion low boom, death sigh, path steps, build muted place) and moves its own way (ring, sinking, ground-fading, block outline). `memoryAfterEchoes = false`: silent. Only the standing player hears it.
 - `strongMemoryHint = false`: no tint and no line. `memoryAfterImages = false`: no columns. `particleDensity = 0`: no columns. The tint fades out while an overloaded or fractured vignette is up, so the two never stack; on its own it is a faint indigo edge breath.
 - No new sounds in this stage.
 
