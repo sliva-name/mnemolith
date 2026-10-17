@@ -45,6 +45,8 @@ public final class AfterImages {
     private static final Map<UUID, State> STATE = new HashMap<>();
     private static int imagesSent;
     private static int hintsSent;
+    private static int echoesSent;
+    private static volatile java.util.List<com.mnemolith.imprint.ImprintTag> lastEchoTags = java.util.List.of();
 
     private AfterImages() {}
 
@@ -123,12 +125,22 @@ public final class AfterImages {
         List<Imprint> loudest = new ArrayList<>(memory.imprintsCopy());
         loudest.sort(Comparator.comparingInt(Imprint::intensity).reversed());
         int n = Math.min(MAX_IMAGES, loudest.size());
+        java.util.List<com.mnemolith.imprint.ImprintTag> tags = new ArrayList<>(n);
+        var random = level.getRandom();
         for (int i = 0; i < n; i++) {
-            BlockPos origin = loudest.get(i).origin();
-            // a slow column of pale motes standing where the memory happened, sent to this player only
-            level.sendParticles(player, ModParticles.MEMORY_AFTERIMAGE.get(), false, false, origin.getX() + 0.5D, origin.getY() + 1.0D,
-                    origin.getZ() + 0.5D, COLUMN, 0.05D, 0.35D, 0.05D, 0.0D);
+            Imprint imprint = loudest.get(i);
+            BlockPos origin = imprint.origin();
+            tags.add(imprint.tag());
+            // Per-mote count-0 packets: the client receives the velocity exactly, and the x-velocity carries the
+            // tag code (see AfterEcho), so each kind moves and sounds its own way. Same mote count as before.
+            for (int mote = 0; mote < COLUMN; mote++) {
+                double[] at = moteAt(origin, AfterEcho.motionFor(imprint.tag()), random);
+                level.sendParticles(player, ModParticles.MEMORY_AFTERIMAGE.get(), false, false, at[0], at[1], at[2],
+                        0, AfterEcho.code(imprint.tag()), 0.0D, 0.0D, 1.0D);
+            }
         }
+        lastEchoTags = java.util.List.copyOf(tags);
+        echoesSent += n;
         imagesSent += n;
         return n;
     }
@@ -141,6 +153,33 @@ public final class AfterImages {
     public static int[] sentTo(UUID player) {
         State state = STATE.get(player);
         return state == null ? new int[2] : new int[] {state.hints, state.images};
+    }
+
+    /** Where one mote of a burst starts, by motion kind. */
+    private static double[] moteAt(BlockPos origin, AfterEcho.Motion motion, net.minecraft.util.RandomSource random) {
+        double x = origin.getX(), y = origin.getY(), z = origin.getZ();
+        return switch (motion) {
+            case RIPPLE -> new double[] {x + 0.5D + random.nextGaussian() * 0.04D, y + 0.55D, z + 0.5D + random.nextGaussian() * 0.04D};
+            case SINK -> new double[] {x + 0.5D + random.nextGaussian() * 0.06D, y + 1.9D + random.nextGaussian() * 0.2D, z + 0.5D + random.nextGaussian() * 0.06D};
+            case GROUND -> new double[] {x + 0.5D + (random.nextDouble() - 0.5D) * 1.6D, y + 0.15D, z + 0.5D + (random.nextDouble() - 0.5D) * 0.3D};
+            case OUTLINE -> {
+                double edge = random.nextBoolean() ? 0.07D : 0.93D;
+                yield random.nextBoolean()
+                        ? new double[] {x + edge, y + random.nextDouble(), z + random.nextDouble()}
+                        : new double[] {x + random.nextDouble(), y + random.nextDouble(), z + edge};
+            }
+            case COLUMN -> new double[] {x + 0.5D + random.nextGaussian() * 0.06D, y + 1.0D + random.nextGaussian() * 0.35D, z + 0.5D + random.nextGaussian() * 0.06D};
+        };
+    }
+
+    /** After-image bursts dispatched (one per imprint shown). For QA. */
+    public static int echoesSent() {
+        return echoesSent;
+    }
+
+    /** Tags of the most recent burst. For QA. */
+    public static java.util.List<com.mnemolith.imprint.ImprintTag> lastEchoTags() {
+        return lastEchoTags;
     }
 
     public static int imagesSent() {

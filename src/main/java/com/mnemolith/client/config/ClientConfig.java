@@ -28,6 +28,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue HOLLOW_FLICKERS;
     public static final ModConfigSpec.BooleanValue MEMORY_EVENT_SOUNDS;
     public static final ModConfigSpec.BooleanValue MEMORY_AFTER_IMAGES;
+    public static final ModConfigSpec.BooleanValue MEMORY_AFTER_ECHOES;
     public static final ModConfigSpec.BooleanValue STRONG_MEMORY_HINT;
     public static final ModConfigSpec.BooleanValue LENS_LOUDEST_GLYPH;
     public static final ModConfigSpec.BooleanValue CIRCLET_TINT;
@@ -56,6 +57,7 @@ public final class ClientConfig {
         HOLLOW_FLICKERS = SpecValues.bool(builder, "hollowFlickers", "Whether memory flickers in Memory Hollows are drawn on this client. The server decides how often they appear.", true);
         MEMORY_EVENT_SOUNDS = SpecValues.bool(builder, "memoryEventSounds", "Whether the shared memory sounds (written, erased, kept, caught, forgotten) play on this client. Their particles follow imprintParticles and particleDensity.", true);
         MEMORY_AFTER_IMAGES = SpecValues.bool(builder, "memoryAfterImages", "Whether standing still in a strongly remembering chunk shows faint after-images where its loudest memories happened.", true);
+        MEMORY_AFTER_ECHOES = SpecValues.bool(builder, "memoryAfterEchoes", "Whether after-images faintly replay a muffled, distant version of the remembered sound. Only you hear it.", true);
         STRONG_MEMORY_HINT = SpecValues.bool(builder, "strongMemoryHint", "Whether a strongly remembering (saturated or louder) chunk breathes a faint tint at the screen edge and says so the first time you enter it.", true);
         LENS_LOUDEST_GLYPH = SpecValues.bool(builder, "lensLoudestGlyph", "Whether the chronicle lens pill shows the loudest memory of the chunk as a coloured glyph and its name.", true);
         CIRCLET_TINT = SpecValues.bool(builder, "circletTint", "Whether wearing a remembering circlet tints the screen edge with the kept colour.", true);
