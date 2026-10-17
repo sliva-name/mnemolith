@@ -395,6 +395,8 @@ public final class VisualTour {
     }
 
     public static void onClientTick(ClientTickEvent.Post event) {
+        // toasts (advancements, recipe unlocks) keep arriving during a scene; clear them every tick, not only pre-shot
+        Minecraft.getInstance().gui.toastManager().clear();
         Minecraft mc = Minecraft.getInstance();
         if (!started) {
             var open = mc.gui.screen();
