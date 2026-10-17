@@ -7,10 +7,11 @@
     "0.3.0": "The world remembers you: your past self replays your death, home, big build or hard fight when you return; Leave Bed at night no longer counts as sleep; fixes for reel slips, echo items and chunk memory lost on load",
     "0.4.0": "Echo guard (melee, bows, shields, escort; mobs fight back, armor) and Memory Hollows (new biome, sunken archive, catching flickers, recollite lens and needle, the faded, lectern replay); unwatched storms fade",
     "0.5.0": "Hollows stage 4, recollite pickaxe and lantern, remembrance posy, chronicle transcripts and the chronicler's notes, storm lull (configurable), mending the Scar (memorial stone, grove, shared notes), perf budgets",
+    "0.6.1": "Visual polish: indigo strong-memory hint, hush loom texture, Unremembered reveal contrast, rising after-image columns, erased motes, lens glyph spacing; README rewrite",
     "0.6.0": "The Unremembered (Hollows boss, Lethe tear, remembering circlet), Embers (cinderkin, ember brazier), Pale Chorus (hushling, hush loom), Undertow (memory angling, tide lure), memory feel (shared cues, after-images, strong-memory hint, lens glyph, circlet tint); network protocol changed"
   },
   "promos": {
-    "26.2-latest": "0.6.0",
-    "26.2-recommended": "0.6.0"
+    "26.2-latest": "0.6.1",
+    "26.2-recommended": "0.6.1"
   }
 }

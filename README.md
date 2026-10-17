@@ -6,7 +6,7 @@
 
 Мир записывает свою историю в камень. Смерти, взрывы, падения, стройка и даже ваши шаги оставляют **отпечатки** в чанке, где это случилось. Память копится **давлением**, и чем громче место помнит, тем сильнее отвечает: отголосками, осадками памяти, бурями воспоминаний и Шрамом. Вы читаете эту память линзой, вытягиваете её иглой, составляете из неё формулы и решаете, глушить её, использовать или залечить.
 
-Последний релиз: **[Mnemolith 0.6.0 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.6.0)** · [все релизы](https://github.com/sliva-name/mnemolith/releases)
+Последний релиз: **[Mnemolith 0.6.1 (бета)](https://github.com/sliva-name/mnemolith/releases/tag/v0.6.1)** · [все релизы](https://github.com/sliva-name/mnemolith/releases)
 
 ### Содержание
 
@@ -136,9 +136,9 @@
 - Свои частицы, цвет и звук у пяти событий: записано, стёрто, сбережено, поймано, забыто.
 - Сильно помнящий чанк «дышит» оттенком по краю экрана и при первом входе говорит «Это место помнит.». Если постоять неподвижно, встают видения самых громких воспоминаний. Надетый венец окрашивает край экрана.
 
-### Не выпущено (после 0.6.0)
+### Новое в 0.6.1
 
-Только визуальная полировка, слита в `main`, войдёт в следующую версию: подсказка сильной памяти — мягкий индиговый край, уступающий виньетке давления; видения поднимаются бледными столбами; искры «стёрто» видны на светлой земле; невидимый Беспамятный бледнее и серее; новая текстура станка тишины (пурпурная рама с бледными нитями); больше места у знака в плашке линзы.
+Только визуальная полировка (ничего в сети и сохранениях): подсказка сильной памяти — мягкий индиговый край, уступающий виньетке давления; видения поднимаются бледными столбами; искры «стёрто» видны на светлой земле; невидимый Беспамятный бледнее и серее; новая текстура станка тишины (пурпурная рама с бледными нитями); больше места у знака в плашке линзы.
 
 ## Требования и установка
 
@@ -147,12 +147,12 @@
 | Игра | Minecraft **Java Edition 26.2** |
 | Загрузчик | **NeoForge 26.2.x** (собрано против 26.2.0.88) |
 | Java | 25 |
-| Файл | `mnemolith-0.6.0.jar` — один и тот же на **клиенте и сервере** |
+| Файл | `mnemolith-0.6.1.jar` — один и тот же на **клиенте и сервере** |
 
 Других модов не нужно; JEI и WTHIT подхватываются, если стоят.
 
 1. Установите NeoForge 26.2.x с [projects.neoforged.net](https://projects.neoforged.net/neoforged/neoforge).
-2. Скачайте `mnemolith-0.6.0.jar` со страницы [Releases](https://github.com/sliva-name/mnemolith/releases) (не zip с исходниками).
+2. Скачайте `mnemolith-0.6.1.jar` со страницы [Releases](https://github.com/sliva-name/mnemolith/releases) (не zip с исходниками).
 3. Положите jar в папку `mods` (не распаковывайте) и запустите профиль NeoForge.
 
 **Сервер:** тот же jar в `mods` выделенного сервера NeoForge 26.2.x. Версии клиента и сервера должны совпадать: в 0.6.0 сетевой протокол версии 10. Миры 0.1.3–0.5.0 открываются на 0.6.0; мир 0.6.0 на старую версию не откатывайте.
@@ -242,7 +242,7 @@ All Rights Reserved (`LICENSE`). Файлы шаблона NeoForge MDK — по
 
 The world writes its history into stone. Deaths, explosions, falls, building and even your footsteps leave **imprints** in the chunk where they happened. Memory builds up as **pressure**, and the louder a place remembers, the harder it answers: with echoes, residual echoes, recollection storms and the Scar. You read that memory with a lens, draw it out with a needle, compose it into formulas, and decide whether to silence it, use it or heal it.
 
-Latest release: **[Mnemolith 0.6.0 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.6.0)** · [all releases](https://github.com/sliva-name/mnemolith/releases)
+Latest release: **[Mnemolith 0.6.1 (beta)](https://github.com/sliva-name/mnemolith/releases/tag/v0.6.1)** · [all releases](https://github.com/sliva-name/mnemolith/releases)
 
 ### Contents
 
@@ -372,9 +372,9 @@ Plus underground **archival veins** and **mute pockets**. Several structures hol
 - Five memory events each have their own particles, colour and sound: written, erased, kept, caught, forgotten.
 - A strongly remembering chunk "breathes" a tint at the screen edge and says "This place remembers." on first entry. Stand still and after-images of the loudest memories rise. A worn circlet tints the screen edge.
 
-### Unreleased (after 0.6.0)
+### New in 0.6.1
 
-Visual polish only, merged into `main`, coming in the next version: the strong-memory hint is a soft indigo edge that yields to the pressure vignette; after-images rise as pale columns; erased motes show on light ground; the unseen Unremembered is fainter and greyer; new Hush Loom texture (purpur frame, pale threads); more room around the lens glyph.
+Visual polish only (no network or save changes): the strong-memory hint is a soft indigo edge that yields to the pressure vignette; after-images rise as pale columns; erased motes show on light ground; the unseen Unremembered is fainter and greyer; new Hush Loom texture (purpur frame, pale threads); more room around the lens glyph.
 
 ## Requirements and install
 
@@ -383,12 +383,12 @@ Visual polish only, merged into `main`, coming in the next version: the strong-m
 | Game | Minecraft **Java Edition 26.2** |
 | Loader | **NeoForge 26.2.x** (built against 26.2.0.88) |
 | Java | 25 |
-| File | `mnemolith-0.6.0.jar` — the same jar on **client and server** |
+| File | `mnemolith-0.6.1.jar` — the same jar on **client and server** |
 
 No other mods needed; JEI and WTHIT are supported if installed.
 
 1. Install NeoForge 26.2.x from [projects.neoforged.net](https://projects.neoforged.net/neoforged/neoforge).
-2. Download `mnemolith-0.6.0.jar` from [Releases](https://github.com/sliva-name/mnemolith/releases) (not the source zip).
+2. Download `mnemolith-0.6.1.jar` from [Releases](https://github.com/sliva-name/mnemolith/releases) (not the source zip).
 3. Put the jar in your `mods` folder (don't unzip it) and launch the NeoForge profile.
 
 **Server:** the same jar in the `mods` folder of a NeoForge 26.2.x dedicated server. Client and server versions must match: 0.6.0 uses network protocol 10. Worlds from 0.1.3–0.5.0 open on 0.6.0; don't roll a 0.6.0 world back.
