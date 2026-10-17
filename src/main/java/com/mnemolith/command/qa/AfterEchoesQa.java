@@ -31,7 +31,7 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  * client-side and checked in the visual tour.
  */
 public final class AfterEchoesQa {
-    private static final String[] NAMES = {"registered", "motions", "bursts", "tagsRecorded"};
+    private static final String[] NAMES = {"registered", "motions", "levels", "bursts", "tagsRecorded"};
     private static final UUID PLAYER = UUID.fromString("77777777-4444-3333-4444-aeaeaeaeaeae");
     private static int salt;
 
@@ -67,6 +67,22 @@ public final class AfterEchoesQa {
                     && AfterEcho.motionFor(ImprintTag.BUILD) == AfterEcho.Motion.OUTLINE
                     && AfterEcho.motionFor(ImprintTag.FIRE) == AfterEcho.Motion.COLUMN;
 
+            // distant and muffled, programmatically: no echo sample louder than 0.45 or brighter than pitch 0.85
+            boolean levels = true;
+            try (var in = AfterEchoesQa.class.getResourceAsStream("/assets/mnemolith/sounds.json")) {
+                var sounds = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                for (ImprintTag tag : ImprintTag.values()) {
+                    var entry = sounds.getAsJsonObject(AfterEcho.soundName(tag));
+                    for (var el : entry.getAsJsonArray("sounds")) {
+                        var o = el.getAsJsonObject();
+                        levels &= (!o.has("volume") || o.get("volume").getAsFloat() <= 0.45F) && (!o.has("pitch") || o.get("pitch").getAsFloat() <= 0.85F);
+                    }
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                levels = false;
+            }
+            ok[2] = levels;
+
             LoadedChunkMemory.clear(level.getChunkAt(loud));
             AfterImages.forget(PLAYER);
             long t = level.getGameTime() + 2000L * salt;
@@ -75,11 +91,27 @@ public final class AfterEchoesQa {
             player.snapTo(loud.getX() + 0.5D, loud.getY(), loud.getZ() + 0.5D, 0.0F, 0.0F);
             AfterImages.scan(level, player, t);
             AfterImages.Result still = AfterImages.scan(level, player, t + AfterImages.STILL_TICKS);
-            ok[2] = still.images() > 0 && AfterImages.echoesSent() == echoes + still.images();
-            ok[3] = !AfterImages.lastEchoTags().isEmpty() && AfterImages.lastEchoTags().stream().allMatch(tag -> tag == ImprintTag.EXPLOSION);
+            ok[3] = still.images() > 0 && AfterImages.echoesSent() == echoes + still.images();
+            ok[4] = !AfterImages.lastEchoTags().isEmpty() && AfterImages.lastEchoTags().stream().allMatch(tag -> tag == ImprintTag.EXPLOSION);
             notes.add("still=" + still + " tags=" + AfterImages.lastEchoTags());
         } finally {
             AfterImages.forget(PLAYER);
+            // distant and muffled, programmatically: no echo sample louder than 0.45 or brighter than pitch 0.85
+            boolean levels = true;
+            try (var in = AfterEchoesQa.class.getResourceAsStream("/assets/mnemolith/sounds.json")) {
+                var sounds = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                for (ImprintTag tag : ImprintTag.values()) {
+                    var entry = sounds.getAsJsonObject(AfterEcho.soundName(tag));
+                    for (var el : entry.getAsJsonArray("sounds")) {
+                        var o = el.getAsJsonObject();
+                        levels &= (!o.has("volume") || o.get("volume").getAsFloat() <= 0.45F) && (!o.has("pitch") || o.get("pitch").getAsFloat() <= 0.85F);
+                    }
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                levels = false;
+            }
+            ok[2] = levels;
+
             LoadedChunkMemory.clear(level.getChunkAt(loud));
             releaseColumn(level, ChunkPos.containing(loud));
         }

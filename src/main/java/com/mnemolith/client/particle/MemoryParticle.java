@@ -51,7 +51,7 @@ final class MemoryParticle extends SimpleAnimatedParticle {
             case RIPPLE -> { mote.setParticleSpeed(Math.cos(angle) * 0.04D, 0.003D, Math.sin(angle) * 0.04D); mote.lifetime = 60; mote.quadSize = 0.22F; }
             case SINK -> { mote.setParticleSpeed(0.0D, -0.013D, 0.0D); mote.lifetime = 90; }
             case GROUND -> { mote.setParticleSpeed(Math.cos(angle) * 0.008D, 0.0D, Math.sin(angle) * 0.008D); mote.lifetime = 55; mote.quadSize = 0.24F; }
-            case OUTLINE -> { mote.setParticleSpeed(0.0D, 0.005D, 0.0D); mote.lifetime = 75; mote.quadSize = 0.26F; }
+            case OUTLINE -> { mote.setParticleSpeed(0.0D, 0.003D, 0.0D); mote.lifetime = 115; mote.quadSize = 0.34F; }
         }
         return mote;
     }
@@ -60,7 +60,12 @@ final class MemoryParticle extends SimpleAnimatedParticle {
     public void tick() {
         super.tick();
         if (this.motion == com.mnemolith.particle.AfterEcho.Motion.OUTLINE) {
-            this.quadSize *= 0.97F;
+            // dissolving outline: holds its size, then shrinks and fades over the second half
+            float t = (float) this.age / (float) this.lifetime;
+            if (t > 0.5F) {
+                this.quadSize *= 0.985F;
+                this.alpha = Math.max(0.0F, 1.0F - (t - 0.5F) * 2.0F);
+            }
         } else if (this.motion == com.mnemolith.particle.AfterEcho.Motion.GROUND) {
             this.alpha = Math.max(0.0F, 0.9F * (1.0F - (float) this.age / (float) this.lifetime));
         }

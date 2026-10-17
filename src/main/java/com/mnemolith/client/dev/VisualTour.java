@@ -288,10 +288,10 @@ public final class VisualTour {
                 // staged directly (like Feel3Qa.saturate): light tags alone would not reach the saturated band
                 var memory = LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0));
                 for (int i = 0; i < 6; i++) {
-                    memory.addImprint(new com.mnemolith.imprint.Imprint(tag, 8 + i, new BlockPos(6 + i, Y, 10), java.util.Optional.empty(), i, c.level.getGameTime(), false), 64);
+                    memory.addImprint(new com.mnemolith.imprint.Imprint(tag, 2, new BlockPos(6 + i, Y, 10), java.util.Optional.empty(), i, c.level.getGameTime(), false), 64);
                 }
                 memory.setCachedPressure(com.mnemolith.command.qa.Feel3Qa.saturatedPressure());
-            }, new double[] {8.5, Y, 6.0, 0, -6}, 150, true, c -> {
+            }, new double[] {8.5, Y, 3.5, 0, -5}, 95, true, c -> {
                 c.cmd("kill @e[type=!player]");
                 LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)).setCachedPressure(com.mnemolith.command.qa.Feel3Qa.saturatedPressure());
             }, mc -> {});
@@ -395,6 +395,8 @@ public final class VisualTour {
     }
 
     public static void onClientTick(ClientTickEvent.Post event) {
+        // toasts (advancements, recipe unlocks) keep arriving during a scene; clear them every tick, not only pre-shot
+        Minecraft.getInstance().gui.toastManager().clear();
         Minecraft mc = Minecraft.getInstance();
         if (!started) {
             var open = mc.gui.screen();

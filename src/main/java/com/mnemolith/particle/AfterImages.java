@@ -163,10 +163,15 @@ public final class AfterImages {
             case SINK -> new double[] {x + 0.5D + random.nextGaussian() * 0.06D, y + 1.9D + random.nextGaussian() * 0.2D, z + 0.5D + random.nextGaussian() * 0.06D};
             case GROUND -> new double[] {x + 0.5D + (random.nextDouble() - 0.5D) * 1.6D, y + 0.15D, z + 0.5D + (random.nextDouble() - 0.5D) * 0.3D};
             case OUTLINE -> {
-                double edge = random.nextBoolean() ? 0.07D : 0.93D;
-                yield random.nextBoolean()
-                        ? new double[] {x + edge, y + random.nextDouble(), z + random.nextDouble()}
-                        : new double[] {x + random.nextDouble(), y + random.nextDouble(), z + edge};
+                // strictly the block's 12 edges: pick an edge, then a point along it (corners included)
+                double lo = 0.05D, hi = 0.95D, along = lo + random.nextDouble() * (hi - lo);
+                double e1 = random.nextBoolean() ? lo : hi;
+                double e2 = random.nextBoolean() ? lo : hi;
+                yield switch (random.nextInt(3)) {
+                    case 0 -> new double[] {x + e1, y + along, z + e2};
+                    case 1 -> new double[] {x + along, y + e1, z + e2};
+                    default -> new double[] {x + e1, y + e2, z + along};
+                };
             }
             case COLUMN -> new double[] {x + 0.5D + random.nextGaussian() * 0.06D, y + 1.0D + random.nextGaussian() * 0.35D, z + 0.5D + random.nextGaussian() * 0.06D};
         };
