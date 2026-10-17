@@ -1202,5 +1202,22 @@
       }
     ],
     "subtitle": "subtitles.mnemolith.memory.echo.forgotten"
+  },
+  "memory.forgotten": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_chime",
+        "stream": false,
+        "pitch": 0.6,
+        "volume": 0.5
+      },
+      {
+        "name": "mnemolith:hollows_chime",
+        "stream": false,
+        "pitch": 0.65,
+        "volume": 0.45
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.forgotten"
   }
 }

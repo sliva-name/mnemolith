@@ -1512,5 +1512,6 @@
   "subtitles.mnemolith.memory.echo.sculk": "A faint skitter, remembered",
   "subtitles.mnemolith.memory.echo.boss": "A distant roar, remembered",
   "subtitles.mnemolith.memory.echo.trade": "A faint chime of trade, remembered",
-  "subtitles.mnemolith.memory.echo.forgotten": "Something forgotten stirs"
+  "subtitles.mnemolith.memory.echo.forgotten": "Something forgotten stirs",
+  "subtitles.mnemolith.memory.forgotten": "Memory fades"
 }

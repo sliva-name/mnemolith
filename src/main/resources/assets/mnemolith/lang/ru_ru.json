@@ -1512,5 +1512,6 @@
   "subtitles.mnemolith.memory.echo.sculk": "Тихое шуршание — в памяти",
   "subtitles.mnemolith.memory.echo.boss": "Далёкий рёв — в памяти",
   "subtitles.mnemolith.memory.echo.trade": "Тихий звон сделки — в памяти",
-  "subtitles.mnemolith.memory.echo.forgotten": "Что-то забытое шевельнулось"
+  "subtitles.mnemolith.memory.echo.forgotten": "Что-то забытое шевельнулось",
+  "subtitles.mnemolith.memory.forgotten": "Память угасает"
 }
