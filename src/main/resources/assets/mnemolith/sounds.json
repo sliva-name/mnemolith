@@ -1032,21 +1032,175 @@
     ],
     "subtitle": "subtitles.mnemolith.memory.caught"
   },
-  "memory.forgotten": {
+  "memory.echo.fire": {
     "sounds": [
       {
-        "name": "mnemolith:hollows_chime",
+        "name": "mnemolith:imprint_write",
         "stream": false,
-        "pitch": 0.6,
-        "volume": 0.5
+        "pitch": 0.5,
+        "volume": 0.3
       },
       {
-        "name": "mnemolith:hollows_chime",
+        "name": "mnemolith:storm_wave",
         "stream": false,
-        "pitch": 0.65,
-        "volume": 0.45
+        "pitch": 1.2,
+        "volume": 0.12
       }
     ],
-    "subtitle": "subtitles.mnemolith.memory.forgotten"
+    "subtitle": "subtitles.mnemolith.memory.echo.fire"
+  },
+  "memory.echo.fall": {
+    "sounds": [
+      {
+        "name": "mnemolith:echo_hurt",
+        "stream": false,
+        "pitch": 0.45,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.fall"
+  },
+  "memory.echo.death": {
+    "sounds": [
+      {
+        "name": "mnemolith:faded_death",
+        "stream": false,
+        "pitch": 0.55,
+        "volume": 0.4
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.death"
+  },
+  "memory.echo.build": {
+    "sounds": [
+      {
+        "name": "mnemolith:stratum_place",
+        "stream": false,
+        "pitch": 0.55,
+        "volume": 0.4
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.build"
+  },
+  "memory.echo.explosion": {
+    "sounds": [
+      {
+        "name": "mnemolith:storm_wave",
+        "stream": false,
+        "pitch": 0.4,
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.explosion"
+  },
+  "memory.echo.silence": {
+    "sounds": [
+      {
+        "name": "mnemolith:mute_place",
+        "stream": false,
+        "pitch": 0.45,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.silence"
+  },
+  "memory.echo.player": {
+    "sounds": [
+      {
+        "name": "mnemolith:echo_step",
+        "stream": false,
+        "pitch": 0.8,
+        "volume": 0.25
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.player"
+  },
+  "memory.echo.redstone": {
+    "sounds": [
+      {
+        "name": "mnemolith:lens_focus",
+        "stream": false,
+        "pitch": 0.55,
+        "volume": 0.25
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.redstone"
+  },
+  "memory.echo.path": {
+    "sounds": [
+      {
+        "name": "mnemolith:echo_step",
+        "stream": false,
+        "pitch": 0.65,
+        "volume": 0.35
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.path"
+  },
+  "memory.echo.lightning": {
+    "sounds": [
+      {
+        "name": "mnemolith:replicant_telegraph",
+        "stream": false,
+        "pitch": 0.5,
+        "volume": 0.35
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.lightning"
+  },
+  "memory.echo.portal": {
+    "sounds": [
+      {
+        "name": "mnemolith:relay_hop",
+        "stream": false,
+        "pitch": 0.45,
+        "volume": 0.35
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.portal"
+  },
+  "memory.echo.sculk": {
+    "sounds": [
+      {
+        "name": "mnemolith:mite_ambient",
+        "stream": false,
+        "pitch": 0.45,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.sculk"
+  },
+  "memory.echo.boss": {
+    "sounds": [
+      {
+        "name": "mnemolith:scar_ambient",
+        "stream": false,
+        "pitch": 0.45,
+        "volume": 0.35
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.boss"
+  },
+  "memory.echo.trade": {
+    "sounds": [
+      {
+        "name": "mnemolith:vault_chime",
+        "stream": false,
+        "pitch": 0.65,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.trade"
+  },
+  "memory.echo.forgotten": {
+    "sounds": [
+      {
+        "name": "mnemolith:hollows_mood",
+        "stream": false,
+        "pitch": 0.55,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.mnemolith.memory.echo.forgotten"
   }
 }

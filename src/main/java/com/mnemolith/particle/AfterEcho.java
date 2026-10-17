@@ -32,6 +32,6 @@ public final class AfterEcho {
     }
 
     public static String soundName(ImprintTag tag) {
-        return "memory." + tag.getSerializedName();
+        return "memory.echo." + tag.getSerializedName();
     }
 }

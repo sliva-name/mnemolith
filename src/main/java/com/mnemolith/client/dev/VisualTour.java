@@ -281,6 +281,21 @@ public final class VisualTour {
                 c.write(6 + i, 10, ImprintTag.DEATH);
             }
         }, new double[] {8.5, Y, 4.5, 0, -8}, 120, true, c -> c.cmd("kill @e[type=!player]"), mc -> {});
+        // after-echoes: one saturated chunk per kind, camera close and side-on; motion differs by kind
+        for (ImprintTag tag : new ImprintTag[] {ImprintTag.EXPLOSION, ImprintTag.DEATH, ImprintTag.PATH, ImprintTag.BUILD, ImprintTag.PORTAL, ImprintTag.FORGOTTEN}) {
+            scene("afterecho_" + tag.getSerializedName(), c -> {
+                platform(c, "smooth_stone");
+                // staged directly (like Feel3Qa.saturate): light tags alone would not reach the saturated band
+                var memory = LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0));
+                for (int i = 0; i < 6; i++) {
+                    memory.addImprint(new com.mnemolith.imprint.Imprint(tag, 8 + i, new BlockPos(6 + i, Y, 10), java.util.Optional.empty(), i, c.level.getGameTime(), false), 64);
+                }
+                memory.setCachedPressure(com.mnemolith.command.qa.Feel3Qa.saturatedPressure());
+            }, new double[] {8.5, Y, 6.0, 0, -6}, 150, true, c -> {
+                c.cmd("kill @e[type=!player]");
+                LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)).setCachedPressure(com.mnemolith.command.qa.Feel3Qa.saturatedPressure());
+            }, mc -> {});
+        }
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");

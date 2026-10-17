@@ -125,6 +125,8 @@ public final class Feel3Qa {
         return new QaReport("feel3qa", NAMES, ok, notes);
     }
 
+    public static boolean langHasPub(String lang, String key) { return langHas(lang, key); }
+
     private static boolean langHas(String lang, String key) {
         try (var in = Feel3Qa.class.getResourceAsStream("/assets/mnemolith/lang/" + lang + ".json")) {
             return in != null && com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8))

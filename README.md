@@ -134,7 +134,7 @@
 ### Визуальный язык памяти
 
 - Свои частицы, цвет и звук у пяти событий: записано, стёрто, сбережено, поймано, забыто.
-- Сильно помнящий чанк «дышит» оттенком по краю экрана и при первом входе говорит «Это место помнит.». Если постоять неподвижно, встают видения самых громких воспоминаний. Надетый венец окрашивает край экрана.
+- Сильно помнящий чанк «дышит» оттенком по краю экрана и при первом входе говорит «Это место помнит.». Если постоять неподвижно, встают видения самых громких воспоминаний. Надетый венец окрашивает край экрана. Видения тихо и издалека проигрывают звук того, что помнят, и движутся по-своему (кольцо у взрыва, оседание у смерти, следы у пути, контур у стройки).
 
 ### Новое в 0.6.1
 
@@ -165,7 +165,7 @@
 | --- | --- |
 | `config/mnemolith-common.toml` | `difficulty`, `spawnRates`, `worldGen` (каждую постройку, жилы, карманы и лощины можно выключить), `gameplay` (запись каждой метки, пороги полос, извлечение, составление, каталог), `mobs`, `echo` (отголоски, работы, охрана, прививки, улучшения), `residue`, `relay`, `vault`, `recall`, `investigate`, `use`, `intervene`, `remember`, `armory`, `armoryMobs`, `sleep`, `worldMemory` (в т.ч. `structureSeeds`), `silenceCost`, `memorial`, `archiveGuardian` |
 | `config/mnemolith-server.toml` (синхронизируется клиентам; переопределяется в `serverconfig` мира) | `server` (бури: вкл/выкл, потолок, рассеивание, затишье; журнал давления), `unremembered`, `embers`, `paleChorus`, `undertow` |
-| `config/mnemolith-client.toml` | `visuals`: частицы и их плотность (0 выключает), потолок частиц, мерцание без линзы, опрос линзы, плашка линзы и её прозрачность, числа давления, виньетка давления, подсветка края при повторе прошлого момента, тряска камеры, обесцвечивание разлома, громкость, термовзгляд, помощь прицеливания, подсказки клавиш, вспышки лощин, звуки памяти, видения, подсказка сильной памяти, знак в линзе, оттенок венца |
+| `config/mnemolith-client.toml` | `visuals`: частицы и их плотность (0 выключает), потолок частиц, мерцание без линзы, опрос линзы, плашка линзы и её прозрачность, числа давления, виньетка давления, подсветка края при повторе прошлого момента, тряска камеры, обесцвечивание разлома, громкость, термовзгляд, помощь прицеливания, подсказки клавиш, вспышки лощин, звуки памяти, видения, подсказка сильной памяти, знак в линзе, оттенок венца, эхо видений (тихий далёкий звук и движение по виду воспоминания) |
 
 **Языки:** русский и английский полностью; немецкий и украинский частично (около 100 строк).
 
@@ -370,7 +370,7 @@ Plus underground **archival veins** and **mute pockets**. Several structures hol
 ### Visual language of memory
 
 - Five memory events each have their own particles, colour and sound: written, erased, kept, caught, forgotten.
-- A strongly remembering chunk "breathes" a tint at the screen edge and says "This place remembers." on first entry. Stand still and after-images of the loudest memories rise. A worn circlet tints the screen edge.
+- A strongly remembering chunk "breathes" a tint at the screen edge and says "This place remembers." on first entry. Stand still and after-images of the loudest memories rise. A worn circlet tints the screen edge. After-images faintly replay, muffled and distant, the sound of what they remember, each kind moving its own way (a ring for explosion, sinking for death, footprints for path, an outline for build).
 
 ### New in 0.6.1
 
@@ -401,7 +401,7 @@ In-game screen: Mods → Mnemolith → Config. Three files:
 | --- | --- |
 | `config/mnemolith-common.toml` | `difficulty`, `spawnRates`, `worldGen` (every structure, veins, pockets and hollows can be switched off), `gameplay` (writing per tag, band thresholds, extraction, composition, catalog), `mobs`, `echo` (echoes, jobs, guard, grafts, upgrades), `residue`, `relay`, `vault`, `recall`, `investigate`, `use`, `intervene`, `remember`, `armory`, `armoryMobs`, `sleep`, `worldMemory` (incl. `structureSeeds`), `silenceCost`, `memorial`, `archiveGuardian` |
 | `config/mnemolith-server.toml` (synced to clients; override per world in `serverconfig`) | `server` (storms on/off, cap, unwatched fade, lull; pressure logging), `unremembered`, `embers`, `paleChorus`, `undertow` |
-| `config/mnemolith-client.toml` | `visuals`: particles and density (0 = off), particle cap, ambient shimmer without lens, lens poll, lens pill and opacity, numeric pressure, pressure vignette, edge glow during a past-moment replay, camera shake, fracture fringe, volume, thermal view, aim assist, key hints, hollow flickers, memory sounds, after-images, strong-memory hint, lens glyph, circlet tint |
+| `config/mnemolith-client.toml` | `visuals`: particles and density (0 = off), particle cap, ambient shimmer without lens, lens poll, lens pill and opacity, numeric pressure, pressure vignette, edge glow during a past-moment replay, camera shake, fracture fringe, volume, thermal view, aim assist, key hints, hollow flickers, memory sounds, after-images, strong-memory hint, lens glyph, circlet tint, after-echoes (a faint distant sound and motion by the kind of memory) |
 
 **Languages:** Russian and English complete; German and Ukrainian partial (about 100 strings).
 

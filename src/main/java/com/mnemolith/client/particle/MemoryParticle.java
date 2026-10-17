@@ -50,8 +50,8 @@ final class MemoryParticle extends SimpleAnimatedParticle {
             case COLUMN -> { mote.setParticleSpeed(0.0D, 0.018D, 0.0D); mote.lifetime = 80; }
             case RIPPLE -> { mote.setParticleSpeed(Math.cos(angle) * 0.04D, 0.003D, Math.sin(angle) * 0.04D); mote.lifetime = 60; mote.quadSize = 0.22F; }
             case SINK -> { mote.setParticleSpeed(0.0D, -0.013D, 0.0D); mote.lifetime = 90; }
-            case GROUND -> { mote.setParticleSpeed(Math.cos(angle) * 0.008D, 0.0D, Math.sin(angle) * 0.008D); mote.lifetime = 55; mote.quadSize = 0.18F; }
-            case OUTLINE -> { mote.setParticleSpeed(0.0D, 0.005D, 0.0D); mote.lifetime = 75; mote.quadSize = 0.15F; }
+            case GROUND -> { mote.setParticleSpeed(Math.cos(angle) * 0.008D, 0.0D, Math.sin(angle) * 0.008D); mote.lifetime = 55; mote.quadSize = 0.24F; }
+            case OUTLINE -> { mote.setParticleSpeed(0.0D, 0.005D, 0.0D); mote.lifetime = 75; mote.quadSize = 0.26F; }
         }
         return mote;
     }
