@@ -24,8 +24,9 @@ import java.util.List;
  * Lens polling and the latest pressure snapshot. Loaded only from the client entrypoint.
  * Fracture feel reuses this snapshot. It does not scan chunks.
  * <p>
- * A {@link PressureSnapshotPayload.Scope#BANDS} snapshot (no lens, server ambient rule off) only feeds fracture feel:
- * {@link #origin} returns null for it, so the pill has no reading, and shimmer and the chime skip it.
+ * A {@link PressureSnapshotPayload.Scope#BANDS} snapshot (no lens, server ambient rule off) feeds fracture feel
+ * and visible-memory traces: {@link #origin} returns null for it, so the pill has no reading, and shimmer and the
+ * chime skip it.
  */
 public final class PressureClient {
     private static List<ChunkPressure> snapshot = List.of();
@@ -83,7 +84,7 @@ public final class PressureClient {
         }
         boolean lens = holdsLens(player);
         boolean ambient = ClientConfig.AMBIENT_WITHOUT_LENS.get();
-        boolean feel = FractureFeel.wantsSnapshot();
+        boolean feel = FractureFeel.wantsSnapshot() || MemoryTraces.wantsSnapshot();
         if (!lens) {
             lastChimeBand = -1;
         }

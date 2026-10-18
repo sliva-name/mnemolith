@@ -41,6 +41,13 @@ public final class ClientParticles {
             }
             return particle;
         });
+        event.registerSpriteSet(ModParticles.MEMORY_TRACE.get(), sprites -> (options, level, x, y, z, dx, dy, dz, random) -> {
+            if (!ClientConfig.MEMORY_TRACES.get()) {
+                return null;
+            }
+            // the x-velocity carries the loudest tag ordinal (-1 for none), the y-velocity the band ordinal
+            return MemoryParticle.spawnTrace(level, x, y, z, Math.round((float) dx), Math.round((float) dy), sprites, random);
+        });
         sprite(event, ModParticles.COMPOSE_SUCCESS.get(), MemoryPalette.PIGMENT, 0.18F, 20);
         sprite(event, ModParticles.COMPOSE_FAIL.get(), MemoryPalette.EMBER, 0.16F, 16);
         sprite(event, ModParticles.PRESSURE_WARN.get(), MemoryPalette.EMBER, 0.22F, 14);

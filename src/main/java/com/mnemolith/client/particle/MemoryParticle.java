@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 /** One tinted, fullbright memory mote. The provider returns null when the budget rejects it. */
 final class MemoryParticle extends SimpleAnimatedParticle {
     private com.mnemolith.particle.AfterEcho.Motion motion;
+    private boolean traceFracture;
     private MemoryParticle(ClientLevel level, double x, double y, double z, double dx, double dy, double dz, SpriteSet sprites, int rgb, float size, int life) {
         super(level, x, y, z, sprites, 0.0F);
         this.setParticleSpeed(dx, dy, dz);
@@ -56,9 +57,45 @@ final class MemoryParticle extends SimpleAnimatedParticle {
         return mote;
     }
 
+    /**
+     * A visible-memory trace mote (see {@code MemoryTrace}): the band sets size, life, rise and alpha;
+     * the loudest kind sets the colour and borrows its after-image motion, kept low over the ground.
+     * Fracture motes pulse. {@code tagOrdinal} is the snapshot's loudest ordinal (-1 for none).
+     */
+    static @Nullable Particle spawnTrace(ClientLevel level, double x, double y, double z, int tagOrdinal, int bandOrdinal, SpriteSet sprites, RandomSource random) {
+        com.mnemolith.pressure.PressureBand band = com.mnemolith.pressure.PressureBand.byOrdinal(bandOrdinal);
+        com.mnemolith.particle.MemoryTrace.Style style = com.mnemolith.particle.MemoryTrace.style(band);
+        if (style.motes() <= 0) {
+            return null;
+        }
+        Particle particle = spawn(level, x, y, z, 0.0D, style.rise(), 0.0D, sprites,
+                com.mnemolith.particle.MemoryTrace.colour(tagOrdinal), style.size(), style.life(), random);
+        if (!(particle instanceof MemoryParticle mote)) {
+            return particle;
+        }
+        mote.alpha = style.alpha();
+        mote.traceFracture = band == com.mnemolith.pressure.PressureBand.FRACTURE;
+        com.mnemolith.imprint.ImprintTag tag = com.mnemolith.particle.MemoryTrace.tag(tagOrdinal);
+        if (tag != null) {
+            double angle = random.nextDouble() * Math.PI * 2.0D;
+            switch (com.mnemolith.particle.AfterEcho.motionFor(tag)) {
+                case COLUMN -> mote.setParticleSpeed(0.0D, style.rise() * 2.2D, 0.0D);
+                case RIPPLE -> mote.setParticleSpeed(Math.cos(angle) * 0.035D, style.rise() * 0.4D, Math.sin(angle) * 0.035D);
+                case SINK -> mote.setParticleSpeed(0.0D, -0.010D, 0.0D);
+                case GROUND -> mote.setParticleSpeed(Math.cos(angle) * 0.010D, 0.0D, Math.sin(angle) * 0.010D);
+                case OUTLINE -> { mote.setParticleSpeed(0.0D, style.rise() * 0.5D, 0.0D); mote.quadSize *= 1.4F; }
+            }
+        }
+        return mote;
+    }
+
     @Override
     public void tick() {
         super.tick();
+        if (this.traceFracture) {
+            // a glowing seam breathes instead of holding one brightness
+            this.alpha = 0.72F + 0.28F * (float) Math.sin(this.age * 0.45F);
+        }
         if (this.motion == com.mnemolith.particle.AfterEcho.Motion.OUTLINE) {
             // dissolving outline: holds its size, then shrinks and fades over the second half
             float t = (float) this.age / (float) this.lifetime;

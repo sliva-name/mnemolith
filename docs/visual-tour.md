@@ -20,3 +20,6 @@ Tooltip scenes (`tooltip_<item>`) draw one real item tooltip through a dev-only 
 
 Comparison scenes: `edge_baseline` vs `circlet_tint`, `strong_baseline` vs `strong_hint`, and the pressure vignette on its
 own (`overloaded_vignette`, `fracture_vignette`) and stacked with the hint (`hint_plus_overloaded`).
+
+Visible memory: `traces_calm`, `traces_saturated`, `traces_overloaded`, `traces_fracture` stage the same chunk at
+each band with the HUD off and no lens in hand — the band must read from the ground traces alone.

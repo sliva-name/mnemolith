@@ -1515,5 +1515,7 @@
   "subtitles.mnemolith.memory.echo.forgotten": "Что-то забытое шевельнулось",
   "subtitles.mnemolith.memory.forgotten": "Память угасает",
   "mnemolith.configuration.pressureEffectStrength": "Сила эффектов давления",
-  "mnemolith.configuration.pressureEffectStrength.tooltip": "Сила виньетки давления, покачивания камеры и обесцвечивания разлома. 0 выключает всё; плашка линзы по-прежнему показывает полосу."
+  "mnemolith.configuration.pressureEffectStrength.tooltip": "Сила виньетки давления, покачивания камеры и обесцвечивания разлома. 0 выключает всё; плашка линзы по-прежнему показывает полосу.",
+  "mnemolith.configuration.memoryTraces": "Следы памяти в мире",
+  "mnemolith.configuration.memoryTraces.tooltip": "Показывать видимые следы на земле в насыщенных и более громких чанках: плотность и свечение зависят от полосы, цвет и движение — от самого громкого воспоминания, в разломе добавляются светящиеся швы. Не зависит от силы эффектов давления."
 }

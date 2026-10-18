@@ -1515,5 +1515,7 @@
   "subtitles.mnemolith.memory.echo.forgotten": "Something forgotten stirs",
   "subtitles.mnemolith.memory.forgotten": "Memory fades",
   "mnemolith.configuration.pressureEffectStrength": "Pressure effect strength",
-  "mnemolith.configuration.pressureEffectStrength.tooltip": "Strength of the pressure vignette, camera sway and fracture desaturation. 0 turns them all off; the lens pill still shows the band."
+  "mnemolith.configuration.pressureEffectStrength.tooltip": "Strength of the pressure vignette, camera sway and fracture desaturation. 0 turns them all off; the lens pill still shows the band.",
+  "mnemolith.configuration.memoryTraces": "Memory traces in the world",
+  "mnemolith.configuration.memoryTraces.tooltip": "Grow visible traces on the ground in saturated or louder chunks: density and glow follow the band, colour and motion follow the loudest memory, fracture adds glowing seams. Separate from pressure effect strength."
 }

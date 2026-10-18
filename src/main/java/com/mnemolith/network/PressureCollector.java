@@ -30,8 +30,10 @@ public final class PressureCollector {
     private PressureCollector() {}
 
     /**
-     * Band-only walk for fracture feel. Keeps only overloaded and fracture chunks. Pressure is sent as 0 and state
-     * as {@code NORMAL}, so the result carries no number, mute, archival, or saturated information. No mute scan.
+     * Band-only walk for fracture feel and visible-memory traces. Keeps chunks at saturated pressure or louder
+     * (visible memory made the saturated band world-readable, so the band alone is no longer private). Pressure
+     * is sent as 0 and state as {@code NORMAL}, so the result still carries no number, mute, archival, or loudest
+     * information. No mute scan.
      */
     static List<ChunkPressure> collectBands(ServerLevel level, BlockPos playerPos) {
         ChunkPos origin = ChunkPos.containing(playerPos);
@@ -48,7 +50,7 @@ public final class PressureCollector {
                     continue;
                 }
                 PressureBand band = MemoryPressure.band(memory.cachedPressure());
-                if (band.ordinal() < PressureBand.OVERLOADED.ordinal()) {
+                if (band.ordinal() < PressureBand.SATURATED.ordinal()) {
                     continue;
                 }
                 chunks.add(new ChunkPressure(chunkX, chunkZ, 0, band.ordinal(), ChunkState.NORMAL.ordinal()));

@@ -113,6 +113,7 @@ public final class MnemolithGameTests {
         suite("feel3qa", com.mnemolith.command.qa.Feel3Qa::check, Map.of());
         suite("feel4qa", com.mnemolith.command.qa.Feel4Qa::check, Map.of());
         suite("afterechoqa", com.mnemolith.command.qa.AfterEchoesQa::check, Map.of());
+        suite("tracesqa", com.mnemolith.command.qa.TracesQa::check, Map.of());
         suite("perfqa", com.mnemolith.command.qa.PerfQa::check, Map.of());
         // Mining job regression: nearest targets first, digging down, no skipped blocks (stone and ore lessons).
         suite("mineqa", com.mnemolith.command.qa.MineQa::check, Map.of());
