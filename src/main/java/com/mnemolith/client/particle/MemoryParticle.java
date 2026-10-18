@@ -14,6 +14,7 @@ import net.minecraft.util.RandomSource;
 final class MemoryParticle extends SimpleAnimatedParticle {
     private com.mnemolith.particle.AfterEcho.Motion motion;
     private boolean traceFracture;
+    private float traceAlpha = -1.0F;
     private MemoryParticle(ClientLevel level, double x, double y, double z, double dx, double dy, double dz, SpriteSet sprites, int rgb, float size, int life) {
         super(level, x, y, z, sprites, 0.0F);
         this.setParticleSpeed(dx, dy, dz);
@@ -62,7 +63,7 @@ final class MemoryParticle extends SimpleAnimatedParticle {
      * the loudest kind sets the colour and borrows its after-image motion, kept low over the ground.
      * Fracture motes pulse. {@code tagOrdinal} is the snapshot's loudest ordinal (-1 for none).
      */
-    static @Nullable Particle spawnTrace(ClientLevel level, double x, double y, double z, int tagOrdinal, int bandOrdinal, SpriteSet sprites, RandomSource random) {
+    static @Nullable Particle spawnTrace(ClientLevel level, double x, double y, double z, int tagOrdinal, int bandOrdinal, boolean seam, SpriteSet sprites, RandomSource random) {
         com.mnemolith.pressure.PressureBand band = com.mnemolith.pressure.PressureBand.byOrdinal(bandOrdinal);
         com.mnemolith.particle.MemoryTrace.Style style = com.mnemolith.particle.MemoryTrace.style(band);
         if (style.motes() <= 0) {
@@ -73,17 +74,23 @@ final class MemoryParticle extends SimpleAnimatedParticle {
         if (!(particle instanceof MemoryParticle mote)) {
             return particle;
         }
+        if (seam) {
+            mote.quadSize *= 0.85F;
+        }
         mote.alpha = style.alpha();
+        mote.traceAlpha = style.alpha();
         mote.traceFracture = band == com.mnemolith.pressure.PressureBand.FRACTURE;
+        // traces hug the surface and linger: almost no drift, so a stain stays where the place put it
+        mote.friction = 0.98F;
         com.mnemolith.imprint.ImprintTag tag = com.mnemolith.particle.MemoryTrace.tag(tagOrdinal);
         if (tag != null) {
             double angle = random.nextDouble() * Math.PI * 2.0D;
             switch (com.mnemolith.particle.AfterEcho.motionFor(tag)) {
-                case COLUMN -> mote.setParticleSpeed(0.0D, style.rise() * 2.2D, 0.0D);
-                case RIPPLE -> mote.setParticleSpeed(Math.cos(angle) * 0.035D, style.rise() * 0.4D, Math.sin(angle) * 0.035D);
-                case SINK -> mote.setParticleSpeed(0.0D, -0.010D, 0.0D);
-                case GROUND -> mote.setParticleSpeed(Math.cos(angle) * 0.010D, 0.0D, Math.sin(angle) * 0.010D);
-                case OUTLINE -> { mote.setParticleSpeed(0.0D, style.rise() * 0.5D, 0.0D); mote.quadSize *= 1.4F; }
+                case COLUMN -> { mote.setParticleSpeed(Math.cos(angle) * 0.006D, style.rise() * 3.0D, Math.sin(angle) * 0.006D); mote.friction = 0.94F; }
+                case RIPPLE -> mote.setParticleSpeed(Math.cos(angle) * 0.006D, style.rise() * 0.3D, Math.sin(angle) * 0.006D);
+                case SINK -> mote.setParticleSpeed(0.0D, -0.012D, 0.0D);
+                case GROUND -> mote.setParticleSpeed(Math.cos(angle) * 0.005D, 0.0D, Math.sin(angle) * 0.005D);
+                case OUTLINE -> { mote.setParticleSpeed(0.0D, style.rise() * 0.3D, 0.0D); mote.quadSize *= 1.3F; }
             }
         }
         return mote;
@@ -92,9 +99,14 @@ final class MemoryParticle extends SimpleAnimatedParticle {
     @Override
     public void tick() {
         super.tick();
-        if (this.traceFracture) {
-            // a glowing seam breathes instead of holding one brightness
-            this.alpha = 0.72F + 0.28F * (float) Math.sin(this.age * 0.45F);
+        if (this.traceAlpha >= 0.0F) {
+            // stains fade in, linger, then dissolve; a fracture trace breathes on top of that
+            float t = (float) this.age / (float) this.lifetime;
+            float fade = Math.min(1.0F, t * 8.0F) * (t > 0.6F ? Math.max(0.12F, 1.0F - (t - 0.6F) * 2.2F) : 1.0F);
+            this.alpha = this.traceAlpha * fade;
+            if (this.traceFracture) {
+                this.alpha *= 0.85F + 0.15F * (float) Math.sin(this.age * 0.45F);
+            }
         }
         if (this.motion == com.mnemolith.particle.AfterEcho.Motion.OUTLINE) {
             // dissolving outline: holds its size, then shrinks and fades over the second half

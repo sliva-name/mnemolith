@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.mnemolith.client.config.ClientConfig;
 import com.mnemolith.network.ChunkPressure;
-import com.mnemolith.particle.AfterEcho;
 import com.mnemolith.particle.MemoryTrace;
 import com.mnemolith.particle.ModParticles;
 import com.mnemolith.pressure.PressureBand;
@@ -20,7 +19,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
- * Visible memory, client side: grows {@link MemoryTrace} motes on the ground of nearby loud chunks,
+ * Visible memory, client side: grows {@link MemoryTrace} stains on the ground of nearby loud chunks,
  * read straight from the pressure snapshot {@link PressureClient} already polls. No world mutation,
  * no server work: motes are local particles inside the shared {@code MemoryFxBudget}, so
  * {@code particleDensity} scales them and 0 (or {@code imprintParticles} off) stills them.
@@ -93,26 +92,39 @@ public final class MemoryTraces {
             boolean bloom = stillTicks >= MemoryTrace.STILL_TICKS && chunk.chunkX() == origin.x() && chunk.chunkZ() == origin.z();
             int count = (int) Math.round(style.motes() * density * (bloom ? 2 : 1));
             var tag = MemoryTrace.tag(chunk.loudest());
-            boolean sinking = tag != null && AfterEcho.motionFor(tag) == AfterEcho.Motion.SINK;
+            MemoryTrace.Pattern pattern = MemoryTrace.pattern(tag);
             ChunkPos pos = new ChunkPos(chunk.chunkX(), chunk.chunkZ());
             for (int i = 0; i < count && attempts < MemoryTrace.MAX_PER_ROUND; i++) {
                 attempts++;
-                int bx;
-                int bz;
-                if (style.seam() && i % 3 != 0) {
+                double px;
+                double pz;
+                double lift = 0.08D;
+                boolean seamMote = style.seam() && i % 3 != 2;
+                if (seamMote) {
+                    // two of every three fracture motes (six of nine) feed the seam, so the crack stays continuous
                     int[] point = MemoryTrace.seamPoint(pos, random.nextDouble(), random);
-                    bx = point[0];
-                    bz = point[1];
+                    px = point[0] + 0.5D;
+                    pz = point[1] + 0.5D;
+                    lift = 0.05D;
                 } else {
-                    bx = pos.getMinBlockX() + random.nextInt(16);
-                    bz = pos.getMinBlockZ() + random.nextInt(16);
+                    double[] point = MemoryTrace.patternPoint(pattern, pos, i % Math.max(1, style.clusters()),
+                            random.nextDouble(), random, style.spread());
+                    px = point[0];
+                    pz = point[1];
+                    if (pattern == MemoryTrace.Pattern.WISPS) {
+                        lift = 1.25D;
+                    } else if (pattern == MemoryTrace.Pattern.EMBERS) {
+                        lift = 0.3D;
+                    }
                 }
+                int bx = (int) Math.floor(px);
+                int bz = (int) Math.floor(pz);
                 if (!level.hasChunk(bx >> 4, bz >> 4)) {
                     continue;
                 }
-                double y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz) + 0.15D + (sinking ? 1.3D : 0.0D);
-                level.addParticle(ModParticles.MEMORY_TRACE.get(), bx + 0.5D, y, bz + 0.5D,
-                        chunk.loudest(), band.ordinal(), 0.0D);
+                double y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz) + lift;
+                level.addParticle(ModParticles.MEMORY_TRACE.get(), px, y, pz,
+                        chunk.loudest(), band.ordinal(), seamMote ? 1.0D : 0.0D);
             }
         }
     }

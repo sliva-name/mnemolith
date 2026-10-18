@@ -23,15 +23,18 @@ import net.minecraft.world.level.ChunkPos;
 
 /**
  * {@code /mnemolith tracesqa}. Visible memory: the band-to-trace mapping the client grows from the pressure
- * snapshot. Calm grows nothing; motes, size, life and alpha rise strictly with the band; only fracture lays a
- * seam; the seam is deterministic per chunk and stays inside it; every imprint kind has its glyph colour and an
- * after-echo motion (the shapes traces borrow); a band-only snapshot (no loudest) falls back to the pale
- * after-image colour; the particle type and the client toggle's RU/EN lang exist; the mapping stays cheap.
- * Rendering itself is checked in the visual tour ({@code traces_*} scenes).
+ * snapshot. Calm grows nothing; motes, size, life, alpha, cluster count and spread rise strictly with the band;
+ * only fracture lays a seam; the seam and the cluster centres are deterministic per chunk and stay inside it;
+ * every imprint kind has its glyph colour, an after-echo motion and a silhouette (explosion ring, path trail,
+ * build outline, fire embers, death wisps); ring and outline points really follow those lines; a band-only
+ * snapshot (no loudest) falls back to the pale after-image colour; the particle type and the client toggle's
+ * RU/EN lang exist; the mapping stays cheap. Rendering itself is checked in the visual tour ({@code traces_*}
+ * scenes, bands and kinds).
  */
 public final class TracesQa {
     private static final String[] NAMES = {"calmEmpty", "monotonic", "fractureSeamOnly", "seamStableInside",
-            "coloursPerKind", "motionsPerKind", "bandOnlyFallback", "particle", "lang", "cheap"};
+            "coloursPerKind", "motionsPerKind", "bandOnlyFallback", "particle", "lang", "cheap",
+            "patternsPerKind", "clusterStable", "silhouetteShapes"};
 
     private TracesQa() {}
 
@@ -54,7 +57,9 @@ public final class TracesQa {
                 && saturated.size() < overloaded.size() && overloaded.size() < fracture.size()
                 && saturated.life() < overloaded.life() && overloaded.life() < fracture.life()
                 && saturated.alpha() < overloaded.alpha() && overloaded.alpha() <= fracture.alpha()
-                && saturated.rise() < overloaded.rise() && overloaded.rise() < fracture.rise();
+                && saturated.rise() < overloaded.rise() && overloaded.rise() < fracture.rise()
+                && saturated.clusters() < overloaded.clusters() && overloaded.clusters() < fracture.clusters()
+                && saturated.spread() < overloaded.spread() && overloaded.spread() < fracture.spread();
 
         ok[2] = fracture.seam() && !saturated.seam() && !overloaded.seam() && !MemoryTrace.style(PressureBand.CALM).seam();
 
@@ -112,10 +117,51 @@ public final class TracesQa {
         for (int i = 0; i < 20_000; i++) {
             sink += MemoryTrace.style(PressureBand.byOrdinal(i & 3)).motes();
             sink += MemoryTrace.seamPoint(new ChunkPos(i, -i), 0.5D, random)[0];
+            sink += (int) MemoryTrace.patternPoint(MemoryTrace.Pattern.RING, new ChunkPos(i, -i), 0, 0.5D, random, 2.4D)[0];
         }
         long mean = (System.nanoTime() - start) / 20_000L;
         ok[9] = mean < 20_000L && sink != Integer.MIN_VALUE;
         notes.add("mappingNs=" + mean);
+
+        boolean patterns = MemoryTrace.pattern(ImprintTag.EXPLOSION) == MemoryTrace.Pattern.RING
+                && MemoryTrace.pattern(ImprintTag.PATH) == MemoryTrace.Pattern.TRAIL
+                && MemoryTrace.pattern(ImprintTag.BUILD) == MemoryTrace.Pattern.OUTLINE
+                && MemoryTrace.pattern(ImprintTag.FIRE) == MemoryTrace.Pattern.EMBERS
+                && MemoryTrace.pattern(ImprintTag.DEATH) == MemoryTrace.Pattern.WISPS
+                && MemoryTrace.pattern(null) == MemoryTrace.Pattern.PATINA;
+        for (ImprintTag tag : ImprintTag.values()) {
+            patterns &= MemoryTrace.pattern(tag) != null;
+        }
+        ok[10] = patterns;
+
+        boolean clusters = true;
+        ChunkPos probe = new ChunkPos(2, -3);
+        for (int index = 0; index < 3; index++) {
+            double[] center = MemoryTrace.clusterCenter(probe, index);
+            double[] again = MemoryTrace.clusterCenter(probe, index);
+            clusters &= center[0] == again[0] && center[1] == again[1]
+                    && center[0] > probe.getMinBlockX() + 2 && center[0] < probe.getMaxBlockX() - 2
+                    && center[1] > probe.getMinBlockZ() + 2 && center[1] < probe.getMaxBlockZ() - 2;
+        }
+        double[] c0 = MemoryTrace.clusterCenter(probe, 0);
+        double[] c1 = MemoryTrace.clusterCenter(probe, 1);
+        clusters &= c0[0] != c1[0] || c0[1] != c1[1];
+        ok[11] = clusters;
+
+        boolean shapes = true;
+        double[] center = MemoryTrace.clusterCenter(probe, 0);
+        for (double t = 0.0D; t < 1.0D; t += 0.05D) {
+            double[] ring = MemoryTrace.patternPoint(MemoryTrace.Pattern.RING, probe, 0, t, RandomSource.create(7L), 2.4D);
+            double dist = Math.hypot(ring[0] - center[0], ring[1] - center[1]);
+            shapes &= dist > 1.8D && dist < 3.4D;
+            double[] outline = MemoryTrace.patternPoint(MemoryTrace.Pattern.OUTLINE, probe, 0, t, RandomSource.create(7L), 2.4D);
+            double norm = Math.max(Math.abs(outline[0] - center[0]), Math.abs(outline[1] - center[1]));
+            shapes &= norm > 1.5D && norm < 2.6D;
+            double[] trail = MemoryTrace.patternPoint(MemoryTrace.Pattern.TRAIL, probe, 0, t, RandomSource.create(7L), 2.4D);
+            shapes &= trail[0] >= probe.getMinBlockX() && trail[0] <= probe.getMaxBlockX() + 1
+                    && trail[1] >= probe.getMinBlockZ() && trail[1] <= probe.getMaxBlockZ() + 1;
+        }
+        ok[12] = shapes;
 
         return new QaReport("tracesqa", NAMES, ok, notes);
     }

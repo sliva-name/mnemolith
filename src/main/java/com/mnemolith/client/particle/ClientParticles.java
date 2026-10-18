@@ -45,8 +45,9 @@ public final class ClientParticles {
             if (!ClientConfig.MEMORY_TRACES.get()) {
                 return null;
             }
-            // the x-velocity carries the loudest tag ordinal (-1 for none), the y-velocity the band ordinal
-            return MemoryParticle.spawnTrace(level, x, y, z, Math.round((float) dx), Math.round((float) dy), sprites, random);
+            // the x-velocity carries the loudest tag ordinal (-1 for none), the y-velocity the band ordinal,
+            // and a z-velocity of 1 marks a fracture seam mote (finer than the cluster stains)
+            return MemoryParticle.spawnTrace(level, x, y, z, Math.round((float) dx), Math.round((float) dy), dz > 0.5D, sprites, random);
         });
         sprite(event, ModParticles.COMPOSE_SUCCESS.get(), MemoryPalette.PIGMENT, 0.18F, 20);
         sprite(event, ModParticles.COMPOSE_FAIL.get(), MemoryPalette.EMBER, 0.16F, 16);
