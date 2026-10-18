@@ -67,3 +67,13 @@ together. The lens then gives the exact number and name.
   differ only by colour); after, clusters hug the ground, an explosion reads as a scorched ring, a path as a
   dotted trail, a build as a block outline, fire as an ember cluster, death as sinking pale-red wisps, and
   fracture keeps its glowing seam. Per-kind scenes: `traces_kind_{explosion,death,path,build,fire}`.
+
+## Cohesion pass (with the balance pass)
+
+After-echoes were the odd ones out: every kind replayed in the same pale ghost blue, so an explosion's echo
+read as white smoke while its traces burned ember. After-image motes now wear the kind's glyph colour washed
+35% toward the pale after-image tone (`MemoryParticle.echoColour`) — ghostly, but the same hue language as
+traces and the lens pill. Ripple echoes (explosion, boss, portal) are also born on a ring of radius 0.7
+instead of in a point, so the scar ring exists from the first tick and only then expands. The storm warning
+from the balance pass (action bar + sound at `stormWarningSeconds`) is the third cue in the same story:
+traces show the fracture, stillness replays it, the place itself warns before it breaks.

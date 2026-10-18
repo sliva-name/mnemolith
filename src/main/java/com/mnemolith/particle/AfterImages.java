@@ -159,7 +159,11 @@ public final class AfterImages {
     private static double[] moteAt(BlockPos origin, AfterEcho.Motion motion, net.minecraft.util.RandomSource random) {
         double x = origin.getX(), y = origin.getY(), z = origin.getZ();
         return switch (motion) {
-            case RIPPLE -> new double[] {x + 0.5D + random.nextGaussian() * 0.04D, y + 0.55D, z + 0.5D + random.nextGaussian() * 0.04D};
+            case RIPPLE -> {
+                // born on a ring, not in a point: an explosion's echo is a scar ring from its first tick
+                double angle = random.nextDouble() * Math.PI * 2.0D;
+                yield new double[] {x + 0.5D + Math.cos(angle) * 0.7D, y + 0.55D, z + 0.5D + Math.sin(angle) * 0.7D};
+            }
             case SINK -> new double[] {x + 0.5D + random.nextGaussian() * 0.06D, y + 1.9D + random.nextGaussian() * 0.2D, z + 0.5D + random.nextGaussian() * 0.06D};
             case GROUND -> new double[] {x + 0.5D + (random.nextDouble() - 0.5D) * 1.6D, y + 0.15D, z + 0.5D + (random.nextDouble() - 0.5D) * 0.3D};
             case OUTLINE -> {

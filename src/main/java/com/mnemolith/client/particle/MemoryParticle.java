@@ -41,7 +41,7 @@ final class MemoryParticle extends SimpleAnimatedParticle {
 
     /** An after-image mote: motion by the remembered kind (see {@code AfterEcho}). Keeps its speed (friction 1). */
     static @Nullable Particle spawnAfter(ClientLevel level, double x, double y, double z, com.mnemolith.imprint.ImprintTag tag, SpriteSet sprites, RandomSource random) {
-        Particle particle = spawn(level, x, y, z, 0.0D, 0.0D, 0.0D, sprites, MemoryPalette.AFTERIMAGE, 0.2F, 80, random);
+        Particle particle = spawn(level, x, y, z, 0.0D, 0.0D, 0.0D, sprites, echoColour(tag), 0.2F, 80, random);
         if (!(particle instanceof MemoryParticle mote)) {
             return particle;
         }
@@ -94,6 +94,22 @@ final class MemoryParticle extends SimpleAnimatedParticle {
             }
         }
         return mote;
+    }
+
+    /**
+     * After-images wear the same colour language as traces and the lens glyph: the kind's glyph colour,
+     * washed 35% toward the pale after-image tone so they stay ghostly and never read as fresh events.
+     */
+    static int echoColour(com.mnemolith.imprint.ImprintTag tag) {
+        int glyph = com.mnemolith.common.MemoryGlyphs.colour(tag);
+        if (glyph == 0) {
+            return MemoryPalette.AFTERIMAGE;
+        }
+        int pale = MemoryPalette.AFTERIMAGE;
+        int r = (int) (((glyph >> 16) & 0xFF) * 0.65F + ((pale >> 16) & 0xFF) * 0.35F);
+        int g = (int) (((glyph >> 8) & 0xFF) * 0.65F + ((pale >> 8) & 0xFF) * 0.35F);
+        int b = (int) ((glyph & 0xFF) * 0.65F + (pale & 0xFF) * 0.35F);
+        return (r << 16) | (g << 8) | b;
     }
 
     @Override
