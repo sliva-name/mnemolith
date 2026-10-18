@@ -66,6 +66,19 @@ public class EmberBrazierBlock extends Block {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
+        if (stack.is(ModItems.IMPRINT_SLIP.get())) {
+            if (!(level instanceof ServerLevel server)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (chargePerSlip() <= 0 || !feedSlip(server, pos, state)) {
+                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                    serverPlayer.sendOverlayMessage(Component.translatable("message.mnemolith.ember_brazier.full"));
+                }
+                return InteractionResult.FAIL;
+            }
+            stack.consume(1, player);
+            return InteractionResult.SUCCESS_SERVER;
+        }
         if (!stack.is(ModItems.MEMORY_EMBER.get())) {
             return InteractionResult.PASS;
         }
@@ -90,6 +103,29 @@ public class EmberBrazierBlock extends Block {
 
     public static int chargePerEmber() {
         return com.mnemolith.config.ServerConfig.EMBER_BRAZIER_CHARGE_PER_EMBER.get();
+    }
+
+    /** Burns one imprint slip of any kind gives a brazier: the slip sink (half an ember by default). */
+    public static int chargePerSlip() {
+        return com.mnemolith.config.ServerConfig.EMBER_BRAZIER_CHARGE_PER_SLIP.get();
+    }
+
+    /** Adds one slip's worth of charge; false (nothing changes) when it would overflow or slips are refused. */
+    public static boolean feedSlip(ServerLevel level, BlockPos pos, BlockState state) {
+        int add = chargePerSlip();
+        if (add <= 0) {
+            return false;
+        }
+        int charge = state.getValue(CHARGE);
+        if (charge + add > MAX_CHARGE) {
+            return false;
+        }
+        level.setBlock(pos, state.setValue(CHARGE, charge + add).setValue(LIT, true), Block.UPDATE_ALL);
+        level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 0.9F);
+        if (!level.getBlockTicks().hasScheduledTick(pos, state.getBlock())) {
+            level.scheduleTick(pos, state.getBlock(), burnPeriod());
+        }
+        return true;
     }
 
     public static int burnPeriod() {

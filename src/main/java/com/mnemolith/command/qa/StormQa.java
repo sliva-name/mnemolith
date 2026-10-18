@@ -392,7 +392,8 @@ public final class StormQa {
                 }
                 boolean mobDrops = level.getGameRules().get(GameRules.MOB_DROPS);
                 List<ItemStack> big = ScarEntity.drops(level, 6, List.of(Temper.GRAVE, Temper.KINDLED), d);
-                boolean bigOk = big.size() == 3 && big.getFirst().is(ModItems.SCAR_FRAGMENT.get()) && big.getFirst().getCount() == 2;
+                boolean bigOk = big.size() == 4 && big.getFirst().is(ModItems.SCAR_FRAGMENT.get()) && big.getFirst().getCount() == 2
+                        && big.stream().anyMatch(dropped -> dropped.is(net.minecraft.world.item.Items.AMETHYST_SHARD) && dropped.getCount() == 8);
                 ok[13] = caster.isDeadOrDying() && (mobDrops ? fragments == 1 && shards == 1 : fragments == 0) && bigOk;
                 notes.add("scarDrops dead=" + caster.isDeadOrDying() + " fragments=" + fragments + " shards=" + shards + " mobDrops=" + mobDrops
                         + " mergedSix=" + big.size());

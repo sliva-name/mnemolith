@@ -251,4 +251,7 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md); done: PR #96–#100).
 33. Visible memory (done): chunk pressure reads from the world itself — ground traces scale with the band,
     coloured and shaped by the loudest memory, glowing seams at fracture; design note [visible-memory.md](visible-memory.md).
-34. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+34. Balance pass (done): storms answer sustained presence (build-up + warning) instead of a first-second roll,
+    surplus slips sink into the ember brazier, bosses pay amethyst, echo slips wait for recollite; see
+    [balance.md](balance.md).
+35. Next: pick from [expansion-ideas.md](expansion-ideas.md).

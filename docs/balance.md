@@ -181,3 +181,10 @@ Defaults live in the `recall` section. The player-facing plan is [design/living-
 | cinderkin drop | 0–2 embers (+1 per Looting), player kills only | about one ember per kill: a short Nether trip with a stack of snowballs fills a brazier |
 | `emberBrazierChargePerEmber` | 4 | one kill is about 4 burns. A busy base writes far more than that, so a brazier keeps one room or farm calm, not a whole town |
 | `emberBrazierBurnTicks` | 100 | 5 s per burn: a full brazier (16) empties a loud chunk in under a minute and a half, quickly enough to see, slowly enough to matter |
+
+
+## Balance pass (post-0.6.1)
+
+Storms, slip sinks, boss pay and the echo-slip gate were retuned after this audit; the changed numbers and the
+invariants that guard them (`/mnemolith balanceqa`) are in [design/balance.md](design/balance.md). The target
+curve above is unchanged: bands, weights, decay and compose spikes are exactly as this page describes.

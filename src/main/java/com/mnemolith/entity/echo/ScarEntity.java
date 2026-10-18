@@ -536,6 +536,8 @@ public final class ScarEntity extends Mob {
     public static List<net.minecraft.world.item.ItemStack> drops(ServerLevel level, int merged, List<Temper> tempers, BlockPos home, boolean mirror, boolean guardian) {
         List<net.minecraft.world.item.ItemStack> list = new ArrayList<>();
         list.add(new net.minecraft.world.item.ItemStack(ModItems.SCAR_FRAGMENT.get(), merged >= 5 ? 2 : 1));
+        // amethyst is the early-game currency (lens, needle, seals): a boss should pay in something every stage spends
+        list.add(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.AMETHYST_SHARD, 2 + merged));
         if (guardian) {
             list.add(Residues.shard(ImprintTag.SILENCE, 4, home, level.getGameTime()));
             list.add(Residues.shard(ImprintTag.SCULK, 4, home, level.getGameTime()));

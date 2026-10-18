@@ -19,6 +19,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue CINDERKIN_SPAWNS;
     public static final ModConfigSpec.IntValue EMBER_BRAZIER_BURN_TICKS;
     public static final ModConfigSpec.IntValue EMBER_BRAZIER_CHARGE_PER_EMBER;
+    public static final ModConfigSpec.IntValue EMBER_BRAZIER_CHARGE_PER_SLIP;
     public static final ModConfigSpec.BooleanValue HUSHLING_SPAWNS;
     public static final ModConfigSpec.IntValue HUSH_TICKS;
     public static final ModConfigSpec.IntValue HUSHLING_THIN_TICKS;
@@ -48,6 +49,7 @@ public final class ServerConfig {
         CINDERKIN_SPAWNS = SpecValues.bool(builder, "cinderkinSpawns", "Whether cinderkin spawn naturally in the Nether. Spawn eggs and commands still work; cinderkin already out stay.", true);
         EMBER_BRAZIER_BURN_TICKS = SpecValues.integer(builder, "emberBrazierBurnTicks", "Ticks between two burns of a lit ember brazier (each burns the loudest imprint of its chunk). 100 is 5 seconds.", 100, 20, 1200);
         EMBER_BRAZIER_CHARGE_PER_EMBER = SpecValues.integer(builder, "emberBrazierChargePerEmber", "Burns one memory ember gives an ember brazier. A brazier holds 16.", 4, 1, 16);
+        EMBER_BRAZIER_CHARGE_PER_SLIP = SpecValues.integer(builder, "emberBrazierChargePerSlip", "Burns one imprint slip of any kind fed to an ember brazier gives. The slip sink: surplus slips become pressure relief. 0 refuses slips.", 2, 0, 16);
         builder.pop();
 
         SpecValues.section(builder, "paleChorus", "The Pale Chorus: the hushlings of the End and the hush loom.");
