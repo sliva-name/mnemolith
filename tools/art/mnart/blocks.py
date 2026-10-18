@@ -235,6 +235,86 @@ def composition_reel():
     return m.build()
 
 
+# ------------------------------------------------------------------ hush loom (real frame, not a cube)
+
+def warp_threads(w, h, rng, threaded=False):
+    """Vertical warp on lilac: pale threads every two texels; threaded adds a woven band growing from the bottom."""
+    cv = mat('lilac', w, h, rng, bevel=0, wear=0.2, base_shift=-0.4)
+    for x in range(1, w, 2):
+        cv.fill(m_rect(w, h, x, 0, x, h - 1), RAMPS['white'][6] if threaded else RAMPS['pale'][5])
+    cv.fill(m_rect(w, h, 0, 2, w - 1, 2), RAMPS['amethyst'][3])
+    if threaded:
+        for y in range(h // 2, h, 2):
+            cv.fill(m_rect(w, h, 0, y, w - 1, y), RAMPS['white'][6])
+            cv.fill(m_rect(w, h, 0, y + 1, w - 1, y + 1), RAMPS['lilac'][4])
+    return cv
+
+
+def cloth_beam(w, h, rng, threaded=False):
+    cv = mat('wood', w, h, rng, wear=0.3)
+    if threaded:
+        cv.fill(m_rect(w, h, 1, 1, w - 2, h - 2), RAMPS['pale'][5])
+        for y in range(2, h - 1, 2):
+            cv.fill(m_rect(w, h, 1, y, w - 2, y), RAMPS['white'][6])
+    return cv
+
+
+def hush_loom(threaded=False):
+    """A loom frame: plinth, four posts, top and bottom rails, a strung warp panel and a cloth beam.
+
+    Threaded, the warp carries a woven band and the beam is wound with pale cloth.
+    """
+    name = 'hush_loom_threaded' if threaded else 'hush_loom'
+    m = Model(name, seed=name)
+    frame = F('amethyst', wear=0.4)
+    dark = F('amethyst', shift=-0.8, wear=0.4)
+    m.box((0, 0, 0), (16, 1, 16), dark, up=F('amethyst', kind='top', shift=-0.4), down=dark)
+    for x0 in (1, 13):
+        for z0 in (1, 13):
+            m.box((x0, 1, z0), (x0 + 2, 14, z0 + 2), frame, down=None)
+        m.box((x0, 14, 1), (x0 + 2, 16, 15), frame, down=None)          # side top beams
+        m.box((x0, 2, 1), (x0 + 2, 4, 15), frame, down=None)            # side bottom rails
+    m.box((3, 14, 1), (13, 16, 3), frame, down=None)                     # front top beam
+    m.box((3, 14, 13), (13, 16, 15), frame, down=None)                   # back top beam
+    m.box((3, 4, 6), (13, 14, 7), P(lambda w, h, r: warp_threads(w, h, r, threaded), 'warp_threaded' if threaded else 'warp', density=0.5), down=None, up=None)
+    m.box((3, 9, 5.6), (13, 10, 7.4), F('echo', wear=0.3), down=None)  # heddle bar with its magenta line
+    m.box((3, 2.5, 5), (13, 4.5, 7), P(lambda w, h, r: cloth_beam(w, h, r, threaded), 'beam_threaded' if threaded else 'beam', density=0.5), down=None)
+    return m.build()
+
+
+# ------------------------------------------------------------------ ember brazier (bowl on legs)
+
+def ember_bed(w, h, rng, lit=False):
+    """Coals: deep bed with ember glints; lit, the middle glows."""
+    cv = mat('deep', w, h, rng, bevel=0, wear=0.2, base_shift=-0.6)
+    if lit:
+        cv.fill(m_ellipse(w, h, w / 2, h / 2, w * 0.34, h * 0.34), RAMPS['ember'][3])
+        cv.fill(m_ellipse(w, h, w / 2, h / 2, w * 0.2, h * 0.2), RAMPS['ember'][4])
+        cv.fill(m_ellipse(w, h, w / 2, h / 2, w * 0.1, h * 0.1), RAMPS['ember'][5])
+    n = (w * h // 6) if lit else (w * h // 22)
+    for _ in range(n):
+        cv.px(rng.randrange(w), rng.randrange(h), rng.choice((RAMPS['ember'][4], RAMPS['ember'][5], RAMPS['ember'][3])))
+    return cv
+
+
+def ember_brazier(lit=False):
+    """A brazier: three iron legs, a stepped bowl with a brass rim, and a coal bed that glows when lit."""
+    name = 'ember_brazier_lit' if lit else 'ember_brazier'
+    m = Model(name, seed=name)
+    iron = F('iron', wear=0.5)
+    rim = F('brass', wear=0.35)
+    m.box((2, 0, 2), (4.5, 5, 4.5), iron, down=None)
+    m.box((11.5, 0, 2), (14, 5, 4.5), iron, down=None)
+    m.box((6.75, 0, 11.5), (9.25, 5, 14), iron, down=None)
+    m.box((4, 3.5, 4), (12, 5.5, 12), iron, down=None)                    # bowl stem
+    m.box((3, 5.5, 3), (13, 7, 13), F('deep', wear=0.4), up=P(lambda w, h, r: ember_bed(w, h, r, lit), 'bed_lit' if lit else 'bed'), down=None)
+    for frm, to in (((2, 7, 2), (14, 8.5, 4)), ((2, 7, 12), (14, 8.5, 14)), ((2, 7, 4), (4, 8.5, 12)), ((12, 7, 4), (14, 8.5, 12))):
+        m.box(frm, to, rim, down=None)                                    # rim ring
+    if lit:
+        m.box((5, 7, 5), (11, 7.6, 11), P(lambda w, h, r: ember_bed(w, h, r, True), 'bed_lit'), down=None, up=None)
+    return m.build()
+
+
 # ------------------------------------------------------------------ resonator trap
 
 def cobble_plate_top(w, h, rng):
@@ -538,6 +618,10 @@ MODELS = {
     'archival_stratum': archival_stratum,
     'mute_stone': mute_stone,
     'composition_reel': composition_reel,
+    'hush_loom': lambda: hush_loom(False),
+    'hush_loom_threaded': lambda: hush_loom(True),
+    'ember_brazier': lambda: ember_brazier(False),
+    'ember_brazier_lit': lambda: ember_brazier(True),
     'resonator_trap': resonator_trap,
     'archive_vault': lambda: archive_vault(False),
     'archive_vault_on': lambda: archive_vault(True),
@@ -558,6 +642,8 @@ CUBE_TEXTURES = {
 PARTICLE = {
     'archival_stratum': ('archival_stratum', 'navy'), 'mute_stone': ('mute_stone', 'mute'),
     'composition_reel': ('composition_reel', 'wood'), 'resonator_trap': ('resonator_trap', 'mute'),
+    'hush_loom': ('hush_loom', 'amethyst'), 'hush_loom_threaded': ('hush_loom_threaded', 'amethyst'),
+    'ember_brazier': ('ember_brazier', 'deep'), 'ember_brazier_lit': ('ember_brazier_lit', 'ember'),
     'archive_vault': ('archive_vault', 'deep'), 'archive_vault_on': ('archive_vault', 'deep'),
     'scar_heart': ('scar_heart', 'scar'),
     'echo_home': ('echo_home', 'navy'),

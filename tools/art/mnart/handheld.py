@@ -93,7 +93,41 @@ def chronicle_lens_in_hand():
     return m.build(parent=None, display=HANDHELD, texture_name='chronicle_lens_model')
 
 
+CIRCLET_DISPLAY = {
+    'thirdperson_righthand': {'rotation': [70, 0, 0], 'translation': [0, 3.0, 0.5], 'scale': [0.6, 0.6, 0.6]},
+    'thirdperson_lefthand': {'rotation': [70, 0, 0], 'translation': [0, 3.0, 0.5], 'scale': [0.6, 0.6, 0.6]},
+    'firstperson_righthand': {'rotation': [-12, -18, 8], 'translation': [1.0, 2.6, 0.8], 'scale': [0.55, 0.55, 0.55]},
+    'firstperson_lefthand': {'rotation': [-12, 18, -8], 'translation': [1.0, 2.6, 0.8], 'scale': [0.55, 0.55, 0.55]},
+    'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
+}
+
+
+def remembering_circlet_in_hand():
+    """A circlet, not a coin: a gold octagon band with a faceted recollite brow gem and two crystal studs."""
+    m = Model('remembering_circlet_model', folder='item', seed='circlet3d')
+    C, R, t = 8.0, 5.2, 1.1
+    z0, z1 = 7.3, 8.7
+    band = F('brass', wear=0.35)
+    face = P(ring_front, 'circlet_front')
+    m.box((C - 1.8, C + R - t, z0), (C + 1.8, C + R, z1), band, north=face, south=face)
+    m.box((C - 1.8, C - R, z0), (C + 1.8, C - R + t, z1), band, north=face, south=face)
+    m.box((C - R, C - 1.8, z0), (C - R + t, C + 1.8, z1), band, north=face, south=face)
+    m.box((C + R - t, C - 1.8, z0), (C + R, C + 1.8, z1), band, north=face, south=face)
+    off = (R - t / 2) * 0.7071
+    for sx, sy in ((1, 1), (-1, -1), (-1, 1), (1, -1)):
+        cx, cy = C + sx * off, C + sy * off
+        ang = -45 if sx == sy else 45
+        m.box((cx - 1.6, cy - t / 2, z0), (cx + 1.6, cy + t / 2, z1), band, north=face, south=face,
+              rotation={'origin': [cx, cy, 8], 'axis': 'z', 'angle': ang})
+    m.box((C - 0.9, C + R - 0.5, 6.9), (C + 0.9, C + R + 1.1, 9.1), F('recollite', wear=0.1), down=None)   # brow gem proud of the band
+    m.box((C - 0.45, C + R + 1.1, 7.45), (C + 0.45, C + R + 1.9, 8.55), F('recollite', wear=0.1), down=None)  # gem tip
+    for dx in (-3.1, 3.1):
+        m.box((C + dx - 0.3, C + R - 0.1, 7.6), (C + dx + 0.3, C + R + 0.7, 8.4), P(crystal, 'circlet_stud'), down=None)
+    return m.build(parent=None, display=CIRCLET_DISPLAY, texture_name='remembering_circlet_model')
+
+
 HANDHELD_MODELS = {
     'extraction_needle': extraction_needle_in_hand,
     'chronicle_lens': chronicle_lens_in_hand,
+    'remembering_circlet': remembering_circlet_in_hand,
 }

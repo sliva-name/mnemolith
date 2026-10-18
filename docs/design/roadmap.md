@@ -254,4 +254,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 34. Balance pass (done): storms answer sustained presence (build-up + warning) instead of a first-second roll,
     surplus slips sink into the ember brazier, bosses pay amethyst, echo slips wait for recollite; see
     [balance.md](balance.md).
-35. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+35. Real models (done): hush loom and ember brazier rebuilt from cubes into multi-part models, the remembering circlet gained a 3D in-hand band, and the Unremembered got its own crowned, robed boss model; all procedural in `tools/art`, no external assets. [models.md](models.md).
+36. Next: pick from [expansion-ideas.md](expansion-ideas.md).

@@ -323,6 +323,31 @@ public final class VisualTour {
                 c.cmd("item replace entity @s weapon.mainhand with mnemolith:chronicle_lens");
             }, new double[] {8.5, Y + 4, 0.5, 0, 22}, 240, false, hold, mc -> {});
         }
+
+        // real-models pass: close-ups of the key machines, the circlet and the Unremembered
+        scene("model_reel", c -> {
+            platform(c, "smooth_stone");
+            c.cmd("setblock 8 " + Y + " 8 mnemolith:composition_reel");
+        }, new double[] {8.5, Y + 1, 5.0, 0, 18}, 60, false);
+        scene("model_vault", c -> {
+            platform(c, "smooth_stone");
+            c.cmd("setblock 8 " + Y + " 8 mnemolith:archive_vault");
+        }, new double[] {8.5, Y + 1, 5.0, 0, 18}, 60, false);
+        scene("model_shrine", c -> {
+            platform(c, "smooth_stone");
+            c.cmd("setblock 8 " + Y + " 8 mnemolith:archive_shrine");
+        }, new double[] {8.5, Y + 1, 5.0, 0, 18}, 60, false);
+        scene("model_circlet", c -> {
+            platform(c, "moss_block");
+            c.cmd("item replace entity @s weapon.mainhand with mnemolith:remembering_circlet");
+        }, new double[] {8.5, Y, 4.5, 0, 20}, 40, true);
+        scene("model_unremembered_close", c -> {
+            platform(c, "smooth_stone");
+            var u = c.summon("mnemolith:unremembered", 8.5, 9.5);
+            if (u != null) {
+                ((com.mnemolith.entity.boss.Unremembered) u).reveal();
+            }
+        }, new double[] {8.5, Y + 1.7, 3.8, 0, 4}, 60, false);
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");

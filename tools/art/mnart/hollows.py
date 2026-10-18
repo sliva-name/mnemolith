@@ -123,152 +123,32 @@ def lantern_top():
     return cv.image()
 
 
-def _brazier_side(lit):
-    """Blackstone bowl wall with two dark iron bands and rivets; lit, the seam under the rim glows."""
-    rng = core.rng_for('ember_brazier_side')
-    cv = surface('mute', S, S, rng, face='side', bevel=0, wear=0.35, tile=False, base_shift=-1.2)
-    for y0 in (3, 22):
-        cv.part(m_rect(S, S, 0, y0, S - 1, y0 + 3), 'iron', 'flat', 1)
-        cv.shade_px(m_rect(S, S, 0, y0, S - 1, y0), 0.3, toward=(230, 230, 240))
-        for x in (3, 15, 27):
-            cv.px(x, y0 + 1, RAMPS['iron'][5])
-    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(240, 240, 250))
-    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
-    # vents between the bands
-    for x in (7, 15, 23):
-        vent = m_rect(S, S, x, 11, x + 1, 15)
-        cv.fill(vent, RAMPS['ember'][4] if lit else RAMPS['deep'][0])
-        if lit:
-            cv.px(x, 12, RAMPS['ember'][5])
-    if lit:
-        cv.fill(m_rect(S, S, 0, 0, S - 1, 1), RAMPS['ember'][3])
-        cv.fill(m_rect(S, S, 0, 0, S - 1, 0), RAMPS['ember'][5])
-    return cv.image()
 
 
-def brazier_side():
-    return _brazier_side(False)
 
 
-def brazier_side_lit():
-    return _brazier_side(True)
 
 
-def _brazier_top(lit):
-    """An iron grate over the bowl: cold ash and charcoal, or embers glowing between the bars."""
-    rng = core.rng_for('ember_brazier_top')
-    cv = surface('mute', S, S, rng, face='top', bevel=0, wear=0.3, tile=False, base_shift=-1.0)
-    bowl = m_rect(S, S, 3, 3, S - 4, S - 4)
-    if lit:
-        cv.part(bowl, 'ember', 'flat', 3, rng=rng, noise=0.5)
-        shapes.glow(cv, 15.5, 15.5, 11, RAMPS['ember'][5], 0.45)
-        for _ in range(14):
-            x, y = rng.randrange(4, S - 4), rng.randrange(4, S - 4)
-            cv.px(x, y, RAMPS['ember'][6])
-    else:
-        cv.part(bowl, 'mute', 'flat', 1, rng=rng, noise=0.5)
-        for _ in range(12):
-            x, y = rng.randrange(4, S - 4), rng.randrange(4, S - 4)
-            cv.px(x, y, RAMPS['mute'][4])
-    cv.shade_px(m_rect(S, S, 3, 3, S - 4, 3) | m_rect(S, S, 3, 3, 3, S - 4), 0.5)
-    grate = m_rect(S, S, 3, 0, 3, 0)
-    for k in range(4, S - 4, 6):
-        grate = grate | m_rect(S, S, k + 2, 3, k + 3, S - 4)
-    grate = grate | m_rect(S, S, 3, 15, S - 4, 16)
-    cv.part(grate & bowl, 'iron', 'flat', 1)
-    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(240, 240, 250))
-    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
-    return cv.image()
 
 
-def brazier_top():
-    return _brazier_top(False)
 
 
-def brazier_top_lit():
-    return _brazier_top(True)
 
 
-def brazier_bottom():
-    rng = core.rng_for('ember_brazier_bottom')
-    cv = surface('mute', S, S, rng, face='bottom', bevel=1, wear=0.3, tile=False, base_shift=-1.2)
-    return cv.image()
 
 
-def _loom_side(threaded):
-    """A purpur loom frame: two posts and a cloth beam around a lilac back, pale warp threads strung top to bottom;
-    threaded, a woven band of pale cloth grows up from the lower beam and a shuttle line crosses the warp."""
-    rng = core.rng_for('hush_loom_side')
-    cv = surface('lilac', S, S, rng, face='side', bevel=0, wear=0.3, tile=False, base_shift=-0.2)
-    back = m_rect(S, S, 4, 6, S - 5, S - 7)
-    cv.fill(back, RAMPS['lilac'][2])
-    cv.shade_px(m_rect(S, S, 4, 6, S - 5, 7), 0.35)
-    for x0 in (1, S - 5):
-        cv.part(m_rect(S, S, x0, 1, x0 + 3, S - 2), 'amethyst', 'flat', 1)
-        cv.fill(m_rect(S, S, x0 + 1, 1, x0 + 1, S - 2), RAMPS['magenta'][4])
-        cv.shade_px(m_rect(S, S, x0 + 3, 1, x0 + 3, S - 2), 0.35)
-    for y0 in (1, S - 6):
-        cv.part(m_rect(S, S, 1, y0, S - 2, y0 + 4), 'amethyst', 'flat', 1)
-        cv.shade_px(m_rect(S, S, 1, y0, S - 2, y0), 0.3, toward=(250, 230, 250))
-    # warp: always strung, pale; brighter on the threaded loom
-    for x in range(6, S - 6, 2):
-        cv.fill(m_rect(S, S, x, 6, x, S - 7), RAMPS['white'][6] if threaded else RAMPS['pale'][5])
-    # heddle bar across the warp
-    cv.fill(m_rect(S, S, 4, 11, S - 5, 11), RAMPS['amethyst'][3])
-    if threaded:
-        cloth = m_rect(S, S, 5, 19, S - 6, S - 7)
-        cv.fill(cloth, RAMPS['pale'][5])
-        for y in range(19, S - 6, 2):
-            cv.fill(m_rect(S, S, 5, y, S - 6, y) & cloth, RAMPS['white'][6])
-        cv.fill(m_rect(S, S, 5, 17, S - 6, 17), RAMPS['lilac'][5])
-        cv.px(6, 17, RAMPS['magenta'][4])
-        cv.px(S - 7, 17, RAMPS['magenta'][4])
-    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
-    return cv.image()
 
 
-def loom_side():
-    return _loom_side(False)
 
 
-def loom_side_threaded():
-    return _loom_side(True)
 
 
-def _loom_top(threaded):
-    """The loom from above: a purpur frame, the warp threads running across a lilac well over the cloth beam;
-    threaded, a pale woven square fills the middle."""
-    rng = core.rng_for('hush_loom_top')
-    cv = surface('amethyst', S, S, rng, face='top', bevel=0, wear=0.3, tile=False, base_shift=0.3)
-    well = m_rect(S, S, 5, 5, S - 6, S - 6)
-    cv.fill(well, RAMPS['lilac'][2])
-    for k in range(6, S - 6, 2):
-        cv.fill(m_rect(S, S, k, 5, k, S - 6) & well, RAMPS['white'][6] if threaded else RAMPS['pale'][5])
-    cv.fill(m_rect(S, S, 5, 15, S - 6, 16), RAMPS['amethyst'][3])
-    if threaded:
-        cloth = m_rect(S, S, 8, 8, S - 9, S - 9)
-        cv.fill(cloth, RAMPS['pale'][5])
-        for k in range(8, S - 8, 2):
-            cv.fill(m_rect(S, S, 8, k, S - 9, k) & cloth, RAMPS['white'][6])
-        core.glint(cv, 12, 12, arm=1)
-    cv.shade_px(m_rect(S, S, 5, 5, S - 6, 5) | m_rect(S, S, 5, 5, 5, S - 6), 0.45)
-    cv.shade_px(m_rect(S, S, 0, 0, S - 1, 0) | m_rect(S, S, 0, 0, 0, S - 1), 0.25, toward=(250, 230, 250))
-    cv.shade_px(m_rect(S, S, 0, S - 1, S - 1, S - 1) | m_rect(S, S, S - 1, 0, S - 1, S - 1), 0.4)
-    return cv.image()
 
 
-def loom_top():
-    return _loom_top(False)
 
 
-def loom_top_threaded():
-    return _loom_top(True)
 
 
-def loom_bottom():
-    rng = core.rng_for('hush_loom_bottom')
-    cv = surface('amethyst', S, S, rng, face='bottom', bevel=1, wear=0.3, tile=False, base_shift=-0.2)
-    return cv.image()
 
 
 def _memorial_base(seed):
@@ -751,16 +631,6 @@ BLOCK_TEXTURES = {
     'recollite_block': recollite_block,
     'recollite_lantern_side': lantern_side,
     'recollite_lantern_top': lantern_top,
-    'ember_brazier_side': brazier_side,
-    'ember_brazier_side_lit': brazier_side_lit,
-    'ember_brazier_top': brazier_top,
-    'ember_brazier_top_lit': brazier_top_lit,
-    'ember_brazier_bottom': brazier_bottom,
-    'hush_loom_side': loom_side,
-    'hush_loom_side_threaded': loom_side_threaded,
-    'hush_loom_top': loom_top,
-    'hush_loom_top_threaded': loom_top_threaded,
-    'hush_loom_bottom': loom_bottom,
     'memorial_stone_side': memorial_side,
     'memorial_stone_top': memorial_top,
     'forget_me_not': forget_me_not,
