@@ -12,21 +12,32 @@ world mutation, works on a dedicated server):
 | Band | Reading |
 | --- | --- |
 | Calm | Nothing grows. The absence is the reading. |
-| Saturated | Sparse, faint, low motes drift over the ground — a memory patina. |
-| Overloaded | The patina thickens: more, larger, brighter motes, rising faster. |
-| Fracture | Brightest and densest, and most motes line up along one glowing seam across the chunk that pulses. |
+| Saturated | One faint cluster of slow, ground-hugging stains — a memory patina where something happened. |
+| Overloaded | Two brighter, wider clusters; the dominant kind's silhouette emerges. |
+| Fracture | Three clusters at their brightest, and two of every three motes line up along one glowing seam — a cracked line along the ground across the chunk. |
 
-Density, size, lifetime, rise and alpha all scale strictly with the band (`MemoryTrace.style`, verified by
-`tracesqa`), so the four states are distinguishable at a glance with no lens and no HUD — see the visual tour
-scenes `traces_calm`, `traces_saturated`, `traces_overloaded`, `traces_fracture` (same staged chunk, HUD off).
+Traces are stains, not dust (improved after PR #114 read as generic sparkles): they spawn at the surface,
+barely drift, linger for seconds and dissolve, clustered at a few deterministic spots per chunk with a
+gaussian falloff — dense in the middle, thinning out, the way a place remembers events rather than weather.
+Motes, size, lifetime, alpha, cluster count and spread all scale strictly with the band (`MemoryTrace.style`,
+verified by `tracesqa`), so the four states are distinguishable at a glance with no lens and no HUD — see the
+visual tour scenes `traces_calm`, `traces_saturated`, `traces_overloaded`, `traces_fracture` (same staged
+chunk, HUD off, raised camera so the silhouettes read).
 
 ## Place identity
 
 Each trace wears the loudest memory's colour from the existing glyph palette (`MemoryGlyphs`, the same colours
-as the lens pill swatch: fire/explosion/lightning warm ember, death pale, explosion ring scars, …) and borrows
-its motion from the after-image shapes (`AfterEcho.motionFor`: columns rise, explosions ripple outward, death
-sinks, paths crawl along the ground, builds outline). Traces, after-images and the lens therefore speak one
-language instead of three.
+as the lens pill swatch) and a silhouette grown from its after-image motion (`MemoryTrace.pattern`):
+explosions, bosses and portals leave a scorched **ring**; paths, players, sculk and silence a dotted
+**trail** line; building and redstone the **outline** of a block; fire, lightning and trade drifting
+**embers** over a cluster; death, falls and the forgotten pale **wisps** that sink to the ground and settle
+as stains. Colour *and* shape name the kind, and traces, after-images and the lens speak one language.
+
+Honest limit: the snapshot carries no imprint positions, and adding one to `ChunkPressure` would change the
+stream codec — a protocol version bump this rework must not make. Cluster centres are therefore chosen
+deterministically from the chunk position (stable spots, not the true origins). Exact origins remain the job
+of after-images when standing still, which already arrive on the server's per-player particle channel; if a
+future protocol revision ever adds a loudest-origin field to the snapshot, clusters should anchor to it.
 
 Where exactly the loudest memory sits is deliberately *not* what traces answer — the snapshot carries no
 imprint positions, and inventing them client-side would lie. Traces locate the chunk, its band and its kind;
@@ -48,8 +59,11 @@ together. The lens then gives the exact number and name.
 
 ## Verification
 
-- `/mnemolith tracesqa` (game test `mnemolith:suite_tracesqa`): band mapping monotonic, calm empty, fracture
-  seam only, seam deterministic and inside its chunk, glyph colour and motion per kind, band-only fallback
-  colour, particle registered, RU/EN lang, mapping cost.
-- Visual tour `traces_*` before/after: on the old code all four scenes show the same bare platform (only the
-  lens pill and, at fracture, after-images differ); after, each band reads from the ground alone.
+- `/mnemolith tracesqa` (game test `mnemolith:suite_tracesqa`, 13 checks): band mapping monotonic (including
+  cluster count and spread), calm empty, fracture seam only, seam and cluster centres deterministic and
+  inside their chunk, glyph colour, motion and silhouette per kind, ring/outline points following their
+  lines, band-only fallback colour, particle registered, RU/EN lang, mapping cost.
+- Visual tour `traces_*` before/after: on PR #114 all scenes show uniformly scattered coloured dust (kinds
+  differ only by colour); after, clusters hug the ground, an explosion reads as a scorched ring, a path as a
+  dotted trail, a build as a block outline, fire as an ember cluster, death as sinking pale-red wisps, and
+  fracture keeps its glowing seam. Per-kind scenes: `traces_kind_{explosion,death,path,build,fire}`.

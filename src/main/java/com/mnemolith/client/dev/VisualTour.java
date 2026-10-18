@@ -307,7 +307,21 @@ public final class VisualTour {
                     c.write(3 + i * 2, 12, ImprintTag.DEATH);
                 }
                 hold.accept(c);
-            }, new double[] {8.5, Y, 3.5, 0, -5}, 200, false, hold, mc -> {});
+            }, new double[] {8.5, Y + 4, 0.5, 0, 22}, 240, false, hold, mc -> {});
+        }
+
+        // visible memory by kind: an overloaded chunk per dominant kind, lens in hand so the snapshot names it
+        for (ImprintTag kind : new ImprintTag[] {ImprintTag.EXPLOSION, ImprintTag.DEATH, ImprintTag.PATH, ImprintTag.BUILD, ImprintTag.FIRE}) {
+            Consumer<Ctx> hold = c -> LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0))
+                    .setCachedPressure(firstOf(com.mnemolith.pressure.PressureBand.OVERLOADED));
+            scene("traces_kind_" + kind.getSerializedName(), c -> {
+                platform(c, "smooth_stone");
+                for (int i = 0; i < 6; i++) {
+                    c.write(3 + i * 2, 12, kind);
+                }
+                hold.accept(c);
+                c.cmd("item replace entity @s weapon.mainhand with mnemolith:chronicle_lens");
+            }, new double[] {8.5, Y + 4, 0.5, 0, 22}, 240, false, hold, mc -> {});
         }
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
