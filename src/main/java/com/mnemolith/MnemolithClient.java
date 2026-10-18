@@ -50,6 +50,7 @@ public final class MnemolithClient {
         modEventBus.addListener(ModEntityRenderers::registerRenderers);
         NeoForge.EVENT_BUS.addListener(PressureClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(FractureFeel::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.MemoryTraces::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.StrongMemoryHint::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.mnemolith.client.render.CircletTint::onClientTick);
         if (com.mnemolith.client.dev.VisualTour.enabled()) {

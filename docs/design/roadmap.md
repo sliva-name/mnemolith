@@ -249,4 +249,6 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
 30. The Pale Chorus (End line; design note [pale-chorus.md](pale-chorus.md); done: PR #88, #89, #90).
 31. Undertow (fishing line; design note [undertow.md](undertow.md); done: PR #93, #94, #95).
 32. Memory feel (one visual and audio language for memory; design note [memory-feel.md](memory-feel.md); done: PR #96–#100).
-33. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+33. Visible memory (done): chunk pressure reads from the world itself — ground traces scale with the band,
+    coloured and shaped by the loudest memory, glowing seams at fracture; design note [visible-memory.md](visible-memory.md).
+34. Next: pick from [expansion-ideas.md](expansion-ideas.md).

@@ -296,6 +296,19 @@ public final class VisualTour {
                 LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0)).setCachedPressure(com.mnemolith.command.qa.Feel3Qa.saturatedPressure());
             }, mc -> {});
         }
+
+        // visible memory: the same staged chunk at each band, no HUD — the band must read from the world alone
+        for (String[] v : new String[][] {{"traces_calm", "CALM"}, {"traces_saturated", "SATURATED"}, {"traces_overloaded", "OVERLOADED"}, {"traces_fracture", "FRACTURE"}}) {
+            Consumer<Ctx> hold = c -> LoadedChunkMemory.getOrCreate(c.level.getChunk(0, 0))
+                    .setCachedPressure(v[1].equals("CALM") ? 3 : firstOf(com.mnemolith.pressure.PressureBand.valueOf(v[1])));
+            scene(v[0], c -> {
+                platform(c, "smooth_stone");
+                for (int i = 0; i < 6; i++) {
+                    c.write(3 + i * 2, 12, ImprintTag.DEATH);
+                }
+                hold.accept(c);
+            }, new double[] {8.5, Y, 3.5, 0, -5}, 200, false, hold, mc -> {});
+        }
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");

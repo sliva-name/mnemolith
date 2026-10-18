@@ -77,8 +77,9 @@ public final class PressureSync {
     }
 
     /**
-     * No lens and no server ambient rule: the player still gets the band-only read fracture feel needs, whatever the
-     * request bit says. No vein shimmer, no pressure numbers, no chunk state, nothing below overloaded. The stamp
+     * No lens and no server ambient rule: the player still gets the band-only read fracture feel and visible-memory
+     * traces need, whatever the request bit says. No vein shimmer, no pressure numbers, no chunk state, nothing
+     * below saturated. The stamp
      * with lens and ambient both false is this mode; a repeat for the same chunk and memory epoch is not resent.
      */
     private static void sendBands(ServerPlayer player, ServerLevel level) {
