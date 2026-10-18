@@ -78,6 +78,22 @@ public final class Storms {
 
     private static final Map<Long, ServerBossEvent> BARS = new HashMap<>();
 
+    /** Sustained presence in one fractured chunk: seconds stood there and whether the warning already sounded. */
+    private record Strain(long chunkKey, int seconds, boolean warned) {}
+
+    private static final Map<java.util.UUID, Strain> STRAIN = new HashMap<>();
+
+    /** Drops a player's storm strain (logout). */
+    public static void forget(java.util.UUID player) {
+        STRAIN.remove(player);
+    }
+
+    /** Seconds {@code player} has stood in their current fractured chunk. For QA. */
+    public static int strainSeconds(java.util.UUID player) {
+        Strain strain = STRAIN.get(player);
+        return strain == null ? 0 : strain.seconds();
+    }
+
     /** Why a storm may or may not gather in a chunk. */
     public enum Gate { OK, DISABLED, CAP, CALM, MUTED, WARDED, LULL, BUSY }
 
@@ -142,23 +158,50 @@ public final class Storms {
     }
 
     /**
-     * Player tick: once a second a player standing in a fractured chunk rolls {@code stormAttemptChance} (0.02 by
-     * default, so a storm usually gathers within a minute or two of standing in a fracture).
+     * Player tick: storms answer sustained presence, not a passing visit or a lucky roll. Once a second a player
+     * standing in a fractured chunk builds strain in that chunk; at {@code stormWarningSeconds} the place warns
+     * (message and sound, once per visit), and only from {@code stormBuildupSeconds} on does each second roll
+     * {@code stormAttemptChance}. Leaving the chunk (or its fracture) resets the strain. With the defaults a
+     * storm is expected about (45 + 1/0.02) seconds into standing in a fracture — never in the first 45.
      */
     public static void onPlayerTick(ServerLevel level, ServerPlayer player) {
-        if (naturalPaused || player.isSpectator() || (player.tickCount + player.getId()) % ATTEMPT_TICKS != 0) {
+        if (naturalPaused || (player.tickCount + player.getId()) % ATTEMPT_TICKS != 0) {
+            return;
+        }
+        if (player.isSpectator() || player.isRemoved()) {
+            STRAIN.remove(player.getUUID());
             return;
         }
         double chance = CommonConfig.STORM_ATTEMPT_CHANCE.get();
         if (chance <= 0.0D || !enabled()) {
+            STRAIN.remove(player.getUUID());
             return;
         }
         LevelChunk chunk = level.getChunkAt(player.blockPosition());
         ChunkMemory memory = LoadedChunkMemory.existing(chunk);
-        if (memory == null || MemoryPressure.band(memory.cachedPressure()) != PressureBand.FRACTURE || level.getRandom().nextDouble() >= chance) {
+        if (memory == null || MemoryPressure.band(memory.cachedPressure()) != PressureBand.FRACTURE) {
+            STRAIN.remove(player.getUUID());
+            return;
+        }
+        long key = ((long) chunk.getPos().x() << 32) ^ (chunk.getPos().z() & 0xFFFFFFFFL) ^ ((long) level.dimension().identifier().hashCode() << 16);
+        Strain previous = STRAIN.get(player.getUUID());
+        int seconds = previous != null && previous.chunkKey() == key ? previous.seconds() + 1 : 1;
+        boolean warned = previous != null && previous.chunkKey() == key && previous.warned();
+        int warning = CommonConfig.STORM_WARNING_SECONDS.get();
+        if (!warned && warning > 0 && seconds >= warning && gate(level, chunk.getPos()) == Gate.OK) {
+            warned = true;
+            player.sendOverlayMessage(Component.translatable("mnemolith.storm.warning"));
+            level.playSound(null, player.blockPosition(), ModSounds.STORM_GATHER.get(), SoundSource.HOSTILE, 0.6F, 1.4F);
+        }
+        STRAIN.put(player.getUUID(), new Strain(key, seconds, warned));
+        if (seconds < CommonConfig.STORM_BUILDUP_SECONDS.get()) {
+            return;
+        }
+        if (level.getRandom().nextDouble() >= chance) {
             return;
         }
         if (gate(level, chunk.getPos()) == Gate.OK) {
+            STRAIN.remove(player.getUUID());
             start(level, chunk.getPos(), "natural");
         }
     }

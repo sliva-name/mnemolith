@@ -1517,5 +1517,12 @@
   "mnemolith.configuration.pressureEffectStrength": "Сила эффектов давления",
   "mnemolith.configuration.pressureEffectStrength.tooltip": "Сила виньетки давления, покачивания камеры и обесцвечивания разлома. 0 выключает всё; плашка линзы по-прежнему показывает полосу.",
   "mnemolith.configuration.memoryTraces": "Следы памяти в мире",
-  "mnemolith.configuration.memoryTraces.tooltip": "Показывать видимые следы на земле в насыщенных и более громких чанках: плотность и свечение зависят от полосы, цвет и движение — от самого громкого воспоминания, в разломе добавляются светящиеся швы. Не зависит от силы эффектов давления."
+  "mnemolith.configuration.memoryTraces.tooltip": "Показывать видимые следы на земле в насыщенных и более громких чанках: плотность и свечение зависят от полосы, цвет и движение — от самого громкого воспоминания, в разломе добавляются светящиеся швы. Не зависит от силы эффектов давления.",
+  "mnemolith.configuration.stormBuildupSeconds": "Секунды накопления бури",
+  "mnemolith.configuration.stormBuildupSeconds.tooltip": "Сколько секунд игрок должен простоять в одном треснувшем чанке, прежде чем начнутся броски природной бури. Проход сквозь разлом бурю не вызывает.",
+  "mnemolith.configuration.stormWarningSeconds": "Секунды предупреждения о буре",
+  "mnemolith.configuration.stormWarningSeconds.tooltip": "Сколько секунд стояния в треснувшем чанке проходит, прежде чем место предупредит, что тянется к буре. 0 выключает предупреждение.",
+  "mnemolith.configuration.emberBrazierChargePerSlip": "Сжиганий за свиток",
+  "mnemolith.configuration.emberBrazierChargePerSlip.tooltip": "Сколько сжиганий даёт жаровне один свиток отпечатка любого вида, скормленный ей. Лишние свитки превращаются в снятие давления. 0 — свитки не принимаются.",
+  "mnemolith.storm.warning": "Это место тянется к буре. Уйдите, заглушите его сердце или будьте готовы."
 }

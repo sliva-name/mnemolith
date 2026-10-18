@@ -9,6 +9,8 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue RECOLLECTION_STORM_THRESHOLD;
     public static final ModConfigSpec.IntValue PRESSURE_SOFT_CAP;
     public static final ModConfigSpec.DoubleValue STORM_ATTEMPT_CHANCE;
+    public static final ModConfigSpec.IntValue STORM_BUILDUP_SECONDS;
+    public static final ModConfigSpec.IntValue STORM_WARNING_SECONDS;
     public static final ModConfigSpec.BooleanValue STRUCTURES_ENABLED;
     public static final ModConfigSpec.IntValue STRUCTURE_SPACING;
     public static final ModConfigSpec.BooleanValue COMPOSITION_ENABLED;
@@ -247,7 +249,9 @@ public final class CommonConfig {
         builder.pop();
 
         SpecValues.section(builder, "spawnRates", "How often recollection storms are attempted.");
-        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Chance, from 0.0 to 1.0, rolled once a second for each player standing in a fractured chunk, that a recollection storm starts gathering there (if allowRecollectionStorms, maxStormsPerDimension, mute stones and scar wards allow it). 0.02 means a storm usually gathers within a minute or two. 0 turns natural storms off; a freed residual shard can still call one.", 0.02D, 0.0D, 1.0D);
+        STORM_ATTEMPT_CHANCE = SpecValues.decimal(builder, "stormAttemptChance", "Chance, from 0.0 to 1.0, rolled once a second for each player who has stood in a fractured chunk for stormBuildupSeconds, that a recollection storm starts gathering there (if allowRecollectionStorms, maxStormsPerDimension, mute stones and scar wards allow it). Passing through a fracture never starts one. 0 turns natural storms off; a freed residual shard can still call one.", 0.02D, 0.0D, 1.0D);
+        STORM_BUILDUP_SECONDS = SpecValues.integer(builder, "stormBuildupSeconds", "Seconds a player must stand in the same fractured chunk before natural storm rolls begin. Sustained presence, not a passing visit, calls a storm. 0 restores rolling from the first second.", 45, 0, 3600);
+        STORM_WARNING_SECONDS = SpecValues.integer(builder, "stormWarningSeconds", "Seconds of standing in a fractured chunk before the place warns that it strains toward a storm (message and sound). 0 turns the warning off; values at or above stormBuildupSeconds warn in the same second the rolls begin.", 20, 0, 3600);
         builder.pop();
 
         SpecValues.section(builder, "worldGen", "Structure placement defaults. Changing these takes effect the next time a world loads.");
