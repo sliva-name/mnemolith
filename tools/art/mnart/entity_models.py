@@ -119,6 +119,26 @@ def quads(parts, tex_id, poses=None, scale_k=1.0):
     return out
 
 
+def unremembered():
+    """UnrememberedModel: the faded plan plus a splinter crown, pauldrons, heart shard and robe skirt."""
+    parts = faded()
+    body = parts[0]
+    head = body['children'][0]
+    head['children'] = list(head.get('children', ())) + [
+        part('crown_front', (0, -7.6, -3.4), [(56, 0, -0.6, -3.4, -0.6, 1.2, 3.4, 1.2)], rot=(-0.35, 0, 0)),
+        part('crown_top', (0.8, -7.9, 0.6), [(56, 0, -0.7, -3.8, -0.7, 1.4, 3.8, 1.4)], rot=(0.12, 0, -0.15)),
+        part('crown_left', (3.6, -7.7, 0), [(56, 0, -0.6, -3.2, -0.6, 1.2, 3.2, 1.2)], rot=(0, 0, -0.4)),
+        part('crown_right', (-3.6, -7.7, 0), [(56, 0, -0.6, -3.2, -0.6, 1.2, 3.2, 1.2)], rot=(0, 0, 0.4)),
+    ]
+    body['children'] = list(body['children']) + [
+        part('skirt', (0, -1, 0), [(0, 32, -5.2, 6, -3.2, 10.4, 8, 6.4)]),
+        part('pauldron_left', (3.8, -11.5, 0), [(16, 16, 0, -1.5, -2.6, 3.4, 3.4, 5.2)]),
+        part('pauldron_right', (-3.8, -11.5, 0), [(16, 16, -3.4, -1.5, -2.6, 3.4, 3.4, 5.2)]),
+        part('heart_shard', (0, 0, 0), [(56, 0, -1.1, -8.6, -3.1, 2.2, 4.2, 1)]),
+    ]
+    return parts
+
+
 MODELS = {
     'archivist': (archivist, 'mnemolith:entity/archivist'),
     'echo_strider': (echo_strider, 'mnemolith:entity/echo_strider'),
@@ -126,7 +146,7 @@ MODELS = {
     'residue': (residue, 'mnemolith:entity/residue'),
     'faded': (faded, 'mnemolith:entity/faded'),
     'faded_kneel': (lambda: faded(True), 'mnemolith:entity/faded'),
-    'unremembered': (faded, 'mnemolith:entity/unremembered'),
+    'unremembered': (unremembered, 'mnemolith:entity/unremembered'),
     'cinderkin': (faded, 'mnemolith:entity/cinderkin'),
     'hushling': (faded, 'mnemolith:entity/hushling'),
 }

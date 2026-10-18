@@ -30,6 +30,13 @@ from mnart import armory, blocks, entities, gui, guide, handheld, hollows, items
 STALE = [
     'textures/block/archive_vault_side.png', 'textures/block/archive_vault_side_on.png',
     'textures/block/archive_vault_top.png', 'textures/block/scar_heart_base.png',
+    # cube-era loom/brazier faces, replaced by sheet models (mnart.blocks hush_loom / ember_brazier)
+    'textures/block/hush_loom_side.png', 'textures/block/hush_loom_side_threaded.png',
+    'textures/block/hush_loom_top.png', 'textures/block/hush_loom_top_threaded.png',
+    'textures/block/hush_loom_bottom.png',
+    'textures/block/ember_brazier_side.png', 'textures/block/ember_brazier_side_lit.png',
+    'textures/block/ember_brazier_top.png', 'textures/block/ember_brazier_top_lit.png',
+    'textures/block/ember_brazier_bottom.png',
 ]
 
 

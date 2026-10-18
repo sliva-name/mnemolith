@@ -1350,11 +1350,9 @@ def p_brazier():
     """The ember brazier lit on ordinary ground, an ember going in; beside it the chunk's loudest imprints burning
     away one by one and the pressure bar dropping."""
     p = Page('brazier')
-    for alias, tex in (('b_side', 'ember_brazier_side_lit'), ('b_top', 'ember_brazier_top_lit'), ('b_bottom', 'ember_brazier_bottom')):
-        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
     d = Diorama(300, 230, 25)
     d.ground(5, 4, 2)
-    d.add(cube('b_top', 'b_side', 0, 0, 0, tex_bottom='b_bottom'))
+    d.add(block_quads('mnemolith:block/ember_brazier_lit', -0.5, 0, -0.5, 20))
     p.center(d.render(0, 0.4, 0), 150, 134)
     p.spark(150, 70, 14, TEMPER['fire'])
     p.sprite('memory_ember', 236, 56, 2, src=_hollows_tex('item', 'memory_ember'))
@@ -1409,11 +1407,9 @@ def p_loom():
         t[..., 1] = t[..., 1] * 0.55 + 100
         t[..., 2] = t[..., 2] * 0.40 + 60
         R._tex_cache['guide:' + alias] = t.clip(0, 255).astype('uint8')
-    for alias, tex in (('l_side', 'hush_loom_side_threaded'), ('l_top', 'hush_loom_top_threaded'), ('l_bottom', 'hush_loom_bottom')):
-        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
     d = Diorama(300, 230, 25)
     d.ground(5, 4, 2, top='e_top', side='e_side', under='e_stone')
-    d.add(cube('l_top', 'l_side', 0, 0, 0, tex_bottom='l_bottom'))
+    d.add(block_quads('mnemolith:block/hush_loom_threaded', -0.5, 0, -0.5, 20))
     p.center(d.render(0, 0.4, 0), 150, 134)
     p.sprite('hush_filament', 236, 56, 2, src=_hollows_tex('item', 'hush_filament'))
     p.arrow((222, 74), (178, 98), bend=0.2)

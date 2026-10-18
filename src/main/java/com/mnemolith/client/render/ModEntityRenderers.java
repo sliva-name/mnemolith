@@ -20,6 +20,7 @@ public final class ModEntityRenderers {
     public static final ModelLayerLocation KIN_WITNESS = layer("kin_witness");
     public static final ModelLayerLocation FRACTURE_STALKER = layer("fracture_stalker");
     public static final ModelLayerLocation FADED = layer("faded");
+    public static final ModelLayerLocation UNREMEMBERED = layer("unremembered");
 
     private ModEntityRenderers() {}
 
@@ -32,6 +33,7 @@ public final class ModEntityRenderers {
         event.registerLayerDefinition(KIN_WITNESS, com.mnemolith.client.model.KinWitnessModel::createBodyLayer);
         event.registerLayerDefinition(FRACTURE_STALKER, com.mnemolith.client.model.FractureStalkerModel::createBodyLayer);
         event.registerLayerDefinition(FADED, com.mnemolith.client.model.FadedModel::createBodyLayer);
+        event.registerLayerDefinition(UNREMEMBERED, com.mnemolith.client.model.UnrememberedModel::createBodyLayer);
     }
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
