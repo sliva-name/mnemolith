@@ -36,6 +36,11 @@ import net.minecraft.world.phys.BlockHitResult;
  */
 public class EmberBrazierBlock extends Block {
     public static final MapCodec<EmberBrazierBlock> CODEC = simpleCodec(EmberBrazierBlock::new);
+    /** Matches the model: solid base plate, stem and bowl, brass rim. The plate closes the underside. */
+    private static final net.minecraft.world.phys.shapes.VoxelShape SHAPE = net.minecraft.world.phys.shapes.Shapes.or(
+            Block.box(1.0D, 0.0D, 1.0D, 15.0D, 1.5D, 15.0D),
+            Block.box(3.0D, 1.5D, 3.0D, 13.0D, 7.0D, 13.0D),
+            Block.box(2.0D, 7.0D, 2.0D, 14.0D, 8.5D, 14.0D));
     /** Defaults of the server options {@code emberBrazierChargePerEmber} and {@code emberBrazierBurnTicks}. */
     public static final int CHARGE_PER_EMBER = 4;
     public static final int MAX_CHARGE = 16;
@@ -56,6 +61,12 @@ public class EmberBrazierBlock extends Block {
     @Override
     public MapCodec<EmberBrazierBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

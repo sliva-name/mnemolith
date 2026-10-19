@@ -1,6 +1,8 @@
 """3D in-hand models for the two instruments. GUI, ground, item frame and shelf keep the flat 32x32 sprite (the
 item definition selects on display_context, like the vanilla spyglass); hands get these element models. The
 models lie on the same bottom-left to top-right diagonal as the sprite, so the vanilla handheld transforms apply."""
+import math
+
 import numpy as np
 
 from . import core
@@ -124,6 +126,45 @@ def remembering_circlet_in_hand():
     for dx in (-3.1, 3.1):
         m.box((C + dx - 0.3, C + R - 0.1, 7.6), (C + dx + 0.3, C + R + 0.7, 8.4), P(crystal, 'circlet_stud'), down=None)
     return m.build(parent=None, display=CIRCLET_DISPLAY, texture_name='remembering_circlet_model')
+
+
+def compass_needle(w, h, rng):
+    cv = surface('scar', w, h, rng, wear=0, bevel=1)
+    return cv
+
+
+def memory_compass_in_hand(frame):
+    """A real compass in hand: brass case, glass face and a stepped needle pointing the frame's way.
+
+    The needle is three small cubes stepped along the frame direction (11.25 degrees per frame), so all
+    32 vanilla compass frames keep working without arbitrary element rotations.
+    """
+    m = Model('memory_compass_model', folder='item', seed='compass3d')
+    C, R, t = 8.0, 4.9, 1.05
+    z0, z1 = 7.2, 8.8
+    case = F('brass', wear=0.35)
+    face = P(ring_front, 'compass_face')
+    m.box((C - 1.7, C + R - t, z0), (C + 1.7, C + R, z1), case, north=face, south=face)
+    m.box((C - 1.7, C - R, z0), (C + 1.7, C - R + t, z1), case, north=face, south=face)
+    m.box((C - R, C - 1.7, z0), (C - R + t, C + 1.7, z1), case, north=face, south=face)
+    m.box((C + R - t, C - 1.7, z0), (C + R, C + 1.7, z1), case, north=face, south=face)
+    off = (R - t / 2) * 0.7071
+    for sx, sy in ((1, 1), (-1, -1), (-1, 1), (1, -1)):
+        cx, cy = C + sx * off, C + sy * off
+        ang = -45 if sx == sy else 45
+        m.box((cx - 1.5, cy - t / 2, z0), (cx + 1.5, cy + t / 2, z1), case, north=face, south=face,
+              rotation={'origin': [cx, cy, 8], 'axis': 'z', 'angle': ang})
+    m.box((C - R + 0.7, C - R + 0.7, 8.05), (C + R - 0.7, C + R - 0.7, 8.45), F('glass', wear=0), down=None)
+    theta = math.radians(frame * 11.25)
+    dx, dy = math.sin(theta), math.cos(theta)
+    needle = P(compass_needle, 'compass_needle')
+    for d in (1.1, 2.2, 3.3):
+        x, y = C + dx * d, C + dy * d
+        s = 0.42 if d < 3 else 0.3
+        m.box((x - s, y - s, 8.5), (x + s, y + s, 8.95), needle, down=None)
+    m.box((C - 0.45, C - 0.45, 8.45), (C + 0.45, C + 0.45, 9.0), F('dark_iron', wear=0.2), down=None)
+    m.box((C - 0.8, C + R + 0.2, 7.5), (C + 0.8, C + R + 1.1, 8.5), case, down=None)   # crown loop
+    return m.build(parent=None, display=CIRCLET_DISPLAY, texture_name='memory_compass_model')
 
 
 HANDHELD_MODELS = {

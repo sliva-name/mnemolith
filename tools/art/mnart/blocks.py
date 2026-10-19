@@ -303,11 +303,12 @@ def ember_brazier(lit=False):
     m = Model(name, seed=name)
     iron = F('iron', wear=0.5)
     rim = F('brass', wear=0.35)
+    m.box((1, 0, 1), (15, 1.5, 15), F('deep', wear=0.4), up=F('deep', kind='top'))   # solid base plate: no see-through underneath
     m.box((2, 0, 2), (4.5, 5, 4.5), iron, down=None)
     m.box((11.5, 0, 2), (14, 5, 4.5), iron, down=None)
     m.box((6.75, 0, 11.5), (9.25, 5, 14), iron, down=None)
     m.box((4, 3.5, 4), (12, 5.5, 12), iron, down=None)                    # bowl stem
-    m.box((3, 5.5, 3), (13, 7, 13), F('deep', wear=0.4), up=P(lambda w, h, r: ember_bed(w, h, r, lit), 'bed_lit' if lit else 'bed'), down=None)
+    m.box((3, 5.5, 3), (13, 7, 13), F('deep', wear=0.4), up=P(lambda w, h, r: ember_bed(w, h, r, lit), 'bed_lit' if lit else 'bed'))  # closed bowl bottom
     for frm, to in (((2, 7, 2), (14, 8.5, 4)), ((2, 7, 12), (14, 8.5, 14)), ((2, 7, 4), (4, 8.5, 12)), ((12, 7, 4), (14, 8.5, 12))):
         m.box(frm, to, rim, down=None)                                    # rim ring
     if lit:
@@ -613,6 +614,51 @@ def mute_stone_bricks_tex():
         cv.px(rng.randrange(w), rng.randrange(h), RAMPS['amethyst'][2])
     return cv.image()
 
+def memorial_glyph(w, h, rng):
+    """A carved remembrance glyph down the obelisk face: a ring, a stem and two tears, cut dark into bone."""
+    cv = mat('bone', w, h, rng, bevel=0, wear=0.25)
+    cx = w // 2
+    cv.shade_px(m_ring(w, h, cx, h // 4, 4, 2), 0.45)
+    cv.shade_px(m_rect(w, h, cx, h // 4 + 3, cx, h - 4), 0.45)
+    cv.shade_px(m_rect(w, h, cx - 3, h // 2, cx + 3, h // 2), 0.4)
+    cv.px(cx - 2, h - 6, RAMPS['recollite'][4])
+    cv.px(cx + 2, h - 6, RAMPS['recollite'][4])
+    return cv
+
+
+def memorial_stone():
+    """A mended Scar's memorial: stepped plinth, a tapered bone obelisk with a carved glyph, recollite tip."""
+    m = Model('memorial_stone')
+    m.box((1, 0, 1), (15, 2, 15), F('mute', wear=0.35), up=F('mute', kind='top'))
+    m.box((2.5, 2, 2.5), (13.5, 3.5, 13.5), F('mute', wear=0.3), down=None)
+    m.box((4, 3.5, 4), (12, 10, 12), F('bone', wear=0.25), north=P(memorial_glyph, 'glyph'), down=None)
+    m.box((5, 10, 5), (11, 14, 11), F('bone', wear=0.25), down=None)
+    m.box((4.5, 14, 4.5), (11.5, 15, 11.5), F('mute', wear=0.3), down=None)
+    m.box((7, 15, 7), (9, 16, 9), F('recollite', wear=0.1), down=None)
+    return m.build()
+
+
+def lantern_core(w, h, rng):
+    """The lantern's heart: recollite crystal lit from inside by a forget-me-not glow."""
+    cv = mat('recollite', w, h, rng, bevel=1, wear=0.05)
+    cv.fill(m_ellipse(w, h, w // 2, h // 2, max(2, w // 4), max(2, h // 3)), RAMPS['recollite'][5])
+    cv.px(w // 2, h // 2, RAMPS['bone'][6])
+    return cv
+
+
+def recollite_lantern():
+    """A hollowstone lantern: solid base, corner posts, a glowing recollite core and a capped top."""
+    m = Model('recollite_lantern')
+    frame = F('hollowstone', wear=0.35)
+    m.box((2, 0, 2), (14, 2, 14), frame, up=F('hollowstone', kind='top'))
+    for x, z in ((2.5, 2.5), (11.5, 2.5), (2.5, 11.5), (11.5, 11.5)):
+        m.box((x, 2, z), (x + 2, 12, z + 2), frame, down=None)
+    m.box((5.5, 4, 5.5), (10.5, 11, 10.5), P(lantern_core, 'core'), down=None)
+    m.box((1.5, 12, 1.5), (14.5, 14, 14.5), frame, down=None)
+    m.box((7, 14, 7), (9, 16, 9), F('recollite', wear=0.1), down=None)
+    return m.build()
+
+
 # name -> builder returning (sheet image, model json); texture file = model name
 MODELS = {
     'archival_stratum': archival_stratum,
@@ -630,6 +676,8 @@ MODELS = {
     'pressure_lamp': pressure_lamp,
     'pressure_sensor': pressure_sensor,
     'player_memorial': player_memorial,
+    'memorial_stone': memorial_stone,
+    'recollite_lantern': recollite_lantern,
 }
 CUBE_TEXTURES = {
     'scar_glass': scar_glass_tex,
@@ -650,6 +698,7 @@ PARTICLE = {
     'pressure_lamp': ('pressure_lamp', 'glass'),
     'pressure_sensor': ('pressure_sensor', 'brass'),
     'player_memorial': ('player_memorial', 'mute'),
+    'memorial_stone': ('memorial_stone', 'mute'), 'recollite_lantern': ('recollite_lantern', 'pale'),
 }
 
 

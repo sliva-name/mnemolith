@@ -37,6 +37,11 @@ public class FadedModel extends EntityModel<FadedModel.State> {
     }
 
     public static LayerDefinition createBodyLayer() {
+        return LayerDefinition.create(createMesh(), 64, 64);
+    }
+
+    /** The shared faded frame; cinderkin and hushling layers add their own parts onto this mesh. */
+    public static MeshDefinition createMesh() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
         PartDefinition body = root.addOrReplaceChild("body",
@@ -61,7 +66,7 @@ public class FadedModel extends EntityModel<FadedModel.State> {
         root.addOrReplaceChild("leg_right",
                 CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-1.5F, 0.0F, -1.5F, 3.0F, 12.0F, 3.0F),
                 PartPose.offset(-2.0F, 12.0F, 0.0F));
-        return LayerDefinition.create(mesh, 64, 64);
+        return mesh;
     }
 
     @Override

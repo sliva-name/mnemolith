@@ -743,9 +743,7 @@ def p_mending():
     p.arrow((190, 170), (300, 170))
     d = Diorama(170, 200, 34)
     d.ground(3, 3, 1)
-    for alias, tex in (('m_side', 'memorial_stone_side'), ('m_top', 'memorial_stone_top')):
-        R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
-    d.add(cube('m_top', 'm_side', -0.5, 0, -0.5))
+    d.add(block_quads('mnemolith:block/memorial_stone', -0.5, 0, -0.5))
     p.center(d.render(0, 0.6, 0), 400, 120)
     # stage 2, the grove: forget-me-nots around the stone, and a residue at rest
     for (x, y) in ((340, 196), (452, 192), (470, 150)):
@@ -1234,12 +1232,11 @@ def p_lantern():
     """The recollite lantern: a lantern on the turf, a ring of what it keeps, a flicker inside the ring that is not
     forgotten, and one outside it that is."""
     p = Page('lantern')
-    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
-                       ('l_side', 'recollite_lantern_side'), ('l_top', 'recollite_lantern_top')):
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone')):
         R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
     d = Diorama(300, 230, 25)
     d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
-    d.add(cube('l_top', 'l_side', 0, 0, 0))
+    d.add(block_quads('mnemolith:block/recollite_lantern', -0.5, 0, -0.5, 20))
     # a flicker inside the light, kept
     d.add(mob_quads('echo', 1.6, 0, 1.2, 200), light='entity', tint=(188, 200, 236, 140))
     # one at the edge, sinking: forgotten
@@ -1288,14 +1285,13 @@ def p_unremembered():
     the effigy taking up three forgotten memories, the lens that reveals it, the posy that lays part of it to rest, and
     the Lethe tear it leaves becoming the remembering circlet."""
     p = Page('unremembered')
-    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone'),
-                       ('l_side', 'recollite_lantern_side'), ('l_top', 'recollite_lantern_top')):
+    for alias, tex in (('h_top', 'hollow_turf_top'), ('h_side', 'hollow_turf_side'), ('h_stone', 'hollowstone')):
         R._tex_cache['guide:' + alias] = R.texture('mnemolith:block/' + tex)
     d = Diorama(300, 230, 21)
     d.ground(6, 5, 2, top='h_top', side='h_side', under='h_stone')
     d.add(mob_quads('unremembered', 0.2, 0, -0.4, 222, k=1.8), light='entity', tint=UNREMEMBERED_TINT)
     d.add(mob_quads('faded', -1.9, 0, 1.1, 225), light='entity', tint=FADED_TINT)
-    d.add(cube('l_top', 'l_side', 1.9, 0, 1.2))
+    d.add(block_quads('mnemolith:block/recollite_lantern', 1.4, 0, 0.7, 20))
     p.center(d.render(0, 0.4, 0), 150, 134)
     # the effigy takes up the forgetting: three forgotten tags into the figure
     p.sprite('hollow_effigy', 330, 52, 2, src=_hollows_tex('item', 'hollow_effigy'))

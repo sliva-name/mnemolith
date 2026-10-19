@@ -18,6 +18,11 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class MemorialStoneBlock extends Block {
     public static final MapCodec<MemorialStoneBlock> CODEC = simpleCodec(MemorialStoneBlock::new);
+    /** Matches the model: stepped plinth and tapered obelisk. */
+    private static final net.minecraft.world.phys.shapes.VoxelShape SHAPE = net.minecraft.world.phys.shapes.Shapes.or(
+            Block.box(1.0D, 0.0D, 1.0D, 15.0D, 3.5D, 15.0D),
+            Block.box(4.0D, 3.5D, 4.0D, 12.0D, 10.0D, 12.0D),
+            Block.box(5.0D, 10.0D, 5.0D, 11.0D, 16.0D, 11.0D));
 
     public MemorialStoneBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -26,6 +31,12 @@ public class MemorialStoneBlock extends Block {
     @Override
     public MapCodec<MemorialStoneBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level,
+            BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

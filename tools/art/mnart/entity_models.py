@@ -139,6 +139,42 @@ def unremembered():
     return parts
 
 
+def cinderkin():
+    """CinderkinModel: the faded plan plus an ember core, pauldrons and two horn shards."""
+    parts = faded()
+    body = parts[0]
+    head = body['children'][0]
+    head['children'] = list(head.get('children', ())) + [
+        part('horn_left', (3.2, -7.4, 0), [(56, 0, -0.7, -3.6, -0.7, 1.4, 3.6, 1.4)], rot=(0, 0, -0.35)),
+        part('horn_right', (-3.2, -7.4, 0), [(56, 0, -0.7, -3.6, -0.7, 1.4, 3.6, 1.4)], rot=(0, 0, 0.35)),
+    ]
+    body['children'] = list(body['children']) + [
+        part('ember_core', (0, 0, 0), [(56, 0, -1.2, -9.4, -2.9, 2.4, 3.6, 1.2)]),
+        part('pauldron_left', (4.0, -11.0, 0), [(16, 16, -0.4, -1.6, -2.6, 3.6, 3.2, 5.2)]),
+        part('pauldron_right', (-4.0, -11.0, 0), [(16, 16, -3.2, -1.6, -2.6, 3.6, 3.2, 5.2)]),
+    ]
+    return parts
+
+
+def hushling():
+    """HushlingModel: the faded plan plus a hood, mouth plate and long skirt."""
+    parts = faded()
+    body = parts[0]
+    head = body['children'][0]
+    head['children'] = list(head.get('children', ())) + [
+        part('hood', (0, 0, 0), [(0, 32, -4.8, -10.0, -4.8, 9.6, 5.4, 9.6)]),
+        part('hood_drape_left', (4.6, 0, 0), [(0, 32, -0.8, -4.6, -4.4, 1.6, 6.4, 8.8)]),
+        part('hood_drape_right', (-4.6, 0, 0), [(0, 32, -0.8, -4.6, -4.4, 1.6, 6.4, 8.8)]),
+        part('hood_back', (0, 0, 4.6), [(0, 32, -4.4, -4.6, -0.8, 8.8, 6.4, 1.6)]),
+        part('hood_peak', (0, -8.6, 0.6), [(0, 32, -1.0, -2.8, -1.0, 2.0, 2.4, 2.0)], rot=(0.3, 0, 0)),
+        part('mouth_plate', (0, 0, 0), [(16, 16, -1.8, -3.4, -4.3, 3.6, 2.2, 0.8)]),
+    ]
+    body['children'] = list(body['children']) + [
+        part('skirt', (0, -1, 0), [(0, 32, -5.6, -0.5, -3.4, 11.2, 8.5, 6.8)]),
+    ]
+    return parts
+
+
 MODELS = {
     'archivist': (archivist, 'mnemolith:entity/archivist'),
     'echo_strider': (echo_strider, 'mnemolith:entity/echo_strider'),
@@ -147,6 +183,6 @@ MODELS = {
     'faded': (faded, 'mnemolith:entity/faded'),
     'faded_kneel': (lambda: faded(True), 'mnemolith:entity/faded'),
     'unremembered': (unremembered, 'mnemolith:entity/unremembered'),
-    'cinderkin': (faded, 'mnemolith:entity/cinderkin'),
-    'hushling': (faded, 'mnemolith:entity/hushling'),
+    'cinderkin': (cinderkin, 'mnemolith:entity/cinderkin'),
+    'hushling': (hushling, 'mnemolith:entity/hushling'),
 }

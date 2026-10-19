@@ -348,6 +348,39 @@ public final class VisualTour {
                 ((com.mnemolith.entity.boss.Unremembered) u).reveal();
             }
         }, new double[] {8.5, Y + 1.7, 3.8, 0, 4}, 60, false);
+        scene("model_brazier_low", c -> {
+            platform(c, "polished_blackstone");
+            c.cmd("fill 7 " + Y + " 8 7 " + (Y + 1) + " 8 polished_blackstone");
+            c.cmd("fill 9 " + Y + " 8 9 " + (Y + 1) + " 8 polished_blackstone");
+            c.cmd("setblock 7 " + (Y + 2) + " 8 mnemolith:ember_brazier");
+            c.cmd("setblock 9 " + (Y + 2) + " 8 mnemolith:ember_brazier[lit=true,charge=8]");
+        }, new double[] {8.5, Y, 5.6, 0, -14}, 60, false);
+        scene("model_loom_low", c -> {
+            platform(c, "end_stone_bricks");
+            c.cmd("fill 7 " + Y + " 8 7 " + (Y + 1) + " 8 end_stone_bricks");
+            c.cmd("fill 9 " + Y + " 8 9 " + (Y + 1) + " 8 end_stone_bricks");
+            c.cmd("setblock 7 " + (Y + 2) + " 8 mnemolith:hush_loom");
+            c.cmd("setblock 9 " + (Y + 2) + " 8 mnemolith:hush_loom[threaded=true]");
+        }, new double[] {8.5, Y, 5.6, 0, -10}, 40, false);
+        scene("model_memorial", c -> {
+            platform(c, "moss_block");
+            c.cmd("setblock 6 " + Y + " 8 mnemolith:memorial_stone");
+            c.cmd("setblock 10 " + Y + " 8 mnemolith:recollite_lantern");
+        }, new double[] {8.5, Y + 0.6, 4.8, 0, 18}, 40, false);
+        scene("model_lantern_low", c -> {
+            platform(c, "hollowstone");
+            c.cmd("fill 8 " + Y + " 8 8 " + (Y + 1) + " 8 hollowstone");
+            c.cmd("setblock 8 " + (Y + 2) + " 8 mnemolith:recollite_lantern");
+        }, new double[] {8.5, Y, 5.9, 0, -12}, 40, false);
+        scene("model_cinderkin", c -> {
+            platform(c, "netherrack");
+            c.summon("mnemolith:cinderkin", 8.5, 8.5);
+        }, new double[] {8.5, Y + 1.2, 5.2, 0, 6}, 60, false);
+        scene("model_hushling", c -> {
+            platform(c, "end_stone_bricks");
+            c.summon("mnemolith:hushling", 8.5, 8.5);
+        }, new double[] {8.5, Y + 1.0, 5.4, 0, 6}, 60, false);
+        held("model_compass", "mnemolith:memory_compass");
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
         held("held_remembrance_posy", "mnemolith:remembrance_posy");
