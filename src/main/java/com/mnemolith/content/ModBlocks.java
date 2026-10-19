@@ -178,8 +178,8 @@ public final class ModBlocks {
                     .lightLevel(state -> 6)
                     .requiresCorrectToolForDrops());
     /** Hollowstone and recollite around a forget-me-not: near it a hollow forgets nothing ({@code HollowLanterns}). */
-    public static final DeferredBlock<Block> RECOLLITE_LANTERN = BLOCKS.registerSimpleBlock(
-            "recollite_lantern", properties -> properties
+    public static final DeferredBlock<com.mnemolith.content.block.RecolliteLanternBlock> RECOLLITE_LANTERN = BLOCKS.registerBlock(
+            "recollite_lantern", com.mnemolith.content.block.RecolliteLanternBlock::new, properties -> properties
                     .mapColor(MapColor.COLOR_LIGHT_BLUE)
                     .strength(1.5F, 6.0F)
                     .sound(SoundType.AMETHYST)

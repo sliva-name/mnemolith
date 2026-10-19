@@ -34,6 +34,8 @@ STALE = [
     'textures/block/hush_loom_side.png', 'textures/block/hush_loom_side_threaded.png',
     'textures/block/hush_loom_top.png', 'textures/block/hush_loom_top_threaded.png',
     'textures/block/hush_loom_bottom.png',
+    'textures/block/memorial_stone_side.png', 'textures/block/memorial_stone_top.png',
+    'textures/block/recollite_lantern_side.png', 'textures/block/recollite_lantern_top.png',
     'textures/block/ember_brazier_side.png', 'textures/block/ember_brazier_side_lit.png',
     'textures/block/ember_brazier_top.png', 'textures/block/ember_brazier_top_lit.png',
     'textures/block/ember_brazier_bottom.png',
@@ -83,6 +85,43 @@ def build_items(o):
         o.png('textures/item/%s.png' % model['textures']['sheet'].split('/')[-1], img)
         o.json('models/item/%s_in_hand.json' % n, model)
         o.json('items/%s.json' % n, select_item(n))
+    build_compass(o)
+
+
+def build_compass(o):
+    """The memory compass keeps its 32 flat frames outside hands; in hands each frame gets the 3D case.
+
+    The committed item definition (compass angle dispatch) is wrapped, not regenerated: GUI, ground,
+    frame and shelf keep the flat dispatch, hands get the same dispatch pointed at the 3D models.
+    """
+    import json as _json
+    for i in range(32):
+        img, model = handheld.memory_compass_in_hand(i)
+        o.png('textures/item/%s.png' % model['textures']['sheet'].split('/')[-1], img)
+        o.json('models/item/memory_compass_in_hand_%02d.json' % i, model)
+    path = os.path.join(o.root, 'items', 'memory_compass.json')
+    if not os.path.exists(path):   # --check without a copied tree: read the committed definition
+        path = os.path.join(ASSETS, 'mnemolith', 'items', 'memory_compass.json')
+    with open(path) as fh:
+        root = _json.load(fh)
+    inner = root['model']
+    if inner.get('type') == 'minecraft:select' and inner.get('property') == 'minecraft:display_context':
+        inner = inner['cases'][0]['model']   # already wrapped by an earlier run: unwrap first
+
+    def handed(node):
+        if isinstance(node, dict):
+            return {k: handed(v) for k, v in node.items()}
+        if isinstance(node, list):
+            return [handed(v) for v in node]
+        if isinstance(node, str):
+            return node.replace('mnemolith:item/memory_compass_', 'mnemolith:item/memory_compass_in_hand_')
+        return node
+
+    o.json('items/memory_compass.json', {'model': {
+        'type': 'minecraft:select', 'property': 'minecraft:display_context',
+        'cases': [{'when': ['gui', 'ground', 'fixed', 'on_shelf'], 'model': inner}],
+        'fallback': handed(inner),
+    }})
 
 
 def build_blocks(o):

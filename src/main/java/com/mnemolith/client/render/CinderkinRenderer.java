@@ -1,6 +1,7 @@
 package com.mnemolith.client.render;
 
 import com.mnemolith.Mnemolith;
+import com.mnemolith.client.model.CinderkinModel;
 import com.mnemolith.client.model.FadedModel;
 import com.mnemolith.entity.mob.Cinderkin;
 
@@ -10,11 +11,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 
 /** The faded's frame in charcoal with glowing cracks: opaque and full-bright, so it glows in the Nether's dark. */
-public class CinderkinRenderer extends MobRenderer<Cinderkin, FadedModel.State, FadedModel> {
+public class CinderkinRenderer extends MobRenderer<Cinderkin, FadedModel.State, CinderkinModel> {
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mnemolith.MOD_ID, "textures/entity/cinderkin.png");
 
     public CinderkinRenderer(EntityRendererProvider.Context context) {
-        super(context, new FadedModel(context.bakeLayer(ModEntityRenderers.FADED)), 0.4F);
+        super(context, new CinderkinModel(context.bakeLayer(ModEntityRenderers.CINDERKIN)), 0.4F);
     }
 
     @Override

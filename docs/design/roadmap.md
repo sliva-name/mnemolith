@@ -255,4 +255,5 @@ first runs found a real echo build bug (the echo's own body blocking the cell it
     surplus slips sink into the ember brazier, bosses pay amethyst, echo slips wait for recollite; see
     [balance.md](balance.md).
 35. Real models (done): hush loom and ember brazier rebuilt from cubes into multi-part models, the remembering circlet gained a 3D in-hand band, and the Unremembered got its own crowned, robed boss model; all procedural in `tools/art`, no external assets. [models.md](models.md).
-36. Next: pick from [expansion-ideas.md](expansion-ideas.md).
+36. Real models, second pass (done): the ember brazier's underside is closed by a base plate (matching collision shape), memorial stone and recollite lantern are modelled instead of cubes, the memory compass has a 3D case in hand for all 32 frames, and cinderkin/hushling got their own entity models instead of faded recolors. [models.md](models.md).
+37. Next: pick from [expansion-ideas.md](expansion-ideas.md).

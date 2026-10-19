@@ -1,8 +1,203 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "parent": "minecraft:block/block",
   "textures": {
-    "bottom": "mnemolith:block/memorial_stone_top",
-    "side": "mnemolith:block/memorial_stone_side",
-    "top": "mnemolith:block/memorial_stone_top"
+    "particle": "mnemolith:block/memorial_stone_particle",
+    "sheet": "mnemolith:block/memorial_stone"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 2, 15],
+      "faces": {
+        "north": {
+          "uv": [0.0, 12.5, 7.0, 13.5],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [0.0, 12.5, 7.0, 13.5],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [0.0, 12.5, 7.0, 13.5],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [0.0, 12.5, 7.0, 13.5],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [0.0, 0.0, 7.0, 7.0],
+          "texture": "#sheet"
+        },
+        "down": {
+          "uv": [7.0, 0.0, 14.0, 7.0],
+          "texture": "#sheet",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [2.5, 2, 2.5],
+      "to": [13.5, 3.5, 13.5],
+      "faces": {
+        "north": {
+          "uv": [0.0, 13.5, 5.5, 14.25],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [0.0, 13.5, 5.5, 14.25],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [0.0, 13.5, 5.5, 14.25],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [0.0, 13.5, 5.5, 14.25],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [0.0, 7.0, 5.5, 12.5],
+          "texture": "#sheet"
+        }
+      }
+    },
+    {
+      "from": [4, 3.5, 4],
+      "to": [12, 10, 12],
+      "faces": {
+        "north": {
+          "uv": [9.5, 7.0, 13.5, 10.25],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [9.5, 10.25, 13.5, 13.5],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [9.5, 10.25, 13.5, 13.5],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [9.5, 10.25, 13.5, 13.5],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [5.5, 7.0, 9.5, 11.0],
+          "texture": "#sheet"
+        }
+      }
+    },
+    {
+      "from": [5, 10, 5],
+      "to": [11, 14, 11],
+      "faces": {
+        "north": {
+          "uv": [10.0, 10.75, 13.0, 12.75],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [10.0, 10.75, 13.0, 12.75],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [10.0, 10.75, 13.0, 12.75],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [10.0, 10.75, 13.0, 12.75],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [6.0, 7.5, 9.0, 10.5],
+          "texture": "#sheet"
+        }
+      }
+    },
+    {
+      "from": [4.5, 14, 4.5],
+      "to": [11.5, 15, 11.5],
+      "faces": {
+        "north": {
+          "uv": [1.0, 13.5, 4.5, 14.0],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [1.0, 13.5, 4.5, 14.0],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [1.0, 13.5, 4.5, 14.0],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [1.0, 13.5, 4.5, 14.0],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [1.0, 8.0, 4.5, 11.5],
+          "texture": "#sheet"
+        }
+      }
+    },
+    {
+      "from": [7, 15, 7],
+      "to": [9, 16, 9],
+      "faces": {
+        "north": {
+          "uv": [15.0, 0.0, 16.0, 0.5],
+          "texture": "#sheet"
+        },
+        "south": {
+          "uv": [15.0, 0.0, 16.0, 0.5],
+          "texture": "#sheet"
+        },
+        "east": {
+          "uv": [15.0, 0.0, 16.0, 0.5],
+          "texture": "#sheet"
+        },
+        "west": {
+          "uv": [15.0, 0.0, 16.0, 0.5],
+          "texture": "#sheet"
+        },
+        "up": {
+          "uv": [14.0, 0.0, 15.0, 1.0],
+          "texture": "#sheet",
+          "cullface": "up"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [30, 225, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.625, 0.625, 0.625]
+    },
+    "ground": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 3, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "fixed": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.5, 0.5, 0.5]
+    },
+    "thirdperson_righthand": {
+      "rotation": [75, 45, 0],
+      "translation": [0, 2.5, 0],
+      "scale": [0.375, 0.375, 0.375]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 225, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.4, 0.4, 0.4]
+    }
   }
 }

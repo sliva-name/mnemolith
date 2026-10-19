@@ -17,7 +17,32 @@ generators; there are no external assets to license or attribute.
 | Ember brazier + lit variant (three legs, stem, stepped bowl, brass rim, ember bed) | `tools/art/mnart/blocks.py` `ember_brazier()` | Original, procedural | Mnemolith art pipeline | Project license |
 | Remembering circlet in-hand model (gold octagon band, faceted recollite brow gem, crystal studs) | `tools/art/mnart/handheld.py` `remembering_circlet_in_hand()` | Original, procedural | Mnemolith art pipeline | Project license |
 | Unremembered boss model (splinter crown, pauldrons, heart shard, robe skirt over the faded frame) | `client/model/UnrememberedModel.java` (+ UV plan in `tools/art/mnart/entity_models.py`) | Original, hand-layered | Mnemolith | Project license |
+| Memorial stone (plinth, glyph obelisk, recollite tip), recollite lantern (frame + glowing core) | `tools/art/mnart/blocks.py` `memorial_stone()`, `recollite_lantern()` | Original, procedural | Mnemolith art pipeline | Project license |
+| Memory compass in-hand models (32 frames, brass case, glass, stepped needle) | `tools/art/mnart/handheld.py` `memory_compass_in_hand()` | Original, procedural | Mnemolith art pipeline | Project license |
+| Cinderkin model (ember core, pauldrons, horn shards), hushling model (hood, mouth plate, skirt) | `client/model/CinderkinModel.java`, `HushlingModel.java` (+ UV plans in `entity_models.py`) | Original, hand-layered | Mnemolith | Project license |
 | Composition reel, archive vault (+on), archive shrine, player memorial | pre-existing generators in `tools/art/mnart/blocks.py` | Original, procedural | Mnemolith art pipeline | Project license |
+
+## Second pass (brazier underside + next batch)
+
+- **Ember brazier underside fixed**: a solid base plate (1-15 x 0-1.5 x 1-15) now closes the
+  underside and the bowl gained its bottom face, so from any normal angle - including the new
+  low-angle tour scene with the brazier raised on a pillar - the world no longer shows through
+  under it. `EmberBrazierBlock` also gained a VoxelShape matching the model (plate, stem/bowl,
+  rim) instead of the default full cube.
+- **Memorial stone**: cube -> stepped plinth, tapered bone obelisk with a carved glyph face and a
+  recollite tip; matching VoxelShape.
+- **Recollite lantern**: cube -> hollowstone frame (solid base, corner posts, cap) around a glowing
+  recollite core; new `RecolliteLanternBlock` with a matching VoxelShape (same registry id).
+- **Memory compass**: the 32 flat frames stay outside hands, but in hand each frame is now a 3D
+  brass case with a glass face and a stepped three-cube needle pointing that frame's way
+  (`tools/art` generates all 32; the item definition wraps the existing compass dispatch).
+- **Cinderkin**: no longer a charcoal faded - own layer with a chest ember core, cinder pauldrons
+  and two horn shards. **Hushling**: no longer a small pale faded - own layer with a deep hood
+  (top, side drapes, back), a mouth plate and a long skirt.
+- Low-angle check for the other raised models: hush loom (plinth) and recollite lantern (base)
+  are solid underneath; tour scenes `model_brazier_low`, `model_loom_low`, `model_lantern_low`
+  raise each block on a pillar and shoot from below eye level. Proof:
+  `/workspace/visual-tour/before-models2/` vs `/workspace/visual-tour/after-models2/`.
 
 External packs considered (Kenney CC0, Quaternius CC0, KayKit CC0, Poly Haven CC0): none were
 needed — Minecraft JSON models must be authored to the block grid anyway, and generating them in
