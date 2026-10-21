@@ -23,11 +23,21 @@ final class BugHuntTests {
         List<String> bad = new ArrayList<>();
         occlusion(bad);
         echoSlipFromAmethyst(helper, bad);
+        brazierFlamesInBowl(bad);
         if (!bad.isEmpty()) {
             helper.fail("0.7.0 regressions: " + String.join("; ", bad));
             return;
         }
         helper.succeed();
+    }
+
+    /** Brazier flames start on the ember bed inside the bowl, not half a block above it (they used full-cube heights). */
+    static void brazierFlamesInBowl(List<String> bad) {
+        double rim = com.mnemolith.content.block.EmberBrazierBlock.SHAPE.max(net.minecraft.core.Direction.Axis.Y);
+        double bed = com.mnemolith.content.block.EmberBrazierBlock.BED_Y;
+        if (bed > rim || bed < 0.3D) {
+            bad.add("brazier flame height " + bed + " outside the bowl (rim " + rim + ")");
+        }
     }
 
     /** Echo slips (the gate to every echo craft) must not need a Memory Hollows biome: amethyst works too. */

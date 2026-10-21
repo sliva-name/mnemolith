@@ -37,7 +37,9 @@ import net.minecraft.world.phys.BlockHitResult;
 public class EmberBrazierBlock extends Block {
     public static final MapCodec<EmberBrazierBlock> CODEC = simpleCodec(EmberBrazierBlock::new);
     /** Matches the model: solid base plate, stem and bowl, brass rim. The plate closes the underside. */
-    private static final net.minecraft.world.phys.shapes.VoxelShape SHAPE = net.minecraft.world.phys.shapes.Shapes.or(
+    /** Height of the ember bed in the bowl (the model's bed top is 7/16): flames and smoke start here, not on a full cube. */
+    public static final double BED_Y = 0.47D;
+    public static final net.minecraft.world.phys.shapes.VoxelShape SHAPE = net.minecraft.world.phys.shapes.Shapes.or(
             Block.box(1.0D, 0.0D, 1.0D, 15.0D, 1.5D, 15.0D),
             Block.box(3.0D, 1.5D, 3.0D, 13.0D, 7.0D, 13.0D),
             Block.box(2.0D, 7.0D, 2.0D, 14.0D, 8.5D, 14.0D));
@@ -183,8 +185,8 @@ public class EmberBrazierBlock extends Block {
         int charge = state.getValue(CHARGE) - 1;
         level.setBlock(pos, state.setValue(CHARGE, charge).setValue(LIT, charge > 0), Block.UPDATE_ALL);
         // the memory part is the shared erased cue; a little soul fire says what burned it
-        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 3, 0.2D, 0.3D, 0.2D, 0.02D);
-        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.ERASED, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, 6);
+        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5D, pos.getY() + BED_Y + 0.1D, pos.getZ() + 0.5D, 3, 0.2D, 0.3D, 0.2D, 0.02D);
+        com.mnemolith.particle.MemoryFeel.cue(level, com.mnemolith.particle.MemoryFeel.Kind.ERASED, pos.getX() + 0.5D, pos.getY() + BED_Y + 0.1D, pos.getZ() + 0.5D, 6);
         return Burn.BURNED;
     }
 
@@ -193,10 +195,10 @@ public class EmberBrazierBlock extends Block {
         if (!state.getValue(LIT)) {
             return;
         }
-        level.addParticle(ParticleTypes.FLAME, pos.getX() + 0.3D + random.nextDouble() * 0.4D, pos.getY() + 1.02D,
+        level.addParticle(ParticleTypes.FLAME, pos.getX() + 0.3D + random.nextDouble() * 0.4D, pos.getY() + BED_Y,
                 pos.getZ() + 0.3D + random.nextDouble() * 0.4D, 0.0D, 0.02D, 0.0D);
         if (random.nextInt(4) == 0) {
-            level.addParticle(ParticleTypes.SMOKE, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, 0.0D, 0.04D, 0.0D);
+            level.addParticle(ParticleTypes.SMOKE, pos.getX() + 0.5D, pos.getY() + BED_Y + 0.15D, pos.getZ() + 0.5D, 0.0D, 0.04D, 0.0D);
         }
     }
 
