@@ -34,7 +34,7 @@ public final class SilenceCost {
     private SilenceCost() {}
 
     public static void onPlayerPulse(ServerLevel level, ServerPlayer player) {
-        if (!CommonConfig.SILENCE_COST_ENABLED.get()) {
+        if (!CommonConfig.SILENCE_COST_ENABLED.get() || player.isSpectator()) {
             return;
         }
         int interval = CommonConfig.SILENCE_COST_PULSE_TICKS.get();
@@ -62,10 +62,7 @@ public final class SilenceCost {
         if (memory.voidCooldownUntil() > time) {
             return;
         }
-        int density = neighborMuteDensity(level, chunk.getPos().x(), chunk.getPos().z());
-        density += Math.max(0, memory.muteStoneCount() - 1);
-        int gain = CommonConfig.SILENCE_COST_PER_PULSE.get()
-                + density * CommonConfig.SILENCE_COST_DENSITY_BONUS.get();
+        int gain = gain(level, chunk, memory);
         if (gain <= 0) {
             return;
         }
@@ -85,6 +82,20 @@ public final class SilenceCost {
         if (next >= max) {
             spawnMirror(level, chunk, memory, player);
         }
+    }
+
+    /**
+     * Most extra mute stones in one chunk that add to the density bonus. A natural mute pocket or hush chapel lines
+     * a room with dozens of stones; uncapped, each counted, so standing over one raised a Silence Mirror in about two
+     * pulses (ten seconds) on a fresh world. Dense neighbouring chunks still add their own bonus.
+     */
+    public static final int MAX_EXTRA_STONE_BONUS = 3;
+
+    /** Void pressure one pulse adds in a muted chunk. */
+    public static int gain(ServerLevel level, LevelChunk chunk, ChunkMemory memory) {
+        int density = neighborMuteDensity(level, chunk.getPos().x(), chunk.getPos().z());
+        density += Math.min(MAX_EXTRA_STONE_BONUS, Math.max(0, memory.muteStoneCount() - 1));
+        return CommonConfig.SILENCE_COST_PER_PULSE.get() + density * CommonConfig.SILENCE_COST_DENSITY_BONUS.get();
     }
 
     private static void decay(ServerLevel level, LevelChunk chunk, ChunkMemory memory) {

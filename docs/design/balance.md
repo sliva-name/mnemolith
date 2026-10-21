@@ -28,6 +28,7 @@ untouched (one recipe and one loot table are data; storm strain is runtime state
 | Scar drops | fragment + shards → + amethyst shards (2 + merged) | amethyst is spent at every stage (lens, needle, seals); a boss pays broadly, not only grafters |
 | Unremembered loot | + amethyst shards 4–8 pool | same reasoning; the tear stays the unique drop |
 | Echo slip recipe | amethyst → recollite shard, **reverted in the 0.7.0 bug hunt** to `#mnemolith:memory_crystals` (amethyst or recollite) | recollite only comes from the rare Memory Hollows (archival veins do not drop it), so on most seeds echoes and every echo craft were unobtainable. The guide always said amethyst |
+| Silence cost density | each extra mute stone in a chunk added +1 void per pulse → **capped at 3** (0.7.0 bug hunt); spectators no longer pulse | a natural mute pocket (~40 stones) or hush chapel raised a Silence Mirror boss ~10 s after a player arrived on a fresh world. Now a lone pocket takes ~100 s of standing (warning at ~50 s); dense neighbouring muted chunks still add their bonus |
 
 ## Invariants (`/mnemolith balanceqa`, game test `mnemolith:suite_balanceqa`)
 
