@@ -38,11 +38,11 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
  * hours; a natural storm needs sustained presence in a fracture (buildup first, warning before the rolls, a
  * passing visit never storms) with an expected time inside the target band; surplus slips sink into the ember
  * brazier at half an ember; the Scar and the Unremembered pay amethyst (the currency every stage spends);
- * echo slips are gated behind recollite while the lens itself stays an early amethyst craft.
+ * echo slips stay craftable from amethyst or recollite, and the lens stays an early amethyst craft.
  */
 public final class BalanceQa {
     private static final String[] NAMES = {"thresholds", "decayClearsSpike", "stormBuildupBeforeRolls", "stormWarningFirst",
-            "stormExpectedBand", "brazierSlipSink", "scarPaysBroadly", "unrememberedPaysBroadly", "echoSlipGated",
+            "stormExpectedBand", "brazierSlipSink", "scarPaysBroadly", "unrememberedPaysBroadly", "echoSlipCraftable",
             "lensStaysEarly", "lang"};
     private static final java.util.UUID PLAYER = java.util.UUID.fromString("88888888-6666-2222-3333-aeaeaeaeaeae");
     private static int salt;
@@ -110,8 +110,8 @@ public final class BalanceQa {
                 && Feel3Qa.class.getResource("/data/mnemolith/loot_table/entities/unremembered.json") != null
                 && lootJsonHas("amethyst_shard") && lootJsonHas("recollite_shard");
 
-        ok[8] = recipeHasIngredient(server, "echo_slip", "mnemolith:recollite_shard")
-                && !recipeHasIngredient(server, "echo_slip", "minecraft:amethyst_shard");
+        // echo slips must stay craftable without Memory Hollows: amethyst or recollite (memory crystals)
+        ok[8] = recipeHasIngredient(server, "echo_slip", "mnemolith:memory_crystals");
         ok[9] = recipeHasIngredient(server, "chronicle_lens", "mnemolith:memory_crystals") && !recipeHasIngredient(server, "chronicle_lens", "recollite_shard");
 
         boolean lang = true;
