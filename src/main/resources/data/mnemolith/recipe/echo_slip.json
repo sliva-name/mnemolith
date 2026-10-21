@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:paper",
-    "mnemolith:recollite_shard",
+    "#mnemolith:memory_crystals",
     "minecraft:redstone"
   ],
   "result": {

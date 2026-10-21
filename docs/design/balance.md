@@ -27,7 +27,7 @@ untouched (one recipe and one loot table are data; storm strain is runtime state
 | Slip sink | brazier refuses slips → any imprint slip feeds an ember brazier for `emberBrazierChargePerSlip` 2 burns (half an ember; 0 refuses) | surplus slips of every kind become pressure relief: extract → burn → calmer chunk; a loop, not a trash can |
 | Scar drops | fragment + shards → + amethyst shards (2 + merged) | amethyst is spent at every stage (lens, needle, seals); a boss pays broadly, not only grafters |
 | Unremembered loot | + amethyst shards 4–8 pool | same reasoning; the tear stays the unique drop |
-| Echo slip recipe | amethyst → recollite shard | echoes wait until the player has mined an archival vein or visited the Hollows (recollite), instead of hour one. The lens stays amethyst: the early loop is not gated |
+| Echo slip recipe | amethyst → recollite shard, **reverted in the 0.7.0 bug hunt** to `#mnemolith:memory_crystals` (amethyst or recollite) | recollite only comes from the rare Memory Hollows (archival veins do not drop it), so on most seeds echoes and every echo craft were unobtainable. The guide always said amethyst |
 
 ## Invariants (`/mnemolith balanceqa`, game test `mnemolith:suite_balanceqa`)
 

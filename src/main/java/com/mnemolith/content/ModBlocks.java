@@ -77,6 +77,7 @@ public final class ModBlocks {
                     .strength(30.0F, 1200.0F)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 7)
+                    .noOcclusion()
                     .noLootTable()
                     .requiresCorrectToolForDrops()
                     .pushReaction(PushReaction.BLOCK)
@@ -184,6 +185,7 @@ public final class ModBlocks {
                     .strength(1.5F, 6.0F)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 13)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
     /** Fed memory embers, burns away the loudest imprint of its chunk ({@code EmberBrazierBlock}). */
     public static final DeferredBlock<com.mnemolith.content.block.EmberBrazierBlock> EMBER_BRAZIER = BLOCKS.registerBlock(
@@ -192,6 +194,7 @@ public final class ModBlocks {
                     .strength(2.0F, 6.0F)
                     .sound(SoundType.NETHER_BRICKS)
                     .lightLevel(state -> state.getValue(com.mnemolith.content.block.EmberBrazierBlock.LIT) ? 13 : 0)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
     /** Threaded with hush filament, keeps one imprint tag of its chunk from thinning and burning ({@code HushLoomBlock}). */
     public static final DeferredBlock<com.mnemolith.content.block.HushLoomBlock> HUSH_LOOM = BLOCKS.registerBlock(
@@ -199,6 +202,7 @@ public final class ModBlocks {
                     .mapColor(MapColor.SAND)
                     .strength(1.5F, 6.0F)
                     .sound(SoundType.BONE_BLOCK)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FORGET_ME_NOT = BLOCKS.registerBlock(
             "forget_me_not",

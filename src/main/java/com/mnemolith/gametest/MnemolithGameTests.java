@@ -211,6 +211,8 @@ public final class MnemolithGameTests {
         quick("structure_templates_place", Round2Tests::templatesPlace);
         // Fixes from the QA sweep (stale mute marks, structure seeding, echo home, archive shrine).
         quick("regressions", RegressionTests::run);
+        // Fixes from the 0.7.0 bug hunt (occlusion of open models, ...).
+        quick("bughunt_070", BugHuntTests::run);
         // Negative tests: hostile or broken input is refused with nothing changed and no item lost.
         quick("neg_net_job_payloads", NetworkNegativeTests::jobPayloads);
         quick("neg_net_lens_possess", NetworkNegativeTests::lensOrdersAndPossession);

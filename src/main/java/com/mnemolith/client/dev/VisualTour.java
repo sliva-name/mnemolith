@@ -380,6 +380,13 @@ public final class VisualTour {
             platform(c, "end_stone_bricks");
             c.summon("mnemolith:hushling", 8.5, 8.5);
         }, new double[] {8.5, Y + 1.0, 5.4, 0, 6}, 60, false);
+        scene("bug_loom_xray", c -> {
+            platform(c, "stone_bricks");
+            c.cmd("fill 6 " + Y + " 9 10 " + (Y + 2) + " 9 stone_bricks");
+            c.cmd("setblock 7 " + Y + " 8 mnemolith:hush_loom");
+            c.cmd("setblock 8 " + Y + " 8 stone_bricks");
+            c.cmd("setblock 9 " + Y + " 8 mnemolith:hush_loom[threaded=true]");
+        }, new double[] {11.6, Y + 0.9, 6.0, 55, 18}, 40, false);
         held("model_compass", "mnemolith:memory_compass");
         held("held_recollite_pickaxe", "mnemolith:recollite_pickaxe");
         held("held_recollite_lantern", "mnemolith:recollite_lantern");
