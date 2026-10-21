@@ -24,11 +24,42 @@ final class BugHuntTests {
         occlusion(bad);
         echoSlipFromAmethyst(helper, bad);
         brazierFlamesInBowl(bad);
+        mutePocketNoInstantMirror(helper, bad);
         if (!bad.isEmpty()) {
             helper.fail("0.7.0 regressions: " + String.join("; ", bad));
             return;
         }
         helper.succeed();
+    }
+
+    /**
+     * A natural mute pocket lines one chunk with about 40 mute stones. Each extra stone used to add to the void gain,
+     * so standing over a pocket (or a hush chapel) raised a Silence Mirror in about ten seconds on a fresh world.
+     */
+    static void mutePocketNoInstantMirror(GameTestHelper helper, List<String> bad) {
+        var level = helper.getLevel();
+        net.minecraft.core.BlockPos origin = helper.absolutePos(new net.minecraft.core.BlockPos(0, 1, 0));
+        var chunk = level.getChunkAt(origin);
+        List<net.minecraft.core.BlockPos> placed = new ArrayList<>();
+        int baseX = chunk.getPos().getMinBlockX();
+        int baseZ = chunk.getPos().getMinBlockZ();
+        for (int i = 0; i < 40; i++) {
+            net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(baseX + (i % 16), level.getMinY() + 2 + i / 16, baseZ + (i / 16));
+            if (com.mnemolith.world.LoadedChunkMemory.addMuteStone(chunk, pos)) {
+                placed.add(pos);
+            }
+        }
+        try {
+            var memory = com.mnemolith.world.LoadedChunkMemory.existing(chunk);
+            int gain = com.mnemolith.pressure.SilenceCost.gain(level, chunk, memory);
+            int bonus = com.mnemolith.config.CommonConfig.SILENCE_COST_DENSITY_BONUS.get();
+            int most = com.mnemolith.config.CommonConfig.SILENCE_COST_PER_PULSE.get() + (8 + com.mnemolith.pressure.SilenceCost.MAX_EXTRA_STONE_BONUS) * bonus;
+            if (memory == null || memory.muteStoneCount() < 40 || gain > most) {
+                bad.add("a 40-stone mute chunk gains " + gain + " void per pulse (most " + most + ")");
+            }
+        } finally {
+            placed.forEach(pos -> com.mnemolith.world.LoadedChunkMemory.removeMuteStone(chunk, pos));
+        }
     }
 
     /** Brazier flames start on the ember bed inside the bowl, not half a block above it (they used full-cube heights). */
