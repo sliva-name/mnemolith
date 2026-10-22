@@ -25,6 +25,7 @@ final class BugHuntTests {
         echoSlipFromAmethyst(helper, bad);
         brazierFlamesInBowl(bad);
         mutePocketNoInstantMirror(helper, bad);
+        stormGuideMentionsBuildup(bad);
         if (!bad.isEmpty()) {
             helper.fail("0.7.0 regressions: " + String.join("; ", bad));
             return;
@@ -59,6 +60,29 @@ final class BugHuntTests {
             }
         } finally {
             placed.forEach(pos -> com.mnemolith.world.LoadedChunkMemory.removeMuteStone(chunk, pos));
+        }
+    }
+
+
+    /**
+     * The field guide must describe 0.7.0 storm strain (buildup + warning), not the 0.6.1 "2 in 100 from the first
+     * second of standing". Players who trust the old page expect storms while walking through fractures.
+     */
+    static void stormGuideMentionsBuildup(List<String> bad) {
+        String body = net.minecraft.locale.Language.getInstance().getOrDefault("mnemolith.guide.storms.body");
+        String reference = net.minecraft.locale.Language.getInstance().getOrDefault("mnemolith.guide.reference.body");
+        String attemptTip = net.minecraft.locale.Language.getInstance().getOrDefault("mnemolith.configuration.stormAttemptChance.tooltip");
+        if (!body.contains("sustained presence") || !body.contains("45") || !body.contains("warn")) {
+            bad.add("guide storms page still omits buildup/warning (got: " + body.substring(0, Math.min(80, body.length())) + ")");
+        }
+        if (body.contains("Once a second, for each player standing in a fractured chunk, there is a 2 in 100 chance that a recollection storm starts gathering there.")) {
+            bad.add("guide storms page still claims rolls from the first second of standing");
+        }
+        if (!reference.contains("~45") || !attemptTip.contains("stormBuildupSeconds")) {
+            bad.add("reference page or stormAttemptChance tooltip still omits buildup");
+        }
+        if (com.mnemolith.config.CommonConfig.STORM_BUILDUP_SECONDS.get() <= 0) {
+            bad.add("stormBuildupSeconds default is 0; guide text assumes a non-zero buildup");
         }
     }
 

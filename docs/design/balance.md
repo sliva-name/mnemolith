@@ -29,12 +29,13 @@ untouched (one recipe and one loot table are data; storm strain is runtime state
 | Unremembered loot | + amethyst shards 4–8 pool | same reasoning; the tear stays the unique drop |
 | Echo slip recipe | amethyst → recollite shard, **reverted in the 0.7.0 bug hunt** to `#mnemolith:memory_crystals` (amethyst or recollite) | recollite only comes from the rare Memory Hollows (archival veins do not drop it), so on most seeds echoes and every echo craft were unobtainable. The guide always said amethyst |
 | Silence cost density | each extra mute stone in a chunk added +1 void per pulse → **capped at 3** (0.7.0 bug hunt); spectators no longer pulse | a natural mute pocket (~40 stones) or hush chapel raised a Silence Mirror boss ~10 s after a player arrived on a fresh world. Now a lone pocket takes ~100 s of standing (warning at ~50 s); dense neighbouring muted chunks still add their bonus |
+| Storm guide / tooltips | still described 0.6.1 “2 in 100 from first second of standing” → **0.7.0 bug hunt** rewrote EN+RU guide storms + reference and config tooltips for buildup/warning | without the rewrite, the in-game guide contradicted `stormBuildupSeconds` / `stormWarningSeconds` and taught players the old unplayable storm cadence |
 
 ## Invariants (`/mnemolith balanceqa`, game test `mnemolith:suite_balanceqa`)
 
 Thresholds still map to the four bands; a failed-compose spike (18) cools within 10 min–2 h of presence
 (actual: 3600 ticks); buildup > 0, 0 < warning < buildup, expected storm time within 60–240 s (actual ≈ 95 s);
 a slip feeds the brazier for exactly `emberBrazierChargePerSlip` (0 < that < per-ember); Scar drops include
-fragment + residual shard + amethyst; the Unremembered loot table pays recollite and amethyst; the echo slip
-recipe needs recollite and not amethyst; the lens recipe still uses memory crystals (amethyst); RU/EN lang for
-the three new config keys and the warning line.
+fragment + residual shard + amethyst; the Unremembered loot table pays recollite and amethyst; the echo slip recipe accepts `#mnemolith:memory_crystals` (amethyst or recollite); the lens recipe still uses
+memory crystals; RU/EN lang for the three new config keys and the warning line; the field guide storms page
+(and reference / config tooltips) must mention buildup and warning, not “2 in 100 from the first second”.
